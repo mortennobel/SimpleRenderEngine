@@ -12,9 +12,9 @@ namespace SRE {
 
     class Shader;
 
-///
-/// Maintains shares states for rendering
-///
+    ///
+    /// Maintains shares states for rendering
+    ///
     class SimpleRenderEngine {
     public:
         SimpleRenderEngine(SDL_Window *window);

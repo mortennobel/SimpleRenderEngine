@@ -12,7 +12,7 @@ namespace SRE {
         float range;
 
         Light();
-        Light(LightType light, const glm::vec3 &position, const glm::vec3 &direction, const glm::vec3 &color,
+        Light(LightType lightType, const glm::vec3 &position, const glm::vec3 &direction, const glm::vec3 &color,
               float range);
     };
 }
