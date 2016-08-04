@@ -20,6 +20,7 @@ namespace SRE {
     Shader *Shader::unlitColor = nullptr;
     Shader *Shader::debugUV = nullptr;
     Shader *Shader::debugNormals = nullptr;
+    Shader *Shader::specularColor = nullptr;
 
     namespace {
         void logCurrentCompileException(GLuint shader, GLenum type, const char* source){
@@ -185,11 +186,11 @@ namespace SRE {
             glDisable(GL_DEPTH_TEST);
         }
         glDepthMask(depthWrite ? GL_TRUE : GL_FALSE);
-        switch (blending) {
-            case BlendingType::Disabled:
+        switch (blend) {
+            case BlendType::Disabled:
                 glDisable(GL_BLEND);
                 break;
-            case BlendingType::AlphaBlending:
+            case BlendType::AlphaBlending:
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 break;
@@ -212,12 +213,12 @@ namespace SRE {
         return depthWrite;
     }
 
-    BlendingType Shader::getBlending() {
-        return blending;
+    BlendType Shader::getBlend() {
+        return blend;
     }
 
-    void Shader::setBlending(BlendingType blendingType) {
-        blending = blendingType;
+    void Shader::setBlend(BlendType blendType) {
+        blend = blendType;
     }
 
     Shader *Shader::createUnlitColor() {

@@ -5,7 +5,7 @@
 namespace SRE {
     class Camera {
     public:
-        // Set camera at (0,0,0) looking down the negative z-axis using orthographic viewing volume between -1 to 1
+        /// Set camera at (0,0,0) looking down the negative z-axis using orthographic viewing volume between -1 to 1
         Camera();
         /// set position of camera in world space using
         /// eye position of the camera
@@ -47,6 +47,6 @@ namespace SRE {
         glm::mat4 projectionTransform;
         int viewportX, viewportY, viewportWidth, viewportHeight;
 
-        friend class Renderer;
+        friend class SimpleRenderEngine;
     };
 }

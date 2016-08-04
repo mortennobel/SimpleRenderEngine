@@ -15,10 +15,10 @@ namespace SRE {
 ///
 /// Maintains shares states for rendering
 ///
-    class Renderer {
+    class SimpleRenderEngine {
     public:
-        Renderer(SDL_Window *window);
-        ~Renderer();
+        SimpleRenderEngine(SDL_Window *window);
+        ~SimpleRenderEngine();
         static constexpr int maxSceneLights = 4;
         static constexpr int sre_version_major = 0;
         static constexpr int sre_version_minor = 1;
@@ -39,7 +39,7 @@ namespace SRE {
         // Update window with OpenGL rendering
         void swapWindow();
 
-        static Renderer* instance;
+        static SimpleRenderEngine* instance;
     private:
         Light sceneLights[maxSceneLights];
         Camera defaultCamera;

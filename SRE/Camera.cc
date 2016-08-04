@@ -11,7 +11,7 @@
 #   include <OpenGL/gl3.h>
 #endif
 
-#include "Renderer.h"
+#include "SimpleRenderEngine.h"
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace SRE{
@@ -57,7 +57,7 @@ namespace SRE{
         viewportY = y;
         viewportWidth = width;
         viewportHeight = height;
-        if (Renderer::instance->getCamera() == this){
+        if (SimpleRenderEngine::instance->getCamera() == this){
             glViewport(x, y, width, height);
             glScissor(x, y, width, height);
         }

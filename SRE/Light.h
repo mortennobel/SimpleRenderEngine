@@ -1,15 +1,11 @@
 #pragma once
 
 #include "glm/glm.hpp"
+#include "LightType.h"
 
 namespace SRE {
-    enum class LightType {
-        Point,
-        Directional
-    };
-
     struct Light {
-        LightType light;
+        LightType lightType;
         glm::vec3 position;
         glm::vec3 direction;
         glm::vec3 color;

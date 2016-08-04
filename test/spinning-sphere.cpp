@@ -3,7 +3,7 @@
 #include <fstream>
 
 #include "SRE/Texture.h"
-#include "SRE/Renderer.h"
+#include "SRE/SimpleRenderEngine.h"
 #include "SRE/Camera.h"
 #include "SRE/Mesh.h"
 #include "SRE/Shader.h"
@@ -59,12 +59,11 @@ int main() {
         return 1;
     }
 
-    Renderer r{window};
+    SimpleRenderEngine r{window};
 
     r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
     Shader* shader = Shader::createUnlitColor();
-    shader->bind();
     Mesh* mesh = Mesh::createSphere();
     shader->setVector("color", {0,1,0,1});
 

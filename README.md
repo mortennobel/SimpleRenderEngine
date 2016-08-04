@@ -28,6 +28,11 @@ To keep SRE as simple and flexible as possible the following features are not a 
  ## Examples
  
 Example usage can be found in the test folder
+
+## Documentation
+
+Online documentation:
+https://mortennobel.github.io/SimpleRenderEngineDocs/
  
  ## Other resources
  

@@ -5,13 +5,9 @@
 #pragma once
 #include "glm/glm.hpp"
 #include "Light.h"
+#include "BlendType.h"
 
 namespace SRE {
-    enum class BlendingType {
-        Disabled,
-        AlphaBlending
-    };
-
     class Shader {
     public:
         static Shader *createShader(const char *vertexShader, const char *fragmentShader);
@@ -42,8 +38,6 @@ namespace SRE {
 
         bool setInt(const char *name, int value);
 
-        void bind();
-
         void setDepthTest(bool enable);
 
         bool isDepthTest();
@@ -52,9 +46,9 @@ namespace SRE {
 
         bool isDepthWrite();
 
-        BlendingType getBlending();
+        BlendType getBlend();
 
-        void setBlending(BlendingType blendingType);
+        void setBlend(BlendType blendType);
 
     private:
         bool setLights(Light value[4]);
@@ -82,12 +76,14 @@ namespace SRE {
 
         Shader();
 
+        void bind();
+
         unsigned int shaderProgramId;
         bool depthTest = true;
         bool depthWrite = true;
-        BlendingType blending = BlendingType::Disabled;
+        BlendType blend = BlendType::Disabled;
 
         friend class Mesh;
-        friend class Renderer;
+        friend class SimpleRenderEngine;
     };
 }
