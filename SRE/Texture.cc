@@ -12,6 +12,26 @@
 #include <SDL_image.h>
 #include <iostream>
 #include <vector>
+#include <fstream>
+
+namespace {
+    static std::vector<char> readAllBytes(char const* filename)
+    {
+        using namespace std;
+        ifstream ifs(filename, std::ios::binary|std::ios::ate);
+        ifstream::pos_type pos = ifs.tellg();
+        if (pos<0){
+            std::cerr << "Cannot read " << filename << std::endl;
+            return std::vector<char>();
+        }
+        std::vector<char>  result(pos);
+
+        ifs.seekg(0, ios::beg);
+        ifs.read(&result[0], pos);
+
+        return result;
+    }
+}
 
 namespace SRE {
     Texture* Texture::whiteTexture = nullptr;
@@ -19,13 +39,15 @@ namespace SRE {
     Texture::Texture(const char *data, int width, int height, uint32_t format, bool generateMipmaps)
             : width{width}, height{height}, generateMipmap{generateMipmaps} {
         glGenTextures(1, &textureId);
+
         GLenum target = GL_TEXTURE_2D;
         GLint mipmapLevel = 0;
         GLint internalFormat = GL_RGBA;
         GLint border = 0;
         GLenum type = GL_UNSIGNED_BYTE;
-
+        glBindTexture(target, textureId);
         glTexImage2D(target, mipmapLevel, internalFormat, width, height, border, format, type, data);
+        updateTextureSampler();
         if (generateMipmaps) {
             glGenerateMipmap(GL_TEXTURE_2D);
         }
@@ -61,7 +83,7 @@ namespace SRE {
             return -1;
         }
         //if height is odd, don't need to swap middle row
-        int height_div_2 = (int) (height * .5f);
+        int height_div_2 = height / 2;
         for (int index = 0; index < height_div_2; index++) {
             //uses string.h
             memcpy((Uint8 *) temp_row.get(),
@@ -88,11 +110,21 @@ namespace SRE {
         return ((x != 0) && !(x & (x - 1)));
     }
 
-    Texture *Texture::createTextureFromJPEG(const char *data, int size, bool generateMipmaps) {
-        return Texture::createTextureFromPNG(data, size, generateMipmaps);
+    Texture* Texture::createJPEGTextureFile(const char *filename, bool generateMipmaps){
+        auto data = readAllBytes(filename);
+        return createJPEGTextureMem(data.data(), data.size(), generateMipmaps);
+    }
+    Texture* Texture::createPNGTextureFile(const char *filename, bool generateMipmaps){
+        auto data = readAllBytes(filename);
+        return createPNGTextureMem(data.data(), data.size(), generateMipmaps);
     }
 
-    Texture *Texture::createTextureFromPNG(const char *data, int size, bool generateMipmaps) {
+
+    Texture *Texture::createJPEGTextureMem(const char *data, int size, bool generateMipmaps) {
+        return Texture::createPNGTextureMem(data, size, generateMipmaps);
+    }
+
+    Texture *Texture::createPNGTextureMem(const char *data, int size, bool generateMipmaps) {
         static bool initialized = false;
         if (!initialized) {
             initialized = true;
@@ -114,7 +146,7 @@ namespace SRE {
         int w = res_texture->w;
         int h = res_texture->h;
         char *pixels = static_cast<char *>(res_texture->pixels);
-        invert_image(w, h, pixels);
+        invert_image(w*4, h, pixels);
         if (generateMipmaps && (!isPowerOfTwo((unsigned int) w) || !isPowerOfTwo((unsigned int) h))) {
             std::cerr << "Ignore mipmaps for textures not power of two" << std::endl;
             generateMipmaps = false;
@@ -124,7 +156,7 @@ namespace SRE {
         return res;
     }
 
-    Texture *Texture::createTextureFromRGBA(const char *data, int width, int height, bool generateMipmaps) {
+    Texture *Texture::createRGBATextureMem(const char *data, int width, int height, bool generateMipmaps) {
         return new Texture(data, width, height, GL_RGBA, generateMipmaps);
     }
 
@@ -183,7 +215,7 @@ namespace SRE {
         }
         char one = (char) 0xff;
         std::vector<char> data(2*2*4, one);
-        whiteTexture = createTextureFromRGBA(data.data(),2,2,true);
+        whiteTexture = createRGBATextureMem(data.data(), 2, 2, true);
         return whiteTexture;
     }
 }

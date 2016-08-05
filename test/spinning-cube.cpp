@@ -16,22 +16,6 @@
 
 using namespace SRE;
 
-namespace {
-static std::vector<char> ReadAllBytes(char const* filename)
-{
-    using namespace std;
-    ifstream ifs(filename, std::ios::binary|std::ios::ate);
-    ifstream::pos_type pos = ifs.tellg();
-
-    std::vector<char>  result(pos);
-
-    ifs.seekg(0, ios::beg);
-    ifs.read(&result[0], pos);
-
-    return result;
-}
-}
-
 int main() {
     std::cout << "Spinning cube" << std::endl;
     SDL_Window *window;                    // Declare a pointer
@@ -64,14 +48,13 @@ int main() {
 
     r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
-    Shader* shader = Shader::createUnlitColor();
+    Shader* shader = Shader::getUnlit();
     Mesh* mesh = Mesh::createCube();
-    shader->setVector("color", {0,1,0,1});
 
     float duration = 10000;
     for (float i=0;i<duration ;i+=16){
         r.clearScreen({1,0,0,1});
-        r.render(mesh, glm::eulerAngleY(glm::radians(360*i/duration)),shader);
+        r.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shader);
         r.swapWindow();
         SDL_Delay(16);
     }

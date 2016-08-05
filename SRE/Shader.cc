@@ -14,10 +14,10 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <string>
 #include <vector>
-
+#include "Texture.h"
 
 namespace SRE {
-    Shader *Shader::unlitColor = nullptr;
+    Shader *Shader::unlit = nullptr;
     Shader *Shader::debugUV = nullptr;
     Shader *Shader::debugNormals = nullptr;
     Shader *Shader::specularColor = nullptr;
@@ -76,7 +76,7 @@ namespace SRE {
                 std::vector<char> errorLog((size_t) logSize);
                 glGetProgramInfoLog(mShaderProgram, logSize, NULL, errorLog.data() );
 
-                std::cerr<<(errorLog.data())<<std::endl;
+                std::cerr << (errorLog.data()) << std::endl;
                 return false;
             }
             return true;
@@ -166,6 +166,19 @@ namespace SRE {
         return true;
     }
 
+    bool Shader::setTexture(const char *name, Texture *texture, unsigned int textureSlot) {
+        glUseProgram(shaderProgramId);
+        GLint location = glGetUniformLocation(shaderProgramId, name);
+        if (location == -1) {
+            return false;
+        }
+
+        glActiveTexture(GL_TEXTURE0 + textureSlot);
+        glBindTexture(GL_TEXTURE_2D, texture->textureId);
+        glUniform1i(location, textureSlot);
+        return true;
+    }
+
     bool Shader::setLights(Light value[4]){
         glUseProgram(shaderProgramId);
         GLint location = glGetUniformLocation(shaderProgramId, "lights");
@@ -221,14 +234,15 @@ namespace SRE {
         blend = blendType;
     }
 
-    Shader *Shader::createUnlitColor() {
-        if (unlitColor != nullptr){
-            return unlitColor;
+    Shader *Shader::getUnlit() {
+        if (unlit != nullptr){
+            return unlit;
         }
         const char* vertexShader = R"(#version 330
 in vec4 position;
 in vec3 normal;
 in vec2 uv;
+out vec2 vUV;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -236,23 +250,30 @@ uniform mat4 projection;
 
 void main(void) {
     gl_Position = projection * view * model * position;
+    vUV = uv;
 }
 )";
         const char* fragmentShader = R"(#version 330
 out vec4 fragColor;
+in vec2 vUV;
 
 uniform vec4 color;
+uniform sampler2D tex;
 
 void main(void)
 {
-    fragColor = color;
+    fragColor = color * texture(tex, vUV);
 }
 )";
-        unlitColor = createShader(vertexShader, fragmentShader);
-        return unlitColor;
+        unlit = createShader(vertexShader, fragmentShader);
+        bool assignedColor = unlit->setVector("color", glm::vec4(1));
+        bool assignedTex = unlit->setTexture("tex", Texture::getWhiteTexture());
+        assert(assignedColor);
+        assert(assignedTex);
+        return unlit;
     }
 
-    Shader *Shader::createDebugUV() {
+    Shader *Shader::getDebugUV() {
         if (debugUV != nullptr){
             return debugUV;
         }
@@ -284,7 +305,7 @@ void main(void)
         return debugUV;
     }
 
-    Shader *Shader::createDebugNormals() {
+    Shader *Shader::getDebugNormals() {
         if (debugNormals != nullptr){
             return debugNormals;
         }
@@ -316,7 +337,7 @@ void main(void)
         debugNormals = createShader(vertexShader, fragmentShader);
         return debugNormals;
     }
-    Shader *Shader::createSpecularColor() {
+    Shader *Shader::getSpecularColor() {
         if (specularColor != nullptr){
             return specularColor;
         }

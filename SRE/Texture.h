@@ -5,9 +5,11 @@
 namespace SRE{
 class Texture {
 public:
-    static Texture* createTextureFromJPEG(const char* data, int size, bool generateMipmaps = false);
-    static Texture* createTextureFromPNG(const char* data, int size, bool generateMipmaps = false);
-    static Texture* createTextureFromRGBA(const char* data, int width, int height, bool generateMipmaps = false);
+    static Texture* createJPEGTextureFile(const char *filename, bool generateMipmaps = false);
+    static Texture* createPNGTextureFile(const char *filename, bool generateMipmaps = false);
+    static Texture* createJPEGTextureMem(const char *data, int size, bool generateMipmaps = false);
+    static Texture* createPNGTextureMem(const char *data, int size, bool generateMipmaps = false);
+    static Texture* createRGBATextureMem(const char *data, int width, int height, bool generateMipmaps = false);
     static Texture* getWhiteTexture();
     int getWidth();
     int getHeight();
@@ -27,6 +29,6 @@ private:
     bool filterSampling = true; // true = linear/trilinear sampling, false = point sampling
     bool wrapTextureCoordinates = true;
     unsigned int textureId;
-
+    friend class Shader;
 };
 }

@@ -11,6 +11,8 @@ add_executable(SRE-Spinning-Cube ${SOURCE_FILES} test/spinning-cube.cpp)
 
 add_executable(SRE-Spinning-Sphere ${SOURCE_FILES} test/spinning-sphere.cpp)
 
+add_executable(SRE-Spinning-Cube-Tex ${SOURCE_FILES} test/spinning-cube-tex.cpp)
+
 find_package(SDL2 REQUIRED)
 #########################################################
 # FIND OPENGL
@@ -41,3 +43,4 @@ ENDIF( GLM_FOUND )
 
 target_link_libraries(SRE-Spinning-Cube ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 target_link_libraries(SRE-Spinning-Sphere ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
+target_link_libraries(SRE-Spinning-Cube-Tex ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})

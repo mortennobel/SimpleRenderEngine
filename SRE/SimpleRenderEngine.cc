@@ -34,6 +34,7 @@ namespace SRE {
 
     SimpleRenderEngine::~SimpleRenderEngine() {
         SDL_GL_DeleteContext(glcontext);
+        instance = nullptr;
     }
 
     void SimpleRenderEngine::setLight(int lightIndex, Light light) {
@@ -48,7 +49,7 @@ namespace SRE {
         return sceneLights[lightIndex];
     }
 
-    void SimpleRenderEngine::render(Mesh *mesh, glm::mat4 modelTransform, Shader *shader) {
+    void SimpleRenderEngine::draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader) {
         if (camera == nullptr){
             std::cerr<<"Cannot render. Camera is null"<<std::endl;
             return;

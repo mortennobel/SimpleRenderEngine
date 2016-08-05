@@ -26,7 +26,7 @@ namespace SRE {
 
         Light getLight(int lightIndex);
 
-        void render(Mesh *mesh, glm::mat4 modelTransform, Shader *shader);
+        void draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader);
 
         void setCamera(Camera *camera);
 

@@ -8,14 +8,17 @@
 #include "BlendType.h"
 
 namespace SRE {
+    class Texture;
+
+    /// Controls the apperance of the rendered objects.
     class Shader {
     public:
         static Shader *createShader(const char *vertexShader, const char *fragmentShader);
 
-        static Shader *createUnlitColor();
-        static Shader *createDebugUV();
-        static Shader *createDebugNormals();
-        static Shader *createSpecularColor();
+        static Shader *getUnlit();
+        static Shader *getDebugUV();
+        static Shader *getDebugNormals();
+        static Shader *getSpecularColor();
 
         // static Shader *createUnlitTexure();
 
@@ -38,6 +41,9 @@ namespace SRE {
 
         bool setInt(const char *name, int value);
 
+        /// textureSlot: If sampling multiple textures from a single shader, each texture must be bound to a unique texture slot
+        bool setTexture(const char *name, Texture* texture, unsigned int textureSlot = 0);
+
         void setDepthTest(bool enable);
 
         bool isDepthTest();
@@ -53,7 +59,7 @@ namespace SRE {
     private:
         bool setLights(Light value[4]);
 
-        static Shader *unlitColor;
+        static Shader *unlit;
 
         static Shader *debugUV;
 
