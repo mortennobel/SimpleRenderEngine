@@ -61,7 +61,7 @@ namespace SRE {
         shader->setMatrix("projection", camera->getProjectionTransform());
         auto normalMatrix = glm::transpose(glm::inverse((glm::mat3)(camera->getViewTransform()*modelTransform)));
         shader->setMatrix("normalMat", normalMatrix);
-        shader->setLights(sceneLights);
+        shader->setLights(sceneLights, ambientLight);
 
         mesh->bind();
 
@@ -96,5 +96,13 @@ namespace SRE {
 
     Camera *SimpleRenderEngine::getDefaultCamera() {
         return &defaultCamera;
+    }
+
+    const glm::vec4 &SimpleRenderEngine::getAmbientLight() const {
+        return ambientLight;
+    }
+
+    void SimpleRenderEngine::setAmbientLight(const glm::vec4 &ambientLight) {
+        SimpleRenderEngine::ambientLight = ambientLight;
     }
 }

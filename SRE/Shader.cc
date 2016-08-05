@@ -17,13 +17,13 @@
 #include "Texture.h"
 
 namespace SRE {
+    Shader *Shader::standard = nullptr;
     Shader *Shader::unlit = nullptr;
     Shader *Shader::debugUV = nullptr;
     Shader *Shader::debugNormals = nullptr;
-    Shader *Shader::specularColor = nullptr;
 
     namespace {
-        void logCurrentCompileException(GLuint shader, GLenum type, const char* source){
+        void logCurrentCompileException(GLuint shader, GLenum type) {
             GLint logSize = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
 
@@ -44,7 +44,9 @@ namespace SRE {
                 case GL_VERTEX_SHADER:
                     typeStr = "Vertex shader";
                     break;
-
+                default:
+                    typeStr = std::string("Unknown error type: ")+std::to_string(type);
+                    break;
             }
             std::cerr<<(std::string{errorLog.data()}+"\n"+ typeStr +" error\n")<<std::endl;
         }
@@ -57,7 +59,7 @@ namespace SRE {
             GLint success = 0;
             glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
             if (success == GL_FALSE){
-                logCurrentCompileException(shader, type, source);
+                logCurrentCompileException(shader, type);
             }
             return shader;
         }
@@ -179,16 +181,25 @@ namespace SRE {
         return true;
     }
 
-    bool Shader::setLights(Light value[4]){
+    bool Shader::setLights(Light value[4], glm::vec4 ambient){
         glUseProgram(shaderProgramId);
-        GLint location = glGetUniformLocation(shaderProgramId, "lights");
+
+        GLint location = glGetUniformLocation(shaderProgramId, "ambientLight");
+        if (location == -1) {
+            return false;
+        }
+        glUniform4fv(location, 1, glm::value_ptr(ambient));
+
+        location = glGetUniformLocation(shaderProgramId, "lights");
         if (location == -1) {
             return false;
         }
 
         std::cout << "Set light not implemented!" << std::endl;
-        return true;
 
+
+
+        return true;
     }
 
     void Shader::bind() {
@@ -266,10 +277,8 @@ void main(void)
 }
 )";
         unlit = createShader(vertexShader, fragmentShader);
-        bool assignedColor = unlit->setVector("color", glm::vec4(1));
-        bool assignedTex = unlit->setTexture("tex", Texture::getWhiteTexture());
-        assert(assignedColor);
-        assert(assignedTex);
+        unlit->setVector("color", glm::vec4(1));
+        unlit->setTexture("tex", Texture::getWhiteTexture());
         return unlit;
     }
 
@@ -337,15 +346,16 @@ void main(void)
         debugNormals = createShader(vertexShader, fragmentShader);
         return debugNormals;
     }
-    Shader *Shader::getSpecularColor() {
-        if (specularColor != nullptr){
-            return specularColor;
+    Shader *Shader::getStandard() {
+        if (standard != nullptr){
+            return standard;
         }
         const char* vertexShader = R"(#version 330
 in vec4 position;
 in vec3 normal;
 in vec2 uv;
 out vec3 vNormal;
+out vec2 vUV;
 uniform mat4 light[4];
 
 uniform mat4 model;
@@ -356,19 +366,42 @@ uniform mat3 normalMat;
 void main(void) {
     gl_Position = projection * view * model * position;
     vNormal = normalMat * normal;
+    vUV = uv;
 }
 )";
         const char* fragmentShader = R"(#version 330
 out vec4 fragColor;
 in vec3 vNormal;
+in vec2 vUV;
 
+uniform vec4 ambientLight;
+uniform vec4 color;
+uniform sampler2D tex;
+
+vec4 diffuseLight(){
+    return ambientLight;
+}
+
+float specularHighlight(){
+    return 0;
+}
 
 void main(void)
 {
-    fragColor = vec4(vNormal*0.5+0.5,1.0);
+    vec4 c = color * texture(tex, vUV);
+
+    vec4 d = diffuseLight();
+
+    float s = specularHighlight();
+
+    vec4 specularColor = vec4(1.0,1.0,1.0,0.0);
+
+    fragColor = c * d + specularColor * s;
 }
 )";
-        specularColor = createShader(vertexShader, fragmentShader);
-        return specularColor;
+        standard = createShader(vertexShader, fragmentShader);
+        standard->setVector("color", glm::vec4(1));
+        standard->setTexture("tex", Texture::getWhiteTexture());
+        return standard;
     }
 }

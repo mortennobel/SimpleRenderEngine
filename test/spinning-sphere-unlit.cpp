@@ -17,7 +17,7 @@
 using namespace SRE;
 
 int main() {
-    std::cout << "Spinning cube" << std::endl;
+    std::cout << "Spinning sphere"<<std::endl;
     SDL_Window *window;                    // Declare a pointer
 
     SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
@@ -25,7 +25,7 @@ int main() {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,SDL_GL_CONTEXT_PROFILE_CORE);
 
     // Create an application window with the following settings:
     window = SDL_CreateWindow(
@@ -48,8 +48,9 @@ int main() {
 
     r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
-    Shader* shader = Shader::getStandard();
-    Mesh* mesh = Mesh::createCube();
+    Shader* shader = Shader::getUnlit();
+    Mesh* mesh = Mesh::createSphere();
+    shader->setVector("color", {0,1,0,1});
 
     float duration = 10000;
     for (float i=0;i<duration ;i+=16){
@@ -59,6 +60,8 @@ int main() {
         SDL_Delay(16);
     }
 
+    // Close and destroy the window
+    SDL_DestroyWindow(window);
     // Close and destroy the window
     SDL_DestroyWindow(window);
 

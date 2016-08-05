@@ -18,13 +18,13 @@ namespace SRE {
         static Shader *getUnlit();
         static Shader *getDebugUV();
         static Shader *getDebugNormals();
-        static Shader *getSpecularColor();
+        static Shader *getStandard();
 
-        // static Shader *createUnlitTexure();
+        // static Shader *createUnlitTexture();
 
         // static Shader *createUnlitColorAlphaBlend();
 
-        // static Shader *createUnlitTexureAlphaBlend();
+        // static Shader *createUnlitTextureAlphaBlend();
 
         // static Shader *createSpecularColor();
 
@@ -57,20 +57,19 @@ namespace SRE {
         void setBlend(BlendType blendType);
 
     private:
-        bool setLights(Light value[4]);
+        bool setLights(Light value[4], glm::vec4 ambient);
 
+        static Shader *standard;
         static Shader *unlit;
 
         static Shader *debugUV;
-
         static Shader *debugNormals;
-        static Shader *specularColor;
 
-        // static Shader *createUnlitTexure();
+        // static Shader *createUnlitTexture();
 
         // static Shader *unlitColorAlphaBlend;
 
-        // static Shader *createUnlitTexureAlphaBlend();
+        // static Shader *createUnlitTextureAlphaBlend();
 
         // static Shader *createDiffuseColor();
 
