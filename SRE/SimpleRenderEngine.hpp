@@ -2,8 +2,8 @@
 
 #include <SDL_video.h>
 #include "glm/glm.hpp"
-#include "Light.h"
-#include "Camera.h"
+#include "Light.hpp"
+#include "Camera.hpp"
 
 namespace SRE {
 
@@ -24,8 +24,8 @@ namespace SRE {
         static constexpr int sre_version_minor = 1;
 
         void setLight(int lightIndex, Light light);
-        const glm::vec4 &getAmbientLight() const;
-        void setAmbientLight(const glm::vec4 &ambientLight);
+        glm::vec3 getAmbientLight() const;
+        void setAmbientLight(const glm::vec3 &ambientLight);
 
         Light getLight(int lightIndex);
 
@@ -44,7 +44,7 @@ namespace SRE {
 
         static SimpleRenderEngine* instance;
     private:
-        glm::vec4 ambientLight = glm::vec4(0.2,0.2,0.2,1.0);
+        glm::vec4 ambientLight = glm::vec4(0.2,0.2,0.2,0.2);
         Light sceneLights[maxSceneLights];
         Camera defaultCamera;
         Camera *camera;

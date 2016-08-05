@@ -2,7 +2,7 @@
 // Created by morten on 01/08/16.
 //
 
-#include "Camera.h"
+#include "Camera.hpp"
 
 #if defined(_WIN32)
 #   define GLEW_STATIC
@@ -11,7 +11,7 @@
 #   include <OpenGL/gl3.h>
 #endif
 
-#include "SimpleRenderEngine.h"
+#include "SimpleRenderEngine.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace SRE{

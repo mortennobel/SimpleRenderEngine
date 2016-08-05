@@ -2,7 +2,7 @@
 
 #include "glm/glm.hpp"
 #include <vector>
-#include "MeshTopology.h"
+#include "MeshTopology.hpp"
 
 namespace SRE {
 
@@ -12,10 +12,10 @@ namespace SRE {
 
     class Mesh {
     public:
-        Mesh();
+        Mesh(std::vector<glm::vec3> &vertexPositions, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs, MeshTopology meshTopology = MeshTopology::Triangles);
         ~Mesh();
 
-        void updateMesh(std::vector<glm::vec3> &vertexPositions, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs, MeshTopology meshTopology = MeshTopology::Triangles);
+        void update(std::vector<glm::vec3> &vertexPositions, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs);
 
         int getVertexCount();
         MeshTopology getMeshTopology();

@@ -2,11 +2,11 @@
 #include <vector>
 #include <fstream>
 
-#include "SRE/Texture.h"
-#include "SRE/SimpleRenderEngine.h"
-#include "SRE/Camera.h"
-#include "SRE/Mesh.h"
-#include "SRE/Shader.h"
+#include "SRE/Texture.hpp"
+#include "SRE/SimpleRenderEngine.hpp"
+#include "SRE/Camera.hpp"
+#include "SRE/Mesh.hpp"
+#include "SRE/Shader.hpp"
 #include "SDL.h"
 
 #include <glm/glm.hpp>
@@ -51,7 +51,7 @@ int main() {
     Shader* shader = Shader::getUnlit();
 //    shader->setTexture("tex", Texture::createPNGTextureFile("test/data/test.jpg",true));
 //    shader->setTexture("tex", Texture::createPNGTextureFile("test/data/twitter.png",true));
-    shader->setTexture("tex", Texture::createPNGTextureFile("test/data/cartman.png",true));
+    shader->setTexture("tex", Texture::createFromFile("test/data/cartman.png", true));
     Mesh* mesh = Mesh::createCube();
 
     float duration = 10000;

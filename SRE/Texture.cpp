@@ -1,4 +1,4 @@
-#include "Texture.h"
+#include "Texture.hpp"
 
 #if defined(_WIN32)
 #   define GLEW_STATIC
@@ -110,21 +110,12 @@ namespace SRE {
         return ((x != 0) && !(x & (x - 1)));
     }
 
-    Texture* Texture::createJPEGTextureFile(const char *filename, bool generateMipmaps){
-        auto data = readAllBytes(filename);
-        return createJPEGTextureMem(data.data(), data.size(), generateMipmaps);
-    }
-    Texture* Texture::createPNGTextureFile(const char *filename, bool generateMipmaps){
-        auto data = readAllBytes(filename);
-        return createPNGTextureMem(data.data(), data.size(), generateMipmaps);
+    Texture* Texture::createFromFile(const char *pngOrJpeg, bool generateMipmaps){
+        auto data = readAllBytes(pngOrJpeg);
+        return createFromMem(data.data(), data.size(), generateMipmaps);
     }
 
-
-    Texture *Texture::createJPEGTextureMem(const char *data, int size, bool generateMipmaps) {
-        return Texture::createPNGTextureMem(data, size, generateMipmaps);
-    }
-
-    Texture *Texture::createPNGTextureMem(const char *data, int size, bool generateMipmaps) {
+    Texture *Texture::createFromMem(const char *pngOrJpeg, int size, bool generateMipmaps) {
         static bool initialized = false;
         if (!initialized) {
             initialized = true;
@@ -137,7 +128,7 @@ namespace SRE {
             }
         }
 
-        SDL_RWops *source = SDL_RWFromConstMem(data, size);
+        SDL_RWops *source = SDL_RWFromConstMem(pngOrJpeg, size);
         SDL_Surface *res_texture = IMG_Load_RW(source, 1);
         if (res_texture == NULL) {
             std::cerr << "IMG_Load: " << SDL_GetError() << std::endl;
@@ -156,7 +147,7 @@ namespace SRE {
         return res;
     }
 
-    Texture *Texture::createRGBATextureMem(const char *data, int width, int height, bool generateMipmaps) {
+    Texture *Texture::createFromRGBAMem(const char *data, int width, int height, bool generateMipmaps) {
         return new Texture(data, width, height, GL_RGBA, generateMipmaps);
     }
 
@@ -190,12 +181,11 @@ namespace SRE {
 
     void Texture::updateTextureSampler() {
         glBindTexture(GL_TEXTURE_2D, textureId);
-
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapTextureCoordinates ? GL_REPEAT : GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapTextureCoordinates ? GL_REPEAT : GL_CLAMP_TO_EDGE);
         GLuint minification;
         GLuint magnification;
-        if (filterSampling) {
+        if (!filterSampling) {
             minification = GL_NEAREST;
             magnification = GL_NEAREST;
         } else if (generateMipmap) {
@@ -215,7 +205,7 @@ namespace SRE {
         }
         char one = (char) 0xff;
         std::vector<char> data(2*2*4, one);
-        whiteTexture = createRGBATextureMem(data.data(), 2, 2, true);
+        whiteTexture = createFromRGBAMem(data.data(), 2, 2, true);
         return whiteTexture;
     }
 }

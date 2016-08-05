@@ -2,11 +2,11 @@
 #include <vector>
 #include <fstream>
 
-#include "SRE/Texture.h"
-#include "SRE/SimpleRenderEngine.h"
-#include "SRE/Camera.h"
-#include "SRE/Mesh.h"
-#include "SRE/Shader.h"
+#include "SRE/Texture.hpp"
+#include "SRE/SimpleRenderEngine.hpp"
+#include "SRE/Camera.hpp"
+#include "SRE/Mesh.hpp"
+#include "SRE/Shader.hpp"
 #include "SDL.h"
 
 #include <glm/glm.hpp>
@@ -50,6 +50,11 @@ int main() {
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
     Shader* shader = Shader::getStandard();
     Mesh* mesh = Mesh::createCube();
+
+    r.setLight(0, Light(LightType::Point,{0, 1,0},{0,0,0},{1,0,0},2));
+    r.setLight(1, Light(LightType::Point,{1, 0,0},{0,0,0},{0,1,0},2));
+    r.setLight(2, Light(LightType::Point,{0,-1,0},{0,0,0},{0,0,1},2));
+    r.setLight(3, Light(LightType::Point,{-1,0,0},{0,0,0},{1,1,1},2));
 
     float duration = 10000;
     for (float i=0;i<duration ;i+=16){

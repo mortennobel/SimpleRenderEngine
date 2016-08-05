@@ -4,8 +4,8 @@
 
 #pragma once
 #include "glm/glm.hpp"
-#include "Light.h"
-#include "BlendType.h"
+#include "Light.hpp"
+#include "BlendType.hpp"
 
 namespace SRE {
     class Texture;
@@ -19,16 +19,6 @@ namespace SRE {
         static Shader *getDebugUV();
         static Shader *getDebugNormals();
         static Shader *getStandard();
-
-        // static Shader *createUnlitTexture();
-
-        // static Shader *createUnlitColorAlphaBlend();
-
-        // static Shader *createUnlitTextureAlphaBlend();
-
-        // static Shader *createSpecularColor();
-
-        // static Shader *createSpecularTexture();
 
         ~Shader();
 
@@ -57,27 +47,13 @@ namespace SRE {
         void setBlend(BlendType blendType);
 
     private:
-        bool setLights(Light value[4], glm::vec4 ambient);
+        bool setLights(Light value[4], glm::vec4 ambient, glm::mat4 viewTransform);
 
         static Shader *standard;
         static Shader *unlit;
 
         static Shader *debugUV;
         static Shader *debugNormals;
-
-        // static Shader *createUnlitTexture();
-
-        // static Shader *unlitColorAlphaBlend;
-
-        // static Shader *createUnlitTextureAlphaBlend();
-
-        // static Shader *createDiffuseColor();
-
-        // static Shader *createDiffuseTexture();
-
-        // static Shader *createSpecularColor();
-
-        // static Shader *createSpecularTexture();
 
         Shader();
 

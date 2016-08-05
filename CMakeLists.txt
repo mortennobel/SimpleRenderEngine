@@ -5,7 +5,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
-set(SOURCE_FILES SRE/Texture.cc SRE/Camera.cc SRE/Light.cc SRE/Mesh.cc SRE/SimpleRenderEngine.cc SRE/Shader.cc)
+set(SOURCE_FILES SRE/Texture.cpp SRE/Camera.cpp SRE/Light.cpp SRE/Mesh.cpp SRE/SimpleRenderEngine.cpp SRE/Shader.cpp)
 
 add_executable(SRE-Spinning-Cube ${SOURCE_FILES} test/spinning-cube.cpp)
 add_executable(SRE-Spinning-Sphere ${SOURCE_FILES} test/spinning-sphere.cpp)

@@ -3,6 +3,7 @@
 namespace SRE {
     enum class LightType {
         Point,
-        Directional
+        Directional,
+        Unused
     };
 }

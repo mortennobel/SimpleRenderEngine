@@ -2,11 +2,11 @@
 #include <vector>
 #include <fstream>
 
-#include "SRE/Texture.h"
-#include "SRE/SimpleRenderEngine.h"
-#include "SRE/Camera.h"
-#include "SRE/Mesh.h"
-#include "SRE/Shader.h"
+#include "SRE/Texture.hpp"
+#include "SRE/SimpleRenderEngine.hpp"
+#include "SRE/Camera.hpp"
+#include "SRE/Mesh.hpp"
+#include "SRE/Shader.hpp"
 #include "SDL.h"
 
 #include <glm/glm.hpp>
@@ -23,7 +23,7 @@ int main() {
     SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,SDL_GL_CONTEXT_PROFILE_CORE);
 
@@ -50,7 +50,19 @@ int main() {
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
     Shader* shader = Shader::getStandard();
     Mesh* mesh = Mesh::createSphere();
-    shader->setVector("color", {0,1,0,1});
+
+    bool point = true;
+    if (point){
+        r.setLight(0, Light(LightType::Point,{0, 2,1},{0,0,0},{1,0,0},10,5));
+        r.setLight(1, Light(LightType::Point,{2, 0,1},{0,0,0},{0,1,0},10,10));
+        r.setLight(2, Light(LightType::Point,{0,-2,1},{0,0,0},{0,0,1},10,20));
+        r.setLight(3, Light(LightType::Point,{-2,0,1},{0,0,0},{1,1,1},10,40));
+    } else {
+        r.setLight(0, Light(LightType::Directional,{0,0,0},{0,1,0},{1,0,0},10,10));
+        r.setLight(1, Light(LightType::Directional,{0,0,0},{1,0,0},{0,1,0},10,10));
+        r.setLight(2, Light(LightType::Directional,{0,0,0},{0,-1,0},{0,0,1},10,10));
+        r.setLight(3, Light(LightType::Directional,{0,0,0},{-1,0,0},{1,1,1},10,10));
+    }
 
     float duration = 10000;
     for (float i=0;i<duration ;i+=16){

@@ -2,10 +2,10 @@
 // Created by morten on 31/07/16.
 //
 
-#include "SimpleRenderEngine.h"
+#include "SimpleRenderEngine.hpp"
 #include <cassert>
-#include "Shader.h"
-#include "Mesh.h"
+#include "Shader.hpp"
+#include "Mesh.hpp"
 
 #if defined(_WIN32)
 #   define GLEW_STATIC
@@ -14,6 +14,7 @@
 #   include <OpenGL/gl3.h>
 #endif
 #include <iostream>
+#include <algorithm>
 
 namespace SRE {
     SimpleRenderEngine* SimpleRenderEngine::instance = nullptr;
@@ -61,7 +62,7 @@ namespace SRE {
         shader->setMatrix("projection", camera->getProjectionTransform());
         auto normalMatrix = glm::transpose(glm::inverse((glm::mat3)(camera->getViewTransform()*modelTransform)));
         shader->setMatrix("normalMat", normalMatrix);
-        shader->setLights(sceneLights, ambientLight);
+        shader->setLights(sceneLights, ambientLight, camera->getViewTransform());
 
         mesh->bind();
 
@@ -89,7 +90,6 @@ namespace SRE {
         SDL_GL_SwapWindow(window);
     }
 
-
     Camera *SimpleRenderEngine::getCamera() {
         return camera;
     }
@@ -98,11 +98,12 @@ namespace SRE {
         return &defaultCamera;
     }
 
-    const glm::vec4 &SimpleRenderEngine::getAmbientLight() const {
-        return ambientLight;
+    glm::vec3 SimpleRenderEngine::getAmbientLight() const {
+        return glm::vec3(ambientLight);
     }
 
-    void SimpleRenderEngine::setAmbientLight(const glm::vec4 &ambientLight) {
-        SimpleRenderEngine::ambientLight = ambientLight;
+    void SimpleRenderEngine::setAmbientLight(const glm::vec3 &ambientLight) {
+        float maxAmbient = std::max(ambientLight.x, std::max(ambientLight.y,ambientLight.z));
+        SimpleRenderEngine::ambientLight = glm::vec4(ambientLight, maxAmbient);
     }
 }

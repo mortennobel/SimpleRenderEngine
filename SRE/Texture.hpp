@@ -5,14 +5,14 @@
 namespace SRE{
 class Texture {
 public:
-    static Texture* createJPEGTextureFile(const char *filename, bool generateMipmaps = false);
-    static Texture* createPNGTextureFile(const char *filename, bool generateMipmaps = false);
-    static Texture* createJPEGTextureMem(const char *data, int size, bool generateMipmaps = false);
-    static Texture* createPNGTextureMem(const char *data, int size, bool generateMipmaps = false);
-    static Texture* createRGBATextureMem(const char *data, int width, int height, bool generateMipmaps = false);
+    static Texture* createFromFile(const char *pngOrJpeg, bool generateMipmaps = false);
+    static Texture* createFromMem(const char *pngOrJpeg, int size, bool generateMipmaps = false);
+    static Texture* createFromRGBAMem(const char *data, int width, int height, bool generateMipmaps = false);
     static Texture* getWhiteTexture();
+
     int getWidth();
     int getHeight();
+
     // returns true if texture sampling should be filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
     bool isFilterSampling();
     // if true texture sampling is filtered (bi-linear or tri-linear sampling) otherwise use point sampling.

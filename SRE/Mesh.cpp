@@ -2,7 +2,7 @@
 // Created by morten on 31/07/16.
 //
 
-#include "Mesh.h"
+#include "Mesh.hpp"
 
 #if defined(_WIN32)
 #   define GLEW_STATIC
@@ -11,19 +11,21 @@
 #   include <OpenGL/gl3.h>
 #endif
 #include <glm/gtc/constants.hpp>
-
-#include "Shader.h"
 #include <iostream>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 namespace SRE {
-    Mesh::Mesh()
-        :vertexCount{0}
+    Mesh::Mesh(std::vector<glm::vec3> &vertexPositions, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs, MeshTopology meshTopology)
+        :meshTopology{meshTopology}
     {
         glGenBuffers(1, &vertexBufferId);
         glGenVertexArrays(1, &vertexArrayObject);
+
+        update(vertexPositions, normals, uvs);
     }
+
+
     Mesh::~Mesh(){
         glDeleteVertexArrays(1, &vertexArrayObject);
         glDeleteBuffers(1,&vertexBufferId);
@@ -33,43 +35,8 @@ namespace SRE {
         glBindVertexArray(vertexArrayObject);
     }
 
-    void Mesh::updateMesh(std::vector<glm::vec3> &vertexPositions, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs, MeshTopology meshTopology){
-        this->meshTopology = meshTopology;
-        this->vertexCount = (int) vertexPositions.size();
-        if (normals.size() < vertexPositions.size()){
-            normals.resize(vertexPositions.size(), glm::vec3(0,0,0));
-        }
-        if (uvs.size() < vertexPositions.size()){
-            uvs.resize(vertexPositions.size(), glm::vec2(0,0));
-        }
-        // interleave data
-        int floatsPerVertex = 8;
-        std::vector<float> interleavedData(vertexPositions.size() * floatsPerVertex);
-        for (int i=0;i<vertexPositions.size();i++){
-            for (int j=0;j<3;j++){
-                interleavedData[i*8+j] = vertexPositions[i][j];
-                interleavedData[i*8+j+3] = normals[i][j];
-                if (j<2){
-                    interleavedData[i*8+j+6] = uvs[i][j];
-                }
-            }
-        }
-
-        glBindVertexArray(vertexArrayObject);
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float)*interleavedData.size(), interleavedData.data(), GL_STATIC_DRAW);
-
-        // bind vertex attributes (position, normal, uv)
-        int length[3] = {3,3,2};
-        int offset[3] = {0,3,6};
-        for (int i=0;i<3;i++){
-            glEnableVertexAttribArray(i);
-            glVertexAttribPointer(i, length[i],GL_FLOAT,GL_FALSE, 8 * sizeof(float), BUFFER_OFFSET(offset[i] * sizeof(float)));
-        }
-    }
-
     Mesh* Mesh::createQuad(){
-        Mesh *res = new Mesh();
+
         std::vector<glm::vec3> vertices({
                                        glm::vec3{1, -1, 0},
                                        glm::vec3{1, 1, 0},
@@ -94,8 +61,7 @@ namespace SRE {
                                        glm::vec2{1, 1},
                                        glm::vec2{0, 1}
                                });
-        res->updateMesh(vertices,normals,uvs, MeshTopology::Triangles);
-
+        Mesh *res = new Mesh(vertices,normals,uvs, MeshTopology::Triangles);
         return res;
     }
 
@@ -104,7 +70,6 @@ namespace SRE {
         using namespace glm;
         using namespace std;
         float length = 1.0f;
-        Mesh *res = new Mesh();
         //    v5----- v4
         //   /|      /|
         //  v1------v0|
@@ -184,16 +149,15 @@ namespace SRE {
 
 
                             });
-        res->updateMesh(positions,normals,uvs, MeshTopology::Triangles);
+        Mesh *res = new Mesh(positions,normals,uvs, MeshTopology::Triangles);
         return res;
     }
 
     Mesh* Mesh::createSphere(){
         using namespace glm;
         using namespace std;
-        Mesh *res = new Mesh();
-        int stacks = 16;
-        int slices = 32;
+        int stacks = 16/2;
+        int slices = 32/2;
         float radius = 1.0f;
         size_t vertexCount = (size_t) ((stacks + 1) * slices);
         vector<vec3> vertices{vertexCount};
@@ -229,12 +193,14 @@ namespace SRE {
                 glm::u8vec2 offset [] = {
                         // first triangle
                         glm::u8vec2{i,j},
-                        glm::u8vec2{(i+1)%slices,j},
                         glm::u8vec2{(i+1)%slices,j+1},
+                        glm::u8vec2{(i+1)%slices,j},
+
                         // second triangle
                         glm::u8vec2{i,j},
-                        glm::u8vec2{(i+1)%slices,j+1},
                         glm::u8vec2{i,j+1},
+                        glm::u8vec2{(i+1)%slices,j+1},
+
                 };
                 for (auto o : offset){
                     index = o[1] * slices  + o[0];
@@ -245,8 +211,7 @@ namespace SRE {
 
             }
         }
-        res->updateMesh(finalPosition,finalNormals,finalUVs, MeshTopology::Triangles);
-
+        Mesh *res = new Mesh(finalPosition,finalNormals,finalUVs, MeshTopology::Triangles);
         return res;
     }
 
@@ -256,5 +221,41 @@ namespace SRE {
 
     int Mesh::getVertexCount() {
         return vertexCount;
+    }
+
+    void Mesh::update(std::vector<glm::vec3> &vertexPositions, std::vector<glm::vec3> &normals,
+                      std::vector<glm::vec2> &uvs) {
+        this->vertexCount = (int) vertexPositions.size();
+        if (normals.size() < vertexPositions.size()){
+            normals.resize(vertexPositions.size(), glm::vec3(0,0,0));
+        }
+        if (uvs.size() < vertexPositions.size()){
+            uvs.resize(vertexPositions.size(), glm::vec2(0,0));
+        }
+        // interleave data
+        int floatsPerVertex = 8;
+        std::vector<float> interleavedData(vertexPositions.size() * floatsPerVertex);
+        for (int i=0;i<vertexPositions.size();i++){
+            for (int j=0;j<3;j++){
+                interleavedData[i*8+j] = vertexPositions[i][j];
+                interleavedData[i*8+j+3] = normals[i][j];
+                if (j<2){
+                    interleavedData[i*8+j+6] = uvs[i][j];
+                }
+            }
+        }
+
+        glBindVertexArray(vertexArrayObject);
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float)*interleavedData.size(), interleavedData.data(), GL_STATIC_DRAW);
+
+        // bind vertex attributes (position, normal, uv)
+        int length[3] = {3,3,2};
+        int offset[3] = {0,3,6};
+        for (int i=0;i<3;i++){
+            glEnableVertexAttribArray(i);
+            glVertexAttribPointer(i, length[i],GL_FLOAT,GL_FALSE, 8 * sizeof(float), BUFFER_OFFSET(offset[i] * sizeof(float)));
+        }
+
     }
 }
