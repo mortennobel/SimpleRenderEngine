@@ -24,10 +24,12 @@ namespace SRE {
         static constexpr int sre_version_minor = 1;
 
         void setLight(int lightIndex, Light light);
-        glm::vec3 getAmbientLight() const;
-        void setAmbientLight(const glm::vec3 &ambientLight);
 
         Light getLight(int lightIndex);
+
+        void setAmbientLight(const glm::vec3 &ambientLight);
+
+        glm::vec3 getAmbientLight() const;
 
         void draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader);
 
