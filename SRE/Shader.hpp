@@ -15,10 +15,12 @@ namespace SRE {
     public:
         static Shader *createShader(const char *vertexShader, const char *fragmentShader);
 
+        static Shader *getStandard();
         static Shader *getUnlit();
+        static Shader *getFont();
+
         static Shader *getDebugUV();
         static Shader *getDebugNormals();
-        static Shader *getStandard();
 
         ~Shader();
 
@@ -51,6 +53,7 @@ namespace SRE {
 
         static Shader *standard;
         static Shader *unlit;
+        static Shader *font;
 
         static Shader *debugUV;
         static Shader *debugNormals;

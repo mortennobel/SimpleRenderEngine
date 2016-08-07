@@ -13,6 +13,7 @@
 
 #include "SimpleRenderEngine.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+#include "SimpleRenderEngine.hpp"
 
 namespace SRE{
     Camera::Camera()
@@ -30,6 +31,19 @@ namespace SRE{
 
     void Camera::setOrthographicProjection(float left, float right, float bottom, float top, float nearPlane, float farPlane) {
         projectionTransform = glm::ortho<float>	(left, right, bottom, top, nearPlane, farPlane);
+    }
+
+    void Camera::setWindowCoordinates(int width, int height){
+        int w,h;
+        SDL_GetWindowSize(SimpleRenderEngine::instance->window,&w,&h);
+        if (width == -1){
+            width = w;
+        }
+        if (height == -1){
+            height = h;
+        }
+        setOrthographicProjection(0,width,0,height,1,-1);
+        viewTransform = glm::mat4(1);
     }
 
     void Camera::lookAt(glm::vec3 eye, glm::vec3 at, glm::vec3 up) {

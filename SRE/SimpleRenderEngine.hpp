@@ -52,6 +52,6 @@ namespace SRE {
         Camera *camera;
         SDL_Window *window;
         SDL_GLContext glcontext;
-
+        friend class Camera;
     };
 }

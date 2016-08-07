@@ -14,6 +14,8 @@
 #include <vector>
 #include <fstream>
 
+#include "Font.inl"
+
 namespace {
     static std::vector<char> readAllBytes(char const* filename)
     {
@@ -35,6 +37,7 @@ namespace {
 
 namespace SRE {
     Texture* Texture::whiteTexture = nullptr;
+    Texture* Texture::fontTexture = nullptr;
 
     Texture::Texture(const char *data, int width, int height, uint32_t format, bool generateMipmaps)
             : width{width}, height{height}, generateMipmap{generateMipmaps} {
@@ -208,4 +211,13 @@ namespace SRE {
         whiteTexture = createFromRGBAMem(data.data(), 2, 2, true);
         return whiteTexture;
     }
+
+Texture *Texture::getFontTexture() {
+    if (fontTexture != nullptr){
+        return fontTexture ;
+    }
+
+    fontTexture = createFromMem((const char *) font_png, sizeof(font_png), true);
+    return fontTexture;
+}
 }

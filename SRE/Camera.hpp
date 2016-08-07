@@ -29,6 +29,13 @@ namespace SRE {
         /// farPlane far clipping plane, defines how far an object can be to the camera before clipping
         void setOrthographicProjection(float left, float right, float  bottom, float top, float zNear, float zFar);
 
+        /// set orthographic transform and view, where the origon is located in the lower left corner
+        /// z depth is between -1 and 1
+        /// width the width of the window, if -1 uses current window size
+        /// height the width of the window, if -1 uses current window size
+        void setWindowCoordinates(int width = -1, int height = -1);
+
+
         // set the view transform directly
         void setViewTransform(const glm::mat4 &viewTransform);
 
