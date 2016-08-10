@@ -42,6 +42,7 @@
 # (To distribute this file outside of CMake, substitute the full
 #  License text for the above reference.)
 
+message("<FindSDL2_image.cmake>")
 find_path(SDL2_IMAGE_INCLUDE_DIR SDL_image.h
         HINTS
         ENV SDL2IMAGEDIR
@@ -98,3 +99,4 @@ FIND_PACKAGE_HANDLE_STANDARD_ARGS(SDL2_image
 #set(SDLIMAGE_FOUND ${SDL_IMAGE_FOUND})
 
 mark_as_advanced(SDL2_IMAGE_LIBRARY SDL2_IMAGE_INCLUDE_DIR)
+message("</FindSDL2_image.cmake>")

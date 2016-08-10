@@ -13,6 +13,7 @@
 #include <iostream>
 #include <vector>
 #include <fstream>
+#include <memory>
 
 #include "Font.inl"
 
@@ -26,7 +27,7 @@ namespace {
             std::cerr << "Cannot read " << filename << std::endl;
             return std::vector<char>();
         }
-        std::vector<char>  result(pos);
+        std::vector<char>  result((size_t)pos);
 
         ifs.seekg(0, ios::beg);
         ifs.read(&result[0], pos);

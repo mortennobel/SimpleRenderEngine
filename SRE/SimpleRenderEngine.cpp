@@ -28,6 +28,14 @@ namespace SRE {
         std::cout << glGetString(GL_VERSION)<<std::endl;
         std::cout << "OpenGL version "<<glGetString(GL_VERSION)<<std::endl;
         std::cout << "SRE version "<<sre_version_major<<"."<<sre_version_minor<<std::endl;
+#if defined(_WIN32)
+		GLenum err = glewInit();
+		if (GLEW_OK != err)
+		{
+			/* Problem: glewInit failed, something is seriously wrong. */
+			fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+		}
+#endif
 
         // setup opengl context
         glEnable(GL_CULL_FACE);

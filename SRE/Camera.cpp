@@ -42,7 +42,7 @@ namespace SRE{
         if (height == -1){
             height = h;
         }
-        setOrthographicProjection(0,width,0,height,1,-1);
+        setOrthographicProjection(0.0f,(float)width,0.0f,(float)height,1.0f,-1.0f);
         viewTransform = glm::mat4(1);
     }
 
