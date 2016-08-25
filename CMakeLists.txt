@@ -53,9 +53,9 @@ target_link_libraries(SRE-Spinning-Sphere-Unlit ${EXTRA_LIBS} ${SDL2_LIBRARY} ${
 target_link_libraries(SRE-Spinning-Cube-Tex ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 target_link_libraries(SRE ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 
-IF (WIN32)
 file(COPY test-data DESTINATION Debug)
 file(COPY test-data DESTINATION Release)
+IF (WIN32)
 SET(SDL2_dll "" CACHE STRING "Where the SDL2.dll can be found")
 SET(SDL2_image_dll "" CACHE STRING "Where the SDL2_image.dll can be found")
 SET(libjpeg-9_dll "" CACHE STRING "Where the libjpeg-9.dll can be found")
