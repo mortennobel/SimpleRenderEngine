@@ -189,7 +189,7 @@ namespace SRE {
         vector<vec2> finalUVs;
         // create indices
         for (int j = 0; j < stacks; j++) {
-            for (int i = 0; i <= slices; i++) {
+            for (int i = 0; i < slices; i++) {
                 glm::u8vec2 offset [] = {
                         // first triangle
                         glm::u8vec2{i,j},
