@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>SRE API Reference</title>
+    <title>API Documentation</title>
 
     <style>
       .highlight table td { padding: 5px; }
@@ -88,10 +88,10 @@
     </style>
     <link href="stylesheets/screen.css" rel="stylesheet" media="screen" />
     <link href="stylesheets/print.css" rel="stylesheet" media="print" />
-      <script src="javascripts/all.js"></script>
+      <script src="javascripts/all_nosearch.js"></script>
   </head>
 
-  <body class="index" data-languages="[&quot;c++&quot;]">
+  <body class="index" data-languages="[]">
     <a href="#" id="nav-button">
       <span>
         NAV
@@ -101,17 +101,9 @@
     <div class="tocify-wrapper">
       <img src="images/logo.png" />
         <div class="lang-selector">
-              <a href="#" data-language-name="c++">Code examples</a>
         </div>
-        <div class="search">
-          <input type="text" class="search" id="input-search" placeholder="Search">
-        </div>
-        <ul class="search-results"></ul>
       <div id="toc">
       </div>
-        <ul class="toc-footer">
-            <li><a href='https://github.com/tripit/slate'>Documentation Powered by Slate</a></li>
-        </ul>
     </div>
     <div class="page-wrapper">
       <div class="dark-box"></div>
@@ -161,7 +153,7 @@ has a simple C-interface.</p>
 
 <h3 id="glew-the-opengl-extension-wrangler-library">GLEW (The OpenGL Extension Wrangler Library)</h3>
 
-<p><strong>(Windows only)</strong> Enable full OpenGL support for Windows.</p>
+<p><strong>(Windows only)</strong> Enable full OpenGL support for Windows. </p>
 
 <p>Download the <strong>Windows 32-bit and 64-bit</strong> zip-file from http://glew.sourceforge.net/ and extract it to any folder (e.g. Documents).    </p>
 
@@ -171,15 +163,25 @@ has a simple C-interface.</p>
 
 <p>Configure the project using CMake ( / cmake-gui) to VisualStudio/XCode using the following settings:</p>
 
-<p><img title="CMake Mac" alt="alt text" src="images/cmake-mac.png" /></p>
+<p>Tips and comments:
+ * Windows: It is recommended that you build the project as <strong>32-bit</strong>.
+ * It is important that you choose the correct 
+ * You need to click the configure whenever you have changed a setting. This ensures that all
+ * Documentation for the CMake properties can be found in the cmake/FindXXX.cmake files
+ * It is recommended to GLEW static library (<strong>glew32s.lib</strong>) for windows.
+ * If you have old Visual Studio installation, you might need to change the settings of the Microsoft.Cpp.Win32.user (in the Property Manager)</p>
+
+<p><strong>Windows</strong></p>
 
 <p><img title="CMake Mac" alt="alt text" src="images/cmake-windows.png" /></p>
 
+<p><strong>Mac</strong></p>
+
+<p><img title="CMake Mac" alt="alt text" src="images/cmake-mac.png" /></p>
 
       </div>
       <div class="dark-box">
           <div class="lang-selector">
-                <a href="#" data-language-name="c++">Code examples</a>
           </div>
       </div>
     </div>
