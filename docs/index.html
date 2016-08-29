@@ -1,0 +1,187 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <title>SRE API Reference</title>
+
+    <style>
+      .highlight table td { padding: 5px; }
+.highlight table pre { margin: 0; }
+.highlight, .highlight .w {
+  color: #f8f8f2;
+  background-color: #272822;
+}
+.highlight .err {
+  color: #151515;
+  background-color: #ac4142;
+}
+.highlight .c, .highlight .cd, .highlight .cm, .highlight .c1, .highlight .cs {
+  color: #505050;
+}
+.highlight .cp {
+  color: #f4bf75;
+}
+.highlight .nt {
+  color: #f4bf75;
+}
+.highlight .o, .highlight .ow {
+  color: #d0d0d0;
+}
+.highlight .p, .highlight .pi {
+  color: #d0d0d0;
+}
+.highlight .gi {
+  color: #90a959;
+}
+.highlight .gd {
+  color: #ac4142;
+}
+.highlight .gh {
+  color: #6a9fb5;
+  background-color: #151515;
+  font-weight: bold;
+}
+.highlight .k, .highlight .kn, .highlight .kp, .highlight .kr, .highlight .kv {
+  color: #aa759f;
+}
+.highlight .kc {
+  color: #d28445;
+}
+.highlight .kt {
+  color: #d28445;
+}
+.highlight .kd {
+  color: #d28445;
+}
+.highlight .s, .highlight .sb, .highlight .sc, .highlight .sd, .highlight .s2, .highlight .sh, .highlight .sx, .highlight .s1 {
+  color: #90a959;
+}
+.highlight .sr {
+  color: #75b5aa;
+}
+.highlight .si {
+  color: #8f5536;
+}
+.highlight .se {
+  color: #8f5536;
+}
+.highlight .nn {
+  color: #f4bf75;
+}
+.highlight .nc {
+  color: #f4bf75;
+}
+.highlight .no {
+  color: #f4bf75;
+}
+.highlight .na {
+  color: #6a9fb5;
+}
+.highlight .m, .highlight .mf, .highlight .mh, .highlight .mi, .highlight .il, .highlight .mo, .highlight .mb, .highlight .mx {
+  color: #90a959;
+}
+.highlight .ss {
+  color: #90a959;
+}
+    </style>
+    <link href="stylesheets/screen.css" rel="stylesheet" media="screen" />
+    <link href="stylesheets/print.css" rel="stylesheet" media="print" />
+      <script src="javascripts/all.js"></script>
+  </head>
+
+  <body class="index" data-languages="[&quot;c++&quot;]">
+    <a href="#" id="nav-button">
+      <span>
+        NAV
+        <img src="images/navbar.png" />
+      </span>
+    </a>
+    <div class="tocify-wrapper">
+      <img src="images/logo.png" />
+        <div class="lang-selector">
+              <a href="#" data-language-name="c++">Code examples</a>
+        </div>
+        <div class="search">
+          <input type="text" class="search" id="input-search" placeholder="Search">
+        </div>
+        <ul class="search-results"></ul>
+      <div id="toc">
+      </div>
+        <ul class="toc-footer">
+            <li><a href='https://github.com/tripit/slate'>Documentation Powered by Slate</a></li>
+        </ul>
+    </div>
+    <div class="page-wrapper">
+      <div class="dark-box"></div>
+      <div class="content">
+        <h1 id="introduction">Introduction</h1>
+
+<p>The goal of SimpleRenderEngine (SRE) is to provide easy way to get started with graphics 
+programming in 2D or 3D without a deep knowledge about the low-level graphics APIs like 
+OpenGL, DirectX and Vulkan.</p>
+
+<p>SRE currently depends on Simple Direct Layer 2.x (SDL2), SDL2-image, OpenGL Mathematics (GLM), and OpenGL 3.3 (or higher), and 
+runs on both Windows, macOS and Linux.</p>
+
+<h1 id="install">Install</h1>
+
+<h2 id="prerequisites">Prerequisites:</h2>
+
+<ul>
+<li>Install C++ tool chain / IDE (such as Visual Studio 2015 or XCode)</li>
+<li>Install CMake ( https://cmake.org/download/ ). <strong>macOS:</strong> first lauch should be performed by right-clicking the .app and selecting open.</li>
+</ul>
+
+<h3 id="sdl-2-x-and-sdl-2-0-image">SDL 2.x and SDL 2.0 Image</h3>
+
+<p>Simple DirectMedia Layer is a platform abstraction layer for game development. The 
+abstraction makes both single platform and cross platform development easier. The project
+has a simple C-interface.</p>
+
+<p>Download <strong>development libraries</strong> from </p>
+
+<ul>
+<li>https://www.libsdl.org/download-2.0.php</li>
+<li>https://www.libsdl.org/projects/SDL_image/</li>
+</ul>
+
+<p><strong>Windows:</strong> Extract the zip-files to any folder (e.g. Documents)</p>
+
+<p><strong>macOS:</strong> Open dmg files and copy .frameworks to /Library/Framework</p>
+
+<p>SDL documentation can be found here: http://wiki.libsdl.org/FrontPage</p>
+
+<h3 id="glm-opengl-mathematics">GLM (OpenGL Mathematics)</h3>
+
+<p>GLM is a header-only C++ library for linear algebra such as vectors, matrices and quaternions.   </p>
+
+<p>Download project from http://glm.g-truc.net and extract to any folder. (e.g. Documents)</p>
+
+<h3 id="glew-the-opengl-extension-wrangler-library">GLEW (The OpenGL Extension Wrangler Library)</h3>
+
+<p><strong>(Windows only)</strong> Enable full OpenGL support for Windows.</p>
+
+<p>Download the <strong>Windows 32-bit and 64-bit</strong> zip-file from http://glew.sourceforge.net/ and extract it to any folder (e.g. Documents).    </p>
+
+<h2 id="download-and-setup-simplerenderengine">Download and setup SimpleRenderEngine</h2>
+
+<p>Clone the repository from https://github.com/mortennobel/SimpleRenderEngine .</p>
+
+<p>Configure the project using CMake ( / cmake-gui) to VisualStudio/XCode using the following settings:</p>
+
+<p><img title="CMake Mac" alt="alt text" src="images/cmake-mac.png" /></p>
+
+<p><img title="CMake Mac" alt="alt text" src="images/cmake-windows.png" /></p>
+
+
+      </div>
+      <div class="dark-box">
+          <div class="lang-selector">
+                <a href="#" data-language-name="c++">Code examples</a>
+          </div>
+      </div>
+    </div>
+  </body>
+</html>
