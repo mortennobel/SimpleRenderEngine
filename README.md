@@ -32,7 +32,7 @@ Example usage can be found in the test folder
 ## Documentation
 
 Online documentation:
-https://mortennobel.github.io/SimpleRenderEngineDocs/
+https://mortennobel.github.io/SimpleRenderEngine/
  
  ## Other resources
  
