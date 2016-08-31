@@ -7,6 +7,7 @@
 #include "Mesh.hpp"
 #include "glm/glm.hpp"
 #include <vector>
+#include <cstring>
 
 namespace SRE {
 Mesh *Text::createTextMesh(const char *text) {
