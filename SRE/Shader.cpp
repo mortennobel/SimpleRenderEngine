@@ -274,7 +274,7 @@ namespace SRE {
         if (unlit != nullptr){
             return unlit;
         }
-        const char* vertexShader = R"(#version 330
+        const char* vertexShader = R"(#version 140
 in vec4 position;
 in vec3 normal;
 in vec2 uv;
@@ -289,7 +289,7 @@ void main(void) {
     vUV = uv;
 }
 )";
-        const char* fragmentShader = R"(#version 330
+        const char* fragmentShader = R"(#version 140
 out vec4 fragColor;
 in vec2 vUV;
 
@@ -311,7 +311,7 @@ Shader *Shader::getFont() {
     if (font != nullptr){
         return font;
     }
-    const char* vertexShader = R"(#version 330
+    const char* vertexShader = R"(#version 140
 in vec4 position;
 in vec3 normal;
 in vec2 uv;
@@ -326,7 +326,7 @@ void main(void) {
     vUV = uv;
 }
 )";
-    const char* fragmentShader = R"(#version 330
+    const char* fragmentShader = R"(#version 140
 out vec4 fragColor;
 in vec2 vUV;
 
@@ -349,7 +349,7 @@ void main(void)
         if (debugUV != nullptr){
             return debugUV;
         }
-        const char* vertexShader = R"(#version 330
+        const char* vertexShader = R"(#version 140
 in vec4 position;
 in vec3 normal;
 in vec2 uv;
@@ -364,7 +364,7 @@ void main(void) {
     vUV = uv;
 }
 )";
-        const char* fragmentShader = R"(#version 330
+        const char* fragmentShader = R"(#version 140
 in vec2 vUV;
 out vec4 fragColor;
 
@@ -381,7 +381,7 @@ void main(void)
         if (debugNormals != nullptr){
             return debugNormals;
         }
-        const char* vertexShader = R"(#version 330
+        const char* vertexShader = R"(#version 140
 in vec4 position;
 in vec3 normal;
 in vec2 uv;
@@ -397,7 +397,7 @@ void main(void) {
     vNormal = normalMat * normal;
 }
 )";
-        const char* fragmentShader = R"(#version 330
+        const char* fragmentShader = R"(#version 140
 out vec4 fragColor;
 in vec3 vNormal;
 
@@ -413,7 +413,7 @@ void main(void)
         if (standard != nullptr){
             return standard;
         }
-        const char* vertexShader = R"(#version 330
+        const char* vertexShader = R"(#version 140
 in vec4 position;
 in vec3 normal;
 in vec2 uv;
@@ -434,7 +434,7 @@ void main(void) {
     vEyePos = eyePos.xyz;
 }
 )";
-        const char* fragmentShader = R"(#version 330
+        const char* fragmentShader = R"(#version 140
 out vec4 fragColor;
 in vec3 vNormal;
 in vec2 vUV;

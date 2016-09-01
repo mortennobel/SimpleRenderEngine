@@ -8,7 +8,7 @@ SRE currently depends on Simple Direct Layer 2.x (SDL2), SDL2-image, OpenGL Math
 runs on both Windows, macOS and Linux.
  
 SRE provides:
- * Virtual camera (perspective )
+ * Virtual camera (perspective and orthographic)
  * Texture support (JPEG, PNG, Raw)
  * Mesh support (with normals and texture coordinates)
  * Shaders (unlit, specular, alpha blending, and custom shaders)
