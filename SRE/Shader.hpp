@@ -7,11 +7,13 @@
 #include "Light.hpp"
 #include "BlendType.hpp"
 
+#include "Export.hpp"
+
 namespace SRE {
     class Texture;
 
     /// Controls the apperance of the rendered objects.
-    class Shader {
+    class DllExport Shader {
     public:
         static Shader *createShader(const char *vertexShader, const char *fragmentShader);
 

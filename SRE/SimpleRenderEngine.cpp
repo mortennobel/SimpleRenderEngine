@@ -27,10 +27,9 @@ namespace SRE {
         instance = this;
         camera = &defaultCamera;
         glcontext = SDL_GL_CreateContext(window);
-        std::cout << glGetString(GL_VERSION)<<std::endl;
-        std::cout << "OpenGL version "<<glGetString(GL_VERSION)<<std::endl;
-        std::cout << "SRE version "<<sre_version_major<<"."<<sre_version_minor<<std::endl;
+
 #if defined(_WIN32)
+		glewExperimental = GL_TRUE;
 		GLenum err = glewInit();
 		if (GLEW_OK != err)
 		{
@@ -38,8 +37,13 @@ namespace SRE {
 			fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
 		}
 #elif defined __LINUX__
-        glewInit();
+		glewInit();
 #endif
+
+        std::cout << glGetString(GL_VERSION)<<std::endl;
+        std::cout << "OpenGL version "<<glGetString(GL_VERSION)<<std::endl;
+        std::cout << "SRE version "<<sre_version_major<<"."<<sre_version_minor<<std::endl;
+
 
         // setup opengl context
         glEnable(GL_CULL_FACE);

@@ -6,43 +6,36 @@
 #include "Mesh.hpp"
 #include "Shader.hpp"
 #include "SimpleRenderEngine.hpp"
+#include <vector>
+
+using namespace std;
 
 namespace SRE {
 
-    static glm::vec4 Debug::color = glm::vec4(1,0,1,1);
+    glm::vec4 Debug::color = glm::vec4(1,0,1,1);
 
-    static glm::vec4 Debug::getColor(){
+    glm::vec4 Debug::getColor(){
         return color;
     }
 
-    static void setColor(glm::vec4 color){
+    void Debug::setColor(glm::vec4 color){
         Debug::color = color;
     }
 
-    static void drawLine(glm::vec3 from, glm::vec3 to){
-        Mesh mesh;
-        mesh.updateMesh({from, to}, {{0},{0}},{{0},{0}}, MeshTopology::Lines);
+    void Debug::drawLine(glm::vec3 from, glm::vec3 to){
+		vector<glm::vec3> verts;
+		verts.push_back(from);
+		verts.push_back(to);
+		vector<glm::vec3> normals;
+		vector<glm::vec2> uvs;
 
-        Shader* shader = Shader::createUnlitColor();
+		Mesh mesh(verts, normals, uvs,MeshTopology::Lines);
+
+        Shader* shader = Shader::getUnlit();
         shader->setVector("color", color);
         if (SimpleRenderEngine::instance != nullptr){
-            SimpleRenderEngine::instance->draw(mesh, glm::mat4(1),shader);
+            SimpleRenderEngine::instance->draw(&mesh, glm::mat4(1),shader);
         }
     }
 
-    static void drawBox(glm::vec3 position, glm::vec3 size){
-
-    }
-
-    static void drawWireBox(glm::vec3 position, glm::vec3 size){
-
-    }
-
-    static void drawSphere(glm::vec3 position, float size){
-
-    }
-
-    static void drawWireSphere(glm::vec3 position, float size){
-
-    }
 }

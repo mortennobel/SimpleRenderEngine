@@ -3,8 +3,10 @@
 #include "glm/glm.hpp"
 #include "LightType.hpp"
 
+#include "Export.hpp"
+
 namespace SRE {
-    struct Light {
+    struct DllExport Light {
         LightType lightType;
         // position in worldspace
         glm::vec3 position;

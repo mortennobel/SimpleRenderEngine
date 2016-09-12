@@ -5,7 +5,10 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
-set(SOURCE_FILES SRE/Texture.cpp SRE/Camera.cpp SRE/Light.cpp SRE/Mesh.cpp SRE/SimpleRenderEngine.cpp SRE/Shader.cpp SRE/Text.cpp SRE/Text.hpp)
+file(GLOB SOURCE_FILES
+	"SRE/*.cpp"
+	"SRE/*.hpp"
+)
 
 add_executable(SRE-Spinning-Cube ${SOURCE_FILES} test/spinning-cube.cpp)
 add_executable(SRE-Spinning-Sphere ${SOURCE_FILES} test/spinning-sphere.cpp)
@@ -13,7 +16,7 @@ add_executable(SRE-Spinning-Cube-Unlit ${SOURCE_FILES} test/spinning-cube-unlit.
 add_executable(SRE-Spinning-Sphere-Unlit ${SOURCE_FILES} test/spinning-sphere-unlit.cpp)
 add_executable(SRE-Spinning-Cube-Tex ${SOURCE_FILES} test/spinning-cube-tex.cpp)
 
-add_library(SRE SHARED ${SOURCE_FILES})
+add_library(SRE STATIC ${SOURCE_FILES})
 
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})

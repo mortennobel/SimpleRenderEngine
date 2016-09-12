@@ -1,5 +1,8 @@
 #pragma once
 
+
+#include "Export.hpp"
+
 namespace SRE {
     enum class MeshTopology {
         Points = 0x0000,

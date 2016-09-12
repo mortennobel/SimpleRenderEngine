@@ -2,8 +2,10 @@
 
 #include <cstdint>
 
+#include "Export.hpp"
+
 namespace SRE{
-class Texture {
+class DllExport Texture {
 public:
     static Texture* createFromFile(const char *pngOrJpeg, bool generateMipmaps = false);
     static Texture* createFromMem(const char *pngOrJpeg, int size, bool generateMipmaps = false);

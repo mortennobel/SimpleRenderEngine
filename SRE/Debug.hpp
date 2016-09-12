@@ -6,10 +6,12 @@
 
 #include "glm/glm.hpp"
 
+#include "Export.hpp"
+
 namespace SRE {
     // The purpose of this class is to draw debug information into the scene.
     // The Debug class is using the current camera
-    class Debug {
+    class DllExport Debug {
     public:
         static glm::vec4 getColor();
         static void setColor(glm::vec4 color);

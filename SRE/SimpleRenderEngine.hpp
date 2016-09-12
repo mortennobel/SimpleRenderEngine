@@ -5,6 +5,10 @@
 #include "Light.hpp"
 #include "Camera.hpp"
 
+#include "Export.hpp"
+
+
+
 namespace SRE {
 
 // forward declaration
@@ -15,7 +19,7 @@ namespace SRE {
     ///
     /// Maintains shares states for rendering
     ///
-    class SimpleRenderEngine {
+    class DllExport SimpleRenderEngine {
     public:
         SimpleRenderEngine(SDL_Window *window);
         ~SimpleRenderEngine();

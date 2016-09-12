@@ -2,8 +2,10 @@
 
 #include "glm/glm.hpp"
 
+#include "Export.hpp"
+
 namespace SRE {
-    class Camera {
+    class DllExport Camera {
     public:
         /// Set camera at (0,0,0) looking down the negative z-axis using orthographic viewing volume between -1 to 1
         Camera();

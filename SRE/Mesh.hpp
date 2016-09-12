@@ -4,13 +4,15 @@
 #include <vector>
 #include "MeshTopology.hpp"
 
+#include "Export.hpp"
+
 namespace SRE {
 
     class Shader;
 
 
 
-    class Mesh {
+    class DllExport Mesh {
     public:
         Mesh(std::vector<glm::vec3> &vertexPositions, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs, MeshTopology meshTopology = MeshTopology::Triangles);
         ~Mesh();
