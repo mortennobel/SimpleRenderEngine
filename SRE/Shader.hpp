@@ -19,6 +19,8 @@ namespace SRE {
 
         static Shader *getStandard();
         static Shader *getUnlit();
+        // UnlitSprite = no depth test and alpha blending
+        static Shader *getUnlitSprite();
         static Shader *getFont();
 
         static Shader *getDebugUV();
@@ -55,6 +57,7 @@ namespace SRE {
 
         static Shader *standard;
         static Shader *unlit;
+        static Shader *unlitSprite;
         static Shader *font;
 
         static Shader *debugUV;
