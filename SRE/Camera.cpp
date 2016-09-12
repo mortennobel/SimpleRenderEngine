@@ -19,7 +19,7 @@
 
 namespace SRE{
     Camera::Camera()
-    :projectionTransform {1.0f}, viewTransform{1.0f}
+    : viewTransform{1.0f},projectionTransform {1.0f}
     {
     }
 
