@@ -2,7 +2,7 @@
 // Created by morten on 31/07/16.
 //
 
-#include "Light.hpp"
+#include "SRE/Light.hpp"
 
 namespace SRE{
     Light::Light(){

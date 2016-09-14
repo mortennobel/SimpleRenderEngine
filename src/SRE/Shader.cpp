@@ -2,7 +2,7 @@
 // Created by morten on 31/07/16.
 //
 
-#include "Shader.hpp"
+#include "SRE/Shader.hpp"
 
 #if defined(_WIN32)
 #   define GLEW_STATIC
@@ -18,7 +18,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <string>
 #include <vector>
-#include "Texture.hpp"
+#include "SRE/Texture.hpp"
 
 namespace SRE {
     Shader *Shader::standard = nullptr;

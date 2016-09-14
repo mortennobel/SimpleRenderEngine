@@ -4,10 +4,10 @@
 
 #pragma once
 #include "glm/glm.hpp"
-#include "Light.hpp"
-#include "BlendType.hpp"
+#include "SRE/Light.hpp"
+#include "SRE/BlendType.hpp"
 
-#include "Export.hpp"
+#include "SRE/Export.hpp"
 
 namespace SRE {
     class Texture;

@@ -2,10 +2,10 @@
 // Created by morten on 31/07/16.
 //
 
-#include "SimpleRenderEngine.hpp"
+#include "SRE/SimpleRenderEngine.hpp"
 #include <cassert>
-#include "Shader.hpp"
-#include "Mesh.hpp"
+#include "SRE/Shader.hpp"
+#include "SRE/Mesh.hpp"
 
 #if defined(_WIN32)
 #   define GLEW_STATIC

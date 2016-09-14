@@ -2,7 +2,7 @@
 // Created by morten on 31/07/16.
 //
 
-#include "Mesh.hpp"
+#include "SRE/Mesh.hpp"
 
 #if defined(_WIN32)
 #   define GLEW_STATIC

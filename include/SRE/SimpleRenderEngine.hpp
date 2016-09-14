@@ -2,10 +2,10 @@
 
 #include <SDL_video.h>
 #include "glm/glm.hpp"
-#include "Light.hpp"
-#include "Camera.hpp"
+#include "SRE/Light.hpp"
+#include "SRE/Camera.hpp"
 
-#include "Export.hpp"
+#include "SRE/Export.hpp"
 
 
 

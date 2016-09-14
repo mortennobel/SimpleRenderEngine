@@ -1,4 +1,4 @@
-#include "Texture.hpp"
+#include "SRE/Texture.hpp"
 
 #if defined(_WIN32)
 #   define GLEW_STATIC
@@ -17,7 +17,7 @@
 #include <fstream>
 #include <memory>
 
-#include "Font.inl"
+#include "SRE/Font.inl"
 
 namespace {
     static std::vector<char> readAllBytes(char const* filename)

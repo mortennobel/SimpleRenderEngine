@@ -2,9 +2,9 @@
 // Created by morten on 07/08/16.
 //
 
-#include "Text.hpp"
+#include "SRE/Text.hpp"
 
-#include "Mesh.hpp"
+#include "SRE/Mesh.hpp"
 #include "glm/glm.hpp"
 #include <vector>
 #include <cstring>

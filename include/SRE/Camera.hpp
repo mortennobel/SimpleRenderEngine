@@ -2,7 +2,7 @@
 
 #include "glm/glm.hpp"
 
-#include "Export.hpp"
+#include "SRE/Export.hpp"
 
 namespace SRE {
     class DllExport Camera {

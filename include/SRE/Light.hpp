@@ -3,7 +3,7 @@
 #include "glm/glm.hpp"
 #include "LightType.hpp"
 
-#include "Export.hpp"
+#include "SRE/Export.hpp"
 
 namespace SRE {
     struct DllExport Light {

@@ -2,10 +2,10 @@
 // Created by morten on 04/08/16.
 //
 
-#include "Debug.hpp"
-#include "Mesh.hpp"
-#include "Shader.hpp"
-#include "SimpleRenderEngine.hpp"
+#include "SRE/Debug.hpp"
+#include "SRE/Mesh.hpp"
+#include "SRE/Shader.hpp"
+#include "SRE/SimpleRenderEngine.hpp"
 #include <vector>
 
 using namespace std;

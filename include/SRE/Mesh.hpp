@@ -2,9 +2,9 @@
 
 #include "glm/glm.hpp"
 #include <vector>
-#include "MeshTopology.hpp"
+#include "SRE/MeshTopology.hpp"
 
-#include "Export.hpp"
+#include "SRE/Export.hpp"
 
 namespace SRE {
 

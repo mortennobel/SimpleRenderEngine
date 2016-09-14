@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Export.hpp"
+#include "SRE/Export.hpp"
 
 namespace SRE {
     enum class BlendType {
