@@ -25,7 +25,7 @@ namespace SRE {
         ~SimpleRenderEngine();
         static constexpr int maxSceneLights = 4;
         static constexpr int sre_version_major = 0;
-        static constexpr int sre_version_minor = 1;
+        static constexpr int sre_version_minor = 2;
 
         void setLight(int lightIndex, Light light);
 

@@ -40,3 +40,8 @@ https://mortennobel.github.io/SimpleRenderEngine/
  * https://www.libsdl.org/projects/SDL_image/ Simple Direct Layer Image 2.x
  * http://glm.g-truc.net/ OpenGL Mathematics
  * https://www.opengl.org/registry/ OpenGL Registry
+ 
+ ## Version history
+ 
+ * 0.2 Move specularity from Light to a normal shader uniform (since logically it belongs to material instead of the light source)  
+ * 0.1 Initial version

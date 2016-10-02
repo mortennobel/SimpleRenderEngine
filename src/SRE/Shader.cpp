@@ -205,9 +205,7 @@ namespace SRE {
 
         glm::vec4 lightPosType[4];
         glm::vec4 lightColorRange[4];
-        glm::vec4 lightSpecular;
         for (int i=0;i<4;i++){
-            lightSpecular[i] = value[i].specularity;
             if (value[i].lightType == LightType::Point){
                 lightPosType[i] = glm::vec4(value[i].position, 1);
             } else if (value[i].lightType == LightType::Directional){
@@ -222,7 +220,6 @@ namespace SRE {
         }
         glUniform4fv(location, 4, glm::value_ptr(lightPosType[0]));
         glUniform4fv(location2, 4, glm::value_ptr(lightColorRange[0]));
-        glUniform4fv(location3, 1, glm::value_ptr(lightSpecular));
 
         return true;
     }
@@ -487,7 +484,7 @@ uniform sampler2D tex;
 
 uniform vec4 lightPosType[4];
 uniform vec4 lightColorRange[4];
-uniform vec4 lightSpecular;
+uniform float specularity;
 
 vec3 computeLight(){
     vec3 lightColor = ambientLight.xyz;
@@ -519,10 +516,10 @@ vec3 computeLight(){
             lightColor += (att * diffuseFrac * thisDiffuse) * lightColorRange[i].xyz;
         }
         // specular light
-        if (lightSpecular[i] > 0){
+        if (specularity > 0){
             float nDotHV = dot(normal, H);
             if (nDotHV > 0){
-                float pf = pow(nDotHV, lightSpecular[i]);
+                float pf = pow(nDotHV, specularity);
                 lightColor += vec3(att * diffuseFrac * diffuseFrac * pf); // white specular highlights
             }
         }
@@ -542,6 +539,7 @@ void main(void)
 )";
         standard = createShader(vertexShader, fragmentShader);
         standard->setVector("color", glm::vec4(1));
+        standard->setFloat("specularity", 0);
         standard->setTexture("tex", Texture::getWhiteTexture());
         return standard;
     }

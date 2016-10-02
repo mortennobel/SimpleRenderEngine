@@ -17,10 +17,25 @@ namespace SRE {
     public:
         static Shader *createShader(const char *vertexShader, const char *fragmentShader);
 
+        // Phong Light Model. Uses light objects and ambient light set in SimpleRenderEngine.
+        // Attributes
+        // "color" vec4 (default (1,1,1,1))
+        // "tex" Texture* (default white texture)
+        // "specularity" float (default 0 = no specularity)
         static Shader *getStandard();
+        // Unlit model.
+        // Attributes
+        // "color" vec4 (default (1,1,1,1))
+        // "tex" Texture* (default white texture)
         static Shader *getUnlit();
         // UnlitSprite = no depth test and alpha blending
+        // Attributes
+        // "color" vec4 (default (1,1,1,1))
+        // "tex" Texture* (default white texture)
         static Shader *getUnlitSprite();
+        // Creates a shader for font rendering
+        // "color" vec4 (default (1,1,1,1))
+        // "tex" Texture* (default font texture)
         static Shader *getFont();
 
         static Shader *getDebugUV();
