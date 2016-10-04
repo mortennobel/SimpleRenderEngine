@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>API Documentation</title>
+    <title>SRE API Reference</title>
 
     <style>
       .highlight table td { padding: 5px; }
@@ -88,10 +88,10 @@
     </style>
     <link href="stylesheets/screen.css" rel="stylesheet" media="screen" />
     <link href="stylesheets/print.css" rel="stylesheet" media="print" />
-      <script src="javascripts/all_nosearch.js"></script>
+      <script src="javascripts/all.js"></script>
   </head>
 
-  <body class="index" data-languages="[]">
+  <body class="index" data-languages="[&quot;c++&quot;]">
     <a href="#" id="nav-button">
       <span>
         NAV
@@ -101,9 +101,17 @@
     <div class="tocify-wrapper">
       <img src="images/logo.png" />
         <div class="lang-selector">
+              <a href="#" data-language-name="c++">Code examples</a>
         </div>
+        <div class="search">
+          <input type="text" class="search" id="input-search" placeholder="Search">
+        </div>
+        <ul class="search-results"></ul>
       <div id="toc">
       </div>
+        <ul class="toc-footer">
+            <li><a href='https://github.com/tripit/slate'>Documentation Powered by Slate</a></li>
+        </ul>
     </div>
     <div class="page-wrapper">
       <div class="dark-box"></div>
@@ -116,6 +124,8 @@ OpenGL, DirectX and Vulkan.</p>
 
 <p>SRE currently depends on Simple Direct Layer 2.x (SDL2), SDL2-image, OpenGL Mathematics (GLM), and OpenGL 3.3 (or higher), and 
 runs on both Windows, macOS and Linux.</p>
+
+<p>The project is hosted here: https://github.com/mortennobel/SimpleRenderEngine</p>
 
 <h1 id="install">Install</h1>
 
@@ -132,7 +142,7 @@ runs on both Windows, macOS and Linux.</p>
 abstraction makes both single platform and cross platform development easier. The project
 has a simple C-interface.</p>
 
-<p>Download <strong>development libraries</strong> from </p>
+<p>Download <strong>development libraries (not runtime libraries!)</strong> from </p>
 
 <ul>
 <li>https://www.libsdl.org/download-2.0.php</li>
@@ -163,15 +173,25 @@ has a simple C-interface.</p>
 
 <p>Configure the project using CMake ( / cmake-gui) to VisualStudio/XCode using the following settings:</p>
 
-<p>Tips and comments:
- * Windows: It is recommended that you build the project as <strong>32-bit</strong>.
- * It is important that you choose the correct 
- * You need to click the configure whenever you have changed a setting. This ensures that all
- * Documentation for the CMake properties can be found in the cmake/FindXXX.cmake files
- * It is recommended to GLEW static library (<strong>glew32s.lib</strong>) for windows.
- * If you have old Visual Studio installation, you might need to change the settings of the Microsoft.Cpp.Win32.user (in the Property Manager)</p>
+<p>Tips and comments:</p>
+
+<ul>
+<li>Windows : It is recommended that you build the project as <strong>32-bit</strong>.</li>
+<li>It is important that you choose the correct </li>
+<li>You need to click the configure whenever you have changed a setting. This ensures that all</li>
+<li>Documentation for the CMake properties can be found in the cmake/FindXXX.cmake files</li>
+<li>It is recommended to GLEW static library (<strong>glew32s.lib</strong>) for windows.</li>
+<li>If you have old Visual Studio installation, you might need to change the settings of the Microsoft.Cpp.Win32.user (in the Property Manager)</li>
+</ul>
 
 <p><strong>Windows</strong></p>
+
+<p>Notes:</p>
+
+<ul>
+<li>The SDL2_Library need to be the full path of both SDL2.lib and SDL2main.lib. Separated with
+a semicolon.</li>
+</ul>
 
 <p><img title="CMake Mac" alt="alt text" src="images/cmake-windows.png" /></p>
 
@@ -179,9 +199,738 @@ has a simple C-interface.</p>
 
 <p><img title="CMake Mac" alt="alt text" src="images/cmake-mac.png" /></p>
 
+          <h1 id="simplerenderengine">SimpleRenderEngine</h1>
+<pre class="highlight cpp"><code><span class="c1">// Example (hello-engine.cpp):
+</span><span class="n">SDL_Window</span> <span class="o">*</span><span class="n">window</span><span class="p">;</span>
+<span class="n">SDL_Init</span><span class="p">(</span><span class="n">SDL_INIT_VIDEO</span><span class="p">);</span>
+<span class="n">SDL_GL_SetAttribute</span><span class="p">(</span><span class="n">SDL_GL_CONTEXT_MAJOR_VERSION</span><span class="p">,</span> <span class="mi">3</span><span class="p">);</span>
+<span class="n">SDL_GL_SetAttribute</span><span class="p">(</span><span class="n">SDL_GL_CONTEXT_MINOR_VERSION</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+<span class="n">SDL_GL_SetAttribute</span><span class="p">(</span><span class="n">SDL_GL_CONTEXT_PROFILE_MASK</span><span class="p">,</span> <span class="n">SDL_GL_CONTEXT_PROFILE_CORE</span><span class="p">);</span>
+<span class="n">window</span> <span class="o">=</span> <span class="n">SDL_CreateWindow</span><span class="p">(</span><span class="s">"Hello Engine"</span><span class="p">,</span><span class="n">SDL_WINDOWPOS_UNDEFINED</span><span class="p">,</span><span class="n">SDL_WINDOWPOS_UNDEFINED</span><span class="p">,</span><span class="mi">640</span><span class="p">,</span><span class="mi">480</span><span class="p">,</span><span class="n">SDL_WINDOW_OPENGL</span><span class="p">);</span>
+<span class="n">SimpleRenderEngine</span> <span class="n">r</span><span class="p">{</span><span class="n">window</span><span class="p">};</span>
+<span class="n">r</span><span class="p">.</span><span class="n">clearScreen</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">});</span>
+<span class="n">r</span><span class="p">.</span><span class="n">swapWindow</span><span class="p">();</span>
+<span class="n">SDL_Delay</span><span class="p">(</span><span class="mi">10000</span><span class="p">);</span>
+<span class="n">SD_DestroyWindow</span><span class="p">(</span><span class="n">window</span><span class="p">);</span>
+<span class="n">SDL_Quit</span><span class="p">();</span>
+</code></pre>
+
+<p>Maintains shared states for rendering.
+An object of SimpleRenderEngine must be created once after the SDL_Window has been initialized.
+After initialization this object can be referenced using the static field SimpleRenderEngine::instance;</p>
+
+<p>SingleRenderEngine has two important states:</p>
+
+<ul>
+<li>An active camera, which defines how meshes are drawn when rendered using the draw method</li>
+<li>Light information (point lights, directional lights, ambient lights).</li>
+</ul>
+
+<h2 id="simplerenderengine">SimpleRenderEngine</h2>
+
+<p><code class="prettyprint">SimpleRenderEngine(SDL_Window *window)</code></p>
+
+<p>SimpleRenderEngine constructor</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>window</td>
+<td>window pointer to the SDL window (must be initialized using OpenGL)</td>
+</tr>
+</tbody></table>
+
+<h2 id="setlight">setLight</h2>
+
+<p><code class="prettyprint">void setLight(int lightIndex, Light light)</code></p>
+
+<p>Set the light state - this affects all draw calls after the state has been set.</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>lightIndex</td>
+<td>must be between 0 and 3</td>
+</tr>
+<tr>
+<td>light</td>
+<td>light parameters</td>
+</tr>
+</tbody></table>
+
+<h2 id="getlight">getLight</h2>
+
+<p><code class="prettyprint">Light getLight(int lightIndex)</code></p>
+
+<p>Returns the state of the given light index</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>lightIndex</td>
+<td>must be between 0 and 3</td>
+</tr>
+</tbody></table>
+
+<h2 id="setambient">setAmbient</h2>
+
+<p><code class="prettyprint">void setAmbientLight(const glm::vec3 &amp;ambientLight)</code></p>
+
+<p>Set the ambient light color. This is used to add some light to the shadow side of objects.</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>ambientLight</td>
+<td>ambient light (usually should be low) (default: 0.2,0.2,0.2)</td>
+</tr>
+</tbody></table>
+
+<h2 id="getambient">getAmbient</h2>
+
+<p><code class="prettyprint">glm::vec3 getAmbientLight() const</code></p>
+
+<p>Returns ambient light</p>
+
+<h2 id="draw">draw</h2>
+
+<p><code class="prettyprint">void draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader)</code></p>
+
+<p>Draws a mesh instance to the current scene. Uses the current camera object to render the mesh in the scene.</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>mesh</td>
+<td>The mesh to draw</td>
+</tr>
+<tr>
+<td>modelTransform</td>
+<td>The local to world transformation (usually composed of translations, rotations and scales)</td>
+</tr>
+<tr>
+<td>shader</td>
+<td>The shader used for rendering</td>
+</tr>
+</tbody></table>
+
+<h2 id="setcamera">setCamera</h2>
+
+<p><code class="prettyprint">void setCamera(Camera *camera)</code></p>
+
+<p>Sets the current camera object.</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>camera</td>
+<td>The new camera state</td>
+</tr>
+</tbody></table>
+
+<h2 id="getcamera">getCamera</h2>
+
+<p><code class="prettyprint">Camera* getCamera()</code></p>
+
+<p>Returns the current camera object.</p>
+
+<h2 id="getdefaultcamera">getDefaultCamera</h2>
+
+<p><code class="prettyprint">Camera* getDefaultCamera()</code></p>
+
+<p>Returns a reference to the default camera. This camera is owned by the object and should never be deleted.</p>
+
+<h2 id="clearscreen">clearScreen</h2>
+
+<p><code class="prettyprint">void clearScreen(glm::vec4 color, bool clearColorBuffer=true, bool clearDepthBuffer=true)</code></p>
+
+<p>Clear the screen with the given color (default behavior is also clearing color and depth buffer)</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>color</td>
+<td>Clear color</td>
+</tr>
+<tr>
+<td>clearColorBuffer</td>
+<td>Will clear color buffer</td>
+</tr>
+<tr>
+<td>clearDepthBuffer</td>
+<td>Will clear depth buffer</td>
+</tr>
+</tbody></table>
+
+<h2 id="swapwindow">swapWindow</h2>
+
+<p><code class="prettyprint">void swapWindow()</code></p>
+
+<p>Update window with OpenGL rendering.</p>
+
+<h2 id="instance">instance</h2>
+
+<p><code class="prettyprint">static SimpleRenderEngine* instance</code></p>
+
+<p>Singleton reference to the engine after initialization.</p>
+
+          <h1 id="texture">Texture</h1>
+
+<p>Represent a texture (uploaded to the GPU).
+In general the width and the height of the texture should be power-of-two (e.g. 256 or 512).</p>
+
+<p>Textures can be created from files (png or jpeg). Alternative textures can be created using memory representation
+of the texture in RGBA (one byte per color channel).</p>
+
+<p>The Texture class also provides a white texture using the Texture::getWhiteTexture()</p>
+
+<p>A texture object has the following properties:</p>
+
+<ul>
+<li>mipmaps enabled: Optimization, where the texture exists in downscaled versions. This does use more memory, but
+in general gives faster texture sampling.</li>
+<li>wrap texture coordinates: if enabled the texture is repeated when sampling out the 0.0 .. 1.0 values</li>
+<li>filter sampling: if enabled the texture sampling will use interpolation to find the colors between pixel centers</li>
+</ul>
+
+<h2 id="createfromfile">createFromFile</h2>
+
+<p><code class="prettyprint">static Texture* createFromFile(const char *pngOrJpeg, bool generateMipmaps = false)</code></p>
+
+<h2 id="createfrommem">createFromMem</h2>
+
+<p><code class="prettyprint">static Texture* createFromMem(const char *pngOrJpeg, int size, bool generateMipmaps = false)</code></p>
+
+<h2 id="createfromrgbamem">createFromRGBAMem</h2>
+
+<p><code class="prettyprint">static Texture* createFromRGBAMem(const char *data, int width, int height, bool generateMipmaps = false)</code></p>
+
+<h2 id="getwhitetexture">getWhiteTexture</h2>
+
+<p><code class="prettyprint">static Texture* getWhiteTexture()</code></p>
+
+<h2 id="getfonttexture">getFontTexture</h2>
+
+<p><code class="prettyprint">static Texture* getFontTexture()</code></p>
+
+<h2 id="getwidth">getWidth</h2>
+
+<p><code class="prettyprint">int getWidth()</code></p>
+
+<h2 id="getheight">getHeight</h2>
+
+<p><code class="prettyprint">int getHeight()</code></p>
+
+<h2 id="isfiltersampling">isFilterSampling</h2>
+
+<p><code class="prettyprint">bool isFilterSampling()</code></p>
+
+<p>returns true if texture sampling should be filtered (bi-linear or tri-linear sampling) otherwise use point sampling.</p>
+
+<h2 id="setfiltersampling">setFilterSampling</h2>
+
+<p><code class="prettyprint">void setFilterSampling(bool enable)</code></p>
+
+<p>if true texture sampling is filtered (bi-linear or tri-linear sampling) otherwise use point sampling.</p>
+
+<h2 id="iswraptexturecoordinates">isWrapTextureCoordinates</h2>
+
+<p><code class="prettyprint">bool isWrapTextureCoordinates()</code></p>
+
+<h2 id="setwraptexturecoordinates">setWrapTextureCoordinates</h2>
+
+<p><code class="prettyprint">void setWrapTextureCoordinates(bool enable)</code></p>
+
+          <h1 id="shader">Shader</h1>
+
+<p>Controls the apperance of the rendered objects.</p>
+
+<p>The shader also controls depth test, depth write and blending.</p>
+
+<p>There is the following premade shaders:
+- Shader::getStandard()
+   - Shades the mesh using the Phong light model, and uses the current light states and camera states as well as
+     the color and texture parameters
+   - Parameters:
+     - color (vec4) (default white)
+     - tex (Texture*) (default white texture)
+- Shader::getUnlit()
+   - Uses the camera states as well as the color and texture parameters to define the surface color
+   - Parameters:
+     - color (vec4) (default white)
+     - tex (Texture*) (default white texture)
+- Shader::getUnlitSprite()
+   - Similar to getUnlit() but with no depth write
+   - Parameters:
+     - color (vec4) (default white)
+     - tex (Texture*) (default white texture)</p>
+
+<h2 id="getstandard">getStandard</h2>
+
+<p><code class="prettyprint">static Shader *getStandard()</code></p>
+
+<h2 id="getunlit">getUnlit</h2>
+
+<p><code class="prettyprint">static Shader *getUnlit()</code></p>
+
+<h2 id="getunlitsprite">getUnlitSprite</h2>
+
+<p><code class="prettyprint">static Shader *getUnlitSprite()</code></p>
+
+<h2 id="getfont">getFont</h2>
+
+<p><code class="prettyprint">static Shader *getFont()</code></p>
+
+<h2 id="getdebuguv">getDebugUV</h2>
+
+<p><code class="prettyprint">static Shader *getDebugUV()</code></p>
+
+<p>Shader for visualizing texture coordinates on mesh(UVs)</p>
+
+<h2 id="getdebugnormals">getDebugNormals</h2>
+
+<p><code class="prettyprint">static Shader *getDebugNormals()</code></p>
+
+<p>Shader for visualizing mesh normals.</p>
+
+<h2 id="createshader">createShader</h2>
+
+<p><code class="prettyprint">static Shader *createShader(const char *vertexShader, const char *fragmentShader)</code></p>
+
+<p>Creates shader using GLSL.</p>
+
+<h2 id="setmatrix">setMatrix</h2>
+
+<p><code class="prettyprint">bool setMatrix(const char *name, glm::mat4 value)</code>
+<code class="prettyprint">bool setMatrix(const char *name, glm::mat3 value)</code></p>
+
+<h2 id="setvector">setVector</h2>
+
+<p><code class="prettyprint">bool setVector(const char *name, glm::vec4 value)</code></p>
+
+<h2 id="setfloat">setFloat</h2>
+
+<p><code class="prettyprint">bool setFloat(const char *name, float value)</code></p>
+
+<h2 id="setint">setInt</h2>
+
+<p><code class="prettyprint">bool setInt(const char *name, int value)</code></p>
+
+<h2 id="settexture">setTexture</h2>
+
+<p><code class="prettyprint">bool setTexture(const char *name, Texture* texture, unsigned int textureSlot = 0)</code></p>
+
+<p>textureSlot: If sampling multiple textures from a single shader, each texture must be bound to a unique texture slot</p>
+
+<h2 id="setdepthtest">setDepthTest</h2>
+
+<p><code class="prettyprint">void setDepthTest(bool enable)</code></p>
+
+<h2 id="isdepthtest">isDepthTest</h2>
+
+<p><code class="prettyprint">bool isDepthTest()</code></p>
+
+<h2 id="setdepthwrite">setDepthWrite</h2>
+
+<p><code class="prettyprint">void setDepthWrite(bool enable)</code></p>
+
+<h2 id="isdepthwrite">isDepthWrite</h2>
+
+<p><code class="prettyprint">bool isDepthWrite()</code></p>
+
+<h2 id="getblend">getBlend</h2>
+
+<p><code class="prettyprint">BlendType getBlend()</code></p>
+
+<h2 id="setblend">setBlend</h2>
+
+<p><code class="prettyprint">void setBlend(BlendType blendType)</code></p>
+
+          <h1 id="mesh">Mesh</h1>
+
+<p>Represents a Mesh object.
+When constructing a mesh object, its data is uploaded to the CPU and is no longer available on the CPU.
+A mesh is composed of a list of</p>
+
+<ul>
+<li>vertexPositions (vec3)</li>
+<li>normals (vec3)</li>
+<li>uvs (aka. texture coordinates) (vec2)</li>
+</ul>
+
+<p>A mesh also has a meshType, which can be either: 
+ - MeshTopology::Points 
+ - MeshTopology::Lines
+ - MeshTopology::Triangles</p>
+
+<h2 id="mesh">Mesh</h2>
+
+<p><code class="prettyprint">Mesh(std::vector&lt;glm::vec3&gt; &amp;vertexPositions, std::vector&lt;glm::vec3&gt; &amp;normals, std::vector&lt;glm::vec2&gt; &amp;uvs, MeshTopology meshTopology = MeshTopology::Triangles)</code></p>
+
+<p>Constructor</p>
+
+<h2 id="update">update</h2>
+
+<p><code class="prettyprint">void update(std::vector&lt;glm::vec3&gt; &amp;vertexPositions, std::vector&lt;glm::vec3&gt; &amp;normals, std::vector&lt;glm::vec2&gt; &amp;uvs)</code></p>
+
+<h2 id="getvertexcount">getVertexCount</h2>
+
+<p><code class="prettyprint">int getVertexCount()</code></p>
+
+<h2 id="getmeshtopology">getMeshTopology</h2>
+
+<p><code class="prettyprint">MeshTopology getMeshTopology()</code></p>
+
+<h2 id="createquad">createQuad</h2>
+
+<p><code class="prettyprint">static Mesh* createQuad()</code></p>
+
+<h2 id="createcube">createCube</h2>
+
+<p><code class="prettyprint">static Mesh* createCube()</code></p>
+
+<h2 id="createsphere">createSphere</h2>
+
+<p><code class="prettyprint">static Mesh* createSphere()</code></p>
+
+          <h1 id="camera">Camera</h1>
+
+<p>The camera contains two important properties:
+- <strong>view transform matrix</strong>: Contains information about location and orientation of the camera. This matrix will
+transform geometry from world space to eye space.
+- <strong>projection transform matrix</strong>: Contains information about the projection the camera uses (roughly equivalent to
+which lens it uses). Generally this can either be perspective projection (with a field of view) or a orthographic
+projection (without any perspective).</p>
+
+<p>The camera also includes information about the viewport, which defines which part of the window is used for
+rendering (default settings is the full window)</p>
+
+<p>The default camera is positioned at (0,0,0) and looking down the negative z-axis. Everything inside the volume
+between -1 to 1 is viewed.</p>
+
+<h2 id="camera">Camera</h2>
+
+<p><code class="prettyprint">Camera()</code></p>
+
+<p>Constructor</p>
+
+<p>Set camera at (0,0,0) looking down the negative z-axis using orthographic viewing volume between -1 to 1</p>
+
+<h2 id="lookat">lookAt</h2>
+
+<p><code class="prettyprint">void lookAt(glm::vec3 eye, glm::vec3 at, glm::vec3 up)</code></p>
+
+<p>set position of camera in world space using</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>eye</td>
+<td>position of the camera</td>
+</tr>
+<tr>
+<td>at</td>
+<td>position that the camera looks at (must be different from pos)</td>
+</tr>
+<tr>
+<td>up</td>
+<td>the up axis (used for rotating camera around z-axis). Must not be parallel with view direction (at - pos).</td>
+</tr>
+</tbody></table>
+
+<h2 id="setperspectiveprojection">setPerspectiveProjection</h2>
+
+<p><code class="prettyprint">void setPerspectiveProjection(float fieldOfViewY, float viewportWidth,float viewportHeight, float nearPlane, float farPlane)</code></p>
+
+<p>set the projectionTransform to perspective projection</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>fieldOfViewY</td>
+<td>field of view in degrees</td>
+</tr>
+<tr>
+<td>viewportWidth</td>
+<td>width of the current viewport</td>
+</tr>
+<tr>
+<td>viewportHeight</td>
+<td>height of the current viewport</td>
+</tr>
+<tr>
+<td>nearPlane</td>
+<td>near clipping plane, defines how close an object can be to the camera before clipping (must be positive)</td>
+</tr>
+<tr>
+<td>farPlane</td>
+<td>far clipping plane, defines how far an object can be to the camera before clipping (must be larger than nearPlane)</td>
+</tr>
+</tbody></table>
+
+<h2 id="setorthographicprojection">setOrthographicProjection</h2>
+
+<p><code class="prettyprint">void setOrthographicProjection(float left, float right, float  bottom, float top, float zNear, float zFar)</code></p>
+
+<p>set the projectionTransform to orthographic parallel viewing volume.</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>left</td>
+<td></td>
+</tr>
+<tr>
+<td>right</td>
+<td></td>
+</tr>
+<tr>
+<td>bottom</td>
+<td></td>
+</tr>
+<tr>
+<td>top</td>
+<td></td>
+</tr>
+<tr>
+<td>nearPlane</td>
+<td>near clipping plane, defines how close an object can be to the camera before clipping</td>
+</tr>
+<tr>
+<td>farPlane</td>
+<td>far clipping plane, defines how far an object can be to the camera before clipping</td>
+</tr>
+</tbody></table>
+
+<h2 id="setwindowcoordinates">setWindowCoordinates</h2>
+
+<p><code class="prettyprint">void setWindowCoordinates(int width = -1, int height = -1)</code></p>
+
+<p>set orthographic transform and view, where the origon is located in the lower left corner.
+z depth is between -1 and 1.</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>width</td>
+<td>the width of the window, if -1 uses current window size</td>
+</tr>
+<tr>
+<td>height</td>
+<td>the height of the window, if -1 uses current window size</td>
+</tr>
+</tbody></table>
+
+<h2 id="setviewtransform">setViewTransform</h2>
+
+<p><code class="prettyprint">void setViewTransform(const glm::mat4 &amp;viewTransform)</code></p>
+
+<p>set the view transform directly</p>
+
+<h2 id="setprojectiontransform">setProjectionTransform</h2>
+
+<p><code class="prettyprint">void setProjectionTransform(const glm::mat4 &amp;projectionTransform)</code></p>
+
+<p>Set the projection transform directly</p>
+
+<h2 id="getviewtransform">getViewTransform</h2>
+
+<p><code class="prettyprint">glm::mat4 getViewTransform()</code></p>
+
+<p>Get the view transform - used for rendering.</p>
+
+<h2 id="getprojectiontransform">getProjectionTransform</h2>
+
+<p><code class="prettyprint">glm::mat4 getProjectionTransform()</code></p>
+
+<p>Get the projection transform  - used for rendering</p>
+
+<h2 id="setviewport">setViewport</h2>
+
+<p><code class="prettyprint">void setViewport(int x, int y, int width, int height)</code></p>
+
+<p>defines which part of the window is used for
+rendering (default settings is the full window)</p>
+
+<table><thead>
+<tr>
+<th>Parameter</th>
+<th>Description</th>
+</tr>
+</thead><tbody>
+<tr>
+<td>x</td>
+<td>the x coordinate of the viewport (default 0)</td>
+</tr>
+<tr>
+<td>y</td>
+<td>the y coordinate of the viewport (default 0)</td>
+</tr>
+<tr>
+<td>width</td>
+<td>the width of the viewport (default window width)</td>
+</tr>
+<tr>
+<td>height</td>
+<td>the height of the viewport (default window height)</td>
+</tr>
+</tbody></table>
+
+          <h1 id="light">Light</h1>
+
+<p>Contains information about a Light source</p>
+
+<h2 id="light">Light</h2>
+
+<p><code class="prettyprint">Light()</code>
+<code class="prettyprint">Light(LightType lightType, glm::vec3 position, glm::vec3 direction, glm::vec3 color, float range, float specularity)</code></p>
+
+<p>Constructor</p>
+
+<h2 id="lighttype">lightType</h2>
+
+<p><code class="prettyprint">LightType lightType</code></p>
+
+<p>Defines the type of light source (note: ambient light is stored as a vec3 directly in SimpleRenderEngine)</p>
+
+<ul>
+<li>LightType::Point,</li>
+<li>LightType::Directional,</li>
+<li>LightType::Unused</li>
+</ul>
+
+<h2 id="position">position</h2>
+
+<p><code class="prettyprint">glm::vec3 position</code></p>
+
+<p>position in worldspace
+only used for point lights</p>
+
+<h2 id="direction">direction</h2>
+
+<p><code class="prettyprint">glm::vec3 direction</code></p>
+
+<p>direction towards the lightsource
+only used for directional light</p>
+
+<h2 id="color">color</h2>
+
+<p><code class="prettyprint">glm::vec3 color</code></p>
+
+<p>The color (or intensity) of the light
+In some cases the light color may have values above 1.0</p>
+
+<h2 id="range">range</h2>
+
+<p><code class="prettyprint">float range</code></p>
+
+<p>The range of a point light (due to attenuation)</p>
+
+<h2 id="specularity">specularity</h2>
+
+<p><code class="prettyprint">float specularity</code></p>
+
+<p>0 = no specular</p>
+
+          <h1 id="debug">Debug</h1>
+
+<p>The purpose of this class is to draw debug information into the scene.
+The Debug class is using the current camera</p>
+
+<h2 id="getcolor">getColor</h2>
+
+<p><code class="prettyprint">static glm::vec4 getColor()</code></p>
+
+<h2 id="setcolor">setColor</h2>
+
+<p><code class="prettyprint">static void setColor(glm::vec4 color)</code></p>
+
+<h2 id="drawline">drawLine</h2>
+
+<p><code class="prettyprint">static void drawLine(glm::vec3 from, glm::vec3 to)</code></p>
+
+          <h1 id="blendtype">BlendType</h1>
+<pre class="highlight cpp"><code><span class="k">enum</span> <span class="k">class</span> <span class="nc">BlendType</span> <span class="p">{</span>
+    <span class="n">Disabled</span><span class="p">,</span>
+    <span class="n">AlphaBlending</span>
+<span class="p">};</span>
+</code></pre>
+
+<p>Enum which defines blending types. Currently support types of blending is:</p>
+
+<ul>
+<li>BlendType::Disabled - no blending</li>
+<li>BlendType::AlphaBlending - src minus one alpha</li>
+</ul>
+
+          <h1 id="lighttype">LightType</h1>
+<pre class="highlight cpp"><code><span class="k">enum</span> <span class="k">class</span> <span class="nc">LightType</span> <span class="p">{</span>
+    <span class="n">Point</span><span class="p">,</span>
+    <span class="n">Directional</span><span class="p">,</span>
+    <span class="n">Unused</span>
+<span class="p">};</span>
+</code></pre>
+
+<p>Defines the types of Light. Note ambient light is simply represented using a vec3 in the SimpleRenderEngine class.</p>
+
+          <h1 id="meshtopology">MeshTopology</h1>
+<pre class="highlight cpp"><code><span class="k">enum</span> <span class="k">class</span> <span class="nc">MeshTopology</span> <span class="p">{</span>
+    <span class="n">Points</span><span class="p">,</span>
+    <span class="n">Lines</span><span class="p">,</span>
+    <span class="n">Triangles</span>
+<span class="p">};</span>
+</code></pre>
+
+<p>Mesh topology used to define the kind of mesh</p>
+
       </div>
       <div class="dark-box">
           <div class="lang-selector">
+                <a href="#" data-language-name="c++">Code examples</a>
           </div>
       </div>
     </div>
