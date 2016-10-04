@@ -37,8 +37,6 @@ namespace SRE {
      */
     class DllExport Shader {
     public:
-        static Shader *createShader(const char *vertexShader, const char *fragmentShader);
-
         static Shader *getStandard();
         static Shader *getUnlit();
         // UnlitSprite = no depth test and alpha blending
@@ -47,6 +45,9 @@ namespace SRE {
 
         static Shader *getDebugUV();
         static Shader *getDebugNormals();
+
+        // Creates shader using GLSL
+        static Shader *createShader(const char *vertexShader, const char *fragmentShader);
 
         ~Shader();
 

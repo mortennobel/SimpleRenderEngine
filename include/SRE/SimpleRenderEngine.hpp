@@ -62,12 +62,13 @@ namespace SRE {
         Light getLight(int lightIndex);
 
         /**
-         * Set the ambient light color. This is used to add some light to the shadow side of objects.
+         * Set the ambient light color. This is used to add some light to the shadow side of objects. (default: 0.2,0.2,0.2)
          * @param ambientLight
          */
         void setAmbientLight(const glm::vec3 &ambientLight);
 
         /**
+         * Returns ambient light
          * @sa setAmbientLight
          * @return ambient light color
          */
