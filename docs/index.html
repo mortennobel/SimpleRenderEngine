@@ -199,6 +199,23 @@ a semicolon.</li>
 
 <p><img title="CMake Mac" alt="alt text" src="images/cmake-mac.png" /></p>
 
+<h1 id="resource-management">Resource management</h1>
+
+<p>SimpleRenderEngine does not provide any automatically resource management. 
+It is up the library user (the developer) to destroy any object that is allocated.</p>
+
+<p>Generally objects can be created in three different ways:</p>
+
+<ul>
+<li><strong>Constructor</strong>: Object creation using constructor. If the objects are allocated on the heap (using new) they must also be explicit 
+deleted when no longer used.</li>
+<li><strong>createXXX()</strong>: Object pointers returned from createXXX member functions. These objects are created by
+SimpleRenderEngine, but not referenced. These objects should be explicit deleted when
+no longer used.</li>
+<li><strong>getXXX()</strong>: Object pointers returned from getXXX member functions. The ownership of these objects are maintained by 
+SimpleRenderEngine. These objects should not be deleted.</li>
+</ul>
+
           <h1 id="simplerenderengine">SimpleRenderEngine</h1>
 <pre class="highlight cpp"><code><span class="c1">// Example (hello-engine.cpp):
 </span><span class="n">SDL_Window</span> <span class="o">*</span><span class="n">window</span><span class="p">;</span>
