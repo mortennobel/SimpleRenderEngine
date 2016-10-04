@@ -12,7 +12,29 @@
 namespace SRE {
     class Texture;
 
-    /// Controls the apperance of the rendered objects.
+    /**
+     * Controls the apperance of the rendered objects.
+     *
+     * The shader also controls depth test, depth write and blending.
+     *
+     * There is the following premade shaders:
+     * - Shader::getStandard()
+     *    - Shades the mesh using the Phong light model, and uses the current light states and camera states as well as
+     *      the color and texture parameters
+     *    - Parameters:
+     *      - color (vec4) (default white)
+     *      - tex (Texture*) (default white texture)
+     * - Shader::getUnlit()
+     *    - Uses the camera states as well as the color and texture parameters to define the surface color
+     *    - Parameters:
+     *      - color (vec4) (default white)
+     *      - tex (Texture*) (default white texture)
+     * - Shader::getUnlitSprite()
+     *    - Similar to getUnlit() but with no depth write
+     *    - Parameters:
+     *      - color (vec4) (default white)
+     *      - tex (Texture*) (default white texture)
+     */
     class DllExport Shader {
     public:
         static Shader *createShader(const char *vertexShader, const char *fragmentShader);

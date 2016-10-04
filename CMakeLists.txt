@@ -15,6 +15,7 @@ add_executable(SRE-Spinning-Sphere ${SOURCE_FILES} test/spinning-sphere.cpp)
 add_executable(SRE-Spinning-Cube-Unlit ${SOURCE_FILES} test/spinning-cube-unlit.cpp)
 add_executable(SRE-Spinning-Sphere-Unlit ${SOURCE_FILES} test/spinning-sphere-unlit.cpp)
 add_executable(SRE-Spinning-Cube-Tex ${SOURCE_FILES} test/spinning-cube-tex.cpp)
+add_executable(SRE-Hello-Engine ${SOURCE_FILES} test/hello-engine.cpp)
 
 add_library(SRE STATIC ${SOURCE_FILES})
 
@@ -67,6 +68,7 @@ target_link_libraries(SRE-Spinning-Sphere ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_I
 target_link_libraries(SRE-Spinning-Cube-Unlit ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 target_link_libraries(SRE-Spinning-Sphere-Unlit ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 target_link_libraries(SRE-Spinning-Cube-Tex ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
+target_link_libraries(SRE-Hello-Engine ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 target_link_libraries(SRE ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 
 file(COPY test-data DESTINATION Debug)

@@ -5,6 +5,20 @@
 #include "SRE/Export.hpp"
 
 namespace SRE{
+    /**
+     * Represent a texture (uploaded to the GPU).
+     * In general the width and the height of the texture should be power-of-two (e.g. 256 or 512)
+     *
+     * Textures can be created from files (png or jpeg). Alternative textures can be created using memory representation
+     * of the texture in RGBA (one byte per color channel).
+     * The Texture class also provides a white texture using the Texture::getWhiteTexture()
+     *
+     * A texture object has the following properties:
+     * - mipmaps enabled: Optimization, where the texture exists in downscaled versions. This does use more memory, but
+     *   in general gives faster texture sampling.
+     * - wrap texture coordinates: if enabled the texture is repeated when sampling out the 0.0 .. 1.0 values
+     * - filter sampling: if enabled the texture sampling will use interpolation to find the colors between pixel centers
+     */
 class DllExport Texture {
 public:
     static Texture* createFromFile(const char *pngOrJpeg, bool generateMipmaps = false);
