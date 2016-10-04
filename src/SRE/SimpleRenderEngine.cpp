@@ -26,9 +26,12 @@ extern "C"
 namespace SRE {
     SimpleRenderEngine* SimpleRenderEngine::instance = nullptr;
 
-    SimpleRenderEngine::SimpleRenderEngine(SDL_Window *window)
+    SimpleRenderEngine::SimpleRenderEngine(SDL_Window * window)
     :window{window}
     {
+        if (instance != nullptr){
+            std::cerr << "Multiple versions of SimpleRenderEngine initialized. Only a single instance is supported." << std::endl;
+        }
         instance = this;
         camera = &defaultCamera;
         glcontext = SDL_GL_CreateContext(window);
@@ -45,9 +48,9 @@ namespace SRE {
 		glewInit();
 #endif
 
-        std::cout << glGetString(GL_VERSION)<<std::endl;
-        std::cout << "OpenGL version "<<glGetString(GL_VERSION)<<std::endl;
-        std::cout << "SRE version "<<sre_version_major<<"."<<sre_version_minor<<std::endl;
+        std::cout << glGetString(GL_VERSION) << std::endl;
+        std::cout << "OpenGL version "<<glGetString(GL_VERSION) << std::endl;
+        std::cout << "SRE version "<<sre_version_major<<"."<<sre_version_minor << std::endl;
 
 
         // setup opengl context
