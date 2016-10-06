@@ -910,6 +910,21 @@ The Debug class is using the current camera</p>
 
 <p><code class="prettyprint">static void drawLine(glm::vec3 from, glm::vec3 to)</code></p>
 
+          <h1 id="text">Text</h1>
+<pre class="highlight cpp"><code><span class="n">SimpleRenderEngine</span><span class="o">::</span><span class="n">instance</span><span class="o">-&gt;</span><span class="n">getCamera</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">setWindowCoordinates</span><span class="p">();</span>
+<span class="c1">// Font shader - user correct texture
+</span><span class="n">Shader</span> <span class="o">*</span> <span class="n">fontShader</span> <span class="o">=</span> <span class="n">Shader</span><span class="o">::</span><span class="n">getFont</span><span class="p">();</span>
+<span class="c1">// create a text mesh (pivot point in lower left corner)
+</span><span class="n">Mesh</span><span class="o">*</span> <span class="n">helloWorld</span> <span class="o">=</span> <span class="n">Text</span><span class="o">::</span><span class="n">createTextMesh</span><span class="p">(</span><span class="s">"Hello world"</span><span class="p">);</span>
+<span class="n">SimpleRenderEngine</span><span class="o">::</span><span class="n">instance</span><span class="o">-&gt;</span><span class="n">draw</span><span class="p">(</span><span class="n">helloWorld</span><span class="p">,</span> <span class="n">glm</span><span class="o">::</span><span class="n">mat4</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">fontShader</span><span class="p">);</span>
+</code></pre>
+
+<h2 id="createtextmesh">createTextMesh</h2>
+
+<p><code class="prettyprint">Mesh *createTextMesh(const char *text)</code></p>
+
+<p>Create a text mesh.</p>
+
           <h1 id="blendtype">BlendType</h1>
 <pre class="highlight cpp"><code><span class="k">enum</span> <span class="k">class</span> <span class="nc">BlendType</span> <span class="p">{</span>
     <span class="n">Disabled</span><span class="p">,</span>

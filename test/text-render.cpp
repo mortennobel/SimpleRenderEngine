@@ -44,15 +44,15 @@ int main() {
     }
 
     SimpleRenderEngine r{window};
-    r.getCamera()->setWindowCoordinates();
-    r.clearScreen({1,0,0,1});
 
+    r.clearScreen({1,0,0,1});
+    SimpleRenderEngine::instance->getCamera()->setWindowCoordinates();
     // Font shader - user correct texture
     Shader * fontShader = Shader::getFont();
     // create a text mesh (pivot point in lower left corner)
     Mesh* helloWorld = Text::createTextMesh("Hello world");
 
-    r.draw(helloWorld, glm::mat4(1), fontShader);
+    SimpleRenderEngine::instance->draw(helloWorld, glm::mat4(1), fontShader);
 
     r.swapWindow();
     SDL_Delay(10000);
