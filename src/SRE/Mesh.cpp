@@ -18,7 +18,7 @@
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 namespace SRE {
-    Mesh::Mesh(std::vector<glm::vec3> &vertexPositions, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs, MeshTopology meshTopology)
+    Mesh::Mesh(const std::vector<glm::vec3> &vertexPositions,const  std::vector<glm::vec3> &normals,const std::vector<glm::vec2> &uvs, MeshTopology meshTopology)
         :meshTopology{meshTopology}
     {
         glGenBuffers(1, &vertexBufferId);
@@ -225,24 +225,24 @@ namespace SRE {
         return vertexCount;
     }
 
-    void Mesh::update(std::vector<glm::vec3> &vertexPositions, std::vector<glm::vec3> &normals,
-                      std::vector<glm::vec2> &uvs) {
+    void Mesh::update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals,
+                      const std::vector<glm::vec2> &uvs) {
+        this->vertexPositions = vertexPositions;
+        this->normals = normals;
+        this->uvs = uvs;
         this->vertexCount = (int) vertexPositions.size();
-        if (normals.size() < vertexPositions.size()){
-            normals.resize(vertexPositions.size(), glm::vec3(0,0,0));
-        }
-        if (uvs.size() < vertexPositions.size()){
-            uvs.resize(vertexPositions.size(), glm::vec2(0,0));
-        }
+        bool hasNormals = normals.size() == vertexPositions.size();
+        bool hasUVs = normals.size() == vertexPositions.size();
+
         // interleave data
         int floatsPerVertex = 8;
         std::vector<float> interleavedData(vertexPositions.size() * floatsPerVertex);
         for (int i=0;i<vertexPositions.size();i++){
             for (int j=0;j<3;j++){
                 interleavedData[i*8+j] = vertexPositions[i][j];
-                interleavedData[i*8+j+3] = normals[i][j];
+                interleavedData[i*8+j+3] = hasNormals ? normals[i][j] : 0.0f;
                 if (j<2){
-                    interleavedData[i*8+j+6] = uvs[i][j];
+                    interleavedData[i*8+j+6] = hasUVs ? uvs[i][j] : 0.0f;
                 }
             }
         }
@@ -258,6 +258,17 @@ namespace SRE {
             glEnableVertexAttribArray(i);
             glVertexAttribPointer(i, length[i],GL_FLOAT,GL_FALSE, 8 * sizeof(float), BUFFER_OFFSET(offset[i] * sizeof(float)));
         }
+    }
 
+    const std::vector<glm::vec3> &Mesh::getVertexPositions() {
+        return vertexPositions;
+    }
+
+    const std::vector<glm::vec3> &Mesh::getNormals() {
+        return normals;
+    }
+
+    const std::vector<glm::vec2> &Mesh::getUVs() {
+        return uvs;
     }
 }

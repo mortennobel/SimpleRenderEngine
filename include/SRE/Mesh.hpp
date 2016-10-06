@@ -22,13 +22,17 @@ namespace SRE {
      */
     class DllExport Mesh {
     public:
-        Mesh(std::vector<glm::vec3> &vertexPositions, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs, MeshTopology meshTopology = MeshTopology::Triangles);
+        Mesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals, const std::vector<glm::vec2> &uvs, MeshTopology meshTopology = MeshTopology::Triangles);
         ~Mesh();
 
-        void update(std::vector<glm::vec3> &vertexPositions, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs);
+        void update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals, const std::vector<glm::vec2> &uvs);
 
         int getVertexCount();
         MeshTopology getMeshTopology();
+
+        const std::vector<glm::vec3>& getVertexPositions();
+        const std::vector<glm::vec3>& getNormals();
+        const std::vector<glm::vec2>& getUVs();
 
         static Mesh* createQuad();
         static Mesh* createCube();
@@ -38,6 +42,10 @@ namespace SRE {
         unsigned int vertexBufferId;
         unsigned int vertexArrayObject;
         int vertexCount;
+
+        std::vector<glm::vec3> vertexPositions;
+        std::vector<glm::vec3> normals;
+        std::vector<glm::vec2> uvs;
 
         void bind();
 
