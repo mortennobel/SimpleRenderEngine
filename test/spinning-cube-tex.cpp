@@ -50,9 +50,9 @@ int main() {
     r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
     Shader* shader = Shader::getUnlit();
-//    shader->setTexture("tex", Texture::createPNGTextureFile("test-data/test.jpg",true));
-//    shader->setTexture("tex", Texture::createPNGTextureFile("test-data/twitter.png",true));
-    shader->setTexture("tex", Texture::createFromFile("test-data/cartman.png", true));
+//    shader->set("tex", Texture::createPNGTextureFile("test-data/test.jpg",true));
+//    shader->set("tex", Texture::createPNGTextureFile("test-data/twitter.png",true));
+    shader->set("tex", Texture::createFromFile("test-data/cartman.png", true));
     Mesh* mesh = Mesh::createCube();
 
     float duration = 10000;

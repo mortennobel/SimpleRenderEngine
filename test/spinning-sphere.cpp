@@ -50,7 +50,7 @@ int main() {
     r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1f,100);
     Shader* shader = Shader::getStandard();
-    shader->setFloat("specularity",20);
+    shader->set("specularity",20);
     Mesh* mesh = Mesh::createSphere();
 
     bool point = true;

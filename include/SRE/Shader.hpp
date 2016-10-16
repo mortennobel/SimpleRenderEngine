@@ -9,6 +9,8 @@
 
 #include "SRE/Export.hpp"
 
+#include "CPPShim.hpp"
+
 namespace SRE {
     class Texture;
 
@@ -66,17 +68,29 @@ namespace SRE {
 
         ~Shader();
 
-        bool setMatrix(const char *name, glm::mat4 value);
-        bool setMatrix(const char *name, glm::mat3 value);
+        DEPRECATED("use set() instead") bool setMatrix(const char *name, glm::mat4 value);
+        DEPRECATED("use set() instead") bool setMatrix(const char *name, glm::mat3 value);
 
-        bool setVector(const char *name, glm::vec4 value);
+        DEPRECATED("use set() instead") bool setVector(const char *name, glm::vec4 value);
 
-        bool setFloat(const char *name, float value);
+        DEPRECATED("use set() instead") bool setFloat(const char *name, float value);
 
-        bool setInt(const char *name, int value);
+        DEPRECATED("use set() instead") bool setInt(const char *name, int value);
 
         /// textureSlot: If sampling multiple textures from a single shader, each texture must be bound to a unique texture slot
-        bool setTexture(const char *name, Texture* texture, unsigned int textureSlot = 0);
+        DEPRECATED("use set() instead") bool setTexture(const char *name, Texture* texture, unsigned int textureSlot = 0);
+
+        bool set(const char *name, glm::mat4 value);
+        bool set(const char *name, glm::mat3 value);
+
+        bool set(const char *name, glm::vec4 value);
+
+        bool set(const char *name, float value);
+
+        bool set(const char *name, int value);
+
+        /// textureSlot: If sampling multiple textures from a single shader, each texture must be bound to a unique texture slot
+        bool set(const char *name, Texture* texture, unsigned int textureSlot = 0);
 
         void setDepthTest(bool enable);
 

@@ -81,11 +81,11 @@ namespace SRE {
         }
 
         shader->bind();
-        shader->setMatrix("model", modelTransform);
-        shader->setMatrix("view", camera->getViewTransform());
-        shader->setMatrix("projection", camera->getProjectionTransform());
+        shader->set("model", modelTransform);
+        shader->set("view", camera->getViewTransform());
+        shader->set("projection", camera->getProjectionTransform());
         auto normalMatrix = glm::transpose(glm::inverse((glm::mat3)(camera->getViewTransform()*modelTransform)));
-        shader->setMatrix("normalMat", normalMatrix);
+        shader->set("normalMat", normalMatrix);
         shader->setLights(sceneLights, ambientLight, camera->getViewTransform());
 
         mesh->bind();

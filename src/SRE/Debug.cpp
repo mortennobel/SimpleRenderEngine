@@ -32,7 +32,7 @@ namespace SRE {
 		Mesh mesh(verts, normals, uvs,MeshTopology::Lines);
 
         Shader* shader = Shader::getUnlit();
-        shader->setVector("color", color);
+        shader->set("color", color);
         if (SimpleRenderEngine::instance != nullptr){
             SimpleRenderEngine::instance->draw(&mesh, glm::mat4(1),shader);
         }

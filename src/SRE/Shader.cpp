@@ -125,6 +125,30 @@ namespace SRE {
     }
 
     bool Shader::setMatrix(const char *name, glm::mat4 value) {
+        return set(name, value);
+    }
+
+    bool Shader::setMatrix(const char *name, glm::mat3 value) {
+        return set(name, value);
+    }
+
+    bool Shader::setVector(const char *name, glm::vec4 value) {
+        return set(name, value);
+    }
+
+    bool Shader::setFloat(const char *name, float value) {
+        return set(name, value);
+    }
+
+    bool Shader::setInt(const char *name, int value) {
+        return set(name, value);
+    }
+
+    bool Shader::setTexture(const char *name, Texture *texture, unsigned int textureSlot) {
+        return set(name, texture, textureSlot);
+    }
+
+    bool Shader::set(const char *name, glm::mat4 value) {
         glUseProgram(shaderProgramId);
         GLint location = glGetUniformLocation(shaderProgramId, name);
         if (location == -1) {
@@ -134,7 +158,7 @@ namespace SRE {
         return true;
     }
 
-    bool Shader::setMatrix(const char *name, glm::mat3 value) {
+    bool Shader::set(const char *name, glm::mat3 value) {
         glUseProgram(shaderProgramId);
         GLint location = glGetUniformLocation(shaderProgramId, name);
         if (location == -1) {
@@ -144,7 +168,7 @@ namespace SRE {
         return true;
     }
 
-    bool Shader::setVector(const char *name, glm::vec4 value) {
+    bool Shader::set(const char *name, glm::vec4 value) {
         glUseProgram(shaderProgramId);
         GLint location = glGetUniformLocation(shaderProgramId, name);
         if (location == -1) {
@@ -154,7 +178,7 @@ namespace SRE {
         return true;
     }
 
-    bool Shader::setFloat(const char *name, float value) {
+    bool Shader::set(const char *name, float value) {
         glUseProgram(shaderProgramId);
         GLint location = glGetUniformLocation(shaderProgramId, name);
         if (location == -1) {
@@ -164,7 +188,7 @@ namespace SRE {
         return true;
     }
 
-    bool Shader::setInt(const char *name, int value) {
+    bool Shader::set(const char *name, int value) {
         glUseProgram(shaderProgramId);
         GLint location = glGetUniformLocation(shaderProgramId, name);
         if (location == -1) {
@@ -174,7 +198,7 @@ namespace SRE {
         return true;
     }
 
-    bool Shader::setTexture(const char *name, Texture *texture, unsigned int textureSlot) {
+    bool Shader::set(const char *name, Texture *texture, unsigned int textureSlot) {
         glUseProgram(shaderProgramId);
         GLint location = glGetUniformLocation(shaderProgramId, name);
         if (location == -1) {
@@ -300,8 +324,8 @@ void main(void)
 }
 )";
         unlit = createShader(vertexShader, fragmentShader);
-        unlit->setVector("color", glm::vec4(1));
-        unlit->setTexture("tex", Texture::getWhiteTexture());
+        unlit->set("color", glm::vec4(1));
+        unlit->set("tex", Texture::getWhiteTexture());
         return unlit;
     }
     
@@ -337,8 +361,8 @@ void main(void)
         }
         )";
         unlitSprite = createShader(vertexShader, fragmentShader);
-        unlitSprite->setVector("color", glm::vec4(1));
-        unlitSprite->setTexture("tex", Texture::getWhiteTexture());
+        unlitSprite->set("color", glm::vec4(1));
+        unlitSprite->set("tex", Texture::getWhiteTexture());
         unlitSprite->setBlend(BlendType::AlphaBlending);
         unlitSprite->setDepthTest(false);
         return unlitSprite;
@@ -377,8 +401,8 @@ void main(void)
 }
 )";
     unlit = createShader(vertexShader, fragmentShader);
-    unlit->setVector("color", glm::vec4(1));
-    unlit->setTexture("tex", Texture::getFontTexture());
+    unlit->set("color", glm::vec4(1));
+    unlit->set("tex", Texture::getFontTexture());
     unlit->setBlend(BlendType::AlphaBlending);
     return unlit;
 }
@@ -538,9 +562,9 @@ void main(void)
 }
 )";
         standard = createShader(vertexShader, fragmentShader);
-        standard->setVector("color", glm::vec4(1));
-        standard->setFloat("specularity", 0);
-        standard->setTexture("tex", Texture::getWhiteTexture());
+        standard->set("color", glm::vec4(1));
+        standard->set("specularity", 0);
+        standard->set("tex", Texture::getWhiteTexture());
         return standard;
     }
 }
