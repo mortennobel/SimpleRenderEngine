@@ -152,6 +152,9 @@ namespace SRE {
         glUseProgram(shaderProgramId);
         GLint location = glGetUniformLocation(shaderProgramId, name);
         if (location == -1) {
+#ifdef DEBUG
+            std::cout<<"Cannot find shader uniform "<<name<<endl;
+#endif
             return false;
         }
         glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
@@ -162,6 +165,9 @@ namespace SRE {
         glUseProgram(shaderProgramId);
         GLint location = glGetUniformLocation(shaderProgramId, name);
         if (location == -1) {
+#ifdef DEBUG
+            std::cout<<"Cannot find shader uniform "<<name<<endl;
+#endif
             return false;
         }
         glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
@@ -172,6 +178,9 @@ namespace SRE {
         glUseProgram(shaderProgramId);
         GLint location = glGetUniformLocation(shaderProgramId, name);
         if (location == -1) {
+#ifdef DEBUG
+            std::cout<<"Cannot find shader uniform "<<name<<endl;
+#endif
             return false;
         }
         glUniform4fv(location, 1, glm::value_ptr(value));
@@ -182,6 +191,9 @@ namespace SRE {
         glUseProgram(shaderProgramId);
         GLint location = glGetUniformLocation(shaderProgramId, name);
         if (location == -1) {
+#ifdef DEBUG
+            std::cout<<"Cannot find shader uniform "<<name<<endl;
+#endif
             return false;
         }
         glUniform1f(location, value);
@@ -192,6 +204,9 @@ namespace SRE {
         glUseProgram(shaderProgramId);
         GLint location = glGetUniformLocation(shaderProgramId, name);
         if (location == -1) {
+#ifdef DEBUG
+            std::cout<<"Cannot find shader uniform "<<name<<endl;
+#endif
             return false;
         }
         glUniform1i(location, value);
@@ -202,6 +217,9 @@ namespace SRE {
         glUseProgram(shaderProgramId);
         GLint location = glGetUniformLocation(shaderProgramId, name);
         if (location == -1) {
+#ifdef DEBUG
+            std::cout<<"Cannot find shader uniform "<<name<<endl;
+#endif
             return false;
         }
 
@@ -222,7 +240,6 @@ namespace SRE {
 
         location = glGetUniformLocation(shaderProgramId, "lightPosType");
         GLint location2 = glGetUniformLocation(shaderProgramId, "lightColorRange");
-        GLint location3 = glGetUniformLocation(shaderProgramId, "lightSpecular");
         if (location == -1 || location2 == -1) {
             return false;
         }
