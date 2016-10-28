@@ -4,7 +4,7 @@
 
 #include "SRE/Mesh.hpp"
 
-#include "SRE/SREGL.hpp"
+#include "SRE/GL.hpp"
 #include <glm/gtc/constants.hpp>
 #include <iostream>
 

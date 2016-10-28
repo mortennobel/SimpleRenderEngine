@@ -7,7 +7,7 @@
 #include "SRE/Shader.hpp"
 #include "SRE/Mesh.hpp"
 
-#include "SRE/SREGL.hpp"
+#include "SRE/GL.hpp"
 #include <iostream>
 #include <algorithm>
 
