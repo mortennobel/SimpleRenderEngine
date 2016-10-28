@@ -17,13 +17,14 @@ SRE provides:
  * Forward rendering
  * Full C++11/C++14 support
  * Support for 2D or 3D rendering
+ * GUI rendering (using imgui)
 
 To keep SRE as simple and flexible as possible the following features are not a part of SRE:
  * Resource management
  * Scenegraphs
  * Deferred rendering
  * Bump mapping
- * No shadowmap support
+ * Shadowmap support
 
  ## Examples
  
