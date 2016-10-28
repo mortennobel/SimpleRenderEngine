@@ -63,8 +63,6 @@ int main() {
 
     // Close and destroy the window
     SDL_DestroyWindow(window);
-    // Close and destroy the window
-    SDL_DestroyWindow(window);
 
     // Clean up
     SDL_Quit();

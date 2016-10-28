@@ -8,6 +8,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 file(GLOB SOURCE_FILES
 	"src/SRE/*.cpp"
 	"include/SRE/*.hpp"
+    "src/imgui/*.cpp"
+    "src/imgui/*.h"
 )
 
 add_executable(SRE-Spinning-Cube ${SOURCE_FILES} test/spinning-cube.cpp)
@@ -17,11 +19,14 @@ add_executable(SRE-Spinning-Sphere-Unlit ${SOURCE_FILES} test/spinning-sphere-un
 add_executable(SRE-Spinning-Cube-Tex ${SOURCE_FILES} test/spinning-cube-tex.cpp)
 add_executable(SRE-Hello-Engine ${SOURCE_FILES} test/hello-engine.cpp)
 add_executable(SRE-Text-Render ${SOURCE_FILES} test/text-render.cpp)
+add_executable(SRE-GUI ${SOURCE_FILES} test/gui.cpp)
 
 add_library(SRE STATIC ${SOURCE_FILES})
 
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
+include_directories(sre)
+include_directories(include/imgui)
 
 #########################################################
 # FIND OPENGL
@@ -71,6 +76,7 @@ target_link_libraries(SRE-Spinning-Sphere-Unlit ${EXTRA_LIBS} ${SDL2_LIBRARY} ${
 target_link_libraries(SRE-Spinning-Cube-Tex ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 target_link_libraries(SRE-Hello-Engine ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 target_link_libraries(SRE-Text-Render ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
+target_link_libraries(SRE-GUI ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 target_link_libraries(SRE ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 
 file(COPY test-data DESTINATION Debug)
