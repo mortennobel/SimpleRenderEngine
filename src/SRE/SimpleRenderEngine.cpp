@@ -38,7 +38,7 @@ namespace SRE {
 
         std::cout << glGetString(GL_VERSION) << std::endl;
         std::cout << "OpenGL version "<<glGetString(GL_VERSION) << std::endl;
-        std::cout << "SRE version "<<sre_version_major<<"."<<sre_version_minor << std::endl;
+        std::cout << "SRE version "<<sre_version_major<<"."<<sre_version_minor <<"."<<sre_version_point << std::endl;
 
 
         // setup opengl context
