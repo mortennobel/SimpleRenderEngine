@@ -4,14 +4,7 @@
 
 #include "SRE/Camera.hpp"
 
-#if defined(_WIN32)
-#   define GLEW_STATIC
-#   include <GL/glew.h>
-#elif defined __linux__
-#   include <GL/glew.h>
-#else
-#   include <OpenGL/gl3.h>
-#endif
+#include "SRE/SREGL.hpp"
 
 #include "SRE/SimpleRenderEngine.hpp"
 #include <glm/gtc/matrix_transform.hpp>
