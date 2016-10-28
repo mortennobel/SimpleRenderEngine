@@ -4,7 +4,7 @@
 
 #include "SRE/Camera.hpp"
 
-#include "SRE/SREGL.hpp"
+#include "SRE/GL.hpp"
 
 #include "SRE/SimpleRenderEngine.hpp"
 #include <glm/gtc/matrix_transform.hpp>

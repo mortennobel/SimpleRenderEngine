@@ -1,6 +1,6 @@
 #include "SRE/Texture.hpp"
 
-#include "SRE/SREGL.hpp"
+#include "SRE/GL.hpp"
 #include <stdio.h>
 #include <SDL_surface.h>
 
