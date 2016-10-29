@@ -9,7 +9,8 @@ file(GLOB SOURCE_FILES
 	"src/SRE/*.cpp"
 	"include/SRE/*.hpp"
     "src/imgui/*.cpp"
-    "src/imgui/*.h"
+    "include/imgui/*.h"
+    "include/glm/**.hpp"
 )
 
 add_executable(SRE-Spinning-Cube ${SOURCE_FILES} test/spinning-cube.cpp)
@@ -27,6 +28,7 @@ find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
 include_directories(sre)
 include_directories(include/imgui)
+include_directories(include/glm)
 
 #########################################################
 # FIND OPENGL
@@ -52,22 +54,6 @@ find_package(SDL2_IMAGE REQUIRED)
 include_directories(${SDL2_IMAGE_INCLUDE_DIRS})
 include_directories(include)
 
-# GLM -- on Windows: depends on env var: GLM_ROOT_DIR
-find_package (glm REQUIRED)
-
-IF(UNIX AND NOT APPLE)
-    IF( glm_FOUND )
-        INCLUDE_DIRECTORIES( ${GLM_INCLUDE_DIR} )
-    ELSE( glm_FOUND )
-        MESSAGE( STATUS "Failed to find GLM ----------------------")
-    ENDIF( glm_FOUND )
-ELSE(UNIX AND NOT APPLE)
-    IF( GLM_FOUND )
-        INCLUDE_DIRECTORIES( ${GLM_INCLUDE_DIR} )
-    ELSE( GLM_FOUND )
-        MESSAGE( STATUS "Failed to find GLM ----------------------")
-    ENDIF( GLM_FOUND )
-ENDIF(UNIX AND NOT APPLE)
 
 target_link_libraries(SRE-Spinning-Cube ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 target_link_libraries(SRE-Spinning-Sphere ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
