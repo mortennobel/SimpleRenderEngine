@@ -66,7 +66,6 @@ namespace SRE {
             std::cerr<<"Cannot render. Camera is null"<<std::endl;
             return;
         }
-
         shader->bind();
         shader->set("model", modelTransform);
         shader->set("view", camera->getViewTransform());
@@ -76,8 +75,12 @@ namespace SRE {
         shader->setLights(sceneLights, ambientLight, camera->getViewTransform());
 
         mesh->bind();
-
-        glDrawArrays((GLenum) mesh->getMeshTopology(), 0, mesh->getVertexCount());
+        int indexCount = mesh->getIndices().size();
+        if (indexCount == 0){
+            glDrawArrays((GLenum) mesh->getMeshTopology(), 0, mesh->getVertexCount());
+        } else {
+            glDrawElements((GLenum) mesh->getMeshTopology(), indexCount, GL_UNSIGNED_SHORT, 0);
+        }
     }
 
     void SimpleRenderEngine::setCamera(Camera *camera) {

@@ -60,8 +60,8 @@ int main() {
     bool show_another_window = false;
     ImVec4 clear_color = ImColor(114, 144, 154);
 
-
-    r.setLight(0, Light(LightType::Point,{0, 1,0},{0,0,0},{1,0,0},2));
+    shader->set("specularity", 20.0f);
+    r.setLight(0, Light(LightType::Point,{0, 0,10},{0,0,0},{1,0,0},5));
     bool quit = false;
     float time = 0;
     while (!quit){

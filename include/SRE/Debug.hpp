@@ -18,6 +18,8 @@ namespace SRE {
         static void drawLine(glm::vec3 from, glm::vec3 to);
     private:
         static glm::vec4 color;
+        // For internal debugging of gl errors
+        static void checkGLError();
     };
 }
 

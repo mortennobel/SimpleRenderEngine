@@ -105,7 +105,55 @@ namespace SRE {
             return nullptr;
         }
 
+        res->updateUniforms();
+
         return res;
+    }
+
+    void Shader::updateUniforms() {
+        uniforms.clear();
+        GLint uniformCount;
+        glGetProgramiv(shaderProgramId,GL_ACTIVE_UNIFORMS,&uniformCount);
+        UniformType uniformType = UniformType::Invalid;
+        for (int i=0;i<uniformCount;i++){
+            const int nameSize = 50;
+            GLchar name[nameSize];
+            GLsizei nameLength;
+            GLint size;
+            GLenum type;
+            glGetActiveUniform(	shaderProgramId,
+                    i,
+                    nameSize,
+                    &nameLength,
+                    &size,
+                    &type,
+                    name);
+            switch (type){
+                case GL_FLOAT:
+                    uniformType = UniformType::Float;
+                    break;
+                case GL_FLOAT_VEC4:
+                    uniformType = UniformType::Vec4;
+                    break;
+                case GL_INT:
+                    uniformType = UniformType::Int;
+                    break;
+                case GL_FLOAT_MAT3:
+                    uniformType = UniformType::Mat3;
+                    break;
+                case GL_FLOAT_MAT4:
+                    uniformType = UniformType::Mat4;
+                    break;
+                case GL_SAMPLER_2D:
+                    uniformType = UniformType::Texture;
+                    break;
+                default:
+                std::cerr << "Unsupported shader type "<<type<<" name "<<name<<std::endl;
+            }
+
+            GLint location = glGetUniformLocation(shaderProgramId, name);
+            uniforms[name] = {location,uniformType,size};
+        }
     }
 
     Shader::Shader() {
@@ -142,99 +190,143 @@ namespace SRE {
 
     bool Shader::set(const char *name, glm::mat4 value) {
         glUseProgram(shaderProgramId);
-        GLint location = glGetUniformLocation(shaderProgramId, name);
-        if (location == -1) {
-#ifdef DEBUG
-            std::cout<<"Cannot find shader uniform "<<name<<endl;
+        auto uniform = getType(name);
+        if (uniform.id == -1) {
+#ifndef NDEBUG
+            std::cerr<<"Cannot find shader uniform "<<name<<std::endl;
 #endif
             return false;
         }
-        glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+#ifndef NDEBUG
+        if (uniform.type != UniformType::Mat4){
+            std::cerr << "Invalid shader uniform type for "<<name<<std::endl;
+        }
+        if (uniform.arrayCount != 1){
+            std::cerr << "Invalid shader uniform array count for "<<name<<std::endl;
+        }
+#endif
+        glUniformMatrix4fv(uniform.id, 1, GL_FALSE, glm::value_ptr(value));
         return true;
     }
 
     bool Shader::set(const char *name, glm::mat3 value) {
         glUseProgram(shaderProgramId);
-        GLint location = glGetUniformLocation(shaderProgramId, name);
-        if (location == -1) {
-#ifdef DEBUG
-            std::cout<<"Cannot find shader uniform "<<name<<endl;
+        auto uniform = getType(name);
+        if (uniform.id == -1) {
+#ifndef NDEBUG
+            std::cout<<"Cannot find shader uniform "<<name<<std::endl;
 #endif
             return false;
         }
-        glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
+#ifndef NDEBUG
+        if (uniform.type != UniformType::Mat3){
+            std::cerr << "Invalid shader uniform type for "<<name<<std::endl;
+        }
+        if (uniform.arrayCount != 1){
+            std::cerr << "Invalid shader uniform array count for "<<name<<std::endl;
+        }
+#endif
+        glUniformMatrix3fv(uniform.id, 1, GL_FALSE, glm::value_ptr(value));
         return true;
     }
 
     bool Shader::set(const char *name, glm::vec4 value) {
         glUseProgram(shaderProgramId);
-        GLint location = glGetUniformLocation(shaderProgramId, name);
-        if (location == -1) {
-#ifdef DEBUG
-            std::cout<<"Cannot find shader uniform "<<name<<endl;
+        auto uniform = getType(name);
+        if (uniform.id == -1) {
+#ifndef NDEBUG
+            std::cout<<"Cannot find shader uniform "<<name<<std::endl;
 #endif
             return false;
         }
-        glUniform4fv(location, 1, glm::value_ptr(value));
+#ifndef NDEBUG
+        if (uniform.type != UniformType::Vec4){
+            std::cerr << "Invalid shader uniform type for "<<name<<std::endl;
+        }
+        if (uniform.arrayCount != 1){
+            std::cerr << "Invalid shader uniform array count for "<<name<<std::endl;
+        }
+#endif
+        glUniform4fv(uniform.id, 1, glm::value_ptr(value));
         return true;
     }
 
     bool Shader::set(const char *name, float value) {
         glUseProgram(shaderProgramId);
-        GLint location = glGetUniformLocation(shaderProgramId, name);
-        if (location == -1) {
-#ifdef DEBUG
-            std::cout<<"Cannot find shader uniform "<<name<<endl;
+
+        auto uniform = getType(name);
+        if (uniform.id == -1) {
+#ifndef NDEBUG
+            std::cout<<"Cannot find shader uniform "<<name<<std::endl;
 #endif
             return false;
         }
-        glUniform1f(location, value);
+#ifndef NDEBUG
+        if (uniform.type != UniformType::Float){
+            std::cerr << "Invalid shader uniform type for "<<name<<std::endl;
+        }
+        if (uniform.arrayCount != 1){
+            std::cerr << "Invalid shader uniform array count for "<<name<<std::endl;
+        }
+#endif
+        glUniform1f(uniform.id, value);
         return true;
     }
 
     bool Shader::set(const char *name, int value) {
         glUseProgram(shaderProgramId);
-        GLint location = glGetUniformLocation(shaderProgramId, name);
-        if (location == -1) {
-#ifdef DEBUG
-            std::cout<<"Cannot find shader uniform "<<name<<endl;
+        auto uniform = getType(name);
+        if (uniform.id == -1) {
+#ifndef NDEBUG
+            std::cout<<"Cannot find shader uniform "<<name<<std::endl;
 #endif
             return false;
         }
-        glUniform1i(location, value);
+#ifndef NDEBUG
+        if (uniform.type != UniformType::Int){
+            std::cerr << "Invalid shader uniform type for "<<name << std::endl;
+        }
+        if (uniform.arrayCount != 1){
+            std::cerr << "Invalid shader uniform array count for "<<name<<std::endl;
+        }
+#endif
+        glUniform1i(uniform.id, value);
         return true;
     }
 
     bool Shader::set(const char *name, Texture *texture, unsigned int textureSlot) {
         glUseProgram(shaderProgramId);
-        GLint location = glGetUniformLocation(shaderProgramId, name);
-        if (location == -1) {
-#ifdef DEBUG
-            std::cout<<"Cannot find shader uniform "<<name<<endl;
+        auto uniform = getType(name);
+        if (uniform.id == -1) {
+#ifndef NDEBUG
+            std::cout<<"Cannot find shader uniform "<<name<<std::endl;
 #endif
             return false;
         }
-
+#ifndef NDEBUG
+        if (uniform.type != UniformType::Texture){
+            std::cerr << "Invalid shader uniform type for "<<name <<std::endl;
+        }
+        if (uniform.arrayCount != 1){
+            std::cerr << "Invalid shader uniform array count for "<<name << std::endl;
+        }
+#endif
         glActiveTexture(GL_TEXTURE0 + textureSlot);
         glBindTexture(GL_TEXTURE_2D, texture->textureId);
-        glUniform1i(location, textureSlot);
+        glUniform1i(uniform.id, textureSlot);
         return true;
     }
 
     bool Shader::setLights(Light value[4], glm::vec4 ambient, glm::mat4 viewTransform){
         glUseProgram(shaderProgramId);
 
-        GLint location = glGetUniformLocation(shaderProgramId, "ambientLight");
-        if (location == -1) {
-            return false;
+        auto uniform = getType("ambientLight");
+        if (uniform.id != -1) {
+            glUniform4fv(uniform.id, 1, glm::value_ptr(ambient));
         }
-        glUniform4fv(location, 1, glm::value_ptr(ambient));
 
-        location = glGetUniformLocation(shaderProgramId, "lightPosType");
-        GLint location2 = glGetUniformLocation(shaderProgramId, "lightColorRange");
-        if (location == -1 || location2 == -1) {
-            return false;
-        }
+        uniform = getType("lightPosType[0]");
+        auto uniform2 = getType("lightColorRange[0]");
 
         glm::vec4 lightPosType[4];
         glm::vec4 lightColorRange[4];
@@ -251,9 +343,18 @@ namespace SRE {
             lightPosType[i] = viewTransform * lightPosType[i];
             lightColorRange[i] = glm::vec4(value[i].color, value[i].range);
         }
-        glUniform4fv(location, 4, glm::value_ptr(lightPosType[0]));
-        glUniform4fv(location2, 4, glm::value_ptr(lightColorRange[0]));
-
+        if (uniform.id != -1) {
+            if (uniform.arrayCount != 4){
+                std::cerr << "Invalid shader uniform array count for lightPosType"<<std::endl;
+            }
+            glUniform4fv(uniform.id, 4, glm::value_ptr(lightPosType[0]));
+        }
+        if (uniform2.id != -1) {
+            if (uniform.arrayCount != 4){
+                std::cerr << "Invalid shader uniform array count for lightColorRange"<<std::endl;
+            }
+            glUniform4fv(uniform2.id, 4, glm::value_ptr(lightColorRange[0]));
+        }
         return true;
     }
 
@@ -572,8 +673,23 @@ void main(void)
 )";
         standard = createShader(vertexShader, fragmentShader);
         standard->set("color", glm::vec4(1));
-        standard->set("specularity", 0);
+        standard->set("specularity", 0.0f);
         standard->set("tex", Texture::getWhiteTexture());
         return standard;
     }
+
+    bool Shader::contains(const char *name) {
+        return uniforms.find(name) != uniforms.end();
+    }
+
+    Uniform Shader::getType(const char *name) {
+        auto res = uniforms.find(name);
+        if (res != uniforms.end()){
+            return uniforms[name];
+        } else {
+            return {-1, UniformType::Invalid, -1};
+        }
+    }
+
+
 }

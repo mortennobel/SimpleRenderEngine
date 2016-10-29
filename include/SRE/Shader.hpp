@@ -10,9 +10,28 @@
 #include "SRE/Export.hpp"
 
 #include "CPPShim.hpp"
+#include <string>
+#include <map>
 
 namespace SRE {
     class Texture;
+
+    enum class UniformType {
+        Int,
+        Float,
+        Mat3,
+        Mat4,
+        Vec4,
+        Texture,
+        Invalid
+    };
+
+    struct Uniform {
+        int id;
+        UniformType type;
+        // 1 means not array
+        int arrayCount;
+    };
 
     /**
      * Controls the apperance of the rendered objects.
@@ -80,6 +99,10 @@ namespace SRE {
         /// textureSlot: If sampling multiple textures from a single shader, each texture must be bound to a unique texture slot
         DEPRECATED("use set() instead") bool setTexture(const char *name, Texture* texture, unsigned int textureSlot = 0);
 
+        bool contains(const char* name);
+
+        Uniform getType(const char* name);
+
         bool set(const char *name, glm::mat4 value);
         bool set(const char *name, glm::mat3 value);
 
@@ -123,6 +146,9 @@ namespace SRE {
         bool depthTest = true;
         bool depthWrite = true;
         BlendType blend = BlendType::Disabled;
+
+        std::map<std::string, Uniform> uniforms;
+        void updateUniforms();
 
         friend class Mesh;
         friend class SimpleRenderEngine;
