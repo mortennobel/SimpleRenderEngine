@@ -4,8 +4,8 @@ The goal of SimpleRenderEngine (SRE) is to provide easy way to get started with 
 programming in 2D or 3D without a deep knowledge about the low-level graphics APIs like 
 OpenGL, DirectX and Vulkan.
  
-SRE currently depends on Simple Direct Layer 2.x (SDL2), SDL2-image, OpenGL Mathematics (GLM), and OpenGL 3.3 (or higher), and 
-runs on both Windows, macOS and Linux.
+SRE currently depends on Simple Direct Layer 2.x (SDL2), SDL2-image, OpenGL Mathematics (GLM), and OpenGL 3.3 (or higher),
+imgui and runs on both Windows, macOS and Linux.
  
 SRE provides:
  * Virtual camera (perspective and orthographic)
