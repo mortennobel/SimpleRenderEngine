@@ -241,7 +241,7 @@ namespace SRE {
         this->vertexCount = (int) vertexPositions.size();
         this->indices = indices;
         bool hasNormals = normals.size() == vertexPositions.size();
-        bool hasUVs = normals.size() == vertexPositions.size();
+        bool hasUVs = uvs.size() == vertexPositions.size();
 
         // interleave data
         int floatsPerVertex = 8;
