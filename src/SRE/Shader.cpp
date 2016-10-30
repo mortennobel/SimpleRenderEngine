@@ -150,7 +150,11 @@ namespace SRE {
                 default:
                 std::cerr << "Unsupported shader type "<<type<<" name "<<name<<std::endl;
             }
-
+            // remove [0] if exists
+            char *bracketIndex = strchr(name, '[');
+            if (bracketIndex != nullptr){
+                *bracketIndex = '\0';
+            }
             GLint location = glGetUniformLocation(shaderProgramId, name);
             uniforms[name] = {location,uniformType,size};
         }
