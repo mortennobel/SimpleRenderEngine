@@ -329,9 +329,6 @@ namespace SRE {
             glUniform4fv(uniform.id, 1, glm::value_ptr(ambient));
         }
 
-        uniform = getType("lightPosType[0]");
-        auto uniform2 = getType("lightColorRange[0]");
-
         glm::vec4 lightPosType[4];
         glm::vec4 lightColorRange[4];
         for (int i=0;i<4;i++){
@@ -347,17 +344,19 @@ namespace SRE {
             lightPosType[i] = viewTransform * lightPosType[i];
             lightColorRange[i] = glm::vec4(value[i].color, value[i].range);
         }
+        uniform = getType("lightPosType");
         if (uniform.id != -1) {
             if (uniform.arrayCount != 4){
                 std::cerr << "Invalid shader uniform array count for lightPosType"<<std::endl;
             }
             glUniform4fv(uniform.id, 4, glm::value_ptr(lightPosType[0]));
         }
-        if (uniform2.id != -1) {
+        uniform = getType("lightColorRange");
+        if (uniform.id != -1) {
             if (uniform.arrayCount != 4){
                 std::cerr << "Invalid shader uniform array count for lightColorRange"<<std::endl;
             }
-            glUniform4fv(uniform2.id, 4, glm::value_ptr(lightColorRange[0]));
+            glUniform4fv(uniform.id, 4, glm::value_ptr(lightColorRange[0]));
         }
         return true;
     }
@@ -614,7 +613,7 @@ vec3 computeLight(){
         // diffuse light
         float thisDiffuse = max(0.0,dot(lightDirection, normal));
         if (thisDiffuse > 0.0){
-            lightColor += (att * diffuseFrac * thisDiffuse) * lightColorRange[i].xyz;
+           lightColor += (att * diffuseFrac * thisDiffuse) * lightColorRange[i].xyz;
         }
         // specular light
         if (specularity > 0){

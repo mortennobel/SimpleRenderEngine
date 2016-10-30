@@ -5,7 +5,9 @@
 #include "SRE/Light.hpp"
 
 namespace SRE{
-    Light::Light(){
+    Light::Light()
+    :lightType(LightType::Unused)
+    {
 
     }
 
