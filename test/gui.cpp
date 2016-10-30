@@ -62,6 +62,9 @@ int main() {
 
     shader->set("specularity", 20.0f);
     r.setLight(0, Light(LightType::Point,{0, 0,10},{0,0,0},{1,0,0},5));
+    float f = 1.0f;
+
+    r.setLight(0, Light(LightType::Point,{0, 1,0},{0,0,0},{1,0,0},2,20));
     bool quit = false;
     float time = 0;
     while (!quit){
@@ -75,7 +78,7 @@ int main() {
                 quit = true;
         }
 
-        r.clearScreen({1,0,0,1});
+        r.clearScreen({clear_color.x,clear_color.y,clear_color.z,1.0f});
         r.draw(mesh, glm::eulerAngleY(time), shader);
 
         ImGui_SRE_NewFrame(window);
@@ -83,9 +86,9 @@ int main() {
         // 1. Show a simple window
         // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
         {
-            static float f = 0.0f;
+
             ImGui::Text("Hello, world!");
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+            ImGui::SliderFloat("rotationSpeed", &f, 0.0f, 1.0f);
             ImGui::ColorEdit3("clear color", (float*)&clear_color);
             if (ImGui::Button("Another Window")) show_another_window ^= 1;
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -104,7 +107,7 @@ int main() {
 
         r.swapWindow();
         SDL_Delay(16);
-        time += .016f;
+        time += .016f*f;
     }
 
     // Close and destroy the window

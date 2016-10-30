@@ -10,7 +10,10 @@ file(GLOB SOURCE_FILES
 	"include/SRE/*.hpp"
     "src/imgui/*.cpp"
     "include/imgui/*.h"
-    "include/glm/**.hpp"
+    "include/glm/glm/*.hpp"
+    "include/glm/glm/detail/*.hpp"
+    "include/glm/glm/gtc/*.hpp"
+    "include/glm/glm/gtx/*.hpp"
 )
 
 add_executable(SRE-Spinning-Cube ${SOURCE_FILES} test/spinning-cube.cpp)
