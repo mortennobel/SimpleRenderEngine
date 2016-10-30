@@ -591,8 +591,6 @@ vec3 computeLight(){
 
     float diffuseFrac = 1.0 - ambientLight.w;
 
-    float diffuse = 0;
-    float specular = 0;
     for (int i=0;i<4;i++){
         bool isDirectional = lightPosType[i].w == 0.0;
         bool isPoint       = lightPosType[i].w == 1.0;
@@ -619,7 +617,7 @@ vec3 computeLight(){
             float nDotHV = dot(normal, H);
             if (nDotHV > 0){
                 float pf = pow(nDotHV, specularity);
-                lightColor += vec3(att * diffuseFrac * diffuseFrac * pf); // white specular highlights
+                lightColor += vec3(att * diffuseFrac * pf); // white specular highlights
             }
         }
     }
