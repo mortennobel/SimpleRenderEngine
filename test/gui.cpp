@@ -61,10 +61,9 @@ int main() {
     ImVec4 clear_color = ImColor(114, 144, 154);
 
     shader->set("specularity", 20.0f);
-    r.setLight(0, Light(LightType::Point,{0, 0,10},{0,0,0},{1,0,0},5));
+    r.setLight(0, Light(LightType::Point,{0, 0,10},{0,0,0},{1,0,0},50));
     float f = 1.0f;
 
-    r.setLight(0, Light(LightType::Point,{0, 1,0},{0,0,0},{1,0,0},2,20));
     bool quit = false;
     float time = 0;
     while (!quit){
