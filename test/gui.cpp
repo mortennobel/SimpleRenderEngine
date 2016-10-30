@@ -31,8 +31,6 @@ int main() {
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
-    ImGui_SRE_Init(window);
-
     // Create an application window with the following settings:
     window = SDL_CreateWindow(
             "An SDL2 window",                  // window title
@@ -42,6 +40,8 @@ int main() {
             800,                               // height, in pixels
             SDL_WINDOW_OPENGL                  // flags - see below
     );
+
+    ImGui_SRE_Init(window);
 
     // Check that the window was successfully made
     if (window == NULL) {
