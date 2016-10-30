@@ -2,6 +2,15 @@
 // Created by morten on 31/07/16.
 //
 
+#if defined(_WIN32) // force high performance graphics card see https://github.com/grimfang4/sdl-gpu/issues/17
+#include <windows.h> // <---- for the DWORD
+extern "C"
+{
+__declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
+__declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
+#endif
+
 #include "SRE/SimpleRenderEngine.hpp"
 #include <cassert>
 #include "SRE/Shader.hpp"
