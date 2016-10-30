@@ -51,6 +51,7 @@ namespace SRE {
         std::cout << "SRE version "<<sre_version_major<<"."<<sre_version_minor <<"."<<sre_version_point << std::endl;
 
         // setup opengl context
+        glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
         glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN,GL_LOWER_LEFT);
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
@@ -132,6 +133,7 @@ namespace SRE {
             clear |= GL_COLOR_BUFFER_BIT;
         }
         if (clearDepthBuffer){
+            glDepthMask(GL_TRUE);
             clear |= GL_DEPTH_BUFFER_BIT;
         }
         glClear(clear);

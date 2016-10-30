@@ -69,9 +69,7 @@ int main() {
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
     Shader* shader = Shader::getStandard();
     shader->set("specularity",20.0f);
-    Shader* shaderP = Shader::getStandardParticles();
-    shaderP->set("tex",Texture::getAlphaSphereTexture());
-
+    Shader* shaderParticles = Shader::getStandardParticles();
 
     ParticleMesh* particleMesh = createParticles();
     Mesh* mesh = Mesh::createCube();
@@ -84,8 +82,10 @@ int main() {
     for (float i=0;i<duration ;i+=16){
         r.clearScreen({0,0,0.3,1});
         r.draw(mesh, glm::eulerAngleY(-glm::radians(360 * i / duration))*glm::scale(glm::mat4(1),{0.3f,0.3f,0.3f}), shader);
-        r.draw(particleMesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shaderP);
+        r.draw(particleMesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shaderParticles);
+
         r.swapWindow();
+
         SDL_Delay(16);
     }
 

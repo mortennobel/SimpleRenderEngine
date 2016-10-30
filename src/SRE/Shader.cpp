@@ -382,6 +382,9 @@ namespace SRE {
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE);
                 break;
+            default:
+                std::cout << "Err";
+                break;
         }
     }
 
@@ -702,7 +705,7 @@ void main(void)
 }
 )";
         standardParticles = createShader(vertexShader, fragmentShader, true);
-        standardParticles->set("tex", Texture::getWhiteTexture());
+        standardParticles->set("tex", Texture::getAlphaSphereTexture());
         standardParticles->setBlend(BlendType::AdditiveBlending);
         standardParticles->setDepthWrite(false);
         return standardParticles;

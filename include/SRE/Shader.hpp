@@ -87,18 +87,6 @@ namespace SRE {
 
         ~Shader();
 
-        DEPRECATED("use set() instead") bool setMatrix(const char *name, glm::mat4 value);
-        DEPRECATED("use set() instead") bool setMatrix(const char *name, glm::mat3 value);
-
-        DEPRECATED("use set() instead") bool setVector(const char *name, glm::vec4 value);
-
-        DEPRECATED("use set() instead") bool setFloat(const char *name, float value);
-
-        DEPRECATED("use set() instead") bool setInt(const char *name, int value);
-
-        /// textureSlot: If sampling multiple textures from a single shader, each texture must be bound to a unique texture slot
-        DEPRECATED("use set() instead") bool setTexture(const char *name, Texture* texture, unsigned int textureSlot = 0);
-
         bool contains(const char* name);
 
         Uniform getType(const char* name);
@@ -152,5 +140,17 @@ namespace SRE {
 
         friend class Mesh;
         friend class SimpleRenderEngine;
+    public:
+        DEPRECATED("use set() instead") bool setMatrix(const char *name, glm::mat4 value);
+        DEPRECATED("use set() instead") bool setMatrix(const char *name, glm::mat3 value);
+
+        DEPRECATED("use set() instead") bool setVector(const char *name, glm::vec4 value);
+
+        DEPRECATED("use set() instead") bool setFloat(const char *name, float value);
+
+        DEPRECATED("use set() instead") bool setInt(const char *name, int value);
+
+        /// textureSlot: If sampling multiple textures from a single shader, each texture must be bound to a unique texture slot
+        DEPRECATED("use set() instead") bool setTexture(const char *name, Texture* texture, unsigned int textureSlot = 0);
     };
 }
