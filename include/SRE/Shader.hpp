@@ -74,16 +74,16 @@ namespace SRE {
         // "color" vec4 (default (1,1,1,1))
         // "tex" Texture* (default white texture)
         static Shader *getUnlitSprite();
-        // Creates a shader for font rendering
-        // "color" vec4 (default (1,1,1,1))
-        // "tex" Texture* (default font texture)
-        static Shader *getFont();
+        // StandardParticles
+        // Attributes
+        // "tex" Texture* (default white texture)
+        static Shader *getStandardParticles();
 
         static Shader *getDebugUV();
         static Shader *getDebugNormals();
 
         // Creates shader using GLSL
-        static Shader *createShader(const char *vertexShader, const char *fragmentShader);
+        static Shader *createShader(const char *vertexShader, const char *fragmentShader, bool particleLayout = false);
 
         ~Shader();
 
@@ -133,7 +133,7 @@ namespace SRE {
         static Shader *standard;
         static Shader *unlit;
         static Shader *unlitSprite;
-        static Shader *font;
+        static Shader *standardParticles;
 
         static Shader *debugUV;
         static Shader *debugNormals;

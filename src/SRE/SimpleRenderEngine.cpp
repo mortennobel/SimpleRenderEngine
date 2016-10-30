@@ -6,6 +6,7 @@
 #include <cassert>
 #include "SRE/Shader.hpp"
 #include "SRE/Mesh.hpp"
+#include "SRE/ParticleMesh.hpp"
 
 #include "SRE/GL.hpp"
 #include <iostream>
@@ -42,6 +43,9 @@ namespace SRE {
 
         // setup opengl context
         glEnable(GL_CULL_FACE);
+        glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN,GL_LOWER_LEFT);
+        glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
     }
 
     SimpleRenderEngine::~SimpleRenderEngine() {
@@ -66,21 +70,45 @@ namespace SRE {
             std::cerr<<"Cannot render. Camera is null"<<std::endl;
             return;
         }
-        shader->bind();
-        shader->set("model", modelTransform);
-        shader->set("view", camera->getViewTransform());
-        shader->set("projection", camera->getProjectionTransform());
-        auto normalMatrix = glm::transpose(glm::inverse((glm::mat3)(camera->getViewTransform()*modelTransform)));
-        shader->set("normalMat", normalMatrix);
-        shader->setLights(sceneLights, ambientLight, camera->getViewTransform());
+        setupShader(modelTransform, shader);
 
         mesh->bind();
-        int indexCount = mesh->getIndices().size();
+        int indexCount = (int) mesh->getIndices().size();
         if (indexCount == 0){
             glDrawArrays((GLenum) mesh->getMeshTopology(), 0, mesh->getVertexCount());
         } else {
             glDrawElements((GLenum) mesh->getMeshTopology(), indexCount, GL_UNSIGNED_SHORT, 0);
         }
+    }
+
+    void SimpleRenderEngine::draw(ParticleMesh *mesh, glm::mat4 modelTransform, Shader *shader) {
+        if (camera == nullptr){
+            std::cerr<<"Cannot render. Camera is null"<<std::endl;
+            return;
+        }
+        setupShader(modelTransform, shader);
+
+        mesh->bind();
+        glDrawArrays((GLenum) MeshTopology::Points, 0, mesh->getVertexCount());
+
+    }
+
+    void SimpleRenderEngine::setupShader(const glm::mat4 &modelTransform, Shader *shader)  {
+        shader->bind();
+        if (shader->getType("model").type != UniformType::Invalid) {
+            shader->set("model", modelTransform);
+        }
+        if (shader->getType("view").type != UniformType::Invalid) {
+            shader->set("view", camera->getViewTransform());
+        }
+        if (shader->getType("projection").type != UniformType::Invalid) {
+            shader->set("projection", camera->getProjectionTransform());
+        }
+        if (shader->getType("normalMat").type != UniformType::Invalid){
+            auto normalMatrix = transpose(inverse((glm::mat3)(camera->getViewTransform() * modelTransform)));
+            shader->set("normalMat", normalMatrix);
+        }
+        shader->setLights(sceneLights, ambientLight, camera->getViewTransform());
     }
 
     void SimpleRenderEngine::setCamera(Camera *camera) {

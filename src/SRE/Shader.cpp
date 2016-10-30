@@ -16,7 +16,7 @@ namespace SRE {
     Shader *Shader::standard = nullptr;
     Shader *Shader::unlit = nullptr;
     Shader *Shader::unlitSprite = nullptr;
-    Shader *Shader::font = nullptr;
+    Shader *Shader::standardParticles = nullptr;
     Shader *Shader::debugUV = nullptr;
     Shader *Shader::debugNormals = nullptr;
 
@@ -83,7 +83,7 @@ namespace SRE {
         }
     }
 
-    Shader *Shader::createShader(const char *vertexShader, const char *fragmentShader) {
+    Shader *Shader::createShader(const char *vertexShader, const char *fragmentShader, bool particleLayout) {
         Shader *res = new Shader();
 
         std::vector<const char*> shaderSrc{vertexShader, fragmentShader};
@@ -94,7 +94,7 @@ namespace SRE {
         }
 
         // enforce layout
-        std::string attributeNames[3] = {"position", "normal", "uv"};
+        std::string attributeNames[3] = {"position", particleLayout?"color":"normal", "uv"};
         for (int i=0;i<3;i++) {
             glBindAttribLocation(res->shaderProgramId, i, attributeNames[i].c_str());
         }
@@ -375,6 +375,10 @@ namespace SRE {
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 break;
+            case BlendType::AdditiveBlending:
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+                break;
         }
     }
 
@@ -477,45 +481,6 @@ void main(void)
         unlitSprite->setDepthTest(false);
         return unlitSprite;
     }
-
-
-Shader *Shader::getFont() {
-    if (font != nullptr){
-        return font;
-    }
-    const char* vertexShader = R"(#version 140
-in vec4 position;
-in vec3 normal;
-in vec2 uv;
-out vec2 vUV;
-
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-
-void main(void) {
-    gl_Position = projection * view * model * position;
-    vUV = uv;
-}
-)";
-    const char* fragmentShader = R"(#version 140
-out vec4 fragColor;
-in vec2 vUV;
-
-uniform vec4 color;
-uniform sampler2D tex;
-
-void main(void)
-{
-    fragColor = color * texture(tex, vUV);
-}
-)";
-    unlit = createShader(vertexShader, fragmentShader);
-    unlit->set("color", glm::vec4(1));
-    unlit->set("tex", Texture::getFontTexture());
-    unlit->setBlend(BlendType::AlphaBlending);
-    return unlit;
-}
 
     Shader *Shader::getDebugUV() {
         if (debugUV != nullptr){
@@ -691,5 +656,54 @@ void main(void)
         }
     }
 
+    Shader *Shader::getStandardParticles() {
+        if (standardParticles != nullptr){
+            return standardParticles;
+        }
+        const char* vertexShader = R"(#version 140
+in vec4 position;
+in vec4 color;
+in vec4 uv;
+out vec4 vUV;
+out vec4 vColor;
 
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+void main(void) {
+    vec4 pos = vec4( position.xyz, 1.0);
+    gl_Position = projection * view * model * pos;
+    vec3 ndc = gl_Position.xyz / gl_Position.w ; // perspective divide.
+
+    float zDist = 1.0-ndc.z ; // 1 is close (right up in your face,)
+    if (zDist < 0.0 || zDist > 1.0)
+    {
+        zDist = 0.0;
+    }
+    gl_PointSize = position.w * zDist;
+    vUV = uv;
+    vColor = color;
+}
+)";
+        const char* fragmentShader = R"(#version 140
+out vec4 fragColor;
+in vec4 vUV;
+in vec4 vColor;
+
+uniform sampler2D tex;
+
+void main(void)
+{
+    vec2 uv = vUV.xy + gl_PointCoord * vUV.zw;
+    vec4 c = vColor * texture(tex, uv);
+    fragColor = c;
+}
+)";
+        standardParticles = createShader(vertexShader, fragmentShader, true);
+        standardParticles->set("tex", Texture::getWhiteTexture());
+        standardParticles->setBlend(BlendType::AdditiveBlending);
+        standardParticles->setDepthWrite(false);
+        return standardParticles;
+    }
 }

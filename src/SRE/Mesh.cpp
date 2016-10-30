@@ -248,10 +248,10 @@ namespace SRE {
         std::vector<float> interleavedData(vertexPositions.size() * floatsPerVertex);
         for (int i=0;i<vertexPositions.size();i++){
             for (int j=0;j<3;j++){
-                interleavedData[i*8+j] = vertexPositions[i][j];
-                interleavedData[i*8+j+3] = hasNormals ? normals[i][j] : 0.0f;
+                interleavedData[i*floatsPerVertex+j] = vertexPositions[i][j];
+                interleavedData[i*floatsPerVertex+j+3] = hasNormals ? normals[i][j] : 0.0f;
                 if (j<2){
-                    interleavedData[i*8+j+6] = hasUVs ? uvs[i][j] : 0.0f;
+                    interleavedData[i*floatsPerVertex+j+6] = hasUVs ? uvs[i][j] : 0.0f;
                 }
             }
         }

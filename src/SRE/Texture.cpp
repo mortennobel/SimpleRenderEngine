@@ -10,8 +10,6 @@
 #include <fstream>
 #include <memory>
 
-#include "SRE/Font.inl"
-
 namespace {
     static std::vector<char> readAllBytes(char const* filename)
     {
@@ -33,7 +31,7 @@ namespace {
 
 namespace SRE {
     Texture* Texture::whiteTexture = nullptr;
-    Texture* Texture::fontTexture = nullptr;
+    Texture* Texture::alphaSphereTexture = nullptr;
 
     Texture::Texture(const char *data, int width, int height, uint32_t format, bool generateMipmaps)
             : width{width}, height{height}, generateMipmap{generateMipmaps} {
@@ -208,12 +206,20 @@ namespace SRE {
         return whiteTexture;
     }
 
-Texture *Texture::getFontTexture() {
-    if (fontTexture != nullptr){
-        return fontTexture ;
+    Texture *Texture::getAlphaSphereTexture() {
+        if (alphaSphereTexture != nullptr){
+            return alphaSphereTexture;
+        }
+        int size = 128;
+        char one = (char) 0xff;
+        std::vector<char> data(size*size*4, one);
+        for (int x = 0;x<size;x++){
+            for (int y = 0;y<size;y++) {
+                float distToCenter = glm::clamp(1.0f-2.0f*glm::length(glm::vec2((x+0.5f)/size,(y+0.5f)/size)-glm::vec2(0.5f,0.5f)),0.0f,1.0f);
+                data[x*size*4 + y*4+3 ] = (char) (255 * distToCenter);
+            }
+        }
+        alphaSphereTexture = createFromRGBAMem(data.data(), size, size, true);
+        return alphaSphereTexture;
     }
-
-    fontTexture = createFromMem((const char *) font_png, sizeof(font_png), true);
-    return fontTexture;
-}
 }

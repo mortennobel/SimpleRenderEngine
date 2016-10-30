@@ -13,6 +13,7 @@ namespace SRE {
 
     // forward declaration
     class Mesh;
+    class ParticleMesh;
 
     class Shader;
 
@@ -84,6 +85,14 @@ namespace SRE {
         void draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader);
 
         /**
+         * Draws a mesh instance to the current scene. Uses the current camera object to render the mesh in the scene.
+         * @param mesh
+         * @param modelTransform
+         * @param shader
+         */
+        void draw(ParticleMesh *mesh, glm::mat4 modelTransform, Shader *shader);
+
+        /**
          * Sets the current camera object.
          * @param camera
          */
@@ -127,5 +136,7 @@ namespace SRE {
         SDL_Window *window;
         SDL_GLContext glcontext;
         friend class Camera;
+
+        void setupShader(const glm::mat4 &modelTransform, Shader *shader);
     };
 }
