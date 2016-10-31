@@ -106,7 +106,7 @@ namespace SRE {
         }
 
         res->updateUniforms();
-
+        res->particleLayout = particleLayout;
         return res;
     }
 

@@ -327,7 +327,8 @@ After initialization this object can be referenced using the static field Simple
 
 <h2 id="draw">draw</h2>
 
-<p><code class="prettyprint">void draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader)</code></p>
+<p><code class="prettyprint">void draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader)</code>
+<code class="prettyprint">void draw(ParticleMesh *mesh, glm::mat4 modelTransform, Shader *shader)</code></p>
 
 <p>Draws a mesh instance to the current scene. Uses the current camera object to render the mesh in the scene.</p>
 
@@ -350,6 +351,8 @@ After initialization this object can be referenced using the static field Simple
 <td>The shader used for rendering</td>
 </tr>
 </tbody></table>
+
+<p>Note when drawing a particle mesh, the shader must have a particle mesh layout.</p>
 
 <h2 id="setcamera">setCamera</h2>
 
@@ -454,9 +457,9 @@ in general gives faster texture sampling.</li>
 
 <p><code class="prettyprint">static Texture* getWhiteTexture()</code></p>
 
-<h2 id="getfonttexture">getFontTexture</h2>
+<h2 id="getalphaspheretexture">getAlphaSphereTexture</h2>
 
-<p><code class="prettyprint">static Texture* getFontTexture()</code></p>
+<p><code class="prettyprint">static Texture* getAlphaSphereTexture()</code></p>
 
 <h2 id="getwidth">getWidth</h2>
 
@@ -488,7 +491,7 @@ in general gives faster texture sampling.</li>
 
           <h1 id="shader">Shader</h1>
 
-<p>Controls the apperance of the rendered objects.</p>
+<p>Controls the appearance of the rendered objects.</p>
 
 <p>The shader also controls depth test, depth write and blending.</p>
 
@@ -508,7 +511,11 @@ in general gives faster texture sampling.</li>
    - Similar to getUnlit() but with no depth write
    - Parameters:
      - color (vec4) (default white)
-     - tex (Texture*) (default white texture)</p>
+     - tex (Texture*) (default white texture)
+- Shader::getStandardParticles()
+   - Similar to getUnlit() but with no depth write
+   - Parameters:
+     - tex (Texture*) (default alpha sphere texture)</p>
 
 <h2 id="getstandard">getStandard</h2>
 
@@ -522,9 +529,9 @@ in general gives faster texture sampling.</li>
 
 <p><code class="prettyprint">static Shader *getUnlitSprite()</code></p>
 
-<h2 id="getfont">getFont</h2>
+<h2 id="getstandardparticles">getStandardParticles</h2>
 
-<p><code class="prettyprint">static Shader *getFont()</code></p>
+<p><code class="prettyprint">static Shader *getStandardParticles()</code></p>
 
 <h2 id="getdebuguv">getDebugUV</h2>
 
@@ -540,32 +547,34 @@ in general gives faster texture sampling.</li>
 
 <h2 id="createshader">createShader</h2>
 
-<p><code class="prettyprint">static Shader *createShader(const char *vertexShader, const char *fragmentShader)</code></p>
+<p><code class="prettyprint">static Shader *createShader(const char *vertexShader, const char *fragmentShader, bool particleLayout = false)</code></p>
 
 <p>Creates shader using GLSL.</p>
 
-<h2 id="setmatrix">setMatrix</h2>
+<h2 id="contains">contains</h2>
 
-<p><code class="prettyprint">bool setMatrix(const char *name, glm::mat4 value)</code>
-<code class="prettyprint">bool setMatrix(const char *name, glm::mat3 value)</code></p>
+<p><code class="prettyprint">bool contains(const char* name)</code></p>
 
-<h2 id="setvector">setVector</h2>
+<p>Return if the shader contains a uniform with a given name.</p>
 
-<p><code class="prettyprint">bool setVector(const char *name, glm::vec4 value)</code></p>
+<h2 id="gettype">getType</h2>
 
-<h2 id="setfloat">setFloat</h2>
+<p><code class="prettyprint">Uniform getType(const char* name)</code></p>
 
-<p><code class="prettyprint">bool setFloat(const char *name, float value)</code></p>
+<p>Returns uniform information with a uniform of a given name.</p>
 
-<h2 id="setint">setInt</h2>
+<h2 id="set">set</h2>
 
-<p><code class="prettyprint">bool setInt(const char *name, int value)</code></p>
+<p><code class="prettyprint">bool set(const char *name, glm::mat4 value)</code>
+<code class="prettyprint">bool set(const char *name, glm::mat3 value)</code>
+<code class="prettyprint">bool set(const char *name, glm::vec4 value)</code>
+<code class="prettyprint">bool set(const char *name, float value)</code>
+<code class="prettyprint">bool set(const char *name, int value)</code>
+<code class="prettyprint">bool set(const char *name, Texture* texture, unsigned int textureSlot = 0)</code></p>
 
-<h2 id="settexture">setTexture</h2>
+<p>Sets the uniform to a given value. In debug mode, the shader will test for the existence of the uniform and write to cerr if not found.</p>
 
-<p><code class="prettyprint">bool setTexture(const char *name, Texture* texture, unsigned int textureSlot = 0)</code></p>
-
-<p>textureSlot: If sampling multiple textures from a single shader, each texture must be bound to a unique texture slot</p>
+<p>textureSlot: If sampling multiple textures from a single shader, each texture must be bound to a unique texture slot.</p>
 
 <h2 id="setdepthtest">setDepthTest</h2>
 
@@ -594,7 +603,6 @@ in general gives faster texture sampling.</li>
           <h1 id="mesh">Mesh</h1>
 
 <p>Represents a Mesh object.
-When constructing a mesh object, its data is uploaded to the CPU and is no longer available on the CPU.
 A mesh is composed of a list of</p>
 
 <ul>
@@ -608,15 +616,20 @@ A mesh is composed of a list of</p>
  - MeshTopology::Lines
  - MeshTopology::Triangles</p>
 
+<p>The mesh is defined based on the order of vertices, when the indices is empty. 
+Otherwise the indices is used to define the mesh. </p>
+
 <h2 id="mesh">Mesh</h2>
 
-<p><code class="prettyprint">Mesh(std::vector&lt;glm::vec3&gt; &amp;vertexPositions, std::vector&lt;glm::vec3&gt; &amp;normals, std::vector&lt;glm::vec2&gt; &amp;uvs, MeshTopology meshTopology = MeshTopology::Triangles)</code></p>
+<p><code class="prettyprint">Mesh(std::vector&lt;glm::vec3&gt; &amp;vertexPositions, std::vector&lt;glm::vec3&gt; &amp;normals, std::vector&lt;glm::vec2&gt; &amp;uvs, MeshTopology meshTopology = MeshTopology::Triangles)</code>
+<code class="prettyprint">Mesh(std::vector&lt;glm::vec3&gt; &amp;vertexPositions, std::vector&lt;glm::vec3&gt; &amp;normals, std::vector&lt;glm::vec2&gt; &amp;uvs, const std::vector&lt;uint16_t&gt; &amp;indices, MeshTopology meshTopology = MeshTopology::Triangles)</code></p>
 
 <p>Constructor</p>
 
 <h2 id="update">update</h2>
 
-<p><code class="prettyprint">void update(std::vector&lt;glm::vec3&gt; &amp;vertexPositions, std::vector&lt;glm::vec3&gt; &amp;normals, std::vector&lt;glm::vec2&gt; &amp;uvs)</code></p>
+<p><code class="prettyprint">void update(std::vector&lt;glm::vec3&gt; &amp;vertexPositions, std::vector&lt;glm::vec3&gt; &amp;normals, std::vector&lt;glm::vec2&gt; &amp;uvs,const std::vector&lt;uint16_t&gt; &amp;indices)</code>
+<code class="prettyprint">void update(std::vector&lt;glm::vec3&gt; &amp;vertexPositions, std::vector&lt;glm::vec3&gt; &amp;normals, std::vector&lt;glm::vec2&gt; &amp;uvs)</code></p>
 
 <h2 id="getvertexcount">getVertexCount</h2>
 
@@ -625,6 +638,76 @@ A mesh is composed of a list of</p>
 <h2 id="getmeshtopology">getMeshTopology</h2>
 
 <p><code class="prettyprint">MeshTopology getMeshTopology()</code></p>
+
+<h2 id="getvertexpositions">getVertexPositions</h2>
+
+<p><code class="prettyprint">const std::vector&lt;glm::vec3&gt;&amp; getVertexPositions()</code></p>
+
+<h2 id="getnormals">getNormals</h2>
+
+<p><code class="prettyprint">const std::vector&lt;glm::vec3&gt;&amp; getNormals()</code></p>
+
+<h2 id="getuvs">getUVs</h2>
+
+<p><code class="prettyprint">const std::vector&lt;glm::vec2&gt;&amp; getUVs()</code></p>
+
+<h2 id="getindices">getIndices</h2>
+
+<p><code class="prettyprint">const std::vector&lt;uint16_t&gt;&amp; getIndices()</code></p>
+
+<h2 id="createquad">createQuad</h2>
+
+<p><code class="prettyprint">static Mesh* createQuad()</code></p>
+
+<h2 id="createcube">createCube</h2>
+
+<p><code class="prettyprint">static Mesh* createCube()</code></p>
+
+<h2 id="createsphere">createSphere</h2>
+
+<p><code class="prettyprint">static Mesh* createSphere()</code></p>
+
+          <h1 id="particlemesh">ParticleMesh</h1>
+
+<p>Represents a Mesh object for rendering particle systems.
+A mesh is composed of a list of</p>
+
+<ul>
+<li>vertexPositions (vec3)</li>
+<li>colors (vec4)</li>
+<li>uvs (aka. texture coordinates) (vec4)</li>
+<li>particle size</li>
+</ul>
+
+<h2 id="particlemesh">ParticleMesh</h2>
+
+<p><code class="prettyprint">ParticleMesh(const std::vector&lt;glm::vec3&gt; &amp;vertexPositions, const std::vector&lt;glm::vec4&gt; &amp;colors, const std::vector&lt;glm::vec4&gt; &amp;uvs, const std::vector&lt;float&gt; &amp;particleSizes)</code></p>
+
+<p>Constructor</p>
+
+<h2 id="update">update</h2>
+
+<p><code class="prettyprint">void update(const std::vector&lt;glm::vec3&gt; &amp;vertexPositions, const std::vector&lt;glm::vec4&gt; &amp;colors, const std::vector&lt;glm::vec4&gt; &amp;uvs, const std::vector&lt;float&gt; &amp;particleSizes)</code></p>
+
+<h2 id="getvertexcount">getVertexCount</h2>
+
+<p><code class="prettyprint">int getVertexCount()</code></p>
+
+<h2 id="getvertexpositions">getVertexPositions</h2>
+
+<p><code class="prettyprint">const std::vector&lt;glm::vec3&gt;&amp; getVertexPositions()</code></p>
+
+<h2 id="getcolors">getColors</h2>
+
+<p><code class="prettyprint">const std::vector&lt;glm::vec4&gt;&amp; getColors()</code></p>
+
+<h2 id="getuvs">getUVs</h2>
+
+<p><code class="prettyprint">const std::vector&lt;glm::vec4&gt;&amp; getUVs()</code></p>
+
+<h2 id="getparticlesizes">getParticleSizes</h2>
+
+<p><code class="prettyprint">const std::vector&lt;float&gt;&amp; getParticleSizes()</code></p>
 
 <h2 id="createquad">createQuad</h2>
 
@@ -844,7 +927,7 @@ rendering (default settings is the full window)</p>
 <h2 id="light">Light</h2>
 
 <p><code class="prettyprint">Light()</code>
-<code class="prettyprint">Light(LightType lightType, glm::vec3 position, glm::vec3 direction, glm::vec3 color, float range, float specularity)</code></p>
+<code class="prettyprint">Light(LightType lightType, glm::vec3 position, glm::vec3 direction, glm::vec3 color, float range)</code></p>
 
 <p>Constructor</p>
 
@@ -887,12 +970,6 @@ In some cases the light color may have values above 1.0</p>
 
 <p>The range of a point light (due to attenuation)</p>
 
-<h2 id="specularity">specularity</h2>
-
-<p><code class="prettyprint">float specularity</code></p>
-
-<p>0 = no specular</p>
-
           <h1 id="debug">Debug</h1>
 
 <p>The purpose of this class is to draw debug information into the scene.
@@ -910,25 +987,11 @@ The Debug class is using the current camera</p>
 
 <p><code class="prettyprint">static void drawLine(glm::vec3 from, glm::vec3 to)</code></p>
 
-          <h1 id="text">Text</h1>
-<pre class="highlight cpp"><code><span class="n">SimpleRenderEngine</span><span class="o">::</span><span class="n">instance</span><span class="o">-&gt;</span><span class="n">getCamera</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">setWindowCoordinates</span><span class="p">();</span>
-<span class="c1">// Font shader - user correct texture
-</span><span class="n">Shader</span> <span class="o">*</span> <span class="n">fontShader</span> <span class="o">=</span> <span class="n">Shader</span><span class="o">::</span><span class="n">getFont</span><span class="p">();</span>
-<span class="c1">// create a text mesh (pivot point in lower left corner)
-</span><span class="n">Mesh</span><span class="o">*</span> <span class="n">helloWorld</span> <span class="o">=</span> <span class="n">Text</span><span class="o">::</span><span class="n">createTextMesh</span><span class="p">(</span><span class="s">"Hello world"</span><span class="p">);</span>
-<span class="n">SimpleRenderEngine</span><span class="o">::</span><span class="n">instance</span><span class="o">-&gt;</span><span class="n">draw</span><span class="p">(</span><span class="n">helloWorld</span><span class="p">,</span> <span class="n">glm</span><span class="o">::</span><span class="n">mat4</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">fontShader</span><span class="p">);</span>
-</code></pre>
-
-<h2 id="createtextmesh">createTextMesh</h2>
-
-<p><code class="prettyprint">Mesh *createTextMesh(const char *text)</code></p>
-
-<p>Create a text mesh.</p>
-
           <h1 id="blendtype">BlendType</h1>
 <pre class="highlight cpp"><code><span class="k">enum</span> <span class="k">class</span> <span class="nc">BlendType</span> <span class="p">{</span>
     <span class="n">Disabled</span><span class="p">,</span>
-    <span class="n">AlphaBlending</span>
+    <span class="n">AlphaBlending</span><span class="p">,</span>
+    <span class="n">AdditiveBlending</span>
 <span class="p">};</span>
 </code></pre>
 
@@ -936,7 +999,8 @@ The Debug class is using the current camera</p>
 
 <ul>
 <li>BlendType::Disabled - no blending</li>
-<li>BlendType::AlphaBlending - src minus one alpha</li>
+<li>BlendType::AlphaBlending - Blends the surface with background based on alpha value (src alpha ,one minus src alpha)</li>
+<li>BlendType::AdditiveBlending - Add light based on the alpha value (src alpha,one)</li>
 </ul>
 
           <h1 id="lighttype">LightType</h1>
@@ -957,7 +1021,32 @@ The Debug class is using the current camera</p>
 <span class="p">};</span>
 </code></pre>
 
-<p>Mesh topology used to define the kind of mesh</p>
+<p>Mesh topology used to define the type of mesh</p>
+
+          <h1 id="uniform">Uniform</h1>
+<pre class="highlight cpp"><code><span class="k">struct</span> <span class="n">Uniform</span> <span class="p">{</span>
+    <span class="kt">int</span> <span class="n">id</span><span class="p">;</span>
+    <span class="n">UniformType</span> <span class="n">type</span><span class="p">;</span>
+    <span class="c1">// 1 means not array
+</span>    <span class="kt">int</span> <span class="n">arrayCount</span><span class="p">;</span>
+<span class="p">};</span>
+</code></pre>
+
+<p>Defines the structure of a shader uniform</p>
+
+          <h1 id="uniformtype">UniformType</h1>
+<pre class="highlight cpp"><code><span class="k">enum</span> <span class="k">class</span> <span class="nc">UniformType</span> <span class="p">{</span>
+    <span class="n">Int</span><span class="p">,</span>
+    <span class="n">Float</span><span class="p">,</span>
+    <span class="n">Mat3</span><span class="p">,</span>
+    <span class="n">Mat4</span><span class="p">,</span>
+    <span class="n">Vec4</span><span class="p">,</span>
+    <span class="n">Texture</span><span class="p">,</span>
+    <span class="n">Invalid</span>
+<span class="p">};</span>
+</code></pre>
+
+<p>Defines variable types for shader uniforms</p>
 
       </div>
       <div class="dark-box">

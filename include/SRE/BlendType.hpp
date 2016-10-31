@@ -5,9 +5,9 @@
 namespace SRE {
     /**
      * Enum which defines blending types. Currently support types of blending is:
-     *  - BlendType::Disabled - no blending
-     *  - BlendType::AlphaBlending - src minus one alpha
-     *  - BlendType::AdditiveBlending - one alpha, one
+     *  - BlendType::Disabled - No blending
+     *  - BlendType::AlphaBlending - Blends the surface with background based on alpha value (src alpha ,one minus src alpha)
+     *  - BlendType::AdditiveBlending - Add light based on the alpha value (src alpha,one)
      */
     enum class BlendType {
         Disabled,

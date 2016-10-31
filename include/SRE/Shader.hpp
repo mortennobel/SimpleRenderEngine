@@ -55,6 +55,10 @@ namespace SRE {
      *    - Parameters:
      *      - color (vec4) (default white)
      *      - tex (Texture*) (default white texture)
+     * - Shader::getStandardParticles()
+     *    - Similar to getUnlitSprite() but with no depth write
+     *    - Parameters:
+     *      - tex (Texture*) (default alpha sphere texture)
      */
     class DllExport Shader {
     public:
@@ -76,7 +80,7 @@ namespace SRE {
         static Shader *getUnlitSprite();
         // StandardParticles
         // Attributes
-        // "tex" Texture* (default white texture)
+        // "tex" Texture* (default alpha sphere texture)
         static Shader *getStandardParticles();
 
         static Shader *getDebugUV();
@@ -137,6 +141,8 @@ namespace SRE {
 
         std::map<std::string, Uniform> uniforms;
         void updateUniforms();
+
+        bool particleLayout;
 
         friend class Mesh;
         friend class SimpleRenderEngine;

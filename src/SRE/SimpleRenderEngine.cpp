@@ -76,6 +76,12 @@ namespace SRE {
     }
 
     void SimpleRenderEngine::draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader) {
+#ifndef NDEBUG
+        if (shader->particleLayout){
+            std::cerr<<"SimpleRenderEngine::draw(). Error: Shader has particleLayout."<<std::endl;
+        }
+#endif
+
         if (camera == nullptr){
             std::cerr<<"Cannot render. Camera is null"<<std::endl;
             return;
@@ -92,6 +98,11 @@ namespace SRE {
     }
 
     void SimpleRenderEngine::draw(ParticleMesh *mesh, glm::mat4 modelTransform, Shader *shader) {
+#ifndef NDEBUG
+        if (!shader->particleLayout){
+            std::cerr<<"SimpleRenderEngine::draw(). Error: Shader does not have particleLayout."<<std::endl;
+        }
+#endif
         if (camera == nullptr){
             std::cerr<<"Cannot render. Camera is null"<<std::endl;
             return;
