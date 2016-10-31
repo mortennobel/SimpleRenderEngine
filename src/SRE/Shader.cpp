@@ -668,38 +668,58 @@ void main(void)
 in vec4 position;
 in vec4 color;
 in vec4 uv;
-out vec4 vUV;
+out mat3 vUVMat;
 out vec4 vColor;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
+mat3 translate(vec2 p){
+ return mat3(1.0,0.0,0.0,0.0,1.0,0.0,p.x,p.y,1.0);
+}
+
+mat3 rotate(float rad){
+  float s = sin(rad);
+  float c = cos(rad);
+ return mat3(c,s,0.0,-s,c,0.0,0.0,0.0,1.0);
+}
+
+mat3 scale(float s){
+  return mat3(s,0.0,0.0,0.0,s,0.0,0.0,0.0,1.0);
+}
+
 void main(void) {
     vec4 pos = vec4( position.xyz, 1.0);
     gl_Position = projection * view * model * pos;
-    vec3 ndc = gl_Position.xyz / gl_Position.w ; // perspective divide.
+    if (projection[2][3] != 0){ // if perspective projection
+        vec3 ndc = gl_Position.xyz / gl_Position.w ; // perspective divide.
 
-    float zDist = 1.0-ndc.z ; // 1 is close (right up in your face,)
-    if (zDist < 0.0 || zDist > 1.0)
-    {
-        zDist = 0.0;
+
+        float zDist = 1.0-ndc.z ; // 1 is close (right up in your face,)
+        if (zDist < 0.0 || zDist > 1.0)
+        {
+            zDist = 0.0;
+        }
+        gl_PointSize = position.w * zDist;
+    } else {
+        gl_PointSize = position.w * projection[0][0] * projection[1][1] * 0.5; // average x,y scale in orthographic projection
     }
-    gl_PointSize = position.w * zDist;
-    vUV = uv;
+
+    vUVMat = translate(uv.xy)*scale(uv.z) * translate(vec2(0.5,0.5))*rotate(uv.w) * translate(vec2(-0.5,-0.5));
     vColor = color;
 }
 )";
         const char* fragmentShader = R"(#version 140
 out vec4 fragColor;
-in vec4 vUV;
+in mat3 vUVMat;
 in vec4 vColor;
 
 uniform sampler2D tex;
 
 void main(void)
 {
-    vec2 uv = vUV.xy + gl_PointCoord * vUV.zw;
+    vec2 uv = (vUVMat * vec3(gl_PointCoord,1.0)).xy;
     vec4 c = vColor * texture(tex, uv);
     fragColor = c;
 }

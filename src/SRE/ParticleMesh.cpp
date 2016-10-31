@@ -11,12 +11,12 @@
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 namespace SRE {
-    ParticleMesh::ParticleMesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec4> &colors, const std::vector<glm::vec4> &uvs, const std::vector<float> &particleSize)
+    ParticleMesh::ParticleMesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec4> &colors, const std::vector<glm::vec2> &uvCenter,const std::vector<float> &uvSize,const std::vector<float> &uvRotation, const std::vector<float> &particleSizes)
     {
         glGenBuffers(1, &vertexBufferId);
         glGenVertexArrays(1, &vertexArrayObject);
 
-        update(vertexPositions, colors, uvs, particleSize);
+        update(vertexPositions, colors, uvCenter, uvSize, uvRotation, particleSizes);
     }
 
     ParticleMesh::~ParticleMesh(){
@@ -33,15 +33,19 @@ namespace SRE {
         return vertexCount;
     }
 
-    void ParticleMesh::update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec4> &colors, const std::vector<glm::vec4> &uvs, const std::vector<float> &particleSizes) {
+    void ParticleMesh::update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec4> &colors, const std::vector<glm::vec2> &uvCenter, const std::vector<float> &uvSize,const std::vector<float> &uvRotation, const std::vector<float> &particleSizes) {
         this->vertexPositions = vertexPositions;
         this->colors = colors;
-        this->uvs = uvs;
+        this->uvCenter = uvCenter;
+        this->uvSize = uvSize;
+        this->uvRotation = uvRotation;
         this->particleSizes = particleSizes;
         this->vertexCount = (int) vertexPositions.size();
 
         bool hasColors = colors.size() == vertexPositions.size();
-        bool hasUVs = uvs.size() == vertexPositions.size();
+        bool hasUVs = uvCenter.size() == vertexPositions.size();
+        bool hasUVSize = uvSize.size() == vertexPositions.size();
+        bool hasUVRotation = uvRotation.size() == vertexPositions.size();
         bool hasParticleSizes = particleSizes.size() == vertexPositions.size();
 
         // interleave data
@@ -54,9 +58,15 @@ namespace SRE {
                 } else {
                     interleavedData[i*floatsPerVertex+j] = hasParticleSizes ? particleSizes[i] : 1.0f;
                 }
-                interleavedData[i*floatsPerVertex+j+4] = hasColors ? colors[i][j] : 0.0f;
+                interleavedData[i*floatsPerVertex+j+4] = hasColors ? colors[i][j] : 1.0f;
                 // default uv values [0,0,1,1]
-                interleavedData[i*floatsPerVertex+j+8] = hasUVs ? uvs[i][j] : (j < 2 ? 0.0f : 1.0f);
+                if (j<2){
+                    interleavedData[i*floatsPerVertex+j+8] = hasUVs ? uvCenter[i][j] : 0.5f;
+                } else if (j==2){
+                    interleavedData[i*floatsPerVertex+j+8] = hasUVSize ? uvSize[i]  : 1.0f;
+                } else if (j==3){
+                    interleavedData[i*floatsPerVertex+j+8] = hasUVRotation ? uvRotation[i] : 0.0f;
+                }
             }
         }
 
@@ -81,13 +91,19 @@ namespace SRE {
         return colors;
     }
 
-    const std::vector<glm::vec4> &ParticleMesh::getUVs() {
-        return uvs;
+    const std::vector<glm::vec2> &ParticleMesh::getUVCenter() {
+        return uvCenter;
     }
 
     const std::vector<float> &ParticleMesh::getParticleSizes() {
         return particleSizes;
     }
 
+    const std::vector<float> &ParticleMesh::getUVSize() {
+        return uvSize;
+    }
 
+    const std::vector<float> &ParticleMesh::getUVRotation() {
+        return uvRotation;
+    }
 }

@@ -73,7 +73,7 @@ namespace SRE {
         // "color" vec4 (default (1,1,1,1))
         // "tex" Texture* (default white texture)
         static Shader *getUnlit();
-        // UnlitSprite = no depth test and alpha blending
+        // UnlitSprite = no depth examples and alpha blending
         // Attributes
         // "color" vec4 (default (1,1,1,1))
         // "tex" Texture* (default white texture)

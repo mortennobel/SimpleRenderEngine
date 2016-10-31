@@ -9,16 +9,18 @@
 namespace SRE {
     class DllExport ParticleMesh {
     public:
-        ParticleMesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec4> &colors, const std::vector<glm::vec4> &uvs, const std::vector<float> &particleSizes);
+        ParticleMesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec4> &colors, const std::vector<glm::vec2> &uvCenter,const std::vector<float> &uvSize,const std::vector<float> &uvRotation, const std::vector<float> &particleSizes);
         ~ParticleMesh();
 
-        void update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec4> &colors, const std::vector<glm::vec4> &uvs, const std::vector<float> &particleSizes);
+        void update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec4> &colors, const std::vector<glm::vec2> &uvCenter, const std::vector<float> &uvSize,const std::vector<float> &uvRotation, const std::vector<float> &particleSizes);
 
         int getVertexCount();
 
         const std::vector<glm::vec3>& getVertexPositions();
         const std::vector<glm::vec4>& getColors();
-        const std::vector<glm::vec4>& getUVs();
+        const std::vector<glm::vec2>& getUVCenter();
+        const std::vector<float>&getUVSize();
+        const std::vector<float>&getUVRotation();
         const std::vector<float>& getParticleSizes();
     private:
         unsigned int vertexBufferId;
@@ -27,7 +29,9 @@ namespace SRE {
 
         std::vector<glm::vec3> vertexPositions;
         std::vector<glm::vec4> colors;
-        std::vector<glm::vec4> uvs;
+        std::vector<glm::vec2> uvCenter;
+        std::vector<float> uvSize;
+        std::vector<float> uvRotation;
         std::vector<float> particleSizes;
 
         void bind();

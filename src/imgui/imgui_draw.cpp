@@ -2098,7 +2098,7 @@ void ImFont::RenderText(ImDrawList* draw_list, float size, ImVec2 pos, ImU32 col
             // Arbitrarily assume that both space and tabs are empty glyphs as an optimization
             if (c != ' ' && c != '\t')
             {
-                // We don't do a second finer clipping test on the Y axis as we've already skipped anything before clip_rect.y and exit once we pass clip_rect.w
+                // We don't do a second finer clipping examples on the Y axis as we've already skipped anything before clip_rect.y and exit once we pass clip_rect.w
                 float x1 = x + glyph->X0 * scale;
                 float x2 = x + glyph->X1 * scale;
                 float y1 = y + glyph->Y0 * scale;

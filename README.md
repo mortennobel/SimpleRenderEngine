@@ -25,10 +25,11 @@ To keep SRE as simple and flexible as possible the following features are not a 
  * Deferred rendering
  * Bump mapping
  * Shadowmap support
+ * Dynamic particle systems
 
  ## Examples
  
-Example usage can be found in the test folder
+Example usage can be found in the examples folder
 
 ## Documentation
 
@@ -45,4 +46,8 @@ https://mortennobel.github.io/SimpleRenderEngine/
  ## Version history
  
  * 0.2 Move specularity from Light to a normal shader uniform (since logically it belongs to material instead of the light source)  
+   - Add ParticleMesh 
+   - Add support for imgui 
+   - Remove simple text rendering
+   - Refactoring Shader: verify uniform names and types.
  * 0.1 Initial version

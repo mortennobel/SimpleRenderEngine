@@ -16,14 +16,15 @@ file(GLOB SOURCE_FILES
     "include/glm/glm/gtx/*.hpp"
 )
 
-add_executable(SRE-Spinning-Cube ${SOURCE_FILES} test/spinning-cube.cpp)
-add_executable(SRE-Spinning-Sphere ${SOURCE_FILES} test/spinning-sphere.cpp)
-add_executable(SRE-Spinning-Cube-Unlit ${SOURCE_FILES} test/spinning-cube-unlit.cpp)
-add_executable(SRE-Spinning-Sphere-Unlit ${SOURCE_FILES} test/spinning-sphere-unlit.cpp)
-add_executable(SRE-Spinning-Cube-Tex ${SOURCE_FILES} test/spinning-cube-tex.cpp)
-add_executable(SRE-Hello-Engine ${SOURCE_FILES} test/hello-engine.cpp)
-add_executable(SRE-Particle-Test ${SOURCE_FILES} test/particle-test.cpp)
-add_executable(SRE-GUI ${SOURCE_FILES} test/gui.cpp)
+add_executable(SRE-Spinning-Cube ${SOURCE_FILES} examples/spinning-cube.cpp)
+add_executable(SRE-Spinning-Sphere ${SOURCE_FILES} examples/spinning-sphere.cpp)
+add_executable(SRE-Spinning-Cube-Unlit ${SOURCE_FILES} examples/spinning-cube-unlit.cpp)
+add_executable(SRE-Spinning-Sphere-Unlit ${SOURCE_FILES} examples/spinning-sphere-unlit.cpp)
+add_executable(SRE-Spinning-Cube-Tex ${SOURCE_FILES} examples/spinning-cube-tex.cpp)
+add_executable(SRE-Hello-Engine ${SOURCE_FILES} examples/hello-engine.cpp)
+add_executable(SRE-Particle-Test ${SOURCE_FILES} examples/particle-test.cpp)
+add_executable(SRE-Particle-Sprite ${SOURCE_FILES} examples/particle-sprite.cpp)
+add_executable(SRE-GUI ${SOURCE_FILES} examples/gui.cpp)
 
 add_library(SRE STATIC ${SOURCE_FILES})
 
@@ -65,11 +66,12 @@ target_link_libraries(SRE-Spinning-Sphere-Unlit ${EXTRA_LIBS} ${SDL2_LIBRARY} ${
 target_link_libraries(SRE-Spinning-Cube-Tex ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 target_link_libraries(SRE-Hello-Engine ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 target_link_libraries(SRE-Particle-Test ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
+target_link_libraries(SRE-Particle-Sprite ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 target_link_libraries(SRE-GUI ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 target_link_libraries(SRE ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 
-file(COPY test-data DESTINATION Debug)
-file(COPY test-data DESTINATION Release)
+file(COPY examples-data DESTINATION Debug)
+file(COPY examples-data DESTINATION Release)
 IF (WIN32)
     SET(SDL2_dll "" CACHE STRING "Where the SDL2.dll can be found")
     SET(SDL2_image_lib_path "" CACHE PATH "Where the SDL2_image.dll can be found")
