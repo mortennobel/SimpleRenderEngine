@@ -9,8 +9,29 @@
 
 #include "SRE/Export.hpp"
 
+#include "CPPShim.hpp"
+#include <string>
+#include <map>
+
 namespace SRE {
     class Texture;
+
+    enum class UniformType {
+        Int,
+        Float,
+        Mat3,
+        Mat4,
+        Vec4,
+        Texture,
+        Invalid
+    };
+
+    struct Uniform {
+        int id;
+        UniformType type;
+        // 1 means not array
+        int arrayCount;
+    };
 
     /**
      * Controls the apperance of the rendered objects.
@@ -34,34 +55,57 @@ namespace SRE {
      *    - Parameters:
      *      - color (vec4) (default white)
      *      - tex (Texture*) (default white texture)
+     * - Shader::getStandardParticles()
+     *    - Similar to getUnlitSprite() but with no depth write
+     *    - Parameters:
+     *      - tex (Texture*) (default alpha sphere texture)
      */
     class DllExport Shader {
     public:
+        // Phong Light Model. Uses light objects and ambient light set in SimpleRenderEngine.
+        // Attributes
+        // "color" vec4 (default (1,1,1,1))
+        // "tex" Texture* (default white texture)
+        // "specularity" float (default 0 = no specularity)
         static Shader *getStandard();
+        // Unlit model.
+        // Attributes
+        // "color" vec4 (default (1,1,1,1))
+        // "tex" Texture* (default white texture)
         static Shader *getUnlit();
-        // UnlitSprite = no depth test and alpha blending
+        // UnlitSprite = no depth examples and alpha blending
+        // Attributes
+        // "color" vec4 (default (1,1,1,1))
+        // "tex" Texture* (default white texture)
         static Shader *getUnlitSprite();
-        static Shader *getFont();
+        // StandardParticles
+        // Attributes
+        // "tex" Texture* (default alpha sphere texture)
+        static Shader *getStandardParticles();
 
         static Shader *getDebugUV();
         static Shader *getDebugNormals();
 
         // Creates shader using GLSL
-        static Shader *createShader(const char *vertexShader, const char *fragmentShader);
+        static Shader *createShader(const char *vertexShader, const char *fragmentShader, bool particleLayout = false);
 
         ~Shader();
 
-        bool setMatrix(const char *name, glm::mat4 value);
-        bool setMatrix(const char *name, glm::mat3 value);
+        bool contains(const char* name);
 
-        bool setVector(const char *name, glm::vec4 value);
+        Uniform getType(const char* name);
 
-        bool setFloat(const char *name, float value);
+        bool set(const char *name, glm::mat4 value);
+        bool set(const char *name, glm::mat3 value);
 
-        bool setInt(const char *name, int value);
+        bool set(const char *name, glm::vec4 value);
+
+        bool set(const char *name, float value);
+
+        bool set(const char *name, int value);
 
         /// textureSlot: If sampling multiple textures from a single shader, each texture must be bound to a unique texture slot
-        bool setTexture(const char *name, Texture* texture, unsigned int textureSlot = 0);
+        bool set(const char *name, Texture* texture, unsigned int textureSlot = 0);
 
         void setDepthTest(bool enable);
 
@@ -81,7 +125,7 @@ namespace SRE {
         static Shader *standard;
         static Shader *unlit;
         static Shader *unlitSprite;
-        static Shader *font;
+        static Shader *standardParticles;
 
         static Shader *debugUV;
         static Shader *debugNormals;
@@ -95,7 +139,24 @@ namespace SRE {
         bool depthWrite = true;
         BlendType blend = BlendType::Disabled;
 
+        std::map<std::string, Uniform> uniforms;
+        void updateUniforms();
+
+        bool particleLayout;
+
         friend class Mesh;
         friend class SimpleRenderEngine;
+    public:
+        DEPRECATED("use set() instead") bool setMatrix(const char *name, glm::mat4 value);
+        DEPRECATED("use set() instead") bool setMatrix(const char *name, glm::mat3 value);
+
+        DEPRECATED("use set() instead") bool setVector(const char *name, glm::vec4 value);
+
+        DEPRECATED("use set() instead") bool setFloat(const char *name, float value);
+
+        DEPRECATED("use set() instead") bool setInt(const char *name, int value);
+
+        /// textureSlot: If sampling multiple textures from a single shader, each texture must be bound to a unique texture slot
+        DEPRECATED("use set() instead") bool setTexture(const char *name, Texture* texture, unsigned int textureSlot = 0);
     };
 }

@@ -13,6 +13,7 @@ namespace SRE {
 
     // forward declaration
     class Mesh;
+    class ParticleMesh;
 
     class Shader;
 
@@ -45,8 +46,8 @@ namespace SRE {
         ~SimpleRenderEngine();
         static constexpr int maxSceneLights = 4;
         static constexpr int sre_version_major = 0;
-        static constexpr int sre_version_minor = 1;
-        static constexpr int sre_version_point = 1;
+        static constexpr int sre_version_minor = 2;
+        static constexpr int sre_version_point = 0;
         /**
          * Set the light state - this affects all draw calls after the state has been set.
          * @sa Light
@@ -82,6 +83,14 @@ namespace SRE {
          * @param shader
          */
         void draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader);
+
+        /**
+         * Draws a mesh instance to the current scene. Uses the current camera object to render the mesh in the scene.
+         * @param mesh
+         * @param modelTransform
+         * @param shader
+         */
+        void draw(ParticleMesh *mesh, glm::mat4 modelTransform, Shader *shader);
 
         /**
          * Sets the current camera object.
@@ -127,5 +136,7 @@ namespace SRE {
         SDL_Window *window;
         SDL_GLContext glcontext;
         friend class Camera;
+
+        void setupShader(const glm::mat4 &modelTransform, Shader *shader);
     };
 }

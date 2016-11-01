@@ -7,7 +7,6 @@
 #include "SRE/Camera.hpp"
 #include "SRE/Mesh.hpp"
 #include "SRE/Shader.hpp"
-#include "SRE/Text.hpp"
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
 
@@ -19,16 +18,19 @@
 using namespace SRE;
 
 int main() {
+    std::cout << "Spinning cube" << std::endl;
     SDL_Window *window;                    // Declare a pointer
 
     SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
+
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
+    // Create an application window with the following settings:
     window = SDL_CreateWindow(
-            "Text render",                     // window title
+            "An SDL2 window",                  // window title
             SDL_WINDOWPOS_UNDEFINED,           // initial x position
             SDL_WINDOWPOS_UNDEFINED,           // initial y position
             640,                               // width, in pixels
@@ -45,17 +47,21 @@ int main() {
 
     SimpleRenderEngine r{window};
 
-    r.clearScreen({1,0,0,1});
-    SimpleRenderEngine::instance->getCamera()->setWindowCoordinates();
-    // Font shader - user correct texture
-    Shader * fontShader = Shader::getFont();
-    // create a text mesh (pivot point in lower left corner)
-    Mesh* helloWorld = Text::createTextMesh("Hello world");
+    r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
+    r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
+    Shader* shader = Shader::getUnlit();
+//    shader->set("tex", Texture::createPNGTextureFile("examples-data/examples.jpg",true));
+//    shader->set("tex", Texture::createPNGTextureFile("examples-data/twitter.png",true));
+    shader->set("tex", Texture::createFromFile("examples-data/cartman.png", true));
+    Mesh* mesh = Mesh::createCube();
 
-    SimpleRenderEngine::instance->draw(helloWorld, glm::mat4(1), fontShader);
-
-    r.swapWindow();
-    SDL_Delay(10000);
+    float duration = 10000;
+    for (float i=0;i<duration ;i+=16){
+        r.clearScreen({1,0,0,1});
+        r.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shader);
+        r.swapWindow();
+        SDL_Delay(16);
+    }
 
     // Close and destroy the window
     SDL_DestroyWindow(window);

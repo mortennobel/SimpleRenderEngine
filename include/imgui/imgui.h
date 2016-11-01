@@ -117,7 +117,7 @@ namespace ImGui
     IMGUI_API void          Shutdown();
     IMGUI_API void          ShowUserGuide();                            // help block
     IMGUI_API void          ShowStyleEditor(ImGuiStyle* ref = NULL);    // style editor block. you can pass in a reference ImGuiStyle structure to compare to, revert to and save to (else it uses the default style)
-    IMGUI_API void          ShowTestWindow(bool* p_open = NULL);        // test window demonstrating ImGui features
+    IMGUI_API void          ShowTestWindow(bool* p_open = NULL);        // examples window demonstrating ImGui features
     IMGUI_API void          ShowMetricsWindow(bool* p_open = NULL);     // metrics window for debugging ImGui
 
     // Window
@@ -408,8 +408,8 @@ namespace ImGui
     IMGUI_API bool          IsRootWindowFocused();                                              // is current root window focused (root = top-most parent of a child, otherwise self)
     IMGUI_API bool          IsRootWindowOrAnyChildFocused();                                    // is current root window or any of its child (including current window) focused
     IMGUI_API bool          IsRootWindowOrAnyChildHovered();                                    // is current root window or any of its child (including current window) hovered and hoverable (not blocked by a popup)
-    IMGUI_API bool          IsRectVisible(const ImVec2& size);                                  // test if rectangle (of given size, starting from cursor position) is visible / not clipped.
-    IMGUI_API bool          IsRectVisible(const ImVec2& rect_min, const ImVec2& rect_max);      // test if rectangle (in screen space) is visible / not clipped. to perform coarse clipping on user's side.
+    IMGUI_API bool          IsRectVisible(const ImVec2& size);                                  // examples if rectangle (of given size, starting from cursor position) is visible / not clipped.
+    IMGUI_API bool          IsRectVisible(const ImVec2& rect_min, const ImVec2& rect_max);      // examples if rectangle (in screen space) is visible / not clipped. to perform coarse clipping on user's side.
     IMGUI_API bool          IsPosHoveringAnyWindow(const ImVec2& pos);                          // is given position hovering any active imgui window
     IMGUI_API float         GetTime();
     IMGUI_API int           GetFrameCount();

@@ -6,7 +6,10 @@
 #include "SRE/Mesh.hpp"
 #include "SRE/Shader.hpp"
 #include "SRE/SimpleRenderEngine.hpp"
+#include "SRE/GL.hpp"
+
 #include <vector>
+#include <iostream>
 
 using namespace std;
 
@@ -32,9 +35,34 @@ namespace SRE {
 		Mesh mesh(verts, normals, uvs,MeshTopology::Lines);
 
         Shader* shader = Shader::getUnlit();
-        shader->setVector("color", color);
+        shader->set("color", color);
         if (SimpleRenderEngine::instance != nullptr){
             SimpleRenderEngine::instance->draw(&mesh, glm::mat4(1),shader);
+        }
+    }
+
+    void Debug::checkGLError() {
+        for(GLenum err; (err = glGetError()) != GL_NO_ERROR;)
+        {
+            //Process/log the error.
+            switch (err){
+                case GL_INVALID_ENUM:
+                    std::cerr << "GL_INVALID_ENUM"<<std::endl;
+                    break;
+                case GL_INVALID_VALUE:
+                    std::cerr << "GL_INVALID_VALUE"<<std::endl;
+                    break;
+                case GL_INVALID_OPERATION:
+                    std::cerr << "GL_INVALID_OPERATION"<<std::endl;
+                    break;
+                case GL_OUT_OF_MEMORY:
+                    std::cerr << "GL_OUT_OF_MEMORY"<<std::endl;
+                    break;
+                case GL_INVALID_FRAMEBUFFER_OPERATION:
+                    std::cerr << "GL_INVALID_FRAMEBUFFER_OPERATION"<<std::endl;
+                    break;
+
+            }
         }
     }
 

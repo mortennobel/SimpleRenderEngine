@@ -25,7 +25,7 @@ public:
     static Texture* createFromMem(const char *pngOrJpeg, int size, bool generateMipmaps = false);
     static Texture* createFromRGBAMem(const char *data, int width, int height, bool generateMipmaps = false);
     static Texture* getWhiteTexture();
-    static Texture* getFontTexture();
+    static Texture* getSphereTexture();
 
     int getWidth();
     int getHeight();
@@ -40,7 +40,8 @@ private:
     Texture(const char* rgba, int width, int height, uint32_t type,bool generateMipmaps);
     void updateTextureSampler();
     static Texture* whiteTexture;
-    static Texture* fontTexture;
+    static Texture* sphereTexture;
+
     int width;
     int height;
     bool generateMipmap;

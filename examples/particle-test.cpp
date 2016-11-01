@@ -6,16 +6,35 @@
 #include "SRE/SimpleRenderEngine.hpp"
 #include "SRE/Camera.hpp"
 #include "SRE/Mesh.hpp"
+#include "SRE/ParticleMesh.hpp"
 #include "SRE/Shader.hpp"
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
 
 #include <glm/glm.hpp>
+#include <glm/gtc/random.hpp>
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <imgui.h>
+#include "imgui_sre.hpp"
+
 using namespace SRE;
+
+ParticleMesh* createParticles(int size = 2500){
+    std::vector<glm::vec3> positions;
+    std::vector<glm::vec4> colors;
+    std::vector<glm::vec2> uvs;
+    std::vector<float> scaleAndRotate;
+    std::vector<float> sizes;
+    for (int i=0;i<size;i++){
+        positions.push_back(glm::linearRand(glm::vec3(-1,-1,-1),glm::vec3(1,1,1)));
+        colors.push_back(glm::linearRand(glm::vec4(0,0,0,0),glm::vec4(1,1,1,1)));
+        sizes.push_back(glm::linearRand(0.0f,500.0f));
+    }
+    return new ParticleMesh(positions,colors,uvs,scaleAndRotate,scaleAndRotate,sizes);
+}
 
 int main() {
     std::cout << "Spinning cube" << std::endl;
@@ -49,17 +68,27 @@ int main() {
 
     r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
-    Shader* shader = Shader::getUnlit();
-//    shader->setTexture("tex", Texture::createPNGTextureFile("test-data/test.jpg",true));
-//    shader->setTexture("tex", Texture::createPNGTextureFile("test-data/twitter.png",true));
-    shader->setTexture("tex", Texture::createFromFile("test-data/cartman.png", true));
-    Mesh* mesh = Mesh::createCube();
+    Shader* shader = Shader::getStandard();
+    shader->set("specularity",20.0f);
+    Shader* shaderParticles = Shader::getStandardParticles();
 
-    float duration = 10000;
+    ParticleMesh* particleMesh = createParticles();
+    Mesh* mesh = Mesh::createCube();
+    r.setLight(0, Light(LightType::Point,{0, 1,0},{0,0,0},{1,0,0},2));
+    r.setLight(1, Light(LightType::Point,{1, 0,0},{0,0,0},{0,1,0},2));
+    r.setLight(2, Light(LightType::Point,{0,-1,0},{0,0,0},{0,0,1},2));
+    r.setLight(3, Light(LightType::Point,{-1,0,0},{0,0,0},{1,1,1},2));
+
+    float duration = 5000;
     for (float i=0;i<duration ;i+=16){
-        r.clearScreen({1,0,0,1});
-        r.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shader);
+        r.clearScreen({0,0,0.3,1});
+        shader->set("tex", Texture::getWhiteTexture());
+        r.draw(mesh, glm::eulerAngleY(-glm::radians(360 * i / duration))*glm::scale(glm::mat4(1),{0.3f,0.3f,0.3f}), shader);
+        shaderParticles->set("tex", Texture::getSphereTexture());
+        r.draw(particleMesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shaderParticles);
+
         r.swapWindow();
+
         SDL_Delay(16);
     }
 
@@ -71,4 +100,3 @@ int main() {
 
     return 0;
 }
-

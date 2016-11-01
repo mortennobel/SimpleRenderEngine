@@ -11,23 +11,40 @@
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 namespace SRE {
-    Mesh::Mesh(std::vector<glm::vec3> &vertexPositions, std::vector<glm::vec3> &normals, std::vector<glm::vec2> &uvs, MeshTopology meshTopology)
+    Mesh::Mesh(const std::vector<glm::vec3> &vertexPositions,const  std::vector<glm::vec3> &normals,const std::vector<glm::vec2> &uvs, MeshTopology meshTopology)
         :meshTopology{meshTopology}
     {
         glGenBuffers(1, &vertexBufferId);
+        glGenBuffers(1, &elementBufferId);
         glGenVertexArrays(1, &vertexArrayObject);
 
         update(vertexPositions, normals, uvs);
     }
 
+    Mesh::Mesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals,
+               const std::vector<glm::vec2> &uvs, const std::vector<uint16_t> &indices, MeshTopology meshTopology)
+            :meshTopology{meshTopology}
+    {
+        glGenBuffers(1, &vertexBufferId);
+        glGenBuffers(1, &elementBufferId);
+        glGenVertexArrays(1, &vertexArrayObject);
+
+        update(vertexPositions, normals, uvs, indices);
+    }
 
     Mesh::~Mesh(){
         glDeleteVertexArrays(1, &vertexArrayObject);
         glDeleteBuffers(1,&vertexBufferId);
+        glDeleteBuffers(1,&elementBufferId);
     }
 
     void Mesh::bind(){
         glBindVertexArray(vertexArrayObject);
+        if (indices.empty()){
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        } else {
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferId);
+        }
     }
 
     Mesh* Mesh::createQuad(){
@@ -36,13 +53,9 @@ namespace SRE {
                                        glm::vec3{1, -1, 0},
                                        glm::vec3{1, 1, 0},
                                        glm::vec3{-1, -1, 0},
-                                       glm::vec3{-1, -1, 0},
-                                       glm::vec3{1, 1, 0},
                                        glm::vec3{-1, 1, 0}
                                });
         std::vector<glm::vec3> normals({
-                                       glm::vec3{0, 0, 1},
-                                       glm::vec3{0, 0, 1},
                                        glm::vec3{0, 0, 1},
                                        glm::vec3{0, 0, 1},
                                        glm::vec3{0, 0, 1},
@@ -52,11 +65,13 @@ namespace SRE {
                                        glm::vec2{1, 0},
                                        glm::vec2{1, 1},
                                        glm::vec2{0, 0},
-                                       glm::vec2{0, 0},
-                                       glm::vec2{1, 1},
                                        glm::vec2{0, 1}
                                });
-        Mesh *res = new Mesh(vertices,normals,uvs, MeshTopology::Triangles);
+        std::vector<uint16_t> indices = {
+                0,1,2,
+                2,1,3
+        };
+        Mesh *res = new Mesh(vertices,normals,uvs, indices, MeshTopology::Triangles);
         return res;
     }
 
@@ -218,24 +233,25 @@ namespace SRE {
         return vertexCount;
     }
 
-    void Mesh::update(std::vector<glm::vec3> &vertexPositions, std::vector<glm::vec3> &normals,
-                      std::vector<glm::vec2> &uvs) {
+    void Mesh::update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals,
+                      const std::vector<glm::vec2> &uvs, const std::vector<uint16_t> &indices) {
+        this->vertexPositions = vertexPositions;
+        this->normals = normals;
+        this->uvs = uvs;
         this->vertexCount = (int) vertexPositions.size();
-        if (normals.size() < vertexPositions.size()){
-            normals.resize(vertexPositions.size(), glm::vec3(0,0,0));
-        }
-        if (uvs.size() < vertexPositions.size()){
-            uvs.resize(vertexPositions.size(), glm::vec2(0,0));
-        }
+        this->indices = indices;
+        bool hasNormals = normals.size() == vertexPositions.size();
+        bool hasUVs = uvs.size() == vertexPositions.size();
+
         // interleave data
         int floatsPerVertex = 8;
         std::vector<float> interleavedData(vertexPositions.size() * floatsPerVertex);
         for (int i=0;i<vertexPositions.size();i++){
             for (int j=0;j<3;j++){
-                interleavedData[i*8+j] = vertexPositions[i][j];
-                interleavedData[i*8+j+3] = normals[i][j];
+                interleavedData[i*floatsPerVertex+j] = vertexPositions[i][j];
+                interleavedData[i*floatsPerVertex+j+3] = hasNormals ? normals[i][j] : 0.0f;
                 if (j<2){
-                    interleavedData[i*8+j+6] = uvs[i][j];
+                    interleavedData[i*floatsPerVertex+j+6] = hasUVs ? uvs[i][j] : 0.0f;
                 }
             }
         }
@@ -251,6 +267,32 @@ namespace SRE {
             glEnableVertexAttribArray(i);
             glVertexAttribPointer(i, length[i],GL_FLOAT,GL_FALSE, 8 * sizeof(float), BUFFER_OFFSET(offset[i] * sizeof(float)));
         }
+        if (!indices.empty()){
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferId);
+            GLsizeiptr indicesSize = indices.size()*sizeof(uint16_t);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices.data(), GL_STATIC_DRAW);
+        }
+    }
 
+    void Mesh::update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals,
+                      const std::vector<glm::vec2> &uvs) {
+        std::vector<uint16_t> indices;
+        update(vertexPositions, normals,uvs, indices);
+    }
+
+    const std::vector<glm::vec3> &Mesh::getVertexPositions() {
+        return vertexPositions;
+    }
+
+    const std::vector<glm::vec3> &Mesh::getNormals() {
+        return normals;
+    }
+
+    const std::vector<glm::vec2> &Mesh::getUVs() {
+        return uvs;
+    }
+
+    const std::vector<uint16_t> &Mesh::getIndices() {
+        return indices;
     }
 }

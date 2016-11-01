@@ -950,7 +950,7 @@ const char* ImStristr(const char* haystack, const char* haystack_end, const char
 
 
 // MSVC version appears to return -1 on overflow, whereas glibc appears to return total count (which may be >= buf_size). 
-// Ideally we would test for only one of those limits at runtime depending on the behavior the vsnprintf(), but trying to deduct it at compile time sounds like a pandora can of worm.
+// Ideally we would examples for only one of those limits at runtime depending on the behavior the vsnprintf(), but trying to deduct it at compile time sounds like a pandora can of worm.
 int ImFormatString(char* buf, int buf_size, const char* fmt, ...)
 {
     IM_ASSERT(buf_size > 0);
@@ -3425,7 +3425,7 @@ static void CloseInactivePopups()
                 break;
         }
     }
-    if (n < g.OpenPopupStack.Size)   // This test is not required but it allows to set a useful breakpoint on the line below
+    if (n < g.OpenPopupStack.Size)   // This examples is not required but it allows to set a useful breakpoint on the line below
         g.OpenPopupStack.resize(n);
 }
 
@@ -5906,7 +5906,7 @@ bool ImGui::TreeNodeBehavior(ImGuiID id, ImGuiTreeNodeFlags flags, const char* l
     ItemSize(ImVec2(text_width, frame_height), text_base_offset_y);
 
     // For regular tree nodes, we arbitrary allow to click past 2 worth of ItemSpacing
-    // (Ideally we'd want to add a flag for the user to specify we want want the hit test to be done up to the right side of the content or not)
+    // (Ideally we'd want to add a flag for the user to specify we want want the hit examples to be done up to the right side of the content or not)
     const ImRect interact_bb = display_frame ? bb : ImRect(bb.Min.x, bb.Min.y, bb.Min.x + text_width + style.ItemSpacing.x*2, bb.Max.y);
     bool is_open = TreeNodeBehaviorIsOpen(id, flags);
     if (!ItemAdd(interact_bb, &id))

@@ -15,6 +15,7 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #include <cassert>
 #include "SRE/Shader.hpp"
 #include "SRE/Mesh.hpp"
+#include "SRE/ParticleMesh.hpp"
 
 #include "SRE/GL.hpp"
 #include <iostream>
@@ -49,9 +50,12 @@ namespace SRE {
         std::cout << "OpenGL version "<<glGetString(GL_VERSION) << std::endl;
         std::cout << "SRE version "<<sre_version_major<<"."<<sre_version_minor <<"."<<sre_version_point << std::endl;
 
-
         // setup opengl context
+        glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
+        glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN,GL_LOWER_LEFT);
+        glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
     }
 
     SimpleRenderEngine::~SimpleRenderEngine() {
@@ -72,22 +76,60 @@ namespace SRE {
     }
 
     void SimpleRenderEngine::draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader) {
+#ifndef NDEBUG
+        if (shader->particleLayout){
+            std::cerr<<"SimpleRenderEngine::draw(). Error: Shader has particleLayout."<<std::endl;
+        }
+#endif
+
         if (camera == nullptr){
             std::cerr<<"Cannot render. Camera is null"<<std::endl;
             return;
         }
-
-        shader->bind();
-        shader->setMatrix("model", modelTransform);
-        shader->setMatrix("view", camera->getViewTransform());
-        shader->setMatrix("projection", camera->getProjectionTransform());
-        auto normalMatrix = glm::transpose(glm::inverse((glm::mat3)(camera->getViewTransform()*modelTransform)));
-        shader->setMatrix("normalMat", normalMatrix);
-        shader->setLights(sceneLights, ambientLight, camera->getViewTransform());
+        setupShader(modelTransform, shader);
 
         mesh->bind();
+        int indexCount = (int) mesh->getIndices().size();
+        if (indexCount == 0){
+            glDrawArrays((GLenum) mesh->getMeshTopology(), 0, mesh->getVertexCount());
+        } else {
+            glDrawElements((GLenum) mesh->getMeshTopology(), indexCount, GL_UNSIGNED_SHORT, 0);
+        }
+    }
 
-        glDrawArrays((GLenum) mesh->getMeshTopology(), 0, mesh->getVertexCount());
+    void SimpleRenderEngine::draw(ParticleMesh *mesh, glm::mat4 modelTransform, Shader *shader) {
+#ifndef NDEBUG
+        if (!shader->particleLayout){
+            std::cerr<<"SimpleRenderEngine::draw(). Error: Shader does not have particleLayout."<<std::endl;
+        }
+#endif
+        if (camera == nullptr){
+            std::cerr<<"Cannot render. Camera is null"<<std::endl;
+            return;
+        }
+        setupShader(modelTransform, shader);
+
+        mesh->bind();
+        glDrawArrays((GLenum) MeshTopology::Points, 0, mesh->getVertexCount());
+
+    }
+
+    void SimpleRenderEngine::setupShader(const glm::mat4 &modelTransform, Shader *shader)  {
+        shader->bind();
+        if (shader->getType("model").type != UniformType::Invalid) {
+            shader->set("model", modelTransform);
+        }
+        if (shader->getType("view").type != UniformType::Invalid) {
+            shader->set("view", camera->getViewTransform());
+        }
+        if (shader->getType("projection").type != UniformType::Invalid) {
+            shader->set("projection", camera->getProjectionTransform());
+        }
+        if (shader->getType("normalMat").type != UniformType::Invalid){
+            auto normalMatrix = transpose(inverse((glm::mat3)(camera->getViewTransform() * modelTransform)));
+            shader->set("normalMat", normalMatrix);
+        }
+        shader->setLights(sceneLights, ambientLight, camera->getViewTransform());
     }
 
     void SimpleRenderEngine::setCamera(Camera *camera) {
@@ -102,6 +144,7 @@ namespace SRE {
             clear |= GL_COLOR_BUFFER_BIT;
         }
         if (clearDepthBuffer){
+            glDepthMask(GL_TRUE);
             clear |= GL_DEPTH_BUFFER_BIT;
         }
         glClear(clear);

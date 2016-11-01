@@ -50,14 +50,14 @@ int main() {
     r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
     Shader* shader = Shader::getStandard();
+    shader->set("specularity",20.0f);
     Mesh* mesh = Mesh::createCube();
+    r.setLight(0, Light(LightType::Point,{0, 1,0},{0,0,0},{1,0,0},2));
+    r.setLight(1, Light(LightType::Point,{1, 0,0},{0,0,0},{0,1,0},2));
+    r.setLight(2, Light(LightType::Point,{0,-1,0},{0,0,0},{0,0,1},2));
+    r.setLight(3, Light(LightType::Point,{-1,0,0},{0,0,0},{1,1,1},2));
 
-    r.setLight(0, Light(LightType::Point,{0, 1,0},{0,0,0},{1,0,0},2,20));
-    r.setLight(1, Light(LightType::Point,{1, 0,0},{0,0,0},{0,1,0},2,20));
-    r.setLight(2, Light(LightType::Point,{0,-1,0},{0,0,0},{0,0,1},2, 20));
-    r.setLight(3, Light(LightType::Point,{-1,0,0},{0,0,0},{1,1,1},2, 20));
-
-    float duration = 10000;
+    float duration = 5000;
     for (float i=0;i<duration ;i+=16){
         r.clearScreen({1,0,0,1});
         r.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shader);
