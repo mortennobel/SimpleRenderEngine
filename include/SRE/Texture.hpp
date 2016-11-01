@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-#include "SRE/Export.hpp"
+#include "SRE/impl/Export.hpp"
 
 namespace SRE{
     /**

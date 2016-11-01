@@ -38,7 +38,7 @@ int main() {
             SDL_WINDOWPOS_UNDEFINED,           // initial y position
             1024,                               // width, in pixels
             800,                               // height, in pixels
-            SDL_WINDOW_OPENGL                  // flags - see below
+            SDL_WINDOW_OPENGL                  // flags
     );
 
     ImGui_SRE_Init(window);

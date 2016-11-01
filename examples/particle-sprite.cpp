@@ -33,7 +33,7 @@ ParticleMesh* createParticles(){
     std::vector<float> sizes;
 
     positions.push_back({0,0,0});
-    sizes.push_back(1000.0f);
+    sizes.push_back(10.0f);
 
     return new ParticleMesh(positions,colors,uvCenter,empty,empty,sizes);
 }
@@ -64,8 +64,6 @@ void updateParticles(ParticleMesh* particleMesh, glm::vec2 uv, float uvSize, flo
     particleMesh->update(positions, colors, uvCenter,uvSizes, uvRotations,sizes);
 }
 
-
-
 int main() {
     std::cout << "Spinning cube" << std::endl;
     SDL_Window *window;                    // Declare a pointer
@@ -73,18 +71,18 @@ int main() {
     SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
     // Create an application window with the following settings:
     window = SDL_CreateWindow(
-            "An SDL2 window",                  // window title
-            SDL_WINDOWPOS_UNDEFINED,           // initial x position
-            SDL_WINDOWPOS_UNDEFINED,           // initial y position
-            640,                               // width, in pixels
-            480,                               // height, in pixels
-            SDL_WINDOW_OPENGL                  // flags - see below
+            "An SDL2 window",                      // window title
+            SDL_WINDOWPOS_UNDEFINED,               // initial x position
+            SDL_WINDOWPOS_UNDEFINED,               // initial y position
+            640,                                   // width, in pixels
+            480,                                   // height, in pixels
+            SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE // flags
     );
 
     // Check that the window was successfully made
@@ -106,12 +104,12 @@ int main() {
 
 
     bool quit = false;
-    glm::vec4 spriteColor = glm::vec4(114, 144, 154,255);
     glm::vec2 spriteUV = glm::vec2(0, 0);
     bool spriteAnimation = false;
+    bool ortho = false;
     float uvSize = 1.0;
     float uvRotation = 0.0;
-    float size = 1000.0f;
+    float size = 10.0f;
     float time = 0;
     while (!quit){
         SDL_Event e;
@@ -121,6 +119,14 @@ int main() {
             ImGui_SRE_ProcessEvent(&e);
             if (e.type == SDL_QUIT)
                 quit = true;
+        }
+        int w,h;
+        SDL_GetWindowSize(window,&w,&h);
+        r.getCamera()->setViewport(0,0,w,h);
+        if (ortho) {
+            r.getCamera()->setOrthographicProjection(-4,4,-4,4,-4,100);
+        } else {
+            r.getCamera()->setPerspectiveProjection(60,w,h,0.1,100);
         }
         r.clearScreen({0,0,0.0,1});
 
@@ -132,11 +138,12 @@ int main() {
         {
 
             ImGui::Text("Particle sprite");
+            ImGui::Checkbox("Orthographic proj",&ortho);
             ImGui::Checkbox("Sprite animation",&spriteAnimation);
             if (spriteAnimation) {
                 updateParticlesAnimation(time, spriteUV,uvSize, uvRotation);
             }
-            ImGui::SliderFloat("size", &size, 0.0f, 2000.0f);
+            ImGui::SliderFloat("size", &size, 0.0f, 100.0f);
             ImGui::DragFloat2("uv", &(spriteUV.x), 0.1f);
             ImGui::SliderFloat("uv", &uvSize, 0.0f, 1.0f);
             ImGui::SliderFloat("uvRotation", &uvRotation, 0.0f, 2*3.1415f);
@@ -147,7 +154,6 @@ int main() {
         r.draw(particleMesh, glm::mat4(1), shaderParticles);
 
         ImGui::Render();
-
 
         r.swapWindow();
 

@@ -27,7 +27,7 @@ To keep SRE as simple and flexible as possible the following features are not a 
  * Shadowmap support
  * Dynamic particle systems
 
- ## Examples
+## Examples
  
 Example usage can be found in the examples folder
 
@@ -36,15 +36,16 @@ Example usage can be found in the examples folder
 Online documentation:
 https://mortennobel.github.io/SimpleRenderEngine/
  
- ## Other resources
+## Other resources
  
  * https://www.libsdl.org Simple Direct Layer 2.x 
  * https://www.libsdl.org/projects/SDL_image/ Simple Direct Layer Image 2.x
  * http://glm.g-truc.net/ OpenGL Mathematics
  * https://www.opengl.org/registry/ OpenGL Registry
  
- ## Version history
+## Version history
  
+ * 0.2.1 Make particle size depend on viewport. Move internal headers into impl.  
  * 0.2 Move specularity from Light to a normal shader uniform (since logically it belongs to material instead of the light source)  
    - Add ParticleMesh 
    - Add support for imgui 

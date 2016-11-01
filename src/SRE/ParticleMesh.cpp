@@ -4,7 +4,7 @@
 
 #include "SRE/ParticleMesh.hpp"
 
-#include "SRE/GL.hpp"
+#include "SRE/impl/GL.hpp"
 #include <glm/gtc/constants.hpp>
 #include <iostream>
 
