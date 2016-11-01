@@ -82,7 +82,9 @@ int main() {
     float duration = 5000;
     for (float i=0;i<duration ;i+=16){
         r.clearScreen({0,0,0.3,1});
+        shader->set("tex", Texture::getWhiteTexture());
         r.draw(mesh, glm::eulerAngleY(-glm::radians(360 * i / duration))*glm::scale(glm::mat4(1),{0.3f,0.3f,0.3f}), shader);
+        shaderParticles->set("tex", Texture::getSphereTexture());
         r.draw(particleMesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shaderParticles);
 
         r.swapWindow();
