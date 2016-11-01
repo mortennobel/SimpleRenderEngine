@@ -140,6 +140,7 @@ namespace SRE {
         BlendType blend = BlendType::Disabled;
 
         std::map<std::string, Uniform> uniforms;
+        std::map<int,int> textureMap;
         void updateUniforms();
 
         bool particleLayout;

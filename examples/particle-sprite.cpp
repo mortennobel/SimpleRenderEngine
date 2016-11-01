@@ -138,7 +138,7 @@ int main() {
             }
             ImGui::SliderFloat("size", &size, 0.0f, 2000.0f);
             ImGui::DragFloat2("uv", &(spriteUV.x), 0.1f);
-            ImGui::SliderFloat("uvSize", &uvSize, 0.0f, 1.0f);
+            ImGui::SliderFloat("uv", &uvSize, 0.0f, 1.0f);
             ImGui::SliderFloat("uvRotation", &uvRotation, 0.0f, 2*3.1415f);
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);

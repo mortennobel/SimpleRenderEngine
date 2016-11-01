@@ -457,9 +457,9 @@ in general gives faster texture sampling.</li>
 
 <p><code class="prettyprint">static Texture* getWhiteTexture()</code></p>
 
-<h2 id="getalphaspheretexture">getAlphaSphereTexture</h2>
+<h2 id="getspheretexture">getSphereTexture</h2>
 
-<p><code class="prettyprint">static Texture* getAlphaSphereTexture()</code></p>
+<p><code class="prettyprint">static Texture* getSphereTexture()</code></p>
 
 <h2 id="getwidth">getWidth</h2>
 
@@ -675,19 +675,21 @@ A mesh is composed of a list of</p>
 <ul>
 <li>vertexPositions (vec3)</li>
 <li>colors (vec4)</li>
-<li>uvs (aka. texture coordinates) (vec4)</li>
+<li>uvs (aka. texture coordinates) (vec2)</li>
+<li>uv size (width and height of the particle)</li>
+<li>uv rotation in radians</li>
 <li>particle size</li>
 </ul>
 
 <h2 id="particlemesh">ParticleMesh</h2>
 
-<p><code class="prettyprint">ParticleMesh(const std::vector&lt;glm::vec3&gt; &amp;vertexPositions, const std::vector&lt;glm::vec4&gt; &amp;colors, const std::vector&lt;glm::vec4&gt; &amp;uvs, const std::vector&lt;float&gt; &amp;particleSizes)</code></p>
+<p><code class="prettyprint">ParticleMesh(const std::vector&lt;glm::vec3&gt; &amp;vertexPositions, const std::vector&lt;glm::vec4&gt; &amp;colors, const std::vector&lt;glm::vec2&gt; &amp;uv,const std::vector&lt;float&gt; &amp;uvSize,const std::vector&lt;float&gt; &amp;uvRotation, const std::vector&lt;float&gt; &amp;particleSizes)</code></p>
 
 <p>Constructor</p>
 
 <h2 id="update">update</h2>
 
-<p><code class="prettyprint">void update(const std::vector&lt;glm::vec3&gt; &amp;vertexPositions, const std::vector&lt;glm::vec4&gt; &amp;colors, const std::vector&lt;glm::vec4&gt; &amp;uvs, const std::vector&lt;float&gt; &amp;particleSizes)</code></p>
+<p><code class="prettyprint">void update(const std::vector&lt;glm::vec3&gt; &amp;vertexPositions, const std::vector&lt;glm::vec4&gt; &amp;colors, const std::vector&lt;glm::vec2&gt; &amp;uv, const std::vector&lt;float&gt; &amp;uvSize,const std::vector&lt;float&gt; &amp;uvRotation, const std::vector&lt;float&gt; &amp;particleSizes)</code></p>
 
 <h2 id="getvertexcount">getVertexCount</h2>
 
@@ -703,23 +705,19 @@ A mesh is composed of a list of</p>
 
 <h2 id="getuvs">getUVs</h2>
 
-<p><code class="prettyprint">const std::vector&lt;glm::vec4&gt;&amp; getUVs()</code></p>
+<p><code class="prettyprint">const std::vector&lt;glm::vec2&gt;&amp; getUV()</code></p>
+
+<h2 id="getuvsize">getUVSize</h2>
+
+<p><code class="prettyprint">const std::vector&lt;float&gt;&amp;getUVSize()</code></p>
+
+<h2 id="getuvrotation">getUVRotation</h2>
+
+<p><code class="prettyprint">const std::vector&lt;float&gt;&amp;getUVRotation()</code></p>
 
 <h2 id="getparticlesizes">getParticleSizes</h2>
 
 <p><code class="prettyprint">const std::vector&lt;float&gt;&amp; getParticleSizes()</code></p>
-
-<h2 id="createquad">createQuad</h2>
-
-<p><code class="prettyprint">static Mesh* createQuad()</code></p>
-
-<h2 id="createcube">createCube</h2>
-
-<p><code class="prettyprint">static Mesh* createCube()</code></p>
-
-<h2 id="createsphere">createSphere</h2>
-
-<p><code class="prettyprint">static Mesh* createSphere()</code></p>
 
           <h1 id="camera">Camera</h1>
 

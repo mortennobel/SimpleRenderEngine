@@ -317,6 +317,7 @@ namespace SRE {
 #endif
         glActiveTexture(GL_TEXTURE0 + textureSlot);
         glBindTexture(GL_TEXTURE_2D, texture->textureId);
+        textureMap[textureSlot] = texture->textureId;
         glUniform1i(uniform.id, textureSlot);
         return true;
     }
@@ -385,6 +386,10 @@ namespace SRE {
             default:
                 std::cout << "Err";
                 break;
+        }
+        for (auto e : textureMap){
+            glActiveTexture(GL_TEXTURE0 + e.first);
+            glBindTexture(GL_TEXTURE_2D, e.second);
         }
     }
 
@@ -725,7 +730,7 @@ void main(void)
 }
 )";
         standardParticles = createShader(vertexShader, fragmentShader, true);
-        standardParticles->set("tex", Texture::getAlphaSphereTexture());
+        standardParticles->set("tex", Texture::getSphereTexture());
         standardParticles->setBlend(BlendType::AdditiveBlending);
         standardParticles->setDepthWrite(false);
         return standardParticles;

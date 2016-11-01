@@ -25,14 +25,15 @@ using namespace SRE;
 ParticleMesh* createParticles(int size = 2500){
     std::vector<glm::vec3> positions;
     std::vector<glm::vec4> colors;
-    std::vector<glm::vec4> uvs;
+    std::vector<glm::vec2> uvs;
+    std::vector<float> scaleAndRotate;
     std::vector<float> sizes;
     for (int i=0;i<size;i++){
         positions.push_back(glm::linearRand(glm::vec3(-1,-1,-1),glm::vec3(1,1,1)));
         colors.push_back(glm::linearRand(glm::vec4(0,0,0,0),glm::vec4(1,1,1,1)));
         sizes.push_back(glm::linearRand(0.0f,500.0f));
     }
-    return new ParticleMesh(positions,colors,uvs,sizes);
+    return new ParticleMesh(positions,colors,uvs,scaleAndRotate,scaleAndRotate,sizes);
 }
 
 int main() {
@@ -42,7 +43,7 @@ int main() {
     SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 2);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
