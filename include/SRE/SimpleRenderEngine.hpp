@@ -5,7 +5,7 @@
 #include "SRE/Light.hpp"
 #include "SRE/Camera.hpp"
 
-#include "SRE/Export.hpp"
+#include "SRE/impl/Export.hpp"
 
 
 
@@ -47,7 +47,7 @@ namespace SRE {
         static constexpr int maxSceneLights = 4;
         static constexpr int sre_version_major = 0;
         static constexpr int sre_version_minor = 2;
-        static constexpr int sre_version_point = 0;
+        static constexpr int sre_version_point = 1;
         /**
          * Set the light state - this affects all draw calls after the state has been set.
          * @sa Light

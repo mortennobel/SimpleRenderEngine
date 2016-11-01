@@ -4,9 +4,10 @@
 #include <vector>
 #include "SRE/MeshTopology.hpp"
 
-#include "SRE/Export.hpp"
+#include "SRE/impl/Export.hpp"
 
 namespace SRE {
+    // The size of the particles is relative to the viewport height
     class DllExport ParticleMesh {
     public:
         ParticleMesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec4> &colors, const std::vector<glm::vec2> &uv,const std::vector<float> &uvSize,const std::vector<float> &uvRotation, const std::vector<float> &particleSizes);

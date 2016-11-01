@@ -32,7 +32,7 @@ int main() {
             SDL_WINDOWPOS_UNDEFINED,           // initial y position
             640,                               // width, in pixels
             480,                               // height, in pixels
-            SDL_WINDOW_OPENGL                  // flags - see below
+            SDL_WINDOW_OPENGL                  // flags
     );
 
     // Check that the window was successfully made

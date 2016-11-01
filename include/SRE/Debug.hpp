@@ -6,7 +6,7 @@
 
 #include "glm/glm.hpp"
 
-#include "SRE/Export.hpp"
+#include "SRE/impl/Export.hpp"
 
 namespace SRE {
     // The purpose of this class is to draw debug information into the scene.

@@ -2,7 +2,7 @@
 
 #include "glm/glm.hpp"
 
-#include "SRE/Export.hpp"
+#include "SRE/impl/Export.hpp"
 
 namespace SRE {
     /**

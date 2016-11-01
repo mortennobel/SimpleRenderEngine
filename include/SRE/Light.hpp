@@ -2,9 +2,9 @@
 
 #include "glm/glm.hpp"
 #include "LightType.hpp"
-#include "CPPShim.hpp"
+#include "SRE/impl/CPPShim.hpp"
 
-#include "SRE/Export.hpp"
+#include "SRE/impl/Export.hpp"
 
 namespace SRE {
     /**

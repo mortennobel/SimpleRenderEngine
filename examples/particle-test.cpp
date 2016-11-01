@@ -31,7 +31,7 @@ ParticleMesh* createParticles(int size = 2500){
     for (int i=0;i<size;i++){
         positions.push_back(glm::linearRand(glm::vec3(-1,-1,-1),glm::vec3(1,1,1)));
         colors.push_back(glm::linearRand(glm::vec4(0,0,0,0),glm::vec4(1,1,1,1)));
-        sizes.push_back(glm::linearRand(0.0f,500.0f));
+        sizes.push_back(glm::linearRand(0.0f,1.0f));
     }
     return new ParticleMesh(positions,colors,uvs,scaleAndRotate,scaleAndRotate,sizes);
 }
@@ -49,12 +49,12 @@ int main() {
 
     // Create an application window with the following settings:
     window = SDL_CreateWindow(
-            "An SDL2 window",                  // window title
-            SDL_WINDOWPOS_UNDEFINED,           // initial x position
-            SDL_WINDOWPOS_UNDEFINED,           // initial y position
-            640,                               // width, in pixels
-            480,                               // height, in pixels
-            SDL_WINDOW_OPENGL                  // flags - see below
+            "An SDL2 window",                      // window title
+            SDL_WINDOWPOS_UNDEFINED,               // initial x position
+            SDL_WINDOWPOS_UNDEFINED,               // initial y position
+            640,                                   // width, in pixels
+            480,                                   // height, in pixels
+            SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE // flags
     );
 
     // Check that the window was successfully made
@@ -63,6 +63,7 @@ int main() {
         printf("Could not create window: %s\n", SDL_GetError());
         return 1;
     }
+    ImGui_SRE_Init(window);
 
     SimpleRenderEngine r{window};
 
@@ -79,17 +80,49 @@ int main() {
     r.setLight(2, Light(LightType::Point,{0,-1,0},{0,0,0},{0,0,1},2));
     r.setLight(3, Light(LightType::Point,{-1,0,0},{0,0,0},{1,1,1},2));
 
-    float duration = 5000;
-    for (float i=0;i<duration ;i+=16){
+    bool ortho = false;
+    bool quit = false;
+    int i = 0;
+    while (!quit){
+        SDL_Event e;
+        //Handle events on queue
+        while( SDL_PollEvent( &e ) != 0 )
+        {
+            ImGui_SRE_ProcessEvent(&e);
+            if (e.type == SDL_QUIT)
+                quit = true;
+        }
+        int w,h;
+        SDL_GetWindowSize(window,&w,&h);
+        r.getCamera()->setViewport(0,0,w,h);
+        float aspect = w/(float)h;
+        if (ortho){
+            r.getCamera()->setOrthographicProjection(-2*aspect,2*aspect,-2,2,-2,100);
+        } else {
+            r.getCamera()->setPerspectiveProjection(60,w,h,0.1,100);
+        }
         r.clearScreen({0,0,0.3,1});
         shader->set("tex", Texture::getWhiteTexture());
-        r.draw(mesh, glm::eulerAngleY(-glm::radians(360 * i / duration))*glm::scale(glm::mat4(1),{0.3f,0.3f,0.3f}), shader);
+        r.draw(mesh, glm::eulerAngleY(-glm::radians((float)i))*glm::scale(glm::mat4(1),{0.3f,0.3f,0.3f}), shader);
         shaderParticles->set("tex", Texture::getSphereTexture());
-        r.draw(particleMesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shaderParticles);
+        r.draw(particleMesh, glm::eulerAngleY(glm::radians((float)i)), shaderParticles);
 
+
+        ImGui_SRE_NewFrame(window);
+
+        // 1. Show a simple window
+        // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
+        {
+
+            ImGui::Text("Particle sprite");
+            ImGui::Checkbox("Orthographic proj",&ortho);
+            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        }
+        ImGui::Render();
         r.swapWindow();
 
         SDL_Delay(16);
+        i++;
     }
 
     // Close and destroy the window

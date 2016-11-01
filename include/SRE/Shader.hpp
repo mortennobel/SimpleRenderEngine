@@ -7,9 +7,9 @@
 #include "SRE/Light.hpp"
 #include "SRE/BlendType.hpp"
 
-#include "SRE/Export.hpp"
+#include "SRE/impl/Export.hpp"
 
-#include "CPPShim.hpp"
+#include "SRE/impl/CPPShim.hpp"
 #include <string>
 #include <map>
 

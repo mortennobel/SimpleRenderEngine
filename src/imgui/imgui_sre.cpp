@@ -13,7 +13,7 @@
 #include <SDL.h>
 #include <SDL_syswm.h>
 
-#include "SRE/GL.hpp"
+#include "SRE/impl/GL.hpp"
 
 // Data
 static double       g_Time = 0.0f;

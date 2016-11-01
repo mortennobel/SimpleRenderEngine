@@ -17,7 +17,7 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #include "SRE/Mesh.hpp"
 #include "SRE/ParticleMesh.hpp"
 
-#include "SRE/GL.hpp"
+#include "SRE/impl/GL.hpp"
 #include <iostream>
 #include <algorithm>
 
@@ -110,6 +110,7 @@ namespace SRE {
         setupShader(modelTransform, shader);
 
         mesh->bind();
+        shader->set("view_height", (float)camera->viewportHeight);
         glDrawArrays((GLenum) MeshTopology::Points, 0, mesh->getVertexCount());
 
     }

@@ -8,6 +8,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 file(GLOB SOURCE_FILES
 	"src/SRE/*.cpp"
 	"include/SRE/*.hpp"
+	"include/SRE/impl/*.hpp"
     "src/imgui/*.cpp"
     "include/imgui/*.h"
     "include/glm/glm/*.hpp"
@@ -33,6 +34,7 @@ include_directories(${SDL2_INCLUDE_DIR})
 include_directories(sre)
 include_directories(include/imgui)
 include_directories(include/glm)
+include_directories(include)
 
 #########################################################
 # FIND OPENGL

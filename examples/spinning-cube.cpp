@@ -30,12 +30,12 @@ int main() {
 
     // Create an application window with the following settings:
     window = SDL_CreateWindow(
-            "An SDL2 window",                  // window title
-            SDL_WINDOWPOS_UNDEFINED,           // initial x position
-            SDL_WINDOWPOS_UNDEFINED,           // initial y position
-            640,                               // width, in pixels
-            480,                               // height, in pixels
-            SDL_WINDOW_OPENGL                  // flags - see below
+            "An SDL2 window",                     // window title
+            SDL_WINDOWPOS_UNDEFINED,              // initial x position
+            SDL_WINDOWPOS_UNDEFINED,              // initial y position
+            640,                                  // width, in pixels
+            480,                                  // height, in pixels
+            SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE// flags
     );
 
     // Check that the window was successfully made
@@ -48,21 +48,34 @@ int main() {
     SimpleRenderEngine r{window};
 
     r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
-    r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
     Shader* shader = Shader::getStandard();
+    shader->set("color", glm::vec4(1.0f,1.0f,1.0f,1.0f));
     shader->set("specularity",20.0f);
     Mesh* mesh = Mesh::createCube();
-    r.setLight(0, Light(LightType::Point,{0, 1,0},{0,0,0},{1,0,0},2));
-    r.setLight(1, Light(LightType::Point,{1, 0,0},{0,0,0},{0,1,0},2));
-    r.setLight(2, Light(LightType::Point,{0,-1,0},{0,0,0},{0,0,1},2));
-    r.setLight(3, Light(LightType::Point,{-1,0,0},{0,0,0},{1,1,1},2));
-
-    float duration = 5000;
-    for (float i=0;i<duration ;i+=16){
+    r.setAmbientLight({0.5,0.5,0.5});
+    r.setLight(0, Light(LightType::Point,{0, 3,0},{0,0,0},{1,0,0},20));
+    r.setLight(1, Light(LightType::Point,{3, 0,0},{0,0,0},{0,1,0},20));
+    r.setLight(2, Light(LightType::Point,{0,-3,0},{0,0,0},{0,0,1},20));
+    r.setLight(3, Light(LightType::Point,{-3,0,0},{0,0,0},{1,1,1},20));
+    bool quit=false;
+    int i=0;
+    while (!quit){
+        SDL_Event e;
+        //Handle events on queue
+        while( SDL_PollEvent( &e ) != 0 )
+        {
+            if (e.type == SDL_QUIT)
+                quit = true;
+        }
+        int w,h;
+        SDL_GetWindowSize(window,&w,&h);
+        r.getCamera()->setViewport(0,0,w,h);
+        r.getCamera()->setPerspectiveProjection(60,w,h,0.1,100);
         r.clearScreen({1,0,0,1});
-        r.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shader);
+        r.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), shader);
         r.swapWindow();
         SDL_Delay(16);
+        i++;
     }
 
     // Close and destroy the window

@@ -6,7 +6,7 @@
 #include "SRE/Mesh.hpp"
 #include "SRE/Shader.hpp"
 #include "SRE/SimpleRenderEngine.hpp"
-#include "SRE/GL.hpp"
+#include "SRE/impl/GL.hpp"
 
 #include <vector>
 #include <iostream>

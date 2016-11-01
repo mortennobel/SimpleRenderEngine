@@ -4,7 +4,7 @@
 
 #include "SRE/Shader.hpp"
 
-#include "SRE/GL.hpp"
+#include "SRE/impl/GL.hpp"
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
@@ -671,10 +671,12 @@ in vec4 color;
 in vec4 uv;
 out mat3 vUVMat;
 out vec4 vColor;
+out vec3 uvSize;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
+uniform float view_height;
 
 mat3 translate(vec2 p){
  return mat3(1.0,0.0,0.0,0.0,1.0,0.0,p.x,p.y,1.0);
@@ -702,18 +704,20 @@ void main(void) {
         {
             zDist = 0.0;
         }
-        gl_PointSize = position.w * zDist;
+        gl_PointSize = view_height * position.w * zDist;
     } else {
-        gl_PointSize = position.w * projection[0][0] * projection[1][1] * 0.5; // average x,y scale in orthographic projection
+        gl_PointSize = 0.1 * view_height * position.w;
     }
 
     vUVMat = translate(uv.xy)*scale(uv.z) * translate(vec2(0.5,0.5))*rotate(uv.w) * translate(vec2(-0.5,-0.5));
     vColor = color;
+    uvSize = uv.xyz;
 }
 )";
         const char* fragmentShader = R"(#version 140
 out vec4 fragColor;
 in mat3 vUVMat;
+in vec3 uvSize;
 in vec4 vColor;
 
 uniform sampler2D tex;
@@ -721,6 +725,10 @@ uniform sampler2D tex;
 void main(void)
 {
     vec2 uv = (vUVMat * vec3(gl_PointCoord,1.0)).xy;
+
+    if (uv != clamp(uv, uvSize.xy, uvSize.xy + uvSize.zz)){
+        discard;
+    }
     vec4 c = vColor * texture(tex, uv);
     fragColor = c;
 }
