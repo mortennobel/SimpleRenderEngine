@@ -11,6 +11,7 @@ SRE provides:
  * Virtual camera (perspective and orthographic)
  * Texture support (JPEG, PNG, Raw)
  * Mesh support (with normals and texture coordinates)
+ * Mesh support (with color, particle-size and texture coordinates)
  * Shaders (unlit, specular, alpha blending, and custom shaders)
  * Light and shading
  * Enforces efficient use of OpenGL
@@ -45,6 +46,7 @@ https://mortennobel.github.io/SimpleRenderEngine/
  
 ## Version history
  
+ * 0.2.2 ParticleMesh Support for OpenGL 3.1
  * 0.2.1 Make particle size depend on viewport. Move internal headers into impl.  
  * 0.2 Move specularity from Light to a normal shader uniform (since logically it belongs to material instead of the light source)  
    - Add ParticleMesh 

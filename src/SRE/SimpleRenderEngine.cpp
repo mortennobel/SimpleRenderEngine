@@ -20,6 +20,7 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #include "SRE/impl/GL.hpp"
 #include <iostream>
 #include <algorithm>
+#include <string>
 
 namespace SRE {
     SimpleRenderEngine* SimpleRenderEngine::instance = nullptr;
@@ -46,7 +47,7 @@ namespace SRE {
 		glewInit();
 #endif
 
-        std::cout << glGetString(GL_VERSION) << std::endl;
+		std::string version = (char*)glGetString(GL_VERSION);
         std::cout << "OpenGL version "<<glGetString(GL_VERSION) << std::endl;
         std::cout << "SRE version "<<sre_version_major<<"."<<sre_version_minor <<"."<<sre_version_point << std::endl;
 
@@ -55,6 +56,13 @@ namespace SRE {
         glEnable(GL_CULL_FACE);
         glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN,GL_LOWER_LEFT);
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
+
+#ifndef GL_POINT_SPRITE
+#define GL_POINT_SPRITE 0x8861
+#endif // !GL_POINT_SPRITE
+		if (version.find_first_of("3.1") == 0){
+			glEnable(GL_POINT_SPRITE);
+		}
 
     }
 
