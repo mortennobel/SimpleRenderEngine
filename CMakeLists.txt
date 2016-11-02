@@ -10,8 +10,6 @@ add_definitions(-DEXP_STL)
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
 include_directories(sre)
-include_directories(include/imgui)
-include_directories(include/glm)
 include_directories(include)
 
 #########################################################

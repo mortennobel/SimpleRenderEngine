@@ -79,7 +79,7 @@ namespace SRE {
         int offset[3] = {0,4,8};
         for (int i=0;i<3;i++){
             glEnableVertexAttribArray(i);
-            glVertexAttribPointer(i, length[i],GL_FLOAT,GL_FALSE, 8 * sizeof(float), BUFFER_OFFSET(offset[i] * sizeof(float)));
+            glVertexAttribPointer(i, length[i],GL_FLOAT,GL_FALSE, 12 * sizeof(float), BUFFER_OFFSET(offset[i] * sizeof(float)));
         }
     }
 

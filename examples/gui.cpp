@@ -16,7 +16,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <imgui.h>
-#include "imgui_sre.hpp"
+#include "SRE/imgui_sre.hpp"
 
 using namespace SRE;
 

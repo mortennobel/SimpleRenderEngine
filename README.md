@@ -46,6 +46,7 @@ https://mortennobel.github.io/SimpleRenderEngine/
  
 ## Version history
  
+ * 0.2.4 Restructured include folder and CMake build. Fix particle bug.
  * 0.2.2 ParticleMesh Support for OpenGL 3.1
  * 0.2.1 Make particle size depend on viewport. Move internal headers into impl.  
  * 0.2 Move specularity from Light to a normal shader uniform (since logically it belongs to material instead of the light source)  
