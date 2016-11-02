@@ -3,15 +3,10 @@
 #include "glm/glm.hpp"
 
 #ifdef _WIN32
-#ifdef EXP_STL
-#    define DECLSPECIFIER __declspec(dllexport)
-#    define DllExport __declspec(dllexport)
-#    define EXPIMP_TEMPLATE
-#else
-#    define DllExport __declspec(dllimport)
-#    define DECLSPECIFIER __declspec(dllimport)
-#    define EXPIMP_TEMPLATE extern
-#endif
+
+#define DECLSPECIFIER __declspec(dllexport)
+#define DllExport __declspec(dllexport)
+#define EXPIMP_TEMPLATE
 
 template struct __declspec(dllexport) glm::tvec4<float, glm::precision(0)>;
 template struct __declspec(dllexport) glm::tvec3<float, glm::precision(0)>;
