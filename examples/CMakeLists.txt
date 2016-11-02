@@ -8,6 +8,7 @@ add_executable(SRE-Hello-Engine hello-engine.cpp)
 add_executable(SRE-Particle-Test particle-test.cpp)
 add_executable(SRE-Particle-Sprite particle-sprite.cpp)
 add_executable(SRE-GUI gui.cpp)
+add_executable(SRE-Spheres spheres.cpp)
 
 target_link_libraries(SRE-Spinning-Cube ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Spinning-Sphere ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
@@ -18,6 +19,7 @@ target_link_libraries(SRE-Hello-Engine ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAG
 target_link_libraries(SRE-Particle-Test ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Particle-Sprite ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-GUI ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
+target_link_libraries(SRE-Spheres ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 
 file(COPY ../examples-data DESTINATION Debug)
 file(COPY ../examples-data DESTINATION Release)
