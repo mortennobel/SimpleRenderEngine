@@ -12,8 +12,11 @@
 
 namespace SRE{
     Camera::Camera()
-    : viewTransform{1.0f},projectionTransform {1.0f}
+    : viewTransform{1.0f},projectionTransform {1.0f}, viewportX{0}, viewportY{0}
     {
+        if (SimpleRenderEngine::instance){
+            SDL_GetWindowSize(SimpleRenderEngine::instance->window,&viewportWidth,&viewportHeight);
+        }
     }
 
     void Camera::setPerspectiveProjection(float fieldOfViewY, float viewportWidth,float viewportHeight, float nearPlane, float farPlane) {

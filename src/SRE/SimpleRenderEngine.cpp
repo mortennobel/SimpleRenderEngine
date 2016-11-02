@@ -33,6 +33,7 @@ namespace SRE {
         }
         instance = this;
         camera = &defaultCamera;
+
         glcontext = SDL_GL_CreateContext(window);
 
 #if defined(_WIN32)
@@ -63,7 +64,7 @@ namespace SRE {
 		if (version.find_first_of("3.1") == 0){
 			glEnable(GL_POINT_SPRITE);
 		}
-
+        SDL_GetWindowSize(window,&camera->viewportWidth,&camera->viewportHeight);
     }
 
     SimpleRenderEngine::~SimpleRenderEngine() {
