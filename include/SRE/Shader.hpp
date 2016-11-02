@@ -11,7 +11,7 @@
 
 #include "SRE/impl/CPPShim.hpp"
 #include <string>
-#include <map>
+#include <vector>
 
 namespace SRE {
     class Texture;
@@ -26,7 +26,8 @@ namespace SRE {
         Invalid
     };
 
-    struct Uniform {
+    struct DllExport Uniform {
+		char* name[50];
         int id;
         UniformType type;
         // 1 means not array
@@ -139,7 +140,7 @@ namespace SRE {
         bool depthWrite = true;
         BlendType blend = BlendType::Disabled;
 
-        std::map<std::string, Uniform> uniforms;
+        std::vector<Uniform> uniforms;
         void updateUniforms();
 
         bool particleLayout;

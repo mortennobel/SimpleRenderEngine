@@ -219,7 +219,7 @@ namespace SRE {
                 data[x*size*4 + y*4+0 ] = (char) (255 * distToCenter);
                 data[x*size*4 + y*4+1 ] = (char) (255 * distToCenter);
                 data[x*size*4 + y*4+2 ] = (char) (255 * distToCenter);
-                data[x*size*4 + y*4+3 ] = 255;
+                data[x*size*4 + y*4+3 ] = (char) 255;
             }
         }
         sphereTexture = createFromRGBAMem(data.data(), size, size, true);

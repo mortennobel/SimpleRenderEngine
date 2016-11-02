@@ -1,33 +1,11 @@
 cmake_minimum_required(VERSION 3.5)
-project(SimpleRenderEngine)
+project(SimpleRenderEngine CXX)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
+set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
+add_definitions(-DEXP_STL)
 
-file(GLOB SOURCE_FILES
-	"src/SRE/*.cpp"
-	"include/SRE/*.hpp"
-	"include/SRE/impl/*.hpp"
-    "src/imgui/*.cpp"
-    "include/imgui/*.h"
-    "include/glm/glm/*.hpp"
-    "include/glm/glm/detail/*.hpp"
-    "include/glm/glm/gtc/*.hpp"
-    "include/glm/glm/gtx/*.hpp"
-)
-
-add_executable(SRE-Spinning-Cube ${SOURCE_FILES} examples/spinning-cube.cpp)
-add_executable(SRE-Spinning-Sphere ${SOURCE_FILES} examples/spinning-sphere.cpp)
-add_executable(SRE-Spinning-Cube-Unlit ${SOURCE_FILES} examples/spinning-cube-unlit.cpp)
-add_executable(SRE-Spinning-Sphere-Unlit ${SOURCE_FILES} examples/spinning-sphere-unlit.cpp)
-add_executable(SRE-Spinning-Cube-Tex ${SOURCE_FILES} examples/spinning-cube-tex.cpp)
-add_executable(SRE-Hello-Engine ${SOURCE_FILES} examples/hello-engine.cpp)
-add_executable(SRE-Particle-Test ${SOURCE_FILES} examples/particle-test.cpp)
-add_executable(SRE-Particle-Sprite ${SOURCE_FILES} examples/particle-sprite.cpp)
-add_executable(SRE-GUI ${SOURCE_FILES} examples/gui.cpp)
-
-add_library(SRE STATIC ${SOURCE_FILES})
 
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
@@ -60,24 +38,8 @@ find_package(SDL2_IMAGE REQUIRED)
 include_directories(${SDL2_IMAGE_INCLUDE_DIRS})
 include_directories(include)
 
+add_subdirectory(src)
+add_subdirectory(examples)
 
-target_link_libraries(SRE-Spinning-Cube ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
-target_link_libraries(SRE-Spinning-Sphere ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
-target_link_libraries(SRE-Spinning-Cube-Unlit ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
-target_link_libraries(SRE-Spinning-Sphere-Unlit ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
-target_link_libraries(SRE-Spinning-Cube-Tex ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
-target_link_libraries(SRE-Hello-Engine ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
-target_link_libraries(SRE-Particle-Test ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
-target_link_libraries(SRE-Particle-Sprite ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
-target_link_libraries(SRE-GUI ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
-target_link_libraries(SRE ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES})
 
-file(COPY examples-data DESTINATION Debug)
-file(COPY examples-data DESTINATION Release)
-IF (WIN32)
-    SET(SDL2_dll "" CACHE STRING "Where the SDL2.dll can be found")
-    SET(SDL2_image_lib_path "" CACHE PATH "Where the SDL2_image.dll can be found")
-    SET(DLLFileList "${SDL2_image_lib_path}/SDL2_image.dll" "${SDL2_image_lib_path}/libjpeg-9.dll" "${SDL2_image_lib_path}/libpng16-16.dll" "${SDL2_image_lib_path}/libtiff-5.dll" "${SDL2_image_lib_path}/libwebp-4.dll" "${SDL2_image_lib_path}/zlib1.dll"  ${SDL2_dll})
-    file(COPY ${DLLFileList} DESTINATION Debug)
-    file(COPY ${DLLFileList} DESTINATION Release)
-ENDIF(WIN32)
+

@@ -1,0 +1,8 @@
+file(GLOB SOURCE_FILES
+	"SRE/*.cpp"
+	"../include/SRE/*.hpp"
+	"../include/SRE/impl/*.hpp"
+    "imgui/*.cpp"
+)
+
+add_library(SRE STATIC ${SOURCE_FILES})

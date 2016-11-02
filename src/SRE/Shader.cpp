@@ -156,7 +156,12 @@ namespace SRE {
                 *bracketIndex = '\0';
             }
             GLint location = glGetUniformLocation(shaderProgramId, name);
-            uniforms[name] = {location,uniformType,size};
+			Uniform u;
+			memcpy(u.name, name, 50);
+			u.id = location;
+			u.arrayCount = size;
+			u.type = uniformType;
+            uniforms.push_back(u);
         }
     }
 
@@ -649,16 +654,23 @@ void main(void)
     }
 
     bool Shader::contains(const char *name) {
-        return uniforms.find(name) != uniforms.end();
+		for (auto i = uniforms.begin(); i != uniforms.end(); i++) {
+			if (strcmp((const char*)i->name, name) == 0)
+				return true;
+		}
+        return false;
     }
 
     Uniform Shader::getType(const char *name) {
-        auto res = uniforms.find(name);
-        if (res != uniforms.end()){
-            return uniforms[name];
-        } else {
-            return {-1, UniformType::Invalid, -1};
-        }
+		for (auto i = uniforms.begin(); i != uniforms.end(); i++) {
+			if (strcmp((const char*)i->name, name) == 0)
+				return *i;
+		}
+		Uniform u;
+		u.type = UniformType::Invalid;
+		u.id = -1;
+		u.arrayCount = -1;
+		return u;
     }
 
     Shader *Shader::getStandardParticles() {
