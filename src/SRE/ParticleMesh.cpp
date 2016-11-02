@@ -72,7 +72,7 @@ namespace SRE {
 
         glBindVertexArray(vertexArrayObject);
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(float)*interleavedData.size(), interleavedData.data(), GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, sizeof(float)*interleavedData.size(), interleavedData.data(), GL_DYNAMIC_DRAW);
 
         // bind vertex attributes (position+size, color, uvs)
         int length[3] = {4,4,4};
