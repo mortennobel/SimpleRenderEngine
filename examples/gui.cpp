@@ -89,12 +89,14 @@ int main() {
             ImGui::Text("Hello, world!");
             ImGui::SliderFloat("rotationSpeed", &f, 0.0f, 1.0f);
             ImGui::ColorEdit3("clear color", (float*)&clear_color);
-            if (ImGui::Button("Another Window")) show_another_window ^= 1;
+            
+            ImGui::Checkbox("Another Window", &show_another_window);
+            
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         }
 
-        // 2. Show another simple window, this time using an explicit Begin/End pair
-        if (show_another_window)
+           // 2. Show another simple window, this time using an explicit Begin/End pair
+        if(show_another_window)
         {
             ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
             ImGui::Begin("Another Window", &show_another_window);
