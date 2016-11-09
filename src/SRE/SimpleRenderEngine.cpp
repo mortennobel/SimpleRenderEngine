@@ -180,4 +180,8 @@ namespace SRE {
         float maxAmbient = std::max(ambientLight.x, std::max(ambientLight.y,ambientLight.z));
         SimpleRenderEngine::ambientLight = glm::vec4(ambientLight, maxAmbient);
     }
+
+    void SimpleRenderEngine::flush() {
+        glFlush();
+    }
 }

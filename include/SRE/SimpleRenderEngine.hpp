@@ -47,7 +47,7 @@ namespace SRE {
         static constexpr int maxSceneLights = 4;
         static constexpr int sre_version_major = 0;
         static constexpr int sre_version_minor = 2;
-        static constexpr int sre_version_point = 5;
+        static constexpr int sre_version_point = 6;
         /**
          * Set the light state - this affects all draw calls after the state has been set.
          * @sa Light
@@ -123,6 +123,11 @@ namespace SRE {
          * Update window with OpenGL rendering
          */
         void swapWindow();
+
+        /**
+         * Flush GPU command buffer (must be called when profiling GPU time - should not be called when not profiling)
+         */
+        void flush();
 
         /**
          * Singleton reference to the engine after initialization.
