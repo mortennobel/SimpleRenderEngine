@@ -46,6 +46,7 @@ https://mortennobel.github.io/SimpleRenderEngine/
  
 ## Version history
  
+ * 0.2.6 Fix point-light attenuation 
  * 0.2.5 Set Camera default viewport
  * 0.2.4 Restructured include folder and CMake build. Fix particle bug.
  * 0.2.2 ParticleMesh Support for OpenGL 3.1
