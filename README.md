@@ -46,6 +46,7 @@ https://mortennobel.github.io/SimpleRenderEngine/
  
 ## Version history
  
+ * 0.2.7 Add more mesh topologies (line strip, triangle strip and triangle fans). Add Debug::drawLineStrip(). 
  * 0.2.6 Fix point-light attenuation 
  * 0.2.5 Set Camera default viewport
  * 0.2.4 Restructured include folder and CMake build. Fix particle bug.

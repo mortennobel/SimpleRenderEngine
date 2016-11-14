@@ -26,8 +26,9 @@ namespace SRE {
         // In some cases the light color may have values above 1.0
         glm::vec3 color;
         // The range of a point light (due to attenuation)
-        // 0 means no attenuation
+        // Range0 means no attenuation
         float range;
+
         Light();
         Light(LightType lightType, glm::vec3 position, glm::vec3 direction, glm::vec3 color, float range);
 

@@ -10,6 +10,7 @@
 
 #include <vector>
 #include <iostream>
+#include <SRE/Texture.hpp>
 
 using namespace std;
 
@@ -36,6 +37,35 @@ namespace SRE {
 
         Shader* shader = Shader::getUnlit();
         shader->set("color", color);
+        shader->set("tex", Texture::getWhiteTexture());
+        if (SimpleRenderEngine::instance != nullptr){
+            SimpleRenderEngine::instance->draw(&mesh, glm::mat4(1),shader);
+        }
+    }
+
+    void push(vector<glm::vec3> & verts) {
+    }
+
+    template <typename... Args>
+    void push(vector<glm::vec3> & verts, glm::vec3 v, Args... args) {
+        verts.push_back(v);
+        push(verts, args...);
+    }
+
+    void Debug::drawLineStrip(std::vector<glm::vec3> &&verts) {
+        std::vector<glm::vec3> v{verts};
+        drawLineStrip(v);
+    }
+
+    void Debug::drawLineStrip(std::vector<glm::vec3> &verts) {
+        vector<glm::vec3> normals;
+        vector<glm::vec2> uvs;
+
+        Mesh mesh(verts, normals, uvs, MeshTopology::LineStrip);
+
+        Shader* shader = Shader::getUnlit();
+        shader->set("color", color);
+        shader->set("tex", Texture::getWhiteTexture());
         if (SimpleRenderEngine::instance != nullptr){
             SimpleRenderEngine::instance->draw(&mesh, glm::mat4(1),shader);
         }

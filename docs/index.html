@@ -960,13 +960,14 @@ only used for directional light</p>
 <p><code class="prettyprint">glm::vec3 color</code></p>
 
 <p>The color (or intensity) of the light
-In some cases the light color may have values above 1.0</p>
+In the light color may have values above 1.0</p>
 
 <h2 id="range">range</h2>
 
 <p><code class="prettyprint">float range</code></p>
 
-<p>The range of a point light (due to attenuation)</p>
+<p>The range of a point light (due to attenuation)
+Range 0 means no attenuation</p>
 
           <h1 id="debug">Debug</h1>
 
@@ -984,6 +985,11 @@ The Debug class is using the current camera</p>
 <h2 id="drawline">drawLine</h2>
 
 <p><code class="prettyprint">static void drawLine(glm::vec3 from, glm::vec3 to)</code></p>
+
+<h2 id="drawlinestrip">drawLineStrip</h2>
+
+<p><code class="prettyprint">static void drawLineStrip(std::vector&lt;glm::vec3&gt; &amp;verts)</code>
+<code class="prettyprint">static void drawLineStrip(std::vector&lt;glm::vec3&gt; &amp;&amp;verts)</code></p>
 
           <h1 id="blendtype">BlendType</h1>
 <pre class="highlight cpp"><code><span class="k">enum</span> <span class="k">class</span> <span class="nc">BlendType</span> <span class="p">{</span>

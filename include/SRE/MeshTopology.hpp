@@ -10,6 +10,9 @@ namespace SRE {
     enum class MeshTopology {
         Points = 0x0000,
         Lines = 0x0001,
-        Triangles = 0x0004
+        LineStrip = 0x0003,
+        Triangles = 0x0004,
+        TriangleStrip = 0x0005,
+        TriangleFan = 0x0006
     };
 }
