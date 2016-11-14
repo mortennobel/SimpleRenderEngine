@@ -615,7 +615,9 @@ vec3 computeLight(){
             float lightVectorLength = length(lightVector);
             float lightRange = lightColorRange[i].w;
             lightDirection = lightVector/lightVectorLength;
-            if (lightVectorLength >= lightRange){
+            if (lightRange <= 0.0){
+                att = 1.0;
+            } else if (lightVectorLength >= lightRange){
                 att = 0.0;
             } else {
                 att = pow(1.0-lightVectorLength/lightRange,1.5); // non physical range based attenuation
