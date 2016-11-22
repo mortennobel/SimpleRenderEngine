@@ -84,8 +84,8 @@ int main() {
     emscripten_set_main_loop(update, 0, 1);
 #else
     while (!quit){
-
         update();
+        SDL_Delay(16);
     }
 #endif
     // Close and destroy the window
@@ -139,6 +139,5 @@ void update(){
     ImGui::Render();
 
     r.swapWindow();
-    SDL_Delay(16);
     timeF += .016f*f;
 }

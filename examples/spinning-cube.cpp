@@ -24,7 +24,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 
-
 using namespace SRE;
 
 SDL_Window *window;
@@ -92,6 +91,7 @@ int main() {
                 quit = true;
         }
         update();
+        SDL_Delay(16);
     }
 
 
@@ -114,7 +114,6 @@ void update() {
     r.clearScreen({1,0,0,1});
     r.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), shader);
     r.swapWindow();
-    SDL_Delay(16);
     i++;
 }
 
