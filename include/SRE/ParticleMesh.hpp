@@ -36,6 +36,7 @@ namespace SRE {
         std::vector<float> particleSizes;
 
         void bind();
+        void setVertexAttributePointers();
 
         friend class SimpleRenderEngine;
     };

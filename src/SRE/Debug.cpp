@@ -43,15 +43,6 @@ namespace SRE {
         }
     }
 
-    void push(vector<glm::vec3> & verts) {
-    }
-
-    template <typename... Args>
-    void push(vector<glm::vec3> & verts, glm::vec3 v, Args... args) {
-        verts.push_back(v);
-        push(verts, args...);
-    }
-
     void Debug::drawLineStrip(std::vector<glm::vec3> &&verts) {
         std::vector<glm::vec3> v{verts};
         drawLineStrip(v);

@@ -33,9 +33,9 @@ namespace SRE {
         }
         instance = this;
         camera = &defaultCamera;
-
+#ifndef EMSCRIPTEN
         glcontext = SDL_GL_CreateContext(window);
-
+#endif
 #if defined(_WIN32)
 		glewExperimental = GL_TRUE;
 		GLenum err = glewInit();
@@ -55,9 +55,10 @@ namespace SRE {
         // setup opengl context
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
+#ifndef EMSCRIPTEN
         glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN,GL_LOWER_LEFT);
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
-
+#endif
 #ifndef GL_POINT_SPRITE
 #define GL_POINT_SPRITE 0x8861
 #endif // !GL_POINT_SPRITE

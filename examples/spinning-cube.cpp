@@ -15,14 +15,35 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+#ifdef EMSCRIPTEN
+#include "emscripten.h"
+#endif
+#include <glm/glm.hpp>
+
+#include <glm/gtx/euler_angles.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+
+
+
 using namespace SRE;
+
+SDL_Window *window;
+Shader *shader;
+Mesh *mesh;
+int i=0;
+
+void update();
 
 int main() {
     std::cout << "Spinning cube" << std::endl;
-    SDL_Window *window;                    // Declare a pointer
+
 
     SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
-
+#ifdef EMSCRIPTEN
+    window = nullptr;
+    SDL_Renderer *renderer = NULL;
+    SDL_CreateWindowAndRenderer(640, 480, SDL_WINDOW_OPENGL, &window, &renderer);
+#else
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
@@ -37,6 +58,7 @@ int main() {
             480,                                  // height, in pixels
             SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE// flags
     );
+#endif
 
     // Check that the window was successfully made
     if (window == NULL) {
@@ -48,17 +70,19 @@ int main() {
     SimpleRenderEngine r{window};
 
     r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
-    Shader* shader = Shader::getStandard();
+    shader = Shader::getStandard();
     shader->set("color", glm::vec4(1.0f,1.0f,1.0f,1.0f));
     shader->set("specularity",20.0f);
-    Mesh* mesh = Mesh::createCube();
+    mesh = Mesh::createCube();
     r.setAmbientLight({0.5,0.5,0.5});
     r.setLight(0, Light(LightType::Point,{0, 3,0},{0,0,0},{1,0,0},20));
     r.setLight(1, Light(LightType::Point,{3, 0,0},{0,0,0},{0,1,0},20));
     r.setLight(2, Light(LightType::Point,{0,-3,0},{0,0,0},{0,0,1},20));
     r.setLight(3, Light(LightType::Point,{-3,0,0},{0,0,0},{1,1,1},20));
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(update, 0, 1);
+#else
     bool quit=false;
-    int i=0;
     while (!quit){
         SDL_Event e;
         //Handle events on queue
@@ -67,16 +91,9 @@ int main() {
             if (e.type == SDL_QUIT)
                 quit = true;
         }
-        int w,h;
-        SDL_GetWindowSize(window,&w,&h);
-        r.getCamera()->setViewport(0,0,w,h);
-        r.getCamera()->setPerspectiveProjection(60,w,h,0.1,100);
-        r.clearScreen({1,0,0,1});
-        r.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), shader);
-        r.swapWindow();
-        SDL_Delay(16);
-        i++;
+        update();
     }
+
 
     // Close and destroy the window
     SDL_DestroyWindow(window);
@@ -85,5 +102,19 @@ int main() {
     SDL_Quit();
 
     return 0;
+#endif
+}
+
+void update() {
+    SimpleRenderEngine &r = *SimpleRenderEngine::instance;
+    int w,h;
+    SDL_GetWindowSize(window,&w,&h);
+    r.getCamera()->setViewport(0,0,w,h);
+    r.getCamera()->setPerspectiveProjection(60,w,h,0.1,100);
+    r.clearScreen({1,0,0,1});
+    r.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), shader);
+    r.swapWindow();
+    SDL_Delay(16);
+    i++;
 }
 

@@ -19,6 +19,7 @@ SRE provides:
  * Full C++11/C++14 support
  * Support for 2D or 3D rendering
  * GUI rendering (using imgui)
+ * Emscripten support
 
 To keep SRE as simple and flexible as possible the following features are not a part of SRE:
  * Resource management

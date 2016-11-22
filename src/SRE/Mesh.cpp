@@ -16,8 +16,9 @@ namespace SRE {
     {
         glGenBuffers(1, &vertexBufferId);
         glGenBuffers(1, &elementBufferId);
+#ifndef EMSCRIPTEN
         glGenVertexArrays(1, &vertexArrayObject);
-
+#endif
         update(vertexPositions, normals, uvs);
     }
 
@@ -27,19 +28,27 @@ namespace SRE {
     {
         glGenBuffers(1, &vertexBufferId);
         glGenBuffers(1, &elementBufferId);
+#ifndef EMSCRIPTEN
         glGenVertexArrays(1, &vertexArrayObject);
-
+#endif
         update(vertexPositions, normals, uvs, indices);
     }
 
     Mesh::~Mesh(){
+#ifndef EMSCRIPTEN
         glDeleteVertexArrays(1, &vertexArrayObject);
+#endif
         glDeleteBuffers(1,&vertexBufferId);
         glDeleteBuffers(1,&elementBufferId);
     }
 
     void Mesh::bind(){
+#ifndef EMSCRIPTEN
         glBindVertexArray(vertexArrayObject);
+#else
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
+        setVertexAttributePointers();
+#endif
         if (indices.empty()){
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         } else {
@@ -255,22 +264,27 @@ namespace SRE {
                 }
             }
         }
-
+#ifndef EMSCRIPTEN
         glBindVertexArray(vertexArrayObject);
+#endif
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float)*interleavedData.size(), interleavedData.data(), GL_STATIC_DRAW);
 
+        setVertexAttributePointers();
+        if (!indices.empty()){
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferId);
+            GLsizeiptr indicesSize = indices.size()*sizeof(uint16_t);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices.data(), GL_STATIC_DRAW);
+        }
+    }
+
+    void Mesh::setVertexAttributePointers(){
         // bind vertex attributes (position, normal, uv)
         int length[3] = {3,3,2};
         int offset[3] = {0,3,6};
         for (int i=0;i<3;i++){
             glEnableVertexAttribArray(i);
             glVertexAttribPointer(i, length[i],GL_FLOAT,GL_FALSE, 8 * sizeof(float), BUFFER_OFFSET(offset[i] * sizeof(float)));
-        }
-        if (!indices.empty()){
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferId);
-            GLsizeiptr indicesSize = indices.size()*sizeof(uint16_t);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices.data(), GL_STATIC_DRAW);
         }
     }
 

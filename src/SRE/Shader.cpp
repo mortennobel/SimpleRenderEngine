@@ -9,7 +9,10 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <string>
+#include <regex>
 #include <vector>
+#include <map>
+#include <sstream>
 #include "SRE/Texture.hpp"
 
 namespace SRE {
@@ -49,10 +52,14 @@ namespace SRE {
             std::cerr<<(std::string{errorLog.data()}+"\n"+ typeStr +" error\n")<<std::endl;
         }
 
-        GLuint compileShader(const char* source, GLenum type){
+        GLuint compileShader(std::string source, GLenum type){
+#ifdef EMSCRIPTEN
+            Shader::translateToGLSLES(source, type==GL_VERTEX_SHADER);
+#endif
             GLuint shader = glCreateShader(type);
-            GLint length = (GLint)strlen(source);
-            glShaderSource(shader, 1, &source, &length);
+            GLint length = (GLint)strlen(source.c_str());
+            auto stringPtr = source.c_str();
+            glShaderSource(shader, 1, &stringPtr, &length);
             glCompileShader(shader);
             GLint success = 0;
             glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
@@ -63,9 +70,9 @@ namespace SRE {
         }
 
         bool linkProgram(GLuint mShaderProgram){
-
+#ifndef EMSCRIPTEN
             glBindFragDataLocation(mShaderProgram, 0, "fragColor");
-
+#endif
             glLinkProgram(mShaderProgram);
 
             GLint  linked;
@@ -80,6 +87,52 @@ namespace SRE {
                 return false;
             }
             return true;
+        }
+    }
+
+    void Shader::translateToGLSLES(std::string &source, bool vertexShader) {
+        using namespace std;
+
+        string replace = "#version 140";
+        string replaceWith = vertexShader?"#version 100":"#version 100\n#ifdef GL_ES\n"
+                "precision mediump float;\n"
+                "#endif";
+        size_t f = source.find(replace);
+        source = source.replace(f, replace.length(), replaceWith);
+
+        // replace textures
+        if (vertexShader){
+            static regex regExpSearchShim3 { R"(\n\s*out\b)"};
+            source = regex_replace(source, regExpSearchShim3, "\nvarying");
+            static regex regExpSearchShim4 { R"(\n\s*in\b)"};
+            source = regex_replace(source, regExpSearchShim4, "\nattribute");
+        } else {
+            static regex regExpSearchShim2 { R"(\bfragColor\b)"};
+            source = regex_replace(source, regExpSearchShim2, "gl_FragColor");
+            static regex regExpSearchShim3 { R"(\n\s*out\b)"};
+            source = regex_replace(source, regExpSearchShim3, "\n// out");
+            static regex regExpSearchShim4 { R"(\n\s*in\b)"};
+            source = regex_replace(source, regExpSearchShim4, "\nvarying");
+        }
+
+        static regex regExpSearchShim1 { R"(\s*uniform\s+sampler([\w]*)\s+([\w_]*)\s*;.*)"};
+        istringstream iss(source);
+        map<string,string> textureType;
+        smatch match;
+        for (std::string line; std::getline(iss, line); )
+        {
+            regex_search(line, match, regExpSearchShim1);
+            if (match.size() > 0){
+                string samplerType = match[1].str();
+                string samplerName = match[2].str();
+                textureType[samplerName] = samplerType;
+
+            }
+        }
+
+        for (auto val : textureType){
+            regex regExpSearchShim4 { string{"texture\\s*\\(\\s*"}+val.first+"\\s*," };
+            source = regex_replace(source, regExpSearchShim4, string{"texture"}+val.second+"("+val.first+",");
         }
     }
 
@@ -632,9 +685,9 @@ vec3 computeLight(){
            lightColor += (att * diffuseFrac * thisDiffuse) * lightColorRange[i].xyz;
         }
         // specular light
-        if (specularity > 0){
+        if (specularity > 0.0){
             float nDotHV = dot(normal, H);
-            if (nDotHV > 0){
+            if (nDotHV > 0.0){
                 float pf = pow(nDotHV, specularity);
                 lightColor += vec3(att * diffuseFrac * pf); // white specular highlights
             }
@@ -714,7 +767,7 @@ mat3 scale(float s){
 void main(void) {
     vec4 pos = vec4( position.xyz, 1.0);
     gl_Position = projection * view * model * pos;
-    if (projection[2][3] != 0){ // if perspective projection
+    if (projection[2][3] != 0.0){ // if perspective projection
         vec3 ndc = gl_Position.xyz / gl_Position.w ; // perspective divide.
 
 

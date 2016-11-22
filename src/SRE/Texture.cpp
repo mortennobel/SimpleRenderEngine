@@ -55,9 +55,13 @@ namespace SRE {
         auto pixelFormat = format->format;
         bool isBGR = format->Rshift == 16;
 
+#ifdef EMSCRIPTEN
+        GLenum RGB = GL_RGB;
+        GLenum RGBA = GL_RGBA;
+#else
         GLenum RGB = isBGR ? GL_BGR : GL_RGB;
         GLenum RGBA = isBGR ? GL_BGRA : GL_RGBA;
-
+#endif
         const bool alpha = SDL_ISPIXELFORMAT_ALPHA(pixelFormat);
         if (alpha) {
             return RGBA;

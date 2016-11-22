@@ -22,11 +22,16 @@ int main() {
     SDL_Window *window;                    // Declare a pointer
 
     SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
+#ifdef EMSCRIPTEN
+    SDL_Surface *screen = SDL_SetVideoMode(640, 480, 32, SDL_OPENGL);
+        window = nullptr;
+#else
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK,SDL_GL_CONTEXT_PROFILE_CORE);
+#endif
 
     // Create an application window with the following settings:
     window = SDL_CreateWindow(

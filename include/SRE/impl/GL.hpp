@@ -2,7 +2,9 @@
 
 /// Include GL header
 
-#if defined(_WIN32)
+#if defined(EMSCRIPTEN)
+#   include <GLES2/gl2.h>
+#elif defined(_WIN32)
 #   define GLEW_STATIC
 #   include <GL/glew.h>
 #elif defined __linux__

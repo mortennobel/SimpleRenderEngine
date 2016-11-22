@@ -41,6 +41,7 @@ namespace SRE {
         static Mesh* createCube();
         static Mesh* createSphere();
     private:
+        void setVertexAttributePointers();
         MeshTopology meshTopology;
         unsigned int vertexBufferId;
         unsigned int vertexArrayObject;

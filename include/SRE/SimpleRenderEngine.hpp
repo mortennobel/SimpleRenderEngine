@@ -47,7 +47,7 @@ namespace SRE {
         static constexpr int maxSceneLights = 4;
         static constexpr int sre_version_major = 0;
         static constexpr int sre_version_minor = 2;
-        static constexpr int sre_version_point = 7;
+        static constexpr int sre_version_point = 8;
         /**
          * Set the light state - this affects all draw calls after the state has been set.
          * @sa Light

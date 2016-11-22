@@ -14,18 +14,26 @@ namespace SRE {
     ParticleMesh::ParticleMesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec4> &colors, const std::vector<glm::vec2> &uv,const std::vector<float> &uvSize,const std::vector<float> &uvRotation, const std::vector<float> &particleSizes)
     {
         glGenBuffers(1, &vertexBufferId);
+#ifndef EMSCRIPTEN
         glGenVertexArrays(1, &vertexArrayObject);
-
+#endif
         update(vertexPositions, colors, uv, uvSize, uvRotation, particleSizes);
     }
 
     ParticleMesh::~ParticleMesh(){
+#ifndef EMSCRIPTEN
         glDeleteVertexArrays(1, &vertexArrayObject);
+#endif
         glDeleteBuffers(1,&vertexBufferId);
     }
 
     void ParticleMesh::bind(){
+#ifndef EMSCRIPTEN
         glBindVertexArray(vertexArrayObject);
+#else
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
+        setVertexAttributePointers();
+#endif
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 
@@ -69,11 +77,16 @@ namespace SRE {
                 }
             }
         }
-
+#ifndef EMSCRIPTEN
         glBindVertexArray(vertexArrayObject);
+#endif
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float)*interleavedData.size(), interleavedData.data(), GL_DYNAMIC_DRAW);
 
+        setVertexAttributePointers();
+    }
+
+    void ParticleMesh::setVertexAttributePointers(){
         // bind vertex attributes (position+size, color, uvs)
         int length[3] = {4,4,4};
         int offset[3] = {0,4,8};

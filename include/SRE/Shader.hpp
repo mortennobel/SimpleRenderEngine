@@ -148,6 +148,7 @@ namespace SRE {
         friend class Mesh;
         friend class SimpleRenderEngine;
     public:
+        static void translateToGLSLES(std::string &source, bool vertexShader);
         DEPRECATED("use set() instead") bool setMatrix(const char *name, glm::mat4 value);
         DEPRECATED("use set() instead") bool setMatrix(const char *name, glm::mat3 value);
 
