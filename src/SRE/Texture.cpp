@@ -142,7 +142,11 @@ namespace SRE {
 		int h = res_texture->h;
 		auto format = getFormat(res_texture);
 
-		int bytesPerPixel = format == GL_BGR || format == GL_RGB ? 3 : 4;
+		int bytesPerPixel =
+#ifndef EMSCRIPTEN
+				format == GL_BGR ||
+#endif
+						format == GL_RGB ? 3 : 4;
 		char *pixels = static_cast<char *>(res_texture->pixels);
 		invert_image(w*bytesPerPixel, h, pixels);
 		if (generateMipmaps && (!isPowerOfTwo((unsigned int)w) || !isPowerOfTwo((unsigned int)h))) {
