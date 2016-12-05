@@ -114,6 +114,23 @@ void update(){
 
     ImGui_SRE_NewFrame(window);
 
+    bool open = true;
+
+    // Show Label (with invisible window)
+    ImGui::SetNextWindowPos(ImVec2(100,000));
+    ImGui::Begin("#TestLabel",&open,ImVec2(500,100),0,ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoScrollbar|ImGuiWindowFlags_NoSavedSettings|ImGuiWindowFlags_NoInputs);
+    ImGui::Text("Hello, world!");
+    ImGui::End();
+
+    // Show Button (with invisible window)
+    // Note window may disappear behind other windows
+    ImGui::SetNextWindowPos(ImVec2(200,100));
+    ImGui::Begin("#Button",&open,ImVec2(100,25),0,ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoScrollbar);
+    if (ImGui::Button("Click me")){
+        std::cout << "Clicked"<<std::endl;
+    }
+    ImGui::End();
+
     // 1. Show a simple window
     // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
     {
