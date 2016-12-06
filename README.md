@@ -47,6 +47,7 @@ https://mortennobel.github.io/SimpleRenderEngine/
  
 ## Version history
  
+ * 0.2.9 Fixed issues with specular highlight
  * 0.2.8 Added Emscripten support
  * 0.2.7 Add more mesh topologies (line strip, triangle strip and triangle fans). Add Debug::drawLineStrip(). 
  * 0.2.6 Fix point-light attenuation 
