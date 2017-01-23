@@ -46,8 +46,9 @@ namespace SRE {
         ~SimpleRenderEngine();
         static constexpr int maxSceneLights = 4;
         static constexpr int sre_version_major = 0;
-        static constexpr int sre_version_minor = 2;
-        static constexpr int sre_version_point = 9;
+        static constexpr int sre_version_minor = 3;
+        static constexpr int sre_version_point = 0;
+
         /**
          * Set the light state - this affects all draw calls after the state has been set.
          * @sa Light
@@ -125,9 +126,9 @@ namespace SRE {
         void swapWindow();
 
         /**
-         * Flush GPU command buffer (must be called when profiling GPU time - should not be called when not profiling)
+         * GPU command buffer (must be called when profiling GPU time - should not be called when not profiling)
          */
-        void flush();
+        void finishGPUCommandBuffer();
 
         /**
          * Singleton reference to the engine after initialization.

@@ -35,7 +35,7 @@ namespace SRE {
     };
 
     /**
-     * Controls the apperance of the rendered objects.
+     * Controls the appearance of the rendered objects.
      *
      * The shader also controls depth test, depth write and blending.
      *
@@ -63,6 +63,33 @@ namespace SRE {
      */
     class DllExport Shader {
     public:
+
+        class DllExport ShaderBuilder {
+        public:
+            ShaderBuilder& withSource(const char* vertexShader, const char* fragmentShader);
+            ShaderBuilder& withSourceStandard();
+            ShaderBuilder& withSourceUnlit();
+            ShaderBuilder& withSourceUnlitSprite();
+            ShaderBuilder& withSourceStandardParticles();
+            ShaderBuilder& withSourceDebugUV();
+            ShaderBuilder& withSourceDebugNormals();
+            ShaderBuilder& widthDepthTest(bool enable);
+            ShaderBuilder& withDepthTest(bool enable);
+            ShaderBuilder& withDepthWrite(bool enable);
+            ShaderBuilder& withBlend(BlendType blendType);
+            ShaderBuilder& withParticleLayout(bool enable);
+            Shader* build();
+        private:
+            ShaderBuilder() = default;
+            bool particleLayout = false;
+            const char* vertexShaderStr;
+            const char* fragmentShaderStr;
+            bool depthTest = true;
+            bool depthWrite = true;
+            BlendType blend = BlendType::Disabled;
+            friend class Shader;
+        };
+
         // Phong Light Model. Uses light objects and ambient light set in SimpleRenderEngine.
         // Attributes
         // "color" vec4 (default (1,1,1,1))
@@ -84,11 +111,7 @@ namespace SRE {
         // "tex" Texture* (default alpha sphere texture)
         static Shader *getStandardParticles();
 
-        static Shader *getDebugUV();
-        static Shader *getDebugNormals();
-
-        // Creates shader using GLSL
-        static Shader *createShader(const char *vertexShader, const char *fragmentShader, bool particleLayout = false);
+        static ShaderBuilder create();
 
         ~Shader();
 
@@ -98,40 +121,23 @@ namespace SRE {
 
         bool set(const char *name, glm::mat4 value);
         bool set(const char *name, glm::mat3 value);
-
         bool set(const char *name, glm::vec4 value);
-
         bool set(const char *name, float value);
-
         bool set(const char *name, int value);
-
         /// textureSlot: If sampling multiple textures from a single shader, each texture must be bound to a unique texture slot
         bool set(const char *name, Texture* texture, unsigned int textureSlot = 0);
 
-        void setDepthTest(bool enable);
-
         bool isDepthTest();
-
-        void setDepthWrite(bool enable);
 
         bool isDepthWrite();
 
         BlendType getBlend();
 
-        void setBlend(BlendType blendType);
-
     private:
         bool setLights(Light value[4], glm::vec4 ambient, glm::mat4 viewTransform);
 
-        static Shader *standard;
-        static Shader *unlit;
-        static Shader *unlitSprite;
-        static Shader *standardParticles;
-
-        static Shader *debugUV;
-        static Shader *debugNormals;
-
         Shader();
+        bool build(const char *vertexShader, const char *fragmentShader, bool particleLayout);
 
         void bind();
 
@@ -149,16 +155,5 @@ namespace SRE {
         friend class SimpleRenderEngine;
     public:
         static void translateToGLSLES(std::string &source, bool vertexShader);
-        DEPRECATED("use set() instead") bool setMatrix(const char *name, glm::mat4 value);
-        DEPRECATED("use set() instead") bool setMatrix(const char *name, glm::mat3 value);
-
-        DEPRECATED("use set() instead") bool setVector(const char *name, glm::vec4 value);
-
-        DEPRECATED("use set() instead") bool setFloat(const char *name, float value);
-
-        DEPRECATED("use set() instead") bool setInt(const char *name, int value);
-
-        /// textureSlot: If sampling multiple textures from a single shader, each texture must be bound to a unique texture slot
-        DEPRECATED("use set() instead") bool setTexture(const char *name, Texture* texture, unsigned int textureSlot = 0);
     };
 }

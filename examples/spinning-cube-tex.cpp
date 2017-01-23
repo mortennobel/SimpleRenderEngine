@@ -50,9 +50,9 @@ int main() {
     r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
     Shader* shader = Shader::getUnlit();
-    shader->set("tex", Texture::createFromFile("examples-data/test.jpg",true));
-//    shader->set("tex", Texture::createFromFile("examples-data/twitter.png",true));
-//    shader->set("tex", Texture::createFromFile("examples-data/cartman.png", true));
+    shader->set("tex", Texture::create().withFile("examples-data/test.jpg").withGenerateMipmaps(true).build());
+    // shader->set("tex", Texture::create().withFile("examples-data/twitter.png").withGenerateMipmaps(true).build());
+    // shader->set("tex", Texture::create().withFile("examples-data/cartman.png").withGenerateMipmaps(true).build());
     Mesh* mesh = Mesh::createCube();
 
     float duration = 10000;

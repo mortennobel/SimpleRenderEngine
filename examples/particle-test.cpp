@@ -18,6 +18,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <imgui.h>
+#include <SRE/impl/GL.hpp>
 #include "SRE/imgui_sre.hpp"
 #ifdef EMSCRIPTEN
 #include "emscripten.h"
@@ -50,7 +51,6 @@ void update();
 
 int main() {
     std::cout << "Particle test" << std::endl;
-
 
     SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
 #ifdef EMSCRIPTEN
@@ -88,6 +88,7 @@ int main() {
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
     shader = Shader::getStandard();
     shader->set("specularity",20.0f);
+    shader->set("tex",Texture::getWhiteTexture());
     shaderParticles = Shader::getStandardParticles();
 
     particleMesh = createParticles();

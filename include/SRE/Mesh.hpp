@@ -7,9 +7,6 @@
 #include "SRE/impl/Export.hpp"
 
 namespace SRE {
-
-    class Shader;
-
     /**
      * Represents a Mesh object.
      * When constructing a mesh object, its data is uploaded to the CPU and is no longer available on the CPU.
@@ -22,12 +19,31 @@ namespace SRE {
      */
     class DllExport Mesh {
     public:
-        Mesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals, const std::vector<glm::vec2> &uvs, MeshTopology meshTopology = MeshTopology::Triangles);
-        Mesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals, const std::vector<glm::vec2> &uvs,const std::vector<uint16_t> &indices, MeshTopology meshTopology = MeshTopology::Triangles);
+        class DllExport MeshBuilder {
+        public:
+//            MeshBuilder& withSphere();
+//            MeshBuilder& withCube();
+//            MeshBuilder& withQuad();
+            MeshBuilder& withVertexPositions(const std::vector<glm::vec3> &vertexPositions);
+            MeshBuilder& withNormals(const std::vector<glm::vec3> &normals);
+            MeshBuilder& withUvs(const std::vector<glm::vec2> &uvs);
+            MeshBuilder& withMeshTopology(MeshTopology meshTopology);
+            MeshBuilder& withIndices(const std::vector<uint16_t> &indices);
+            Mesh* build();
+        private:
+            MeshBuilder() = default;
+            std::vector<glm::vec3> vertexPositions;
+            std::vector<glm::vec3> normals;
+            std::vector<glm::vec2> uvs;
+            MeshTopology meshTopology = MeshTopology::Triangles;
+            std::vector<uint16_t> indices;
+            Mesh* updateMesh = nullptr;
+            friend class Mesh;
+        };
         ~Mesh();
 
-        void update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals, const std::vector<glm::vec2> &uvs, const std::vector<uint16_t> &indices);
-        void update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals, const std::vector<glm::vec2> &uvs);
+        static MeshBuilder create();
+        MeshBuilder update();
 
         int getVertexCount();
         MeshTopology getMeshTopology();
@@ -41,6 +57,9 @@ namespace SRE {
         static Mesh* createCube();
         static Mesh* createSphere();
     private:
+        Mesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals, const std::vector<glm::vec2> &uvs,const std::vector<uint16_t> &indices, MeshTopology meshTopology = MeshTopology::Triangles);
+        void update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals, const std::vector<glm::vec2> &uvs, const std::vector<uint16_t> &indices);
+
         void setVertexAttributePointers();
         MeshTopology meshTopology;
         unsigned int vertexBufferId;

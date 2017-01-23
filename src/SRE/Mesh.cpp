@@ -11,17 +11,6 @@
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 namespace SRE {
-    Mesh::Mesh(const std::vector<glm::vec3> &vertexPositions,const  std::vector<glm::vec3> &normals,const std::vector<glm::vec2> &uvs, MeshTopology meshTopology)
-        :meshTopology{meshTopology}
-    {
-        glGenBuffers(1, &vertexBufferId);
-        glGenBuffers(1, &elementBufferId);
-#ifndef EMSCRIPTEN
-        glGenVertexArrays(1, &vertexArrayObject);
-#endif
-        update(vertexPositions, normals, uvs);
-    }
-
     Mesh::Mesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals,
                const std::vector<glm::vec2> &uvs, const std::vector<uint16_t> &indices, MeshTopology meshTopology)
             :meshTopology{meshTopology}
@@ -168,7 +157,12 @@ namespace SRE {
 
 
                             });
-        Mesh *res = new Mesh(positions,normals,uvs, MeshTopology::Triangles);
+        Mesh *res = Mesh::create ()
+                        .withVertexPositions(positions)
+                        .withNormals(normals)
+                        .withUvs(uvs)
+                        .withMeshTopology(MeshTopology::Triangles)
+                        .build();
         return res;
     }
 
@@ -230,7 +224,12 @@ namespace SRE {
 
             }
         }
-        Mesh *res = new Mesh(finalPosition,finalNormals,finalUVs, MeshTopology::Triangles);
+        Mesh *res = Mesh::create ()
+                .withVertexPositions(finalPosition)
+                .withNormals(finalNormals)
+                .withUvs(finalUVs)
+                .withMeshTopology(MeshTopology::Triangles)
+                .build();
         return res;
     }
 
@@ -288,12 +287,6 @@ namespace SRE {
         }
     }
 
-    void Mesh::update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals,
-                      const std::vector<glm::vec2> &uvs) {
-        std::vector<uint16_t> indices;
-        update(vertexPositions, normals,uvs, indices);
-    }
-
     const std::vector<glm::vec3> &Mesh::getVertexPositions() {
         return vertexPositions;
     }
@@ -308,5 +301,50 @@ namespace SRE {
 
     const std::vector<uint16_t> &Mesh::getIndices() {
         return indices;
+    }
+
+    Mesh::MeshBuilder Mesh::update() {
+        Mesh::MeshBuilder res;
+        res.updateMesh = this;
+        return res;
+    }
+
+    Mesh::MeshBuilder Mesh::create() {
+        return Mesh::MeshBuilder();
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withVertexPositions(const std::vector<glm::vec3> &vertexPositions) {
+        this->vertexPositions = vertexPositions;
+        return *this;
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withNormals(const std::vector<glm::vec3> &normals) {
+        this->normals = normals;
+        return *this;
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withUvs(const std::vector<glm::vec2> &uvs) {
+        this->uvs = uvs;
+        return *this;
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withMeshTopology(MeshTopology meshTopology) {
+        this->meshTopology = meshTopology;
+        return *this;
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withIndices(const std::vector<uint16_t> &indices) {
+        this->indices = indices;
+        return *this;
+    }
+
+    Mesh * Mesh::MeshBuilder::build() {
+        if (updateMesh != nullptr){
+            updateMesh->update(vertexPositions, normals, uvs, indices);
+            return updateMesh;
+        } else {
+            Mesh *res = new Mesh(vertexPositions, normals, uvs, indices, meshTopology);
+            return res;
+        }
     }
 }

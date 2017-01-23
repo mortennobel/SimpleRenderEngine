@@ -40,7 +40,7 @@ namespace detail
 			LocalMatrix[i][j] /= LocalMatrix[3][3];
 
 		// perspectiveMatrix is used to solve for perspective, but it also provides
-		// an easy way to examples for singularity of the upper 3x3 component.
+		// an easy way to test for singularity of the upper 3x3 component.
 		tmat4x4<T, P> PerspectiveMatrix(LocalMatrix);
 
 		for(length_t i = 0; i < 3; i++)
@@ -125,7 +125,7 @@ namespace detail
 		{
 			for(length_t i = 0; i < 3; i++)
 			{
-				Scale.x *= static_cast<T>(-1);
+				Scale[i] *= static_cast<T>(-1);
 				Row[i] *= static_cast<T>(-1);
 			}
 		}

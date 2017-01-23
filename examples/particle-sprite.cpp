@@ -97,7 +97,7 @@ int main() {
     r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
     Shader* shaderParticles = Shader::getStandardParticles();
-    shaderParticles->set("tex", Texture::createFromFile("examples-data/t_explosionsheet.png", true));
+    shaderParticles->set("tex", Texture::create().withFile("examples-data/t_explosionsheet.png").build());
     ParticleMesh* particleMesh = createParticles();
 
 

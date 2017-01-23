@@ -33,14 +33,18 @@ namespace SRE {
 		vector<glm::vec3> normals;
 		vector<glm::vec2> uvs;
 
-		Mesh mesh(verts, normals, uvs,MeshTopology::Lines);
+		Mesh *mesh = Mesh::create()
+                        .withVertexPositions(verts)
+                        .withMeshTopology(MeshTopology::Lines)
+                        .build();
 
         Shader* shader = Shader::getUnlit();
         shader->set("color", color);
         shader->set("tex", Texture::getWhiteTexture());
         if (SimpleRenderEngine::instance != nullptr){
-            SimpleRenderEngine::instance->draw(&mesh, glm::mat4(1),shader);
+            SimpleRenderEngine::instance->draw(mesh, glm::mat4(1),shader);
         }
+        delete mesh;
     }
 
     void Debug::drawLineStrip(std::vector<glm::vec3> &&verts) {
@@ -49,17 +53,17 @@ namespace SRE {
     }
 
     void Debug::drawLineStrip(std::vector<glm::vec3> &verts) {
-        vector<glm::vec3> normals;
-        vector<glm::vec2> uvs;
-
-        Mesh mesh(verts, normals, uvs, MeshTopology::LineStrip);
-
+        Mesh *mesh = Mesh::create()
+                .withVertexPositions(verts)
+                .withMeshTopology(MeshTopology::LineStrip)
+                .build();
         Shader* shader = Shader::getUnlit();
         shader->set("color", color);
         shader->set("tex", Texture::getWhiteTexture());
         if (SimpleRenderEngine::instance != nullptr){
-            SimpleRenderEngine::instance->draw(&mesh, glm::mat4(1),shader);
+            SimpleRenderEngine::instance->draw(mesh, glm::mat4(1),shader);
         }
+        delete mesh;
     }
 
     void Debug::checkGLError() {

@@ -182,7 +182,7 @@ namespace SRE {
         SimpleRenderEngine::ambientLight = glm::vec4(ambientLight, maxAmbient);
     }
 
-    void SimpleRenderEngine::flush() {
-        glFlush();
+    void SimpleRenderEngine::finishGPUCommandBuffer() {
+        glFinish();
     }
 }

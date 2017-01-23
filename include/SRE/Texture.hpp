@@ -1,10 +1,12 @@
 #pragma once
 
 #include <cstdint>
+#include <vector>
 
 #include "SRE/impl/Export.hpp"
 
 namespace SRE{
+
     /**
      * Represent a texture (uploaded to the GPU).
      * In general the width and the height of the texture should be power-of-two (e.g. 256 or 512)
@@ -21,29 +23,53 @@ namespace SRE{
      */
 class DllExport Texture {
 public:
-    static Texture* createFromFile(const char *pngOrJpeg, bool generateMipmaps = false);
-    static Texture* createFromMem(const char *pngOrJpeg, int size, bool generateMipmaps = false);
-    static Texture* createFromRGBAMem(const char *data, int width, int height, bool generateMipmaps = false);
+    class DllExport TextureBuilder {
+    public:
+        TextureBuilder& withGenerateMipmaps(bool enable);
+        // if true texture sampling is filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
+        TextureBuilder& withFilterSampling(bool enable);
+        TextureBuilder& withWrappedTextureCoordinates(bool enable);
+        TextureBuilder& withFile(const char* filename);
+        TextureBuilder& withRGBData(const char* data, int width, int height);
+        TextureBuilder& withRGBAData(const char* data, int width, int height);
+        TextureBuilder& withWhiteData(int width=2, int height=2);
+        Texture* build();
+    private:
+        std::vector<char> dataOwned;
+        const char* data = nullptr;
+        const char* filename = nullptr;
+        int width = -1;
+        int height = -1;
+        uint32_t format = -1;
+        bool generateMipmaps = false;
+        bool filterSampling = true; // true = linear/trilinear sampling, false = point sampling
+        bool wrapTextureCoordinates = true;
+        TextureBuilder() = default;
+        friend class Texture;
+    };
+
+    virtual ~Texture();
+
     static Texture* getWhiteTexture();
     static Texture* getSphereTexture();
+
+    // Create a new texture using the builder pattern
+    static TextureBuilder create();
 
     int getWidth();
     int getHeight();
 
     // returns true if texture sampling should be filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
     bool isFilterSampling();
-    // if true texture sampling is filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
-    void setFilterSampling(bool enable);
     bool isWrapTextureCoordinates();
-    void setWrapTextureCoordinates(bool enable);
 private:
-    Texture(const char* rgba, int width, int height, uint32_t type,bool generateMipmaps);
-    void updateTextureSampler();
-    static Texture* whiteTexture;
-    static Texture* sphereTexture;
+    Texture(const char* rgba, int width, int height, uint32_t format);
+    void updateTextureSampler(bool filterSampling, bool wrapTextureCoordinates);
+    void invokeGenerateMipmap();
 
     int width;
     int height;
+    uint32_t target;
     bool generateMipmap;
     bool filterSampling = true; // true = linear/trilinear sampling, false = point sampling
     bool wrapTextureCoordinates = true;

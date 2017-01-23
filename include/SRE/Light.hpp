@@ -31,8 +31,5 @@ namespace SRE {
 
         Light();
         Light(LightType lightType, glm::vec3 position, glm::vec3 direction, glm::vec3 color, float range);
-
-        DEPRECATED("Use Light constructor without specularity. Specularity has been moved to a shader uniform")
-        Light(LightType lightType, glm::vec3 position, glm::vec3 direction, glm::vec3 color, float range, float specularity);
     };
 }

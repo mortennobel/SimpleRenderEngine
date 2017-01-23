@@ -16,12 +16,12 @@
 #include "SRE/Texture.hpp"
 
 namespace SRE {
-    Shader *Shader::standard = nullptr;
-    Shader *Shader::unlit = nullptr;
-    Shader *Shader::unlitSprite = nullptr;
-    Shader *Shader::standardParticles = nullptr;
-    Shader *Shader::debugUV = nullptr;
-    Shader *Shader::debugNormals = nullptr;
+
+    Shader *standard = nullptr;
+    Shader *unlit = nullptr;
+    Shader *unlitSprite = nullptr;
+    Shader *standardParticles = nullptr;
+
 
     namespace {
         void logCurrentCompileException(GLuint shader, GLenum type) {
@@ -52,11 +52,11 @@ namespace SRE {
             std::cerr<<(std::string{errorLog.data()}+"\n"+ typeStr +" error\n")<<std::endl;
         }
 
-        GLuint compileShader(std::string source, GLenum type){
+        bool compileShader(std::string source, GLenum type, GLuint& shader){
 #ifdef EMSCRIPTEN
             Shader::translateToGLSLES(source, type==GL_VERTEX_SHADER);
 #endif
-            GLuint shader = glCreateShader(type);
+            shader = glCreateShader(type);
             GLint length = (GLint)strlen(source.c_str());
             auto stringPtr = source.c_str();
             glShaderSource(shader, 1, &stringPtr, &length);
@@ -65,8 +65,9 @@ namespace SRE {
             glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
             if (success == GL_FALSE){
                 logCurrentCompileException(shader, type);
+                return false;
             }
-            return shader;
+            return true;
         }
 
         bool linkProgram(GLuint mShaderProgram){
@@ -136,33 +137,6 @@ namespace SRE {
         }
     }
 
-    Shader *Shader::createShader(const char *vertexShader, const char *fragmentShader, bool particleLayout) {
-        Shader *res = new Shader();
-
-        std::vector<const char*> shaderSrc{vertexShader, fragmentShader};
-        std::vector<GLenum> shaderTypes{GL_VERTEX_SHADER, GL_FRAGMENT_SHADER};
-        for (int i=0;i<2;i++) {
-            GLuint s = compileShader(shaderSrc[i],shaderTypes[i]);
-            glAttachShader(res->shaderProgramId,  s);
-        }
-
-        // enforce layout
-        std::string attributeNames[3] = {"position", particleLayout?"color":"normal", "uv"};
-        for (int i=0;i<3;i++) {
-            glBindAttribLocation(res->shaderProgramId, i, attributeNames[i].c_str());
-        }
-
-        bool linked = linkProgram(res->shaderProgramId);
-        if (!linked){
-            delete res;
-            return nullptr;
-        }
-
-        res->updateUniforms();
-        res->particleLayout = particleLayout;
-        return res;
-    }
-
     void Shader::updateUniforms() {
         uniforms.clear();
         GLint uniformCount;
@@ -224,30 +198,6 @@ namespace SRE {
 
     Shader::~Shader() {
         glDeleteShader(shaderProgramId);
-    }
-
-    bool Shader::setMatrix(const char *name, glm::mat4 value) {
-        return set(name, value);
-    }
-
-    bool Shader::setMatrix(const char *name, glm::mat3 value) {
-        return set(name, value);
-    }
-
-    bool Shader::setVector(const char *name, glm::vec4 value) {
-        return set(name, value);
-    }
-
-    bool Shader::setFloat(const char *name, float value) {
-        return set(name, value);
-    }
-
-    bool Shader::setInt(const char *name, int value) {
-        return set(name, value);
-    }
-
-    bool Shader::setTexture(const char *name, Texture *texture, unsigned int textureSlot) {
-        return set(name, texture, textureSlot);
     }
 
     bool Shader::set(const char *name, glm::mat4 value) {
@@ -374,7 +324,7 @@ namespace SRE {
         }
 #endif
         glActiveTexture(GL_TEXTURE0 + textureSlot);
-        glBindTexture(GL_TEXTURE_2D, texture->textureId);
+        glBindTexture(texture->target, texture->textureId);
 
         glUniform1i(uniform.id, textureSlot);
         return true;
@@ -447,16 +397,8 @@ namespace SRE {
         }
     }
 
-    void Shader::setDepthTest(bool enable) {
-        depthTest = enable;
-    }
-
     bool Shader::isDepthTest() {
         return depthTest;
-    }
-
-    void Shader::setDepthWrite(bool enable) {
-        depthWrite = enable;
     }
 
     bool Shader::isDepthWrite() {
@@ -467,42 +409,12 @@ namespace SRE {
         return blend;
     }
 
-    void Shader::setBlend(BlendType blendType) {
-        blend = blendType;
-    }
-
     Shader *Shader::getUnlit() {
         if (unlit != nullptr){
             return unlit;
         }
-        const char* vertexShader = R"(#version 140
-in vec4 position;
-in vec3 normal;
-in vec2 uv;
-out vec2 vUV;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-
-void main(void) {
-    gl_Position = projection * view * model * position;
-    vUV = uv;
-}
-)";
-        const char* fragmentShader = R"(#version 140
-out vec4 fragColor;
-in vec2 vUV;
-
-uniform vec4 color;
-uniform sampler2D tex;
-
-void main(void)
-{
-    fragColor = color * texture(tex, vUV);
-}
-)";
-        unlit = createShader(vertexShader, fragmentShader);
+        unlit = create().withSourceUnlit().build();
         unlit->set("color", glm::vec4(1));
         unlit->set("tex", Texture::getWhiteTexture());
         return unlit;
@@ -512,110 +424,103 @@ void main(void)
         if (unlitSprite != nullptr){
             return unlitSprite;
         }
-        const char* vertexShader = R"(#version 140
-        in vec4 position;
-        in vec3 normal;
-        in vec2 uv;
-        out vec2 vUV;
-        
-        uniform mat4 model;
-        uniform mat4 view;
-        uniform mat4 projection;
-        
-        void main(void) {
-            gl_Position = projection * view * model * position;
-            vUV = uv;
-        }
-        )";
-        const char* fragmentShader = R"(#version 140
-        out vec4 fragColor;
-        in vec2 vUV;
-        
-        uniform vec4 color;
-        uniform sampler2D tex;
-        
-        void main(void)
-        {
-            fragColor = color * texture(tex, vUV);
-        }
-        )";
-        unlitSprite = createShader(vertexShader, fragmentShader);
+
+        unlitSprite =  create()
+                .withSourceUnlitSprite()
+                .withBlend(BlendType::AlphaBlending)
+                .withDepthTest(false)
+                .build();
         unlitSprite->set("color", glm::vec4(1));
         unlitSprite->set("tex", Texture::getWhiteTexture());
-        unlitSprite->setBlend(BlendType::AlphaBlending);
-        unlitSprite->setDepthTest(false);
         return unlitSprite;
     }
 
-    Shader *Shader::getDebugUV() {
-        if (debugUV != nullptr){
-            return debugUV;
-        }
-        const char* vertexShader = R"(#version 140
-in vec4 position;
-in vec3 normal;
-in vec2 uv;
-out vec2 vUV;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-
-void main(void) {
-    gl_Position = projection * view * model * position;
-    vUV = uv;
-}
-)";
-        const char* fragmentShader = R"(#version 140
-in vec2 vUV;
-out vec4 fragColor;
-
-void main(void)
-{
-    fragColor = vec4(vUV,0.0,1.0);
-}
-)";
-        debugUV = createShader(vertexShader, fragmentShader);
-        return debugUV;
-    }
-
-    Shader *Shader::getDebugNormals() {
-        if (debugNormals != nullptr){
-            return debugNormals;
-        }
-        const char* vertexShader = R"(#version 140
-in vec4 position;
-in vec3 normal;
-in vec2 uv;
-out vec3 vNormal;
-
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-uniform mat3 normalMat;
-
-void main(void) {
-    gl_Position = projection * view * model * position;
-    vNormal = normalMat * normal;
-}
-)";
-        const char* fragmentShader = R"(#version 140
-out vec4 fragColor;
-in vec3 vNormal;
-
-void main(void)
-{
-    fragColor = vec4(vNormal*0.5+0.5,1.0);
-}
-)";
-        debugNormals = createShader(vertexShader, fragmentShader);
-        return debugNormals;
-    }
     Shader *Shader::getStandard() {
         if (standard != nullptr){
             return standard;
         }
-        const char* vertexShader = R"(#version 140
+        standard = create().withSourceStandard().build();
+        standard->set("color", glm::vec4(1));
+        standard->set("specularity", 0.0f);
+        standard->set("tex", Texture::getWhiteTexture());
+        return standard;
+    }
+
+    bool Shader::contains(const char *name) {
+		for (auto i = uniforms.begin(); i != uniforms.end(); i++) {
+			if (strcmp((const char*)i->name, name) == 0)
+				return true;
+		}
+        return false;
+    }
+
+    Uniform Shader::getType(const char *name) {
+		for (auto i = uniforms.begin(); i != uniforms.end(); i++) {
+			if (strcmp((const char*)i->name, name) == 0)
+				return *i;
+		}
+		Uniform u;
+		u.type = UniformType::Invalid;
+		u.id = -1;
+		u.arrayCount = -1;
+		return u;
+    }
+
+    Shader *Shader::getStandardParticles() {
+        if (standardParticles != nullptr){
+            return standardParticles;
+        }
+
+        standardParticles = create()
+                .withSourceStandardParticles()
+                .withParticleLayout(true)
+                .withBlend(BlendType::AdditiveBlending)
+                .withDepthWrite(false)
+                .build();
+        standardParticles->set("tex", Texture::getSphereTexture());
+        return standardParticles;
+    }
+
+    Shader::ShaderBuilder Shader::create() {
+        return Shader::ShaderBuilder();
+    }
+
+    bool Shader::build(const char *vertexShader, const char *fragmentShader, bool particleLayout) {
+        this->particleLayout = particleLayout;
+        std::vector<const char*> shaderSrc{vertexShader, fragmentShader};
+        std::vector<GLenum> shaderTypes{GL_VERTEX_SHADER, GL_FRAGMENT_SHADER};
+        for (int i=0;i<2;i++) {
+            GLuint s;
+            bool res = compileShader(shaderSrc[i],shaderTypes[i], s);
+            if (!res){
+                return false;
+            }
+            glAttachShader(shaderProgramId,  s);
+        }
+
+        // enforce layout
+        std::string attributeNames[3] = {"position", particleLayout?"color":"normal", "uv"};
+        for (int i=0;i<3;i++) {
+            glBindAttribLocation(shaderProgramId, i, attributeNames[i].c_str());
+        }
+
+        bool linked = linkProgram(shaderProgramId);
+        if (!linked){
+            return false;
+        }
+        updateUniforms();
+        return true;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withSource(const char *vertexShader, const char *fragmentShader) {
+        this->vertexShaderStr = vertexShader;
+        this->fragmentShaderStr = fragmentShader;
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceStandard() {
+        this->vertexShaderStr = R"(#version 140
 in vec4 position;
 in vec3 normal;
 in vec2 uv;
@@ -636,7 +541,7 @@ void main(void) {
     vEyePos = eyePos.xyz;
 }
 )";
-        const char* fragmentShader = R"(#version 140
+        this->fragmentShaderStr = R"(#version 140
 out vec4 fragColor;
 in vec3 vNormal;
 in vec2 vUV;
@@ -708,38 +613,73 @@ void main(void)
     fragColor = c * vec4(l, 1.0);
 }
 )";
-        standard = createShader(vertexShader, fragmentShader);
-        standard->set("color", glm::vec4(1));
-        standard->set("specularity", 0.0f);
-        standard->set("tex", Texture::getWhiteTexture());
-        return standard;
+        return *this;
     }
 
-    bool Shader::contains(const char *name) {
-		for (auto i = uniforms.begin(); i != uniforms.end(); i++) {
-			if (strcmp((const char*)i->name, name) == 0)
-				return true;
-		}
-        return false;
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceUnlit() {
+        this->vertexShaderStr = R"(#version 140
+in vec4 position;
+in vec3 normal;
+in vec2 uv;
+out vec2 vUV;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+void main(void) {
+    gl_Position = projection * view * model * position;
+    vUV = uv;
+}
+)";
+        this->fragmentShaderStr = R"(#version 140
+out vec4 fragColor;
+in vec2 vUV;
+
+uniform vec4 color;
+uniform sampler2D tex;
+
+void main(void)
+{
+    fragColor = color * texture(tex, vUV);
+}
+)";
+        return *this;
     }
 
-    Uniform Shader::getType(const char *name) {
-		for (auto i = uniforms.begin(); i != uniforms.end(); i++) {
-			if (strcmp((const char*)i->name, name) == 0)
-				return *i;
-		}
-		Uniform u;
-		u.type = UniformType::Invalid;
-		u.id = -1;
-		u.arrayCount = -1;
-		return u;
-    }
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceUnlitSprite() {
+        this->vertexShaderStr = R"(#version 140
+        in vec4 position;
+        in vec3 normal;
+        in vec2 uv;
+        out vec2 vUV;
 
-    Shader *Shader::getStandardParticles() {
-        if (standardParticles != nullptr){
-            return standardParticles;
+        uniform mat4 model;
+        uniform mat4 view;
+        uniform mat4 projection;
+
+        void main(void) {
+            gl_Position = projection * view * model * position;
+            vUV = uv;
         }
-        const char* vertexShader = R"(#version 140
+        )";
+        this->fragmentShaderStr = R"(#version 140
+        out vec4 fragColor;
+        in vec2 vUV;
+
+        uniform vec4 color;
+        uniform sampler2D tex;
+
+        void main(void)
+        {
+            fragColor = color * texture(tex, vUV);
+        }
+        )";
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceStandardParticles() {
+        this->vertexShaderStr = R"(#version 140
 in vec4 position;
 in vec4 color;
 in vec4 uv;
@@ -788,7 +728,7 @@ void main(void) {
     uvSize = uv.xyz;
 }
 )";
-        const char* fragmentShader = R"(#version 140
+        this->fragmentShaderStr = R"(#version 140
 out vec4 fragColor;
 in mat3 vUVMat;
 in vec3 uvSize;
@@ -807,10 +747,100 @@ void main(void)
     fragColor = c;
 }
 )";
-        standardParticles = createShader(vertexShader, fragmentShader, true);
-        standardParticles->set("tex", Texture::getSphereTexture());
-        standardParticles->setBlend(BlendType::AdditiveBlending);
-        standardParticles->setDepthWrite(false);
-        return standardParticles;
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceDebugUV() {
+        this->vertexShaderStr = R"(#version 140
+in vec4 position;
+in vec3 normal;
+in vec2 uv;
+out vec2 vUV;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+
+void main(void) {
+    gl_Position = projection * view * model * position;
+    vUV = uv;
+}
+)";
+        this->fragmentShaderStr = R"(#version 140
+in vec2 vUV;
+out vec4 fragColor;
+
+void main(void)
+{
+    fragColor = vec4(vUV,0.0,1.0);
+}
+)";
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceDebugNormals() {
+        this->vertexShaderStr = R"(#version 140
+in vec4 position;
+in vec3 normal;
+in vec2 uv;
+out vec3 vNormal;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+uniform mat3 normalMat;
+
+void main(void) {
+    gl_Position = projection * view * model * position;
+    vNormal = normalMat * normal;
+}
+)";
+        this->fragmentShaderStr = R"(#version 140
+out vec4 fragColor;
+in vec3 vNormal;
+
+void main(void)
+{
+    fragColor = vec4(vNormal*0.5+0.5,1.0);
+}
+)";
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withDepthTest(bool enable) {
+
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::widthDepthTest(bool enable) {
+        this->depthTest = enable;
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withDepthWrite(bool enable) {
+        this->depthWrite = enable;
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withBlend(BlendType blendType) {
+        this->blend = blendType;
+        return *this;
+    }
+
+    Shader *Shader::ShaderBuilder::build() {
+        Shader* res = new Shader();
+        if (!res->build(vertexShaderStr, fragmentShaderStr, particleLayout)){
+            delete res;
+            return nullptr;
+        }
+        res->depthTest = this->depthTest;
+        res->depthWrite = this->depthWrite;
+        res->blend = this->blend;
+        return res;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withParticleLayout(bool enable) {
+        this->particleLayout = enable;
+        return *this;
     }
 }

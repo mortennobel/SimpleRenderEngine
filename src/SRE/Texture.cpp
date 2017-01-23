@@ -30,24 +30,21 @@ namespace {
 }
 
 namespace SRE {
-	Texture* Texture::whiteTexture = nullptr;
-	Texture* Texture::sphereTexture = nullptr;
+	Texture* whiteTexture = nullptr;
+	Texture* sphereTexture = nullptr;
 
-	Texture::Texture(const char *data, int width, int height, uint32_t format, bool generateMipmaps)
-		: width{ width }, height{ height }, generateMipmap{ generateMipmaps } {
+	Texture::Texture(const char *data, int width, int height, uint32_t format)
+		: width{ width }, height{ height } {
+
 		glGenTextures(1, &textureId);
 
-		GLenum target = GL_TEXTURE_2D;
+		target = GL_TEXTURE_2D;
 		GLint mipmapLevel = 0;
-		GLint internalFormat = GL_RGBA;
+		GLint internalFormat = format;
 		GLint border = 0;
 		GLenum type = GL_UNSIGNED_BYTE;
 		glBindTexture(target, textureId);
 		glTexImage2D(target, mipmapLevel, internalFormat, width, height, border, format, type, data);
-		updateTextureSampler();
-		if (generateMipmaps) {
-			glGenerateMipmap(GL_TEXTURE_2D);
-		}
 	}
 
 	GLenum getFormat(SDL_Surface *image) {
@@ -114,52 +111,110 @@ namespace SRE {
 		return ((x != 0) && !(x & (x - 1)));
 	}
 
-	Texture* Texture::createFromFile(const char *pngOrJpeg, bool generateMipmaps) {
-		auto data = readAllBytes(pngOrJpeg);
-		return createFromMem(data.data(), data.size(), generateMipmaps);
-	}
+    Texture::~Texture() {
+        glDeleteTextures(1, &textureId);
+    }
 
-	Texture *Texture::createFromMem(const char *pngOrJpeg, int size, bool generateMipmaps) {
-		static bool initialized = false;
-		if (!initialized) {
-			initialized = true;
-			int flags = IMG_INIT_PNG | IMG_INIT_JPG;
-			int initted = IMG_Init(flags);
-			if ((initted & flags) != flags) {
-				std::cerr << "IMG_Init: Failed to init required jpg and png support!" << std::endl;
-				std::cerr << "IMG_Init: " << IMG_GetError() << std::endl;
-				// handle error
-			}
-		}
 
-		SDL_RWops *source = SDL_RWFromConstMem(pngOrJpeg, size);
-		SDL_Surface *res_texture = IMG_Load_RW(source, 1);
-		if (res_texture == NULL) {
-			std::cerr << "IMG_Load: " << SDL_GetError() << std::endl;
-			return nullptr;
-		}
-		int w = res_texture->w;
-		int h = res_texture->h;
-		auto format = getFormat(res_texture);
 
-		int bytesPerPixel =
+    Texture::TextureBuilder &Texture::TextureBuilder::withGenerateMipmaps(bool enable) {
+        generateMipmaps = enable;
+        return *this;
+    }
+
+    Texture::TextureBuilder &Texture::TextureBuilder::withFilterSampling(bool enable) {
+        this->filterSampling = enable;
+        return *this;
+    }
+
+    Texture::TextureBuilder &Texture::TextureBuilder::withWrappedTextureCoordinates(bool enable) {
+        this->wrapTextureCoordinates = enable;
+        return *this;
+    }
+
+    Texture::TextureBuilder &Texture::TextureBuilder::withFile(const char *filename) {
+        this->filename = filename;
+        return *this;
+    }
+
+    Texture::TextureBuilder &Texture::TextureBuilder::withRGBData(const char *data, int width, int height) {
+        this->data = data;
+        this->width = width;
+        this->height = height;
+        this->format = GL_RGB;
+        return *this;
+    }
+
+    Texture::TextureBuilder &Texture::TextureBuilder::withRGBAData(const char *data, int width, int height) {
+        this->data = data;
+        this->width = width;
+        this->height = height;
+        this->format = GL_RGBA;
+        return *this;
+    }
+
+    std::vector<char> loadFileFromMemory(const char* data, int dataSize, GLenum& format, int& width, int& height){
+        static bool initialized = false;
+        if (!initialized) {
+            initialized = true;
+            int flags = IMG_INIT_PNG | IMG_INIT_JPG;
+            int initted = IMG_Init(flags);
+            if ((initted & flags) != flags) {
+                std::cerr << "IMG_Init: Failed to init required jpg and png support!" << std::endl;
+                std::cerr << "IMG_Init: " << IMG_GetError() << std::endl;
+                // handle error
+            }
+        }
+
+        SDL_RWops *source = SDL_RWFromConstMem(data, dataSize);
+        SDL_Surface *res_texture = IMG_Load_RW(source, 1);
+        if (res_texture == NULL) {
+            std::cerr << "IMG_Load: " << SDL_GetError() << std::endl;
+            return {};
+        }
+        width = res_texture->w;
+        height = res_texture->h;
+        format = getFormat(res_texture);
+
+        int bytesPerPixel =
 #ifndef EMSCRIPTEN
-				format == GL_BGR ||
-#endif
-						format == GL_RGB ? 3 : 4;
-		char *pixels = static_cast<char *>(res_texture->pixels);
-		invert_image(w*bytesPerPixel, h, pixels);
-		if (generateMipmaps && (!isPowerOfTwo((unsigned int)w) || !isPowerOfTwo((unsigned int)h))) {
-			std::cerr << "Ignore mipmaps for textures not power of two" << std::endl;
-			generateMipmaps = false;
-		}
-		Texture *res = new Texture(pixels, w, h, format, generateMipmaps);
-		SDL_FreeSurface(res_texture);
-		return res;
-	}
+                format == GL_BGR ||
+                #endif
+                format == GL_RGB ? 3 : 4;
+        char *pixels = static_cast<char *>(res_texture->pixels);
+        invert_image(width*bytesPerPixel, height, pixels);
 
-	Texture *Texture::createFromRGBAMem(const char *data, int width, int height, bool generateMipmaps) {
-		return new Texture(data, width, height, GL_RGBA, generateMipmaps);
+        std::vector<char> res(pixels, pixels+width*bytesPerPixel*height);
+
+        SDL_FreeSurface(res_texture);
+        return res;
+    }
+
+    Texture *Texture::TextureBuilder::build() {
+        std::vector<char> fileData;
+        if (filename != nullptr){
+            fileData = readAllBytes(filename);
+            fileData = loadFileFromMemory(fileData.data(), (int) fileData.size(), format, width, height);
+            data = fileData.data();
+        }
+		if (data == nullptr && dataOwned.size()>0){
+			data = dataOwned.data();
+		}
+        Texture* res = new Texture(data, width, height, format);
+        if (this->generateMipmaps){
+            res->invokeGenerateMipmap();
+        }
+        res->updateTextureSampler(filterSampling, wrapTextureCoordinates);
+        return res;
+    }
+
+	Texture::TextureBuilder &Texture::TextureBuilder::withWhiteData(int width, int height) {
+		char one = (char)0xff;
+		dataOwned = std::vector<char>(width * height * 4, one);
+		this->width = width;
+		this->height = height;
+		format = GL_RGBA;
+		return *this;
 	}
 
 	// returns true if texture sampling should be filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
@@ -167,19 +222,8 @@ namespace SRE {
 		return filterSampling;
 	}
 
-	// if true texture sampling is filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
-	void Texture::setFilterSampling(bool enable) {
-		filterSampling = enable;
-		updateTextureSampler();
-	}
-
 	bool Texture::isWrapTextureCoordinates() {
 		return filterSampling;
-	}
-
-	void Texture::setWrapTextureCoordinates(bool enable) {
-		wrapTextureCoordinates = enable;
-		updateTextureSampler();
 	}
 
 	int Texture::getWidth() {
@@ -190,10 +234,12 @@ namespace SRE {
 		return height;
 	}
 
-	void Texture::updateTextureSampler() {
-		glBindTexture(GL_TEXTURE_2D, textureId);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapTextureCoordinates ? GL_REPEAT : GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapTextureCoordinates ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+	void Texture::updateTextureSampler(bool filterSampling, bool wrapTextureCoordinates) {
+        this->filterSampling = filterSampling;
+        this->wrapTextureCoordinates = wrapTextureCoordinates;
+		glBindTexture(target, textureId);
+		glTexParameteri(target, GL_TEXTURE_WRAP_S, wrapTextureCoordinates ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+		glTexParameteri(target, GL_TEXTURE_WRAP_T, wrapTextureCoordinates ? GL_REPEAT : GL_CLAMP_TO_EDGE);
 		GLuint minification;
 		GLuint magnification;
 		if (!filterSampling) {
@@ -208,18 +254,19 @@ namespace SRE {
 			minification = GL_LINEAR;
 			magnification = GL_LINEAR;
 		}
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, magnification);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, minification);
+		glTexParameteri(target, GL_TEXTURE_MAG_FILTER, magnification);
+		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, minification);
 	}
 
 	Texture *Texture::getWhiteTexture() {
 		if (whiteTexture != nullptr) {
 			return whiteTexture;
 		}
-		char one = (char)0xff;
-		std::vector<char> data(2 * 2 * 4, one);
-		whiteTexture = createFromRGBAMem(data.data(), 2, 2, true);
-		return whiteTexture;
+		whiteTexture = create()
+                .withWhiteData()
+				.withFilterSampling(false)
+                .build();
+        return whiteTexture;
 	}
 
 	Texture *Texture::getSphereTexture() {
@@ -238,7 +285,23 @@ namespace SRE {
 				data[x*size * 4 + y * 4 + 3] = (char)255;
 			}
 		}
-		sphereTexture = createFromRGBAMem(data.data(), size, size, true);
+		sphereTexture = create()
+                .withRGBAData(data.data(),size,size)
+                .withGenerateMipmaps(true)
+                .build();
 		return sphereTexture;
 	}
+
+    Texture::TextureBuilder Texture::create() {
+        return Texture::TextureBuilder();
+    }
+
+    void Texture::invokeGenerateMipmap() {
+        if ((!isPowerOfTwo((unsigned int)width) || !isPowerOfTwo((unsigned int)height))) {
+            std::cerr << "Ignore mipmaps for textures not power of two" << std::endl;
+        } else {
+            this->generateMipmap = true;
+            glGenerateMipmap(target);
+        }
+    }
 }
