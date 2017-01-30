@@ -50,7 +50,9 @@ int main() {
     r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
     Shader* shader = Shader::getUnlit();
-    Mesh* mesh = Mesh::createSphere();
+    Mesh* mesh = Mesh::create()
+            .withSphere()
+            .build();
     shader->set("color", {0,1,0,1});
 
     float duration = 10000;

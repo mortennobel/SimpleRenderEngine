@@ -72,12 +72,12 @@ int main() {
     shader = Shader::getStandard();
     shader->set("color", glm::vec4(1.0f,1.0f,1.0f,1.0f));
     shader->set("specularity",20.0f);
-    mesh = Mesh::createCube();
+    mesh = Mesh::create().withCube().build();
     r.setAmbientLight({0.5,0.5,0.5});
-    r.setLight(0, Light(LightType::Point,{0, 3,0},{0,0,0},{1,0,0},20));
-    r.setLight(1, Light(LightType::Point,{3, 0,0},{0,0,0},{0,1,0},20));
-    r.setLight(2, Light(LightType::Point,{0,-3,0},{0,0,0},{0,0,1},20));
-    r.setLight(3, Light(LightType::Point,{-3,0,0},{0,0,0},{1,1,1},20));
+    r.setLight(0, Light::create().withPointLight({0, 3,0}).withColor({1,0,0}).withRange(20).build());
+    r.setLight(1, Light::create().withPointLight({3, 0,0}).withColor({0,1,0}).withRange(20).build());
+    r.setLight(2, Light::create().withPointLight({0,-3,0}).withColor({0,0,1}).withRange(20).build());
+    r.setLight(3, Light::create().withPointLight({-3,0,0}).withColor({1,1,1}).withRange(20).build());
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(update, 0, 1);
 #else

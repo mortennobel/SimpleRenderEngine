@@ -53,7 +53,9 @@ int main() {
     shader->set("tex", Texture::create().withFile("examples-data/test.jpg").withGenerateMipmaps(true).build());
     // shader->set("tex", Texture::create().withFile("examples-data/twitter.png").withGenerateMipmaps(true).build());
     // shader->set("tex", Texture::create().withFile("examples-data/cartman.png").withGenerateMipmaps(true).build());
-    Mesh* mesh = Mesh::createCube();
+    Mesh* mesh = Mesh::create()
+            .withCube()
+            .build();
 
     float duration = 10000;
     for (float i=0;i<duration ;i+=16){

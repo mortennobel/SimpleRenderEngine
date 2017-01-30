@@ -38,15 +38,15 @@ namespace SRE {
         void setPerspectiveProjection(float fieldOfViewY, float viewportWidth,float viewportHeight, float nearPlane, float farPlane);
 
         /// set the projectionTransform to orthographic parallel viewing volume.
-        /// left
-        /// right
-        /// bottom
-        /// top
+        /// left left plane of projection
+        /// right right plane of projection
+        /// bottom bottom plane of projection
+        /// top top plane of projection
         /// nearPlane near clipping plane, defines how close an object can be to the camera before clipping
         /// farPlane far clipping plane, defines how far an object can be to the camera before clipping
         void setOrthographicProjection(float left, float right, float  bottom, float top, float nearPlane, float farPlane);
 
-        /// set orthographic transform and view, where the origon is located in the lower left corner
+        /// set orthographic transform and view, where the origin is located in the lower left corner
         /// z depth is between -1 and 1
         /// width the width of the window, if -1 uses current window size
         /// height the height of the window, if -1 uses current window size

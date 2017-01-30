@@ -77,13 +77,13 @@ int main() {
     glm::vec4 color {1,1,1,1};
     shader->set("specularity", 20.0f);
     shader->set("color", color);
-    Mesh* mesh = Mesh::createSphere();
+    Mesh* mesh = Mesh::create().withSphere().build();
 
     Light lights[] = {
-            Light(LightType::Point,{0, 2,1},{0,0,0},{1,0,0},10),
-            Light(LightType::Unused,{2, 0,1},{0,0,0},{0,1,0},10),
-            Light(LightType::Unused,{0,-2,1},{0,0,0},{0,0,1},10),
-            Light(LightType::Unused,{-2,0,1},{0,0,0},{1,1,1},10),
+            Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build(),
+            Light::create().build(),
+            Light::create().build(),
+            Light::create().build()
     };
 
     bool debugLight = true;

@@ -51,9 +51,14 @@ int main() {
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1f,100);
     Shader* shader = Shader::getStandard();
 
-    Mesh* mesh = Mesh::createSphere();
+    Mesh* mesh = Mesh::create()
+            .withSphere()
+            .build();
 
-    r.setLight(0, Light(LightType::Directional,{0,0,0},glm::normalize(glm::vec3(1,1,1)),{1,1,1},10));
+    r.setLight(0, Light::create()
+            .withDirectionalLight(glm::normalize(glm::vec3(1,1,1)))
+            .withRange(10)
+            .build());
 
     float duration = 10000;
     glm::mat4 pos1 = glm::translate(glm::mat4(1), {-1,0,0});

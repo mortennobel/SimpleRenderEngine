@@ -19,8 +19,7 @@ namespace SRE {
         static void setColor(glm::vec4 color);
         static void drawLine(glm::vec3 from, glm::vec3 to);
 
-        static void drawLineStrip(std::vector<glm::vec3> &verts);
-        static void drawLineStrip(std::vector<glm::vec3> &&verts);
+        static void drawLineStrip(const std::vector<glm::vec3> &verts);
     private:
         static glm::vec4 color;
         // For internal debugging of gl errors

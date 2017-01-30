@@ -50,7 +50,9 @@ int main() {
     r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
     Shader* shader = Shader::getUnlit();
-    Mesh* mesh = Mesh::createCube();
+    Mesh* mesh = Mesh::create()
+            .withCube()
+            .build();
 
     float duration = 10000;
     for (float i=0;i<duration ;i+=16){

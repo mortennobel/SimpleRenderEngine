@@ -21,9 +21,9 @@ namespace SRE {
     public:
         class DllExport MeshBuilder {
         public:
-//            MeshBuilder& withSphere();
-//            MeshBuilder& withCube();
-//            MeshBuilder& withQuad();
+            MeshBuilder& withSphere();
+            MeshBuilder& withCube();
+            MeshBuilder& withQuad();
             MeshBuilder& withVertexPositions(const std::vector<glm::vec3> &vertexPositions);
             MeshBuilder& withNormals(const std::vector<glm::vec3> &normals);
             MeshBuilder& withUvs(const std::vector<glm::vec2> &uvs);
@@ -53,9 +53,6 @@ namespace SRE {
         const std::vector<glm::vec2>& getUVs();
         const std::vector<uint16_t>& getIndices();
 
-        static Mesh* createQuad();
-        static Mesh* createCube();
-        static Mesh* createSphere();
     private:
         Mesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals, const std::vector<glm::vec2> &uvs,const std::vector<uint16_t> &indices, MeshTopology meshTopology = MeshTopology::Triangles);
         void update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals, const std::vector<glm::vec2> &uvs, const std::vector<uint16_t> &indices);

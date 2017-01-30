@@ -92,11 +92,12 @@ int main() {
     shaderParticles = Shader::getStandardParticles();
 
     particleMesh = createParticles();
-    mesh = Mesh::createCube();
-    r.setLight(0, Light(LightType::Point,{0, 1,0},{0,0,0},{1,0,0},2));
-    r.setLight(1, Light(LightType::Point,{1, 0,0},{0,0,0},{0,1,0},2));
-    r.setLight(2, Light(LightType::Point,{0,-1,0},{0,0,0},{0,0,1},2));
-    r.setLight(3, Light(LightType::Point,{-1,0,0},{0,0,0},{1,1,1},2));
+    mesh = Mesh::create()
+            .withCube().build();
+    r.setLight(0, Light::create().withPointLight({ 0, 1,0}).withColor({1,0,0}).withRange(2).build());
+    r.setLight(1, Light::create().withPointLight({ 1, 0,0}).withColor({0,1,0}).withRange(2).build());
+    r.setLight(2, Light::create().withPointLight({ 0,-1,0}).withColor({0,0,1}).withRange(2).build());
+    r.setLight(3, Light::create().withPointLight({-1, 0,0}).withColor({1,1,1}).withRange(2).build());
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(update, 0, 1);

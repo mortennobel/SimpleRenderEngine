@@ -6,12 +6,53 @@
 
 namespace SRE{
     Light::Light()
-    :lightType(LightType::Unused)
+    :lightType(LightType::Unused),
+     position(glm::vec3(0,0,0)),
+     direction(glm::vec3(0,0,0)),
+     color(glm::vec3(1,1,1)),
+     range(100.0f)
     {
     }
 
-    Light::Light(LightType lightType, glm::vec3 position, glm::vec3 direction, glm::vec3 color, float range)
-            : lightType(lightType), position(position), direction(direction), color(color), range(range) {
-
+    Light::LightBuilder Light::create() {
+        return Light::LightBuilder();
     }
+
+
+    Light Light::LightBuilder::build() {
+        Light res = *light;
+        return res;
+    }
+
+    Light::LightBuilder& Light::LightBuilder::withPointLight(glm::vec3 position) {
+        light->lightType = LightType::Point;
+        light->position = position;
+        return *this;
+    }
+
+    Light::LightBuilder& Light::LightBuilder::withDirectionalLight(glm::vec3 direction) {
+        light->lightType = LightType::Directional;
+        light->direction = direction;
+        return *this;
+    }
+
+    Light::LightBuilder& Light::LightBuilder::withColor(glm::vec3 color) {
+        light->color = color;
+        return *this;
+    }
+
+    Light::LightBuilder& Light::LightBuilder::withRange(float range) {
+        light->range = range;
+        return *this;
+    }
+
+    Light::LightBuilder::LightBuilder()
+    :light{new Light()}
+    {
+    }
+
+    Light::LightBuilder::~LightBuilder() {
+        delete light;
+    }
+
 }

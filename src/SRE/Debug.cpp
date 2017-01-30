@@ -47,12 +47,7 @@ namespace SRE {
         delete mesh;
     }
 
-    void Debug::drawLineStrip(std::vector<glm::vec3> &&verts) {
-        std::vector<glm::vec3> v{verts};
-        drawLineStrip(v);
-    }
-
-    void Debug::drawLineStrip(std::vector<glm::vec3> &verts) {
+    void Debug::drawLineStrip(const std::vector<glm::vec3> &verts) {
         Mesh *mesh = Mesh::create()
                 .withVertexPositions(verts)
                 .withMeshTopology(MeshTopology::LineStrip)
