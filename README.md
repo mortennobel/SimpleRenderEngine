@@ -16,9 +16,9 @@ SRE provides:
  * Light and shading
  * Enforces efficient use of OpenGL
  * Forward rendering
- * Full C++11/C++14 support
+ * Full C++14 support
  * Support for 2D or 3D rendering
- * GUI rendering (using imgui)
+ * GUI rendering (using dear ImGui)
  * Emscripten support
 
 To keep SRE as simple and flexible as possible the following features are not a part of SRE:
