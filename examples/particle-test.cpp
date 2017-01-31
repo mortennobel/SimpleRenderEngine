@@ -6,7 +6,6 @@
 #include "SRE/SimpleRenderEngine.hpp"
 #include "SRE/Camera.hpp"
 #include "SRE/Mesh.hpp"
-#include "SRE/ParticleMesh.hpp"
 #include "SRE/Shader.hpp"
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
@@ -25,23 +24,26 @@
 #endif
 using namespace SRE;
 
-ParticleMesh* createParticles(int size = 2500){
+Mesh* createParticles(int size = 2500){
     std::vector<glm::vec3> positions;
     std::vector<glm::vec4> colors;
-    std::vector<glm::vec2> uvs;
-    std::vector<float> scaleAndRotate;
     std::vector<float> sizes;
     for (int i=0;i<size;i++){
         positions.push_back(glm::linearRand(glm::vec3(-1,-1,-1),glm::vec3(1,1,1)));
         colors.push_back(glm::linearRand(glm::vec4(0,0,0,0),glm::vec4(1,1,1,1)));
         sizes.push_back(glm::linearRand(0.0f,1.0f));
     }
-    return new ParticleMesh(positions,colors,uvs,scaleAndRotate,scaleAndRotate,sizes);
+    return Mesh::create ()
+            .withVertexPositions(positions)
+            .withColors(colors)
+            .withParticleSize(sizes)
+            .withMeshTopology(MeshTopology::Points)
+            .build();
 }
 
 SDL_Window *window;
 Shader *shader;
-ParticleMesh* particleMesh;
+Mesh* particleMesh;
 Mesh *mesh;
 Shader* shaderParticles;
 int i=0;

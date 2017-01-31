@@ -26,7 +26,9 @@ namespace SRE {
             MeshBuilder& withQuad();
             MeshBuilder& withVertexPositions(const std::vector<glm::vec3> &vertexPositions);
             MeshBuilder& withNormals(const std::vector<glm::vec3> &normals);
-            MeshBuilder& withUvs(const std::vector<glm::vec2> &uvs);
+            MeshBuilder& withUvs(const std::vector<glm::vec4> &uvs);
+            MeshBuilder& withColors(const std::vector<glm::vec4> &colors);
+            MeshBuilder& withParticleSize(const std::vector<float> &particleSize);
             MeshBuilder& withMeshTopology(MeshTopology meshTopology);
             MeshBuilder& withIndices(const std::vector<uint16_t> &indices);
             Mesh* build();
@@ -34,7 +36,9 @@ namespace SRE {
             MeshBuilder() = default;
             std::vector<glm::vec3> vertexPositions;
             std::vector<glm::vec3> normals;
-            std::vector<glm::vec2> uvs;
+            std::vector<glm::vec4> uvs;
+            std::vector<glm::vec4> colors;
+            std::vector<float> particleSize;
             MeshTopology meshTopology = MeshTopology::Triangles;
             std::vector<uint16_t> indices;
             Mesh* updateMesh = nullptr;
@@ -50,12 +54,14 @@ namespace SRE {
 
         const std::vector<glm::vec3>& getVertexPositions();
         const std::vector<glm::vec3>& getNormals();
-        const std::vector<glm::vec2>& getUVs();
+        const std::vector<glm::vec4>& getUVs();
+        const std::vector<glm::vec4>& getColors();
+        const std::vector<float>& getParticleSize();
         const std::vector<uint16_t>& getIndices();
 
     private:
-        Mesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals, const std::vector<glm::vec2> &uvs,const std::vector<uint16_t> &indices, MeshTopology meshTopology = MeshTopology::Triangles);
-        void update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals, const std::vector<glm::vec2> &uvs, const std::vector<uint16_t> &indices);
+        Mesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals, const std::vector<glm::vec4> &uvs, const std::vector<glm::vec4> &colors,std::vector<float> particleSize, const std::vector<uint16_t> &indices, MeshTopology meshTopology);
+        void update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals, const std::vector<glm::vec4> &uvs, const std::vector<glm::vec4> &colors, std::vector<float> particleSize, const std::vector<uint16_t> &indices, MeshTopology meshTopology);
 
         void setVertexAttributePointers();
         MeshTopology meshTopology;
@@ -66,7 +72,9 @@ namespace SRE {
 
         std::vector<glm::vec3> vertexPositions;
         std::vector<glm::vec3> normals;
-        std::vector<glm::vec2> uvs;
+        std::vector<glm::vec4> uvs;
+        std::vector<float> particleSize;
+        std::vector<glm::vec4> colors;
         std::vector<uint16_t> indices;
 
         void bind();

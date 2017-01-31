@@ -12,15 +12,15 @@
 
 namespace SRE {
     Mesh::Mesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals,
-               const std::vector<glm::vec2> &uvs, const std::vector<uint16_t> &indices, MeshTopology meshTopology)
-            :meshTopology{meshTopology}
+               const std::vector<glm::vec4> &uvs, const std::vector<glm::vec4> &colors, std::vector<float> particleSize, const std::vector<uint16_t> &indices, MeshTopology meshTopology)
+
     {
         glGenBuffers(1, &vertexBufferId);
         glGenBuffers(1, &elementBufferId);
 #ifndef EMSCRIPTEN
         glGenVertexArrays(1, &vertexArrayObject);
 #endif
-        update(vertexPositions, normals, uvs, indices);
+        update(vertexPositions, normals, uvs, colors, particleSize,indices, meshTopology);
     }
 
     Mesh::~Mesh(){
@@ -54,25 +54,38 @@ namespace SRE {
     }
 
     void Mesh::update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals,
-                      const std::vector<glm::vec2> &uvs, const std::vector<uint16_t> &indices) {
+                      const std::vector<glm::vec4> &uvs, const std::vector<glm::vec4> &colors, std::vector<float> particleSize, const std::vector<uint16_t> &indices, MeshTopology meshTopology) {
+        this->meshTopology = meshTopology;
         this->vertexPositions = vertexPositions;
         this->normals = normals;
         this->uvs = uvs;
+        this->colors = colors;
+        this->particleSize = particleSize;
         this->vertexCount = (int) vertexPositions.size();
         this->indices = indices;
         bool hasNormals = normals.size() == vertexPositions.size();
         bool hasUVs = uvs.size() == vertexPositions.size();
+        bool hasColors = colors.size() == vertexPositions.size();
+        bool hasParticleSize = particleSize.size() == vertexPositions.size();
 
         // interleave data
-        int floatsPerVertex = 8;
+        int floatsPerVertex = 15;
         std::vector<float> interleavedData(vertexPositions.size() * floatsPerVertex);
         for (int i=0;i<vertexPositions.size();i++){
-            for (int j=0;j<3;j++){
-                interleavedData[i*floatsPerVertex+j] = vertexPositions[i][j];
-                interleavedData[i*floatsPerVertex+j+3] = hasNormals ? normals[i][j] : 0.0f;
-                if (j<2){
-                    interleavedData[i*floatsPerVertex+j+6] = hasUVs ? uvs[i][j] : 0.0f;
+            for (int j=0;j<4;j++){
+                // vertex position
+                if (j<3){
+                    interleavedData[i*floatsPerVertex+j] = vertexPositions[i][j];
                 }
+                if (j==3){
+                    interleavedData[i*floatsPerVertex+j] = hasParticleSize ? particleSize[i]:1.0f;
+                }
+                // normals
+                if (j<3) {
+                    interleavedData[i * floatsPerVertex + j + 4] = hasNormals ? normals[i][j] : 0.0f;
+                }
+                interleavedData[i*floatsPerVertex+j+7] = hasUVs ? uvs[i][j] : (j==2?1.0f:0.0f);
+                interleavedData[i*floatsPerVertex+j+11] = hasColors ? colors[i][j] : 1.0f;
             }
         }
 #ifndef EMSCRIPTEN
@@ -90,12 +103,13 @@ namespace SRE {
     }
 
     void Mesh::setVertexAttributePointers(){
-        // bind vertex attributes (position, normal, uv)
-        int length[3] = {3,3,2};
-        int offset[3] = {0,3,6};
-        for (int i=0;i<3;i++){
+        // bind vertex attributes (position+size, normal, uv, color)
+        int length[4] = {4,3,4,4};
+        int offset[4] = {0,4,7,11};
+        int floatsPerVertex = 15;
+        for (int i=0;i<4;i++){
             glEnableVertexAttribArray(i);
-            glVertexAttribPointer(i, length[i],GL_FLOAT,GL_FALSE, 8 * sizeof(float), BUFFER_OFFSET(offset[i] * sizeof(float)));
+            glVertexAttribPointer(i, length[i],GL_FLOAT,GL_FALSE, floatsPerVertex * sizeof(float), BUFFER_OFFSET(offset[i] * sizeof(float)));
         }
     }
 
@@ -107,7 +121,7 @@ namespace SRE {
         return normals;
     }
 
-    const std::vector<glm::vec2> &Mesh::getUVs() {
+    const std::vector<glm::vec4> &Mesh::getUVs() {
         return uvs;
     }
 
@@ -118,11 +132,26 @@ namespace SRE {
     Mesh::MeshBuilder Mesh::update() {
         Mesh::MeshBuilder res;
         res.updateMesh = this;
+        res.vertexPositions = vertexPositions;
+        res.normals = normals;
+        res.uvs = uvs;
+        res.particleSize = particleSize;
+        res.colors = colors;
+        res.indices = indices;
+        res.meshTopology = meshTopology;
         return res;
     }
 
     Mesh::MeshBuilder Mesh::create() {
         return Mesh::MeshBuilder();
+    }
+
+    const std::vector<glm::vec4> &Mesh::getColors() {
+        return colors;
+    }
+
+    const std::vector<float> &Mesh::getParticleSize() {
+        return particleSize;
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withVertexPositions(const std::vector<glm::vec3> &vertexPositions) {
@@ -135,7 +164,7 @@ namespace SRE {
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withUvs(const std::vector<glm::vec2> &uvs) {
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withUvs(const std::vector<glm::vec4> &uvs) {
         this->uvs = uvs;
         return *this;
     }
@@ -152,10 +181,10 @@ namespace SRE {
 
     Mesh * Mesh::MeshBuilder::build() {
         if (updateMesh != nullptr){
-            updateMesh->update(vertexPositions, normals, uvs, indices);
+            updateMesh->update(vertexPositions, normals, uvs, colors, particleSize,indices, meshTopology);
             return updateMesh;
         } else {
-            Mesh *res = new Mesh(vertexPositions, normals, uvs, indices, meshTopology);
+            Mesh *res = new Mesh(vertexPositions, normals, uvs, colors, particleSize,indices, meshTopology);
             return res;
         }
     }
@@ -169,7 +198,7 @@ namespace SRE {
         size_t vertexCount = (size_t) ((stacks + 1) * slices);
         vector<vec3> vertices{vertexCount};
         vector<vec3> normals{vertexCount};
-        vector<vec2> uvs{vertexCount};
+        vector<vec4> uvs{vertexCount};
 
         int index = 0;
         // create vertices
@@ -186,14 +215,14 @@ namespace SRE {
                             sinLong * cosLat1};
                 normal = normalize(normal);
                 normals[index] = normal;
-                uvs[index] = vec2{1 - i /(float) slices, j /(float) stacks};
+                uvs[index] = vec4{1 - i /(float) slices, j /(float) stacks,0,0};
                 vertices[index] = normal * radius;
                 index++;
             }
         }
         vector<vec3> finalPosition;
         vector<vec3> finalNormals;
-        vector<vec2> finalUVs;
+        vector<vec4> finalUVs;
         // create indices
         for (int j = 0; j < stacks; j++) {
             for (int i = 0; i < slices; i++) {
@@ -258,13 +287,13 @@ namespace SRE {
                                 p[4],p[5],p[1], p[4],p[1],p[0], // v1-v5-v6-v2
                                 p[3],p[2],p[6], p[3],p[6],p[7], // v1-v5-v6-v2
                                });
-        vec2 u[] = {
-                vec2(1,1),
-                vec2(0,1),
-                vec2(0,0),
-                vec2(1,0)
+        vec4 u[] = {
+                vec4(1,1,0,0),
+                vec4(0,1,0,0),
+                vec4(0,0,0,0),
+                vec4(1,0,0,0)
         };
-        vector<vec2> uvs({ u[0],u[1],u[2], u[0],u[2],u[3],
+        vector<vec4> uvs({ u[0],u[1],u[2], u[0],u[2],u[3],
                            u[0],u[1],u[2], u[0],u[2],u[3],
                            u[0],u[1],u[2], u[0],u[2],u[3],
                            u[0],u[1],u[2], u[0],u[2],u[3],
@@ -334,11 +363,11 @@ namespace SRE {
                                                glm::vec3{0, 0, 1},
                                                glm::vec3{0, 0, 1}
                                        });
-        std::vector<glm::vec2> uvs({
-                                           glm::vec2{1, 0},
-                                           glm::vec2{1, 1},
-                                           glm::vec2{0, 0},
-                                           glm::vec2{0, 1}
+        std::vector<glm::vec4> uvs({
+                                           glm::vec4{1, 0,0,0},
+                                           glm::vec4{1, 1,0,0},
+                                           glm::vec4{0, 0,0,0},
+                                           glm::vec4{0, 1,0,0}
                                    });
         std::vector<uint16_t> indices = {
                 0,1,2,
@@ -350,6 +379,16 @@ namespace SRE {
         withIndices(indices);
         withMeshTopology(MeshTopology::Triangles);
 
+        return *this;
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withColors(const std::vector<glm::vec4> &colors) {
+        this->colors = colors;
+        return *this;
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withParticleSize(const std::vector<float> &particleSize) {
+        this->particleSize = particleSize;
         return *this;
     }
 }

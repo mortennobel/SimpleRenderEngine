@@ -6,7 +6,6 @@
 #include "SRE/SimpleRenderEngine.hpp"
 #include "SRE/Camera.hpp"
 #include "SRE/Mesh.hpp"
-#include "SRE/ParticleMesh.hpp"
 #include "SRE/Shader.hpp"
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
@@ -22,17 +21,21 @@
 
 using namespace SRE;
 
-ParticleMesh* createParticles(){
+Mesh* createParticles(){
     std::vector<glm::vec3> positions;
     std::vector<glm::vec4> colors;
-    std::vector<glm::vec2> uvCenter;
-    std::vector<float> empty;
     std::vector<float> sizes;
 
     positions.push_back({0,0,0});
+    colors.push_back({1,1,1,1});
     sizes.push_back(10.0f);
 
-    return new ParticleMesh(positions,colors,uvCenter,empty,empty,sizes);
+    return Mesh::create()
+            .withVertexPositions(positions)
+            .withParticleSize(sizes)
+            .withColors(colors)
+            .withMeshTopology(MeshTopology::Points)
+            .build();
 }
 
 void updateParticlesAnimation(float time, glm::vec2& pos,float& size, float& rotation){
@@ -44,21 +47,20 @@ void updateParticlesAnimation(float time, glm::vec2& pos,float& size, float& rot
     rotation = 0;
 }
 
-void updateParticles(ParticleMesh* particleMesh, glm::vec2 uv, float uvSize, float rotation, float size){
+void updateParticles(Mesh* particleMesh, glm::vec2 uv, float uvSize, float rotation, float size){
     std::vector<glm::vec3> positions;
-    std::vector<glm::vec4> colors;
-    std::vector<glm::vec2> uvCenter;
-    std::vector<float> uvSizes;
-    std::vector<float> uvRotations;
+    std::vector<glm::vec4> uvs;
     std::vector<float> sizes;
 
     positions.push_back({0,0,0});
-    uvCenter.push_back(uv);
-    uvSizes.push_back(uvSize);
-    uvRotations.push_back(rotation);
+    uvs.push_back({uv,uvSize,rotation});
     sizes.push_back(size);
 
-    particleMesh->update(positions, colors, uvCenter,uvSizes, uvRotations,sizes);
+    particleMesh->update()
+        .withVertexPositions(positions)
+        .withUvs(uvs)
+        .withParticleSize(sizes)
+        .build();
 }
 
 int main() {
@@ -98,7 +100,7 @@ int main() {
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
     Shader* shaderParticles = Shader::getStandardParticles();
     shaderParticles->set("tex", Texture::create().withFile("examples-data/t_explosionsheet.png").build());
-    ParticleMesh* particleMesh = createParticles();
+    Mesh* particleMesh = createParticles();
 
 
     bool quit = false;

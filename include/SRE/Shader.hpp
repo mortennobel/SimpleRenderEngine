@@ -77,11 +77,9 @@ namespace SRE {
             ShaderBuilder& withDepthTest(bool enable);
             ShaderBuilder& withDepthWrite(bool enable);
             ShaderBuilder& withBlend(BlendType blendType);
-            ShaderBuilder& withParticleLayout(bool enable);
             Shader* build();
         private:
             ShaderBuilder() = default;
-            bool particleLayout = false;
             const char* vertexShaderStr;
             const char* fragmentShaderStr;
             bool depthTest = true;
@@ -137,7 +135,7 @@ namespace SRE {
         bool setLights(Light value[4], glm::vec4 ambient, glm::mat4 viewTransform);
 
         Shader();
-        bool build(const char *vertexShader, const char *fragmentShader, bool particleLayout);
+        bool build(const char *vertexShader, const char *fragmentShader);
 
         void bind();
 
@@ -148,8 +146,6 @@ namespace SRE {
 
         std::vector<Uniform> uniforms;
         void updateUniforms();
-
-        bool particleLayout;
 
         friend class Mesh;
         friend class SimpleRenderEngine;

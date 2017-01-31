@@ -15,7 +15,6 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #include <cassert>
 #include "SRE/Shader.hpp"
 #include "SRE/Mesh.hpp"
-#include "SRE/ParticleMesh.hpp"
 
 #include "SRE/impl/GL.hpp"
 #include <iostream>
@@ -86,11 +85,6 @@ namespace SRE {
     }
 
     void SimpleRenderEngine::draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader) {
-#ifndef NDEBUG
-        if (shader->particleLayout){
-            std::cerr<<"SimpleRenderEngine::draw(). Error: Shader has particleLayout."<<std::endl;
-        }
-#endif
 
         if (camera == nullptr){
             std::cerr<<"Cannot render. Camera is null"<<std::endl;
@@ -105,24 +99,6 @@ namespace SRE {
         } else {
             glDrawElements((GLenum) mesh->getMeshTopology(), indexCount, GL_UNSIGNED_SHORT, 0);
         }
-    }
-
-    void SimpleRenderEngine::draw(ParticleMesh *mesh, glm::mat4 modelTransform, Shader *shader) {
-#ifndef NDEBUG
-        if (!shader->particleLayout){
-            std::cerr<<"SimpleRenderEngine::draw(). Error: Shader does not have particleLayout."<<std::endl;
-        }
-#endif
-        if (camera == nullptr){
-            std::cerr<<"Cannot render. Camera is null"<<std::endl;
-            return;
-        }
-        setupShader(modelTransform, shader);
-
-        mesh->bind();
-        shader->set("view_height", (float)camera->viewportHeight);
-        glDrawArrays((GLenum) MeshTopology::Points, 0, mesh->getVertexCount());
-
     }
 
     void SimpleRenderEngine::setupShader(const glm::mat4 &modelTransform, Shader *shader)  {
@@ -140,6 +116,10 @@ namespace SRE {
             auto normalMatrix = transpose(inverse((glm::mat3)(camera->getViewTransform() * modelTransform)));
             shader->set("normalMat", normalMatrix);
         }
+        if (shader->getType("view_height").type != UniformType::Invalid){
+            shader->set("view_height", (float)camera->viewportHeight);
+        }
+
         shader->setLights(sceneLights, ambientLight, camera->getViewTransform());
     }
 

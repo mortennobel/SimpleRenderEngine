@@ -474,7 +474,6 @@ namespace SRE {
 
         standardParticles = create()
                 .withSourceStandardParticles()
-                .withParticleLayout(true)
                 .withBlend(BlendType::AdditiveBlending)
                 .withDepthWrite(false)
                 .build();
@@ -486,8 +485,7 @@ namespace SRE {
         return Shader::ShaderBuilder();
     }
 
-    bool Shader::build(const char *vertexShader, const char *fragmentShader, bool particleLayout) {
-        this->particleLayout = particleLayout;
+    bool Shader::build(const char *vertexShader, const char *fragmentShader) {
         std::vector<const char*> shaderSrc{vertexShader, fragmentShader};
         std::vector<GLenum> shaderTypes{GL_VERTEX_SHADER, GL_FRAGMENT_SHADER};
         for (int i=0;i<2;i++) {
@@ -500,8 +498,8 @@ namespace SRE {
         }
 
         // enforce layout
-        std::string attributeNames[3] = {"position", particleLayout?"color":"normal", "uv"};
-        for (int i=0;i<3;i++) {
+        std::string attributeNames[4] = {"position", "normal", "uv", "color"};
+        for (int i=0;i<4;i++) {
             glBindAttribLocation(shaderProgramId, i, attributeNames[i].c_str());
         }
 
@@ -681,8 +679,9 @@ void main(void)
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceStandardParticles() {
         this->vertexShaderStr = R"(#version 140
 in vec4 position;
-in vec4 color;
+in vec3 normal;
 in vec4 uv;
+in vec4 color;
 out mat3 vUVMat;
 out vec4 vColor;
 out vec3 uvSize;
@@ -829,7 +828,7 @@ void main(void)
 
     Shader *Shader::ShaderBuilder::build() {
         Shader* res = new Shader();
-        if (!res->build(vertexShaderStr, fragmentShaderStr, particleLayout)){
+        if (!res->build(vertexShaderStr, fragmentShaderStr)){
             delete res;
             return nullptr;
         }
@@ -837,10 +836,5 @@ void main(void)
         res->depthWrite = this->depthWrite;
         res->blend = this->blend;
         return res;
-    }
-
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withParticleLayout(bool enable) {
-        this->particleLayout = enable;
-        return *this;
     }
 }

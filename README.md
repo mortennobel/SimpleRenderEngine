@@ -47,6 +47,7 @@ https://mortennobel.github.io/SimpleRenderEngine/
  
 ## Version history
  
+ * 0.4.0 Merged Mesh and ParticleMesh into the Mesh class
  * 0.3.1 Creation of Light, Sphere(Mesh), Cube(Mesh) and Quad(Mesh) using Builder pattern.
  * 0.3.0 Creation of Texture, Mesh and Shader using Builder pattern.
  * 0.2.9 Fixed issues with specular highlight
