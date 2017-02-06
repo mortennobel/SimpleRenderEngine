@@ -59,6 +59,8 @@ namespace SRE {
         const std::vector<float>& getParticleSize();
         const std::vector<uint16_t>& getIndices();
 
+        // get size of the mesh in bytes on GPU
+        int getDataSize();
     private:
         Mesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals, const std::vector<glm::vec4> &uvs, const std::vector<glm::vec4> &colors,std::vector<float> particleSize, const std::vector<uint16_t> &indices, MeshTopology meshTopology);
         void update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals, const std::vector<glm::vec4> &uvs, const std::vector<glm::vec4> &colors, std::vector<float> particleSize, const std::vector<uint16_t> &indices, MeshTopology meshTopology);

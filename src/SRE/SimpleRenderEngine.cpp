@@ -65,6 +65,15 @@ namespace SRE {
 			glEnable(GL_POINT_SPRITE);
 		}
         SDL_GetWindowSize(window,&camera->viewportWidth,&camera->viewportHeight);
+
+        // reset render stats
+        renderStats.frame = 0;
+        renderStats.meshCount = 0;
+        renderStats.meshBytes = 0;
+        renderStats.textureCount = 0;
+        renderStats.textureBytes = 0;
+        renderStats.drawCalls = 0;
+        renderStatsLast = renderStats;
     }
 
     SimpleRenderEngine::~SimpleRenderEngine() {
@@ -85,7 +94,7 @@ namespace SRE {
     }
 
     void SimpleRenderEngine::draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader) {
-
+        renderStats.drawCalls++;
         if (camera == nullptr){
             std::cerr<<"Cannot render. Camera is null"<<std::endl;
             return;
@@ -142,6 +151,10 @@ namespace SRE {
     }
 
     void SimpleRenderEngine::swapWindow() {
+        renderStatsLast = renderStats;
+        renderStats.frame++;
+        renderStats.drawCalls=0;
+
         SDL_GL_SwapWindow(window);
     }
 
@@ -164,5 +177,9 @@ namespace SRE {
 
     void SimpleRenderEngine::finishGPUCommandBuffer() {
         glFinish();
+    }
+
+    const RenderStats &SimpleRenderEngine::getRenderStats() {
+        return renderStatsLast;
     }
 }

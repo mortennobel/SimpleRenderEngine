@@ -9,6 +9,8 @@
 #include <vector>
 #include <fstream>
 #include <memory>
+#include <SRE/RenderStats.h>
+#include <SRE/SimpleRenderEngine.hpp>
 
 namespace {
 	static std::vector<char> readAllBytes(char const* filename)
@@ -45,6 +47,11 @@ namespace SRE {
 		GLenum type = GL_UNSIGNED_BYTE;
 		glBindTexture(target, textureId);
 		glTexImage2D(target, mipmapLevel, internalFormat, width, height, border, format, type, data);
+
+		// update stats
+		RenderStats& renderStats = SimpleRenderEngine::instance->renderStats;
+		renderStats.textureCount++;
+		renderStats.textureBytes += getDataSize();
 	}
 
 	GLenum getFormat(SDL_Surface *image) {
@@ -112,6 +119,11 @@ namespace SRE {
 	}
 
     Texture::~Texture() {
+		// update stats
+		RenderStats& renderStats = SimpleRenderEngine::instance->renderStats;
+		renderStats.textureCount--;
+		renderStats.textureBytes -= getDataSize();
+
         glDeleteTextures(1, &textureId);
     }
 
@@ -304,4 +316,16 @@ namespace SRE {
             glGenerateMipmap(target);
         }
     }
+
+	int Texture::getDataSize() {
+		int res = width * height * 4; //
+		if (generateMipmap){
+			res += (int)((1.0f/3.0f) * res);
+		}
+		// six sides
+		if (target == GL_TEXTURE_CUBE_MAP){
+			res *= 6;
+		}
+		return res;
+	}
 }

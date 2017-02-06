@@ -7,6 +7,7 @@
 #include "SRE/impl/GL.hpp"
 #include <glm/gtc/constants.hpp>
 #include <iostream>
+#include <SRE/SimpleRenderEngine.hpp>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -24,6 +25,10 @@ namespace SRE {
     }
 
     Mesh::~Mesh(){
+        RenderStats& renderStats = SimpleRenderEngine::instance->renderStats;
+        renderStats.meshBytes -= getDataSize();
+        renderStats.meshCount--;
+
 #ifndef EMSCRIPTEN
         glDeleteVertexArrays(1, &vertexArrayObject);
 #endif
@@ -154,6 +159,17 @@ namespace SRE {
         return particleSize;
     }
 
+    int Mesh::getDataSize() {
+        int size = 0;
+        size += vertexPositions.size() * (sizeof(glm::vec3)+
+                sizeof(glm::vec3)+ // normals
+               sizeof(glm::vec4)+ // uvs
+               sizeof(glm::vec4)+ // colors
+               sizeof(float)); // particle size
+        size += indices.size() * sizeof(uint16_t);
+        return size;
+    }
+
     Mesh::MeshBuilder &Mesh::MeshBuilder::withVertexPositions(const std::vector<glm::vec3> &vertexPositions) {
         this->vertexPositions = vertexPositions;
         return *this;
@@ -180,13 +196,20 @@ namespace SRE {
     }
 
     Mesh * Mesh::MeshBuilder::build() {
+        // update stats
+        RenderStats& renderStats = SimpleRenderEngine::instance->renderStats;
+        Mesh *res;
         if (updateMesh != nullptr){
+            renderStats.meshBytes -= updateMesh->getDataSize();
             updateMesh->update(vertexPositions, normals, uvs, colors, particleSize,indices, meshTopology);
-            return updateMesh;
+            res = updateMesh;
         } else {
-            Mesh *res = new Mesh(vertexPositions, normals, uvs, colors, particleSize,indices, meshTopology);
-            return res;
+            res = new Mesh(vertexPositions, normals, uvs, colors, particleSize,indices, meshTopology);
+            renderStats.meshCount++;
         }
+        renderStats.meshBytes += res->getDataSize();
+
+        return res;
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withSphere() {

@@ -62,11 +62,13 @@ public:
     // returns true if texture sampling should be filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
     bool isFilterSampling();
     bool isWrapTextureCoordinates();
+
+    // get size of the texture in bytes on GPU
+    int getDataSize();
 private:
     Texture(const char* rgba, int width, int height, uint32_t format);
     void updateTextureSampler(bool filterSampling, bool wrapTextureCoordinates);
     void invokeGenerateMipmap();
-
     int width;
     int height;
     uint32_t target;

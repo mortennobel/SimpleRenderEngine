@@ -6,8 +6,8 @@
 #include "SRE/Camera.hpp"
 
 #include "SRE/impl/Export.hpp"
-
-
+#include "RenderStats.h"
+#include "Mesh.hpp"
 
 namespace SRE {
 
@@ -47,7 +47,7 @@ namespace SRE {
         static constexpr int maxSceneLights = 4;
         static constexpr int sre_version_major = 0;
         static constexpr int sre_version_minor = 4;
-        static constexpr int sre_version_point = 0;
+        static constexpr int sre_version_point = 1;
 
         /**
          * Set the light state - this affects all draw calls after the state has been set.
@@ -122,6 +122,10 @@ namespace SRE {
          */
         void finishGPUCommandBuffer();
 
+        // return stats of the last rendered frame
+        // only data maintained by SRE is included (imgui is not included)
+        const RenderStats& getRenderStats();
+
         /**
          * Singleton reference to the engine after initialization.
          */
@@ -136,5 +140,14 @@ namespace SRE {
         friend class Camera;
 
         void setupShader(const glm::mat4 &modelTransform, Shader *shader);
+
+        RenderStats renderStatsLast;
+        RenderStats renderStats;
+
+        friend class Mesh;
+        friend class Mesh::MeshBuilder;
+        friend class Shader;
+        friend class Shader;
+        friend class Texture;
     };
 }
