@@ -65,3 +65,9 @@ https://mortennobel.github.io/SimpleRenderEngine/
    - Remove simple text rendering
    - Refactoring Shader: verify uniform names and types.
  * 0.1 Initial version
+ 
+ ## Build verification
+ * Coverty <a href="https://scan.coverity.com/projects/mortennobel-simplerenderengine">
+   <img alt="Coverity Scan Build Status"
+        src="https://scan.coverity.com/projects/11679/badge.svg"/>
+ </a>
