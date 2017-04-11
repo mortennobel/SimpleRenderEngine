@@ -3,7 +3,7 @@
 #include <fstream>
 
 #include "SRE/Texture.hpp"
-#include "SRE/SimpleRenderEngine.hpp"
+#include "SRE/Renderer.hpp"
 #include "SRE/Camera.hpp"
 #include "SRE/Mesh.hpp"
 #include "SRE/Shader.hpp"
@@ -20,6 +20,18 @@
 #include "SRE/imgui_sre.hpp"
 
 using namespace SRE;
+
+SDL_Window *window;                    // Declare a pointer
+bool quit = false;
+glm::vec2 spriteUV = glm::vec2(0, 0);
+bool spriteAnimation = false;
+bool ortho = false;
+float uvSize = 1.0;
+float uvRotation = 0.0;
+float size = 10.0f;
+float timeF = 0;
+Mesh* particleMesh;
+Shader* shaderParticles;
 
 Mesh* createParticles(){
     std::vector<glm::vec3> positions;
@@ -63,14 +75,64 @@ void updateParticles(Mesh* particleMesh, glm::vec2 uv, float uvSize, float rotat
         .build();
 }
 
+void update(){
+    SDL_Event e;
+    auto& r = *Renderer::instance;
+    //Handle events on queue
+    while( SDL_PollEvent( &e ) != 0 )
+    {
+        ImGui_SRE_ProcessEvent(&e);
+        if (e.type == SDL_QUIT)
+            quit = true;
+    }
+    int w,h;
+    SDL_GetWindowSize(window,&w,&h);
+    r.getCamera()->setViewport(0,0,w,h);
+    if (ortho) {
+        r.getCamera()->setOrthographicProjection(-4,4,-4,4,-4,100);
+    } else {
+        r.getCamera()->setPerspectiveProjection(60,w,h,0.1,100);
+    }
+    r.clearScreen({0,0,0.0,1});
+
+
+    ImGui_SRE_NewFrame(window);
+
+    // 1. Show a simple window
+    // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
+    {
+
+        ImGui::Text("Particle sprite");
+        ImGui::Checkbox("Orthographic proj",&ortho);
+        ImGui::Checkbox("Sprite animation",&spriteAnimation);
+        if (spriteAnimation) {
+            updateParticlesAnimation(timeF, spriteUV,uvSize, uvRotation);
+        }
+        ImGui::SliderFloat("size", &size, 0.0f, 100.0f);
+        ImGui::DragFloat2("uv", &(spriteUV.x), 0.1f);
+        ImGui::SliderFloat("uv", &uvSize, 0.0f, 1.0f);
+        ImGui::SliderFloat("uvRotation", &uvRotation, 0.0f, 2*3.1415f);
+
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    }
+    updateParticles(particleMesh, spriteUV, uvSize, uvRotation, size);
+    r.draw(particleMesh, glm::mat4(1), shaderParticles);
+
+    ImGui::Render();
+
+    r.swapWindow();
+
+    SDL_Delay(16);
+    timeF+=0.016f;
+}
+
 int main() {
     std::cout << "Spinning cube" << std::endl;
-    SDL_Window *window;                    // Declare a pointer
 
     SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1); 
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 
@@ -93,73 +155,23 @@ int main() {
 
     ImGui_SRE_Init(window);
 
-    SimpleRenderEngine r{window};
+    Renderer r{window};
 	
 
     r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
-    Shader* shaderParticles = Shader::getStandardParticles();
+    shaderParticles = Shader::getStandardParticles();
     shaderParticles->set("tex", Texture::create().withFile("examples-data/t_explosionsheet.png").build());
-    Mesh* particleMesh = createParticles();
+    particleMesh = createParticles();
 
-
-    bool quit = false;
-    glm::vec2 spriteUV = glm::vec2(0, 0);
-    bool spriteAnimation = false;
-    bool ortho = false;
-    float uvSize = 1.0;
-    float uvRotation = 0.0;
-    float size = 10.0f;
-    float time = 0;
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(update, 0, 1);
+#else
     while (!quit){
-        SDL_Event e;
-        //Handle events on queue
-        while( SDL_PollEvent( &e ) != 0 )
-        {
-            ImGui_SRE_ProcessEvent(&e);
-            if (e.type == SDL_QUIT)
-                quit = true;
-        }
-        int w,h;
-        SDL_GetWindowSize(window,&w,&h);
-        r.getCamera()->setViewport(0,0,w,h);
-        if (ortho) {
-            r.getCamera()->setOrthographicProjection(-4,4,-4,4,-4,100);
-        } else {
-            r.getCamera()->setPerspectiveProjection(60,w,h,0.1,100);
-        }
-        r.clearScreen({0,0,0.0,1});
-
-
-        ImGui_SRE_NewFrame(window);
-
-        // 1. Show a simple window
-        // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
-        {
-
-            ImGui::Text("Particle sprite");
-            ImGui::Checkbox("Orthographic proj",&ortho);
-            ImGui::Checkbox("Sprite animation",&spriteAnimation);
-            if (spriteAnimation) {
-                updateParticlesAnimation(time, spriteUV,uvSize, uvRotation);
-            }
-            ImGui::SliderFloat("size", &size, 0.0f, 100.0f);
-            ImGui::DragFloat2("uv", &(spriteUV.x), 0.1f);
-            ImGui::SliderFloat("uv", &uvSize, 0.0f, 1.0f);
-            ImGui::SliderFloat("uvRotation", &uvRotation, 0.0f, 2*3.1415f);
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        }
-        updateParticles(particleMesh, spriteUV, uvSize, uvRotation, size);
-        r.draw(particleMesh, glm::mat4(1), shaderParticles);
-
-        ImGui::Render();
-
-        r.swapWindow();
-
+        update();
         SDL_Delay(16);
-        time+=0.016f;
     }
+#endif
 
     // Close and destroy the window
     SDL_DestroyWindow(window);

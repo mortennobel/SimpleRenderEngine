@@ -13,7 +13,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
-#include <SRE/SimpleRenderEngine.hpp>
+#include <SRE/Renderer.hpp>
 #include "SRE/Texture.hpp"
 
 namespace SRE {
@@ -195,12 +195,12 @@ namespace SRE {
 
     Shader::Shader() {
         shaderProgramId = glCreateProgram();
-        SimpleRenderEngine::instance->renderStats.shaderCount++;
+        Renderer::instance->renderStats.shaderCount++;
     }
 
     Shader::~Shader() {
         glDeleteShader(shaderProgramId);
-        SimpleRenderEngine::instance->renderStats.shaderCount--;
+        Renderer::instance->renderStats.shaderCount--;
     }
 
     bool Shader::set(const char *name, glm::mat4 value) {

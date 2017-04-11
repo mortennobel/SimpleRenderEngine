@@ -3,7 +3,7 @@
 #include <fstream>
 
 #include "SRE/Texture.hpp"
-#include "SRE/SimpleRenderEngine.hpp"
+#include "SRE/Renderer.hpp"
 #include "SRE/Camera.hpp"
 #include "SRE/Mesh.hpp"
 #include "SRE/Shader.hpp"
@@ -42,7 +42,7 @@ int main() {
         return 1;
     }
 
-    SimpleRenderEngine r{window};
+    Renderer r{window};
 
     r.clearScreen({1,0,0,1});
     r.swapWindow();

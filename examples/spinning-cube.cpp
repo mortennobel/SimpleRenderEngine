@@ -3,7 +3,7 @@
 #include <fstream>
 
 #include "SRE/Texture.hpp"
-#include "SRE/SimpleRenderEngine.hpp"
+#include "SRE/Renderer.hpp"
 #include "SRE/Camera.hpp"
 #include "SRE/Mesh.hpp"
 #include "SRE/Shader.hpp"
@@ -66,7 +66,7 @@ int main() {
         return 1;
     }
 
-    SimpleRenderEngine r{window};
+    Renderer r{window};
 
     r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
     shader = Shader::getStandard();
@@ -106,7 +106,7 @@ int main() {
 }
 
 void update() {
-    SimpleRenderEngine &r = *SimpleRenderEngine::instance;
+    Renderer &r = *Renderer::instance;
     int w,h;
     SDL_GetWindowSize(window,&w,&h);
     r.getCamera()->setViewport(0,0,w,h);

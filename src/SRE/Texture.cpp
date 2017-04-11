@@ -10,7 +10,7 @@
 #include <fstream>
 #include <memory>
 #include <SRE/RenderStats.h>
-#include <SRE/SimpleRenderEngine.hpp>
+#include <SRE/Renderer.hpp>
 
 namespace {
 	static std::vector<char> readAllBytes(char const* filename)
@@ -29,35 +29,11 @@ namespace {
 
 		return result;
 	}
-}
 
-namespace SRE {
-	Texture* whiteTexture = nullptr;
-	Texture* sphereTexture = nullptr;
-
-	Texture::Texture(const char *data, int width, int height, uint32_t format)
-		: width{ width }, height{ height } {
-
-		glGenTextures(1, &textureId);
-
-		target = GL_TEXTURE_2D;
-		GLint mipmapLevel = 0;
-		GLint internalFormat = format;
-		GLint border = 0;
-		GLenum type = GL_UNSIGNED_BYTE;
-		glBindTexture(target, textureId);
-		glTexImage2D(target, mipmapLevel, internalFormat, width, height, border, format, type, data);
-
-		// update stats
-		RenderStats& renderStats = SimpleRenderEngine::instance->renderStats;
-		renderStats.textureCount++;
-		renderStats.textureBytes += getDataSize();
-	}
-
-	GLenum getFormat(SDL_Surface *image) {
-		SDL_PixelFormat *format = image->format;
-		auto pixelFormat = format->format;
-		bool isBGR = format->Rshift == 16;
+    GLenum getFormat(SDL_Surface *image) {
+        SDL_PixelFormat *format = image->format;
+        auto pixelFormat = format->format;
+        bool isBGR = format->Rshift == 16;
 
 #ifdef EMSCRIPTEN
         GLenum RGB = GL_RGB;
@@ -66,106 +42,59 @@ namespace SRE {
         GLenum RGB = isBGR ? GL_BGR : GL_RGB;
         GLenum RGBA = isBGR ? GL_BGRA : GL_RGBA;
 #endif
-		const bool alpha = SDL_ISPIXELFORMAT_ALPHA(pixelFormat);
-		if (alpha) {
-			return RGBA;
-		}
-		else {
-			if (format->BytesPerPixel == 4) {
-				return RGBA;
-			}
-			else if (format->BytesPerPixel == 3) {
-				return RGB;
-			}
-			else {
-				SDL_SetError("Unknown image format. Only PNG-24 and JPEG is supported.");
-				return 0;
-			}
-		}
-	}
-
-	int invert_image(int width, int height, void *image_pixels) {
-		auto temp_row = std::unique_ptr<char>(new char[width]);
-		if (temp_row.get() == nullptr) {
-			SDL_SetError("Not enough memory for image inversion");
-			return -1;
-		}
-		//if height is odd, don't need to swap middle row
-		int height_div_2 = height / 2;
-		for (int index = 0; index < height_div_2; index++) {
-			//uses string.h
-			memcpy((Uint8 *)temp_row.get(),
-				(Uint8 *)(image_pixels)+
-				width * index,
-				width);
-
-			memcpy(
-				(Uint8 *)(image_pixels)+
-				width * index,
-				(Uint8 *)(image_pixels)+
-				width * (height - index - 1),
-				width);
-			memcpy(
-				(Uint8 *)(image_pixels)+
-				width * (height - index - 1),
-				temp_row.get(),
-				width);
-		}
-		return 0;
-	}
-
-	bool isPowerOfTwo(unsigned int x) {
-		return ((x != 0) && !(x & (x - 1)));
-	}
-
-    Texture::~Texture() {
-		// update stats
-		RenderStats& renderStats = SimpleRenderEngine::instance->renderStats;
-		renderStats.textureCount--;
-		renderStats.textureBytes -= getDataSize();
-
-        glDeleteTextures(1, &textureId);
+        const bool alpha = SDL_ISPIXELFORMAT_ALPHA(pixelFormat);
+        if (alpha) {
+            return RGBA;
+        }
+        else {
+            if (format->BytesPerPixel == 4) {
+                return RGBA;
+            }
+            else if (format->BytesPerPixel == 3) {
+                return RGB;
+            }
+            else {
+                SDL_SetError("Unknown image format. Only PNG-24 and JPEG is supported.");
+                return 0;
+            }
+        }
     }
 
+    int invert_image(int width, int height, void *image_pixels) {
+        auto temp_row = std::unique_ptr<char>(new char[width]);
+        if (temp_row.get() == nullptr) {
+            SDL_SetError("Not enough memory for image inversion");
+            return -1;
+        }
+        //if height is odd, don't need to swap middle row
+        int height_div_2 = height / 2;
+        for (int index = 0; index < height_div_2; index++) {
+            //uses string.h
+            memcpy((Uint8 *)temp_row.get(),
+                   (Uint8 *)(image_pixels)+
+                   width * index,
+                   width);
 
-
-    Texture::TextureBuilder &Texture::TextureBuilder::withGenerateMipmaps(bool enable) {
-        generateMipmaps = enable;
-        return *this;
+            memcpy(
+                    (Uint8 *)(image_pixels)+
+                    width * index,
+                    (Uint8 *)(image_pixels)+
+                    width * (height - index - 1),
+                    width);
+            memcpy(
+                    (Uint8 *)(image_pixels)+
+                    width * (height - index - 1),
+                    temp_row.get(),
+                    width);
+        }
+        return 0;
     }
 
-    Texture::TextureBuilder &Texture::TextureBuilder::withFilterSampling(bool enable) {
-        this->filterSampling = enable;
-        return *this;
+    bool isPowerOfTwo(unsigned int x) {
+        return ((x != 0) && !(x & (x - 1)));
     }
 
-    Texture::TextureBuilder &Texture::TextureBuilder::withWrappedTextureCoordinates(bool enable) {
-        this->wrapTextureCoordinates = enable;
-        return *this;
-    }
-
-    Texture::TextureBuilder &Texture::TextureBuilder::withFile(const char *filename) {
-        this->filename = filename;
-        return *this;
-    }
-
-    Texture::TextureBuilder &Texture::TextureBuilder::withRGBData(const char *data, int width, int height) {
-        this->data = data;
-        this->width = width;
-        this->height = height;
-        this->format = GL_RGB;
-        return *this;
-    }
-
-    Texture::TextureBuilder &Texture::TextureBuilder::withRGBAData(const char *data, int width, int height) {
-        this->data = data;
-        this->width = width;
-        this->height = height;
-        this->format = GL_RGBA;
-        return *this;
-    }
-
-    std::vector<char> loadFileFromMemory(const char* data, int dataSize, GLenum& format, int& width, int& height){
+    std::vector<char> loadFileFromMemory(const char* data, int dataSize, GLenum& format, int& width, int& height, int& bytesPerPixel){
         static bool initialized = false;
         if (!initialized) {
             initialized = true;
@@ -188,10 +117,10 @@ namespace SRE {
         height = res_texture->h;
         format = getFormat(res_texture);
 
-        int bytesPerPixel =
+        bytesPerPixel =
 #ifndef EMSCRIPTEN
                 format == GL_BGR ||
-                #endif
+#endif
                 format == GL_RGB ? 3 : 4;
         char *pixels = static_cast<char *>(res_texture->pixels);
         invert_image(width*bytesPerPixel, height, pixels);
@@ -201,35 +130,122 @@ namespace SRE {
         SDL_FreeSurface(res_texture);
         return res;
     }
+}
+
+namespace SRE {
+	Texture* whiteTexture = nullptr;
+	Texture* sphereTexture = nullptr;
+
+	Texture::Texture(unsigned int textureId, int width, int height, uint32_t target)
+		: width{ width }, height{ height }, target{ target}, textureId{textureId} {
+
+		// update stats
+		RenderStats& renderStats = Renderer::instance->renderStats;
+		renderStats.textureCount++;
+		renderStats.textureBytes += getDataSize();
+	}
+
+	Texture::~Texture() {
+		// update stats
+		RenderStats& renderStats = Renderer::instance->renderStats;
+		renderStats.textureCount--;
+		renderStats.textureBytes -= getDataSize();
+
+        glDeleteTextures(1, &textureId);
+    }
+
+    Texture::TextureBuilder &Texture::TextureBuilder::withGenerateMipmaps(bool enable) {
+        generateMipmaps = enable;
+        return *this;
+    }
+
+    Texture::TextureBuilder &Texture::TextureBuilder::withFilterSampling(bool enable) {
+        this->filterSampling = enable;
+        return *this;
+    }
+
+    Texture::TextureBuilder &Texture::TextureBuilder::withWrappedTextureCoordinates(bool enable) {
+        this->wrapTextureCoordinates = enable;
+        return *this;
+    }
+
+    Texture::TextureBuilder &Texture::TextureBuilder::withFile(const char *filename) {
+        auto fileData = readAllBytes(filename);
+        GLenum format;
+        int bytesPerPixel;
+        fileData = loadFileFromMemory(fileData.data(), (int) fileData.size(), format, width, height,bytesPerPixel);
+        this->target = GL_TEXTURE_2D;
+        GLint mipmapLevel = 0;
+        GLint internalFormat = bytesPerPixel==4?GL_RGBA:GL_RGB;
+        GLint border = 0;
+        GLenum type = GL_UNSIGNED_BYTE;
+        glBindTexture(target, textureId);
+        glTexImage2D(target, mipmapLevel, internalFormat, width, height, border, format, type, fileData.data());
+        return *this;
+    }
+
+    Texture::TextureBuilder &Texture::TextureBuilder::withRGBData(const char *data, int width, int height) {
+        this->width = width;
+        this->height = height;
+        GLenum format = GL_RGB;
+        this->target = GL_TEXTURE_2D;
+        GLint mipmapLevel = 0;
+        GLint internalFormat = format;
+        GLint border = 0;
+        GLenum type = GL_UNSIGNED_BYTE;
+        glBindTexture(target, textureId);
+        glTexImage2D(target, mipmapLevel, internalFormat, width, height, border, format, type, data);
+        return *this;
+    }
+
+    Texture::TextureBuilder &Texture::TextureBuilder::withRGBAData(const char *data, int width, int height) {
+        this->width = width;
+        this->height = height;
+        GLenum format = GL_RGBA;
+        this->target = GL_TEXTURE_2D;
+        GLint mipmapLevel = 0;
+        GLint internalFormat = format;
+        GLint border = 0;
+        GLenum type = GL_UNSIGNED_BYTE;
+        glBindTexture(target, textureId);
+        glTexImage2D(target, mipmapLevel, internalFormat, width, height, border, format, type, data);
+        return *this;
+    }
 
     Texture *Texture::TextureBuilder::build() {
-        std::vector<char> fileData;
-        if (filename != nullptr){
-            fileData = readAllBytes(filename);
-            fileData = loadFileFromMemory(fileData.data(), (int) fileData.size(), format, width, height);
-            data = fileData.data();
+        if (this->target == 0){
+            throw std::runtime_error("Texture contain no data");
         }
-		if (data == nullptr && dataOwned.size()>0){
-			data = dataOwned.data();
-		}
-        Texture* res = new Texture(data, width, height, format);
+        if (textureId == 0){
+            throw std::runtime_error("Texture is already build");
+        }
+        Texture* res = new Texture(textureId, width, height, target);
         if (this->generateMipmaps){
             res->invokeGenerateMipmap();
         }
         res->updateTextureSampler(filterSampling, wrapTextureCoordinates);
+        textureId = 0;
         return res;
     }
 
 	Texture::TextureBuilder &Texture::TextureBuilder::withWhiteData(int width, int height) {
 		char one = (char)0xff;
-		dataOwned = std::vector<char>(width * height * 4, one);
-		this->width = width;
-		this->height = height;
-		format = GL_RGBA;
+        std::vector<char> dataOwned (width * height * 4, one);
+        withRGBAData(dataOwned.data(), width, height);
 		return *this;
 	}
 
-	// returns true if texture sampling should be filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
+    Texture::TextureBuilder::TextureBuilder() {
+        glGenTextures(1, &textureId);
+    }
+
+    Texture::TextureBuilder::~TextureBuilder() {
+        if (textureId != 0){
+            glDeleteTextures(1, &textureId);
+        }
+    }
+
+    // returns true if texture sampling should be filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
 	bool Texture::isFilterSampling() {
 		return filterSampling;
 	}
@@ -318,7 +334,7 @@ namespace SRE {
     }
 
 	int Texture::getDataSize() {
-		int res = width * height * 4; //
+		int res = width * height * 4;
 		if (generateMipmap){
 			res += (int)((1.0f/3.0f) * res);
 		}

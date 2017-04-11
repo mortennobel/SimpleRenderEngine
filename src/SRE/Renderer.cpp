@@ -11,7 +11,7 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
 #endif
 
-#include "SRE/SimpleRenderEngine.hpp"
+#include "SRE/Renderer.hpp"
 #include <cassert>
 #include "SRE/Shader.hpp"
 #include "SRE/Mesh.hpp"
@@ -22,13 +22,13 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #include <string>
 
 namespace SRE {
-    SimpleRenderEngine* SimpleRenderEngine::instance = nullptr;
+    Renderer* Renderer::instance = nullptr;
 
-    SimpleRenderEngine::SimpleRenderEngine(SDL_Window * window)
+    Renderer::Renderer(SDL_Window * window)
     :window{window}
     {
         if (instance != nullptr){
-            std::cerr << "Multiple versions of SimpleRenderEngine initialized. Only a single instance is supported." << std::endl;
+            std::cerr << "Multiple versions of Renderer initialized. Only a single instance is supported." << std::endl;
         }
         instance = this;
         camera = &defaultCamera;
@@ -76,24 +76,24 @@ namespace SRE {
         renderStatsLast = renderStats;
     }
 
-    SimpleRenderEngine::~SimpleRenderEngine() {
+    Renderer::~Renderer() {
         SDL_GL_DeleteContext(glcontext);
         instance = nullptr;
     }
 
-    void SimpleRenderEngine::setLight(int lightIndex, Light light) {
+    void Renderer::setLight(int lightIndex, Light light) {
         assert(lightIndex >= 0);
         assert(lightIndex < maxSceneLights);
         sceneLights[lightIndex] = light;
     }
 
-    Light SimpleRenderEngine::getLight(int lightIndex) {
+    Light Renderer::getLight(int lightIndex) {
         assert(lightIndex >= 0);
         assert(lightIndex < maxSceneLights);
         return sceneLights[lightIndex];
     }
 
-    void SimpleRenderEngine::draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader) {
+    void Renderer::draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader) {
         renderStats.drawCalls++;
         if (camera == nullptr){
             std::cerr<<"Cannot render. Camera is null"<<std::endl;
@@ -110,7 +110,7 @@ namespace SRE {
         }
     }
 
-    void SimpleRenderEngine::setupShader(const glm::mat4 &modelTransform, Shader *shader)  {
+    void Renderer::setupShader(const glm::mat4 &modelTransform, Shader *shader)  {
         shader->bind();
         if (shader->getType("model").type != UniformType::Invalid) {
             shader->set("model", modelTransform);
@@ -132,12 +132,12 @@ namespace SRE {
         shader->setLights(sceneLights, ambientLight, camera->getViewTransform());
     }
 
-    void SimpleRenderEngine::setCamera(Camera *camera) {
+    void Renderer::setCamera(Camera *camera) {
         this->camera = camera;
         camera->setViewport(camera->viewportX, camera->viewportY, camera->viewportWidth, camera->viewportHeight);
     }
 
-    void SimpleRenderEngine::clearScreen(glm::vec4 color, bool clearColorBuffer, bool clearDepthBuffer) {
+    void Renderer::clearScreen(glm::vec4 color, bool clearColorBuffer, bool clearDepthBuffer) {
         glClearColor(color.r, color.g, color.b, color.a);
         GLbitfield clear = 0;
         if (clearColorBuffer){
@@ -150,7 +150,7 @@ namespace SRE {
         glClear(clear);
     }
 
-    void SimpleRenderEngine::swapWindow() {
+    void Renderer::swapWindow() {
         renderStatsLast = renderStats;
         renderStats.frame++;
         renderStats.drawCalls=0;
@@ -158,28 +158,28 @@ namespace SRE {
         SDL_GL_SwapWindow(window);
     }
 
-    Camera *SimpleRenderEngine::getCamera() {
+    Camera *Renderer::getCamera() {
         return camera;
     }
 
-    Camera *SimpleRenderEngine::getDefaultCamera() {
+    Camera *Renderer::getDefaultCamera() {
         return &defaultCamera;
     }
 
-    glm::vec3 SimpleRenderEngine::getAmbientLight() const {
+    glm::vec3 Renderer::getAmbientLight() const {
         return glm::vec3(ambientLight);
     }
 
-    void SimpleRenderEngine::setAmbientLight(const glm::vec3 &ambientLight) {
+    void Renderer::setAmbientLight(const glm::vec3 &ambientLight) {
         float maxAmbient = std::max(ambientLight.x, std::max(ambientLight.y,ambientLight.z));
-        SimpleRenderEngine::ambientLight = glm::vec4(ambientLight, maxAmbient);
+        Renderer::ambientLight = glm::vec4(ambientLight, maxAmbient);
     }
 
-    void SimpleRenderEngine::finishGPUCommandBuffer() {
+    void Renderer::finishGPUCommandBuffer() {
         glFinish();
     }
 
-    const RenderStats &SimpleRenderEngine::getRenderStats() {
+    const RenderStats &Renderer::getRenderStats() {
         return renderStatsLast;
     }
 }

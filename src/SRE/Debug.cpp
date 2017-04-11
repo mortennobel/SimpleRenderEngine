@@ -5,7 +5,7 @@
 #include "SRE/Debug.hpp"
 #include "SRE/Mesh.hpp"
 #include "SRE/Shader.hpp"
-#include "SRE/SimpleRenderEngine.hpp"
+#include "SRE/Renderer.hpp"
 #include "SRE/impl/GL.hpp"
 
 #include <vector>
@@ -27,36 +27,20 @@ namespace SRE {
     }
 
     void Debug::drawLine(glm::vec3 from, glm::vec3 to){
-		vector<glm::vec3> verts;
-		verts.push_back(from);
-		verts.push_back(to);
-		vector<glm::vec3> normals;
-		vector<glm::vec2> uvs;
-
-		Mesh *mesh = Mesh::create()
-                        .withVertexPositions(verts)
-                        .withMeshTopology(MeshTopology::Lines)
-                        .build();
-
-        Shader* shader = Shader::getUnlit();
-        shader->set("color", color);
-        shader->set("tex", Texture::getWhiteTexture());
-        if (SimpleRenderEngine::instance != nullptr){
-            SimpleRenderEngine::instance->draw(mesh, glm::mat4(1),shader);
-        }
-        delete mesh;
+		vector<glm::vec3> verts = {from, to};
+        drawLines(verts);
     }
 
-    void Debug::drawLineStrip(const std::vector<glm::vec3> &verts) {
+    void Debug::drawLines(const std::vector<glm::vec3> &verts, MeshTopology meshTopology) {
         Mesh *mesh = Mesh::create()
                 .withVertexPositions(verts)
-                .withMeshTopology(MeshTopology::LineStrip)
+                .withMeshTopology(meshTopology)
                 .build();
         Shader* shader = Shader::getUnlit();
         shader->set("color", color);
         shader->set("tex", Texture::getWhiteTexture());
-        if (SimpleRenderEngine::instance != nullptr){
-            SimpleRenderEngine::instance->draw(mesh, glm::mat4(1),shader);
+        if (Renderer::instance != nullptr){
+            Renderer::instance->draw(mesh, glm::mat4(1),shader);
         }
         delete mesh;
     }
@@ -85,5 +69,4 @@ namespace SRE {
             }
         }
     }
-
 }

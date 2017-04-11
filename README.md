@@ -1,6 +1,6 @@
-# SimpleRenderEngine
+# Renderer
 
-The goal of SimpleRenderEngine (SRE) is to provide easy way to get started with graphics 
+The goal of Renderer (SRE) is to provide easy way to get started with graphics 
 programming in 2D or 3D without a deep knowledge about the low-level graphics APIs like 
 OpenGL, DirectX and Vulkan.
  
@@ -36,7 +36,7 @@ Example usage can be found in the examples folder
 ## Documentation
 
 Online documentation:
-https://mortennobel.github.io/SimpleRenderEngine/
+https://mortennobel.github.io/Renderer/
  
 ## Other resources
  
@@ -46,7 +46,7 @@ https://mortennobel.github.io/SimpleRenderEngine/
  * https://www.opengl.org/registry/ OpenGL Registry
  
 ## Version history
- 
+ * 0.5.0 Rename SimpleRenderEngine class to Renderer. Add cube map support. 
  * 0.4.1 Add RenderStats
  * 0.4.0 Merged Mesh and ParticleMesh into the Mesh class
  * 0.3.1 Creation of Light, Sphere(Mesh), Cube(Mesh) and Quad(Mesh) using Builder pattern.

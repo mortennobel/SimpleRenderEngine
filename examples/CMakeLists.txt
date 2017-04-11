@@ -1,5 +1,6 @@
 
 add_executable(SRE-Spinning-Cube spinning-cube.cpp)
+add_executable(SRE-Spinning-Sphere-Cubemap spinning-sphere-cubemap.cpp)
 add_executable(SRE-Spinning-Sphere spinning-sphere.cpp)
 add_executable(SRE-Spinning-Cube-Unlit spinning-cube-unlit.cpp)
 add_executable(SRE-Spinning-Sphere-Unlit spinning-sphere-unlit.cpp)
@@ -20,6 +21,7 @@ target_link_libraries(SRE-Particle-Test ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMA
 target_link_libraries(SRE-Particle-Sprite ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-GUI ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Spheres ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
+target_link_libraries(SRE-Spinning-Sphere-Cubemap ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 
 file(COPY ../examples-data DESTINATION Debug)
 file(COPY ../examples-data DESTINATION Release)

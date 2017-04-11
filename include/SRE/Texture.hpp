@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <map>
 
 #include "SRE/impl/Export.hpp"
 
@@ -23,28 +24,35 @@ namespace SRE{
      */
 class DllExport Texture {
 public:
+    enum class TextureCubemapSide{
+        PositiveX,
+        NegativeX,
+        PositiveY,
+        NegativeY,
+        PositiveZ,
+        NegativeZ
+    };
     class DllExport TextureBuilder {
     public:
+        ~TextureBuilder();
         TextureBuilder& withGenerateMipmaps(bool enable);
         // if true texture sampling is filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
         TextureBuilder& withFilterSampling(bool enable);
         TextureBuilder& withWrappedTextureCoordinates(bool enable);
-        TextureBuilder& withFile(const char* filename);
+        TextureBuilder& withFile(const char *filename);
         TextureBuilder& withRGBData(const char* data, int width, int height);
         TextureBuilder& withRGBAData(const char* data, int width, int height);
         TextureBuilder& withWhiteData(int width=2, int height=2);
         Texture* build();
     private:
-        std::vector<char> dataOwned;
-        const char* data = nullptr;
-        const char* filename = nullptr;
         int width = -1;
         int height = -1;
-        uint32_t format = -1;
         bool generateMipmaps = false;
         bool filterSampling = true; // true = linear/trilinear sampling, false = point sampling
         bool wrapTextureCoordinates = true;
-        TextureBuilder() = default;
+        uint32_t target = 0;
+        unsigned int textureId = 0;
+        TextureBuilder();
         friend class Texture;
     };
 
@@ -66,7 +74,7 @@ public:
     // get size of the texture in bytes on GPU
     int getDataSize();
 private:
-    Texture(const char* rgba, int width, int height, uint32_t format);
+    Texture(unsigned int textureId, int width, int height, uint32_t target);
     void updateTextureSampler(bool filterSampling, bool wrapTextureCoordinates);
     void invokeGenerateMipmap();
     int width;

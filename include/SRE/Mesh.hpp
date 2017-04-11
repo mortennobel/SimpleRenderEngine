@@ -81,6 +81,6 @@ namespace SRE {
 
         void bind();
 
-        friend class SimpleRenderEngine;
+        friend class Renderer;
     };
 }

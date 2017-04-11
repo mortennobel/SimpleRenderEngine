@@ -3,7 +3,7 @@
 #include <fstream>
 
 #include "SRE/Texture.hpp"
-#include "SRE/SimpleRenderEngine.hpp"
+#include "SRE/Renderer.hpp"
 #include "SRE/Camera.hpp"
 #include "SRE/Mesh.hpp"
 #include "SRE/Shader.hpp"
@@ -84,7 +84,7 @@ int main() {
     }
     ImGui_SRE_Init(window);
 
-    SimpleRenderEngine r{window};
+    Renderer r{window};
 
     r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
@@ -127,7 +127,7 @@ void update(){
         if (e.type == SDL_QUIT)
             quit = true;
     }
-    SimpleRenderEngine &r = *SimpleRenderEngine::instance;
+    Renderer &r = *Renderer::instance;
     int w,h;
     SDL_GetWindowSize(window,&w,&h);
     r.getCamera()->setViewport(0,0,w,h);

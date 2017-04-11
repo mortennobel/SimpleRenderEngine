@@ -118,14 +118,14 @@
       <div class="content">
         <h1 id="introduction">Introduction</h1>
 
-<p>The goal of SimpleRenderEngine (SRE) is to provide easy way to get started with graphics 
+<p>The goal of Renderer (SRE) is to provide easy way to get started with graphics
 programming in 2D or 3D without a deep knowledge about the low-level graphics APIs like 
 OpenGL, DirectX and Vulkan.</p>
 
 <p>SRE currently depends on Simple Direct Layer 2.x (SDL2), SDL2-image, OpenGL Mathematics (GLM), and OpenGL 3.3 (or higher), and 
 runs on both Windows, macOS and Linux.</p>
 
-<p>The project is hosted here: https://github.com/mortennobel/SimpleRenderEngine</p>
+<p>The project is hosted here: https://github.com/mortennobel/Renderer</p>
 
 <h1 id="install">Install</h1>
 
@@ -167,9 +167,9 @@ has a simple C-interface.</p>
 
 <p>Download the <strong>Windows 32-bit and 64-bit</strong> zip-file from http://glew.sourceforge.net/ and extract it to any folder (e.g. Documents).    </p>
 
-<h2 id="download-and-setup-simplerenderengine">Download and setup SimpleRenderEngine</h2>
+<h2 id="download-and-setup-simplerenderengine">Download and setup Renderer</h2>
 
-<p>Clone the repository from https://github.com/mortennobel/SimpleRenderEngine .</p>
+<p>Clone the repository from https://github.com/mortennobel/Renderer .</p>
 
 <p>Configure the project using CMake ( / cmake-gui) to VisualStudio/XCode using the following settings:</p>
 
@@ -201,7 +201,7 @@ a semicolon.</li>
 
 <h1 id="resource-management">Resource management</h1>
 
-<p>SimpleRenderEngine does not provide any automatically resource management. 
+<p>Renderer does not provide any automatically resource management.
 It is up the library user (the developer) to destroy any object that is allocated.</p>
 
 <p>Generally objects can be created in three different ways:</p>
@@ -210,13 +210,13 @@ It is up the library user (the developer) to destroy any object that is allocate
 <li><strong>Constructor</strong>: Object creation using constructor. If the objects are allocated on the heap (using new) they must also be explicit 
 deleted when no longer used.</li>
 <li><strong>createXXX()</strong>: Object pointers returned from createXXX member functions. These objects are created by
-SimpleRenderEngine, but not referenced. These objects should be explicit deleted when
+Renderer, but not referenced. These objects should be explicit deleted when
 no longer used.</li>
 <li><strong>getXXX()</strong>: Object pointers returned from getXXX member functions. The ownership of these objects are maintained by 
-SimpleRenderEngine. These objects should not be deleted.</li>
+Renderer. These objects should not be deleted.</li>
 </ul>
 
-          <h1 id="simplerenderengine">SimpleRenderEngine</h1>
+          <h1 id="simplerenderengine">Renderer</h1>
 <pre class="highlight cpp"><code><span class="c1">// Example (hello-engine.cpp):
 </span><span class="n">SDL_Window</span> <span class="o">*</span><span class="n">window</span><span class="p">;</span>
 <span class="n">SDL_Init</span><span class="p">(</span><span class="n">SDL_INIT_VIDEO</span><span class="p">);</span>
@@ -224,7 +224,7 @@ SimpleRenderEngine. These objects should not be deleted.</li>
 <span class="n">SDL_GL_SetAttribute</span><span class="p">(</span><span class="n">SDL_GL_CONTEXT_MINOR_VERSION</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
 <span class="n">SDL_GL_SetAttribute</span><span class="p">(</span><span class="n">SDL_GL_CONTEXT_PROFILE_MASK</span><span class="p">,</span> <span class="n">SDL_GL_CONTEXT_PROFILE_CORE</span><span class="p">);</span>
 <span class="n">window</span> <span class="o">=</span> <span class="n">SDL_CreateWindow</span><span class="p">(</span><span class="s">"Hello Engine"</span><span class="p">,</span><span class="n">SDL_WINDOWPOS_UNDEFINED</span><span class="p">,</span><span class="n">SDL_WINDOWPOS_UNDEFINED</span><span class="p">,</span><span class="mi">640</span><span class="p">,</span><span class="mi">480</span><span class="p">,</span><span class="n">SDL_WINDOW_OPENGL</span><span class="p">);</span>
-<span class="n">SimpleRenderEngine</span> <span class="n">r</span><span class="p">{</span><span class="n">window</span><span class="p">};</span>
+<span class="n">Renderer</span> <span class="n">r</span><span class="p">{</span><span class="n">window</span><span class="p">};</span>
 <span class="n">r</span><span class="p">.</span><span class="n">clearScreen</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">});</span>
 <span class="n">r</span><span class="p">.</span><span class="n">swapWindow</span><span class="p">();</span>
 <span class="n">SDL_Delay</span><span class="p">(</span><span class="mi">10000</span><span class="p">);</span>
@@ -233,8 +233,8 @@ SimpleRenderEngine. These objects should not be deleted.</li>
 </code></pre>
 
 <p>Maintains shared states for rendering.
-An object of SimpleRenderEngine must be created once after the SDL_Window has been initialized.
-After initialization this object can be referenced using the static field SimpleRenderEngine::instance;</p>
+An object of Renderer must be created once after the SDL_Window has been initialized.
+After initialization this object can be referenced using the static field Renderer::instance;</p>
 
 <p>SingleRenderEngine has two important states:</p>
 
@@ -243,11 +243,11 @@ After initialization this object can be referenced using the static field Simple
 <li>Light information (point lights, directional lights, ambient lights).</li>
 </ul>
 
-<h2 id="simplerenderengine">SimpleRenderEngine</h2>
+<h2 id="simplerenderengine">Renderer</h2>
 
-<p><code class="prettyprint">SimpleRenderEngine(SDL_Window *window)</code></p>
+<p><code class="prettyprint">Renderer(SDL_Window *window)</code></p>
 
-<p>SimpleRenderEngine constructor</p>
+<p>Renderer constructor</p>
 
 <table><thead>
 <tr>
@@ -418,7 +418,7 @@ After initialization this object can be referenced using the static field Simple
 
 <h2 id="instance">instance</h2>
 
-<p><code class="prettyprint">static SimpleRenderEngine* instance</code></p>
+<p><code class="prettyprint">static Renderer* instance</code></p>
 
 <p>Singleton reference to the engine after initialization.</p>
 
@@ -933,7 +933,7 @@ rendering (default settings is the full window)</p>
 
 <p><code class="prettyprint">LightType lightType</code></p>
 
-<p>Defines the type of light source (note: ambient light is stored as a vec3 directly in SimpleRenderEngine)</p>
+<p>Defines the type of light source (note: ambient light is stored as a vec3 directly in Renderer)</p>
 
 <ul>
 <li>LightType::Point,</li>
@@ -1015,7 +1015,7 @@ The Debug class is using the current camera</p>
 <span class="p">};</span>
 </code></pre>
 
-<p>Defines the types of Light. Note ambient light is simply represented using a vec3 in the SimpleRenderEngine class.</p>
+<p>Defines the types of Light. Note ambient light is simply represented using a vec3 in the Renderer class.</p>
 
           <h1 id="meshtopology">MeshTopology</h1>
 <pre class="highlight cpp"><code><span class="k">enum</span> <span class="k">class</span> <span class="nc">MeshTopology</span> <span class="p">{</span>

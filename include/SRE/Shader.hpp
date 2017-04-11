@@ -88,7 +88,7 @@ namespace SRE {
             friend class Shader;
         };
 
-        // Phong Light Model. Uses light objects and ambient light set in SimpleRenderEngine.
+        // Phong Light Model. Uses light objects and ambient light set in Renderer.
         // Attributes
         // "color" vec4 (default (1,1,1,1))
         // "tex" Texture* (default white texture)
@@ -148,7 +148,7 @@ namespace SRE {
         void updateUniforms();
 
         friend class Mesh;
-        friend class SimpleRenderEngine;
+        friend class Renderer;
     public:
         static void translateToGLSLES(std::string &source, bool vertexShader);
     };

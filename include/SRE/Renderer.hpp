@@ -38,16 +38,16 @@ namespace SRE {
     /// SDL_Delay(10000);
     /// SDL_DestroyWindow(window);
     /// SDL_Quit();
-    class DllExport SimpleRenderEngine {
+    class DllExport Renderer {
     public:
         /// SimpleRenderEngine constructor
         /// \param window pointer to the SDL window (must be initialized using OpenGL)
-        SimpleRenderEngine(SDL_Window *window);
-        ~SimpleRenderEngine();
+        Renderer(SDL_Window *window);
+        ~Renderer();
         static constexpr int maxSceneLights = 4;
         static constexpr int sre_version_major = 0;
-        static constexpr int sre_version_minor = 4;
-        static constexpr int sre_version_point = 1;
+        static constexpr int sre_version_minor = 5;
+        static constexpr int sre_version_point = 0;
 
         /**
          * Set the light state - this affects all draw calls after the state has been set.
@@ -129,7 +129,7 @@ namespace SRE {
         /**
          * Singleton reference to the engine after initialization.
          */
-        static SimpleRenderEngine* instance;
+        static Renderer* instance;
     private:
         glm::vec4 ambientLight = glm::vec4(0.2,0.2,0.2,0.2);
         Light sceneLights[maxSceneLights];

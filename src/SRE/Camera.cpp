@@ -6,7 +6,7 @@
 
 #include "SRE/impl/GL.hpp"
 
-#include "SRE/SimpleRenderEngine.hpp"
+#include "SRE/Renderer.hpp"
 #include <glm/gtc/matrix_transform.hpp>
 
 
@@ -14,8 +14,8 @@ namespace SRE{
     Camera::Camera()
     : viewTransform{1.0f},projectionTransform {1.0f}, viewportX{0}, viewportY{0}
     {
-        if (SimpleRenderEngine::instance){
-            SDL_GetWindowSize(SimpleRenderEngine::instance->window,&viewportWidth,&viewportHeight);
+        if (Renderer::instance){
+            SDL_GetWindowSize(Renderer::instance->window,&viewportWidth,&viewportHeight);
         }
     }
 
@@ -33,7 +33,7 @@ namespace SRE{
 
     void Camera::setWindowCoordinates(int width, int height){
         int w,h;
-        SDL_GetWindowSize(SimpleRenderEngine::instance->window,&w,&h);
+        SDL_GetWindowSize(Renderer::instance->window,&w,&h);
         if (width == -1){
             width = w;
         }
@@ -69,7 +69,7 @@ namespace SRE{
         viewportY = y;
         viewportWidth = width;
         viewportHeight = height;
-        if (SimpleRenderEngine::instance->getCamera() == this){
+        if (Renderer::instance->getCamera() == this){
             glViewport(x, y, width, height);
             glScissor(x, y, width, height);
         }

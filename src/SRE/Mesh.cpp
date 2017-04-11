@@ -7,7 +7,7 @@
 #include "SRE/impl/GL.hpp"
 #include <glm/gtc/constants.hpp>
 #include <iostream>
-#include <SRE/SimpleRenderEngine.hpp>
+#include <SRE/Renderer.hpp>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -25,10 +25,9 @@ namespace SRE {
     }
 
     Mesh::~Mesh(){
-        RenderStats& renderStats = SimpleRenderEngine::instance->renderStats;
+        RenderStats& renderStats = Renderer::instance->renderStats;
         renderStats.meshBytes -= getDataSize();
         renderStats.meshCount--;
-
 #ifndef EMSCRIPTEN
         glDeleteVertexArrays(1, &vertexArrayObject);
 #endif
@@ -197,7 +196,7 @@ namespace SRE {
 
     Mesh * Mesh::MeshBuilder::build() {
         // update stats
-        RenderStats& renderStats = SimpleRenderEngine::instance->renderStats;
+        RenderStats& renderStats = Renderer::instance->renderStats;
         Mesh *res;
         if (updateMesh != nullptr){
             renderStats.meshBytes -= updateMesh->getDataSize();
