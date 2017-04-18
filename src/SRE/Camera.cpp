@@ -20,7 +20,7 @@ namespace SRE{
     }
 
     void Camera::setPerspectiveProjection(float fieldOfViewY, float viewportWidth,float viewportHeight, float nearPlane, float farPlane) {
-        projectionTransform = glm::perspectiveFov<float>	(	glm::radians( fieldOfViewY),
+        projectionTransform = glm::perspectiveFov<float>(glm::radians( fieldOfViewY),
                                                           viewportWidth,
                                                           viewportHeight,
                                                           nearPlane,

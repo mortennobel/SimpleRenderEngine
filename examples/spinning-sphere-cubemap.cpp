@@ -72,24 +72,50 @@ int main() {
     glm::vec3 up{0,1,0};
     r.getCamera()->lookAt(eye,at, up);
     r.getCamera()->setPerspectiveProjection(60,640,480,0.1f,100);
-    Shader* shader = Shader::getStandard();
-    float specularity = 20;
-    glm::vec4 color {1,1,1,1};
-    shader->set("specularity", 20.0f);
-    shader->set("color", color);
+    const char* vertexShaderStr = R"(#version 140
+in vec4 position;
+in vec3 normal;
+in vec2 uv;
+out vec3 vNormal;
+
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+uniform mat3 normalMat;
+
+void main(void) {
+    gl_Position = projection * view * model * position;
+    vNormal = normal;
+}
+)";
+    const char* fragmentShaderStr = R"(#version 140
+out vec4 fragColor;
+in vec3 vNormal;
+
+uniform samplerCube tex;
+
+void main(void)
+{
+    fragColor = texture(tex, vNormal);
+}
+)";
+    Shader* shader = Shader::create().withSource(vertexShaderStr, fragmentShaderStr).build();
+
+    auto tex = Texture::create()
+            .withFileCubemap("examples-data/cube-posx.png", Texture::TextureCubemapSide::PositiveX)
+            .withFileCubemap("examples-data/cube-negx.png", Texture::TextureCubemapSide::NegativeX)
+            .withFileCubemap("examples-data/cube-posy.png", Texture::TextureCubemapSide::PositiveY)
+            .withFileCubemap("examples-data/cube-negy.png", Texture::TextureCubemapSide::NegativeY)
+            .withFileCubemap("examples-data/cube-posz.png", Texture::TextureCubemapSide::PositiveZ)
+            .withFileCubemap("examples-data/cube-negz.png", Texture::TextureCubemapSide::NegativeZ)
+            .build();
+
+    shader->set("tex", tex);
+
     Mesh* mesh = Mesh::create().withSphere().build();
 
-    Light lights[] = {
-            Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build(),
-            Light::create().build(),
-            Light::create().build(),
-            Light::create().build()
-    };
 
-    bool debugLight = true;
-    bool animatedLight = true;
     bool animatedCamera = true;
-    float debugLightSize = 0.2;
     bool quit = false;
     SDL_Event e;
     float time = 0;
@@ -102,22 +128,13 @@ int main() {
                 quit = true;
         }
         r.clearScreen({1,0,0,1});
-        drawCross({2,2,2});
-        drawCross({-2,-2,-2});
+
         r.draw(mesh, glm::eulerAngleY(time), shader);
         time += 0.016f;
 
         ImGui_SRE_NewFrame(window);
-        std::string labels[] = {
-                "Light 1",
-                "Light 2",
-                "Light 3",
-                "Light 4"
-        };
 
-        ImGui::DragFloat3("Camera",&eye.x);
-        ImGui::Checkbox("AnimatedLight",&animatedLight);
-        ImGui::Checkbox("AnimatedCamera",&animatedCamera);
+        ImGui::DragFloat3("CameraPos",&eye.x);
         if (animatedCamera){
             eye = {
                 sin(time*-0.2)*5.0f,
@@ -126,47 +143,6 @@ int main() {
             };
         }
         r.getCamera()->lookAt(eye,at, up);
-        if (animatedLight){
-            lights[0].position = {
-                    sin(time)*1.5f,
-                    sin(time*2)*0.5f,
-                    cos(time)*1.5f,
-            };
-        }
-        ImGui::Checkbox("DebugLight",&debugLight);
-        if (debugLight){
-            ImGui::DragFloat("DebugLightSize", &debugLightSize,0.1f,0,3);
-        }
-        // Show Label (with invisible window)
-        for (int i=0;i<4;i++){
-            if (debugLight){
-                drawLight(lights[i],debugLightSize);
-            }
-            if (ImGui::TreeNode(labels[i].c_str())){
-                auto lightType = (int)lights[i].lightType;
-                ImGui::RadioButton("Point", &lightType, 0); ImGui::SameLine();
-                ImGui::RadioButton("Directional", &lightType, 1); ImGui::SameLine();
-                ImGui::RadioButton("Unused", &lightType, 2);
-                lights[i].lightType = (LightType)lightType;
-
-                ImGui::ColorEdit3("Color", &(lights[i].color.x));
-                ImGui::DragFloat3("Position", &(lights[i].position.x));
-                ImGui::DragFloat3("Direction", &(lights[i].direction.x));
-                ImGui::DragFloat("Range", &(lights[i].range),1,0,30);
-
-
-                ImGui::TreePop();
-            }
-            r.setLight(i, lights[i]);
-        }
-
-        if (ImGui::TreeNode("Material")){
-            ImGui::DragFloat("Specularity", &specularity,1,0,200);
-            shader->set("specularity", specularity);
-            ImGui::ColorEdit3("Color", &(color.x));
-            shader->set("color", color);
-            ImGui::TreePop();
-        }
 
         ImGui::Render();
 

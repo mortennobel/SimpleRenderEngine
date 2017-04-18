@@ -23,6 +23,7 @@ namespace SRE {
         Mat4,
         Vec4,
         Texture,
+        TextureCube,
         Invalid
     };
 

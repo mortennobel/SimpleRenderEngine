@@ -94,7 +94,7 @@ namespace {
         return ((x != 0) && !(x & (x - 1)));
     }
 
-    std::vector<char> loadFileFromMemory(const char* data, int dataSize, GLenum& format, int& width, int& height, int& bytesPerPixel){
+    std::vector<char> loadFileFromMemory(const char* data, int dataSize, GLenum& format, int& width, int& height, int& bytesPerPixel, bool invertY = true){
         static bool initialized = false;
         if (!initialized) {
             initialized = true;
@@ -123,8 +123,9 @@ namespace {
 #endif
                 format == GL_RGB ? 3 : 4;
         char *pixels = static_cast<char *>(res_texture->pixels);
-        invert_image(width*bytesPerPixel, height, pixels);
-
+        if (invertY){
+            invert_image(width*bytesPerPixel, height, pixels);
+        }
         std::vector<char> res(pixels, pixels+width*bytesPerPixel*height);
 
         SDL_FreeSurface(res_texture);
@@ -181,6 +182,21 @@ namespace SRE {
         GLenum type = GL_UNSIGNED_BYTE;
         glBindTexture(target, textureId);
         glTexImage2D(target, mipmapLevel, internalFormat, width, height, border, format, type, fileData.data());
+        return *this;
+    }
+
+    Texture::TextureBuilder &Texture::TextureBuilder::withFileCubemap(const char *filename, TextureCubemapSide side){
+        auto fileData = readAllBytes(filename);
+        GLenum format;
+        int bytesPerPixel;
+        fileData = loadFileFromMemory(fileData.data(), (int) fileData.size(), format, width, height,bytesPerPixel, false);
+        this->target = GL_TEXTURE_CUBE_MAP;
+        GLint mipmapLevel = 0;
+        GLint internalFormat = bytesPerPixel==4?GL_RGBA:GL_RGB;
+        GLint border = 0;
+        GLenum type = GL_UNSIGNED_BYTE;
+        glBindTexture(target, textureId);
+        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+(unsigned int)side, mipmapLevel, internalFormat, width, height, border, format, type, fileData.data());
         return *this;
     }
 

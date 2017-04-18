@@ -39,6 +39,7 @@ public:
         // if true texture sampling is filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
         TextureBuilder& withFilterSampling(bool enable);
         TextureBuilder& withWrappedTextureCoordinates(bool enable);
+        TextureBuilder& withFileCubemap(const char *filename, TextureCubemapSide side);
         TextureBuilder& withFile(const char *filename);
         TextureBuilder& withRGBData(const char* data, int width, int height);
         TextureBuilder& withRGBAData(const char* data, int width, int height);

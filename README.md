@@ -10,6 +10,7 @@ imgui and runs on both Windows, macOS and Linux.
 SRE provides:
  * Virtual camera (perspective and orthographic)
  * Texture support (JPEG, PNG, Raw)
+ * Cube map support
  * Mesh support (with normals and texture coordinates)
  * Mesh support (with color, particle-size and texture coordinates)
  * Shaders (unlit, specular, alpha blending, and custom shaders)

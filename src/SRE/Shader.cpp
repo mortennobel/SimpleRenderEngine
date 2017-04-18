@@ -175,6 +175,10 @@ namespace SRE {
                 case GL_SAMPLER_2D:
                     uniformType = UniformType::Texture;
                     break;
+                case GL_SAMPLER_CUBE:
+                    uniformType = UniformType::TextureCube;
+                    break;
+
                 default:
                 std::cerr << "Unsupported shader type "<<type<<" name "<<name<<std::endl;
             }
@@ -319,7 +323,7 @@ namespace SRE {
             return false;
         }
 #ifndef NDEBUG
-        if (uniform.type != UniformType::Texture){
+        if (uniform.type != UniformType::Texture && uniform.type != UniformType::TextureCube){
             std::cerr << "Invalid shader uniform type for "<<name <<std::endl;
         }
         if (uniform.arrayCount != 1){
