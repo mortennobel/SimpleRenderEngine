@@ -68,7 +68,7 @@ public:
     int getWidth();
     int getHeight();
 
-    // returns true if texture sampling should be filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
+    // returns true if texture sampling is filtered when sampling (bi-linear or tri-linear sampling).
     bool isFilterSampling();
     bool isWrapTextureCoordinates();
 

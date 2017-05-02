@@ -9,7 +9,6 @@
 namespace SRE {
     /**
      * Represents a Mesh object.
-     * When constructing a mesh object, its data is uploaded to the CPU and is no longer available on the CPU.
      * A mesh is composed of a list of
      * - vertexPositions (vec3)
      * - normals (vec3)

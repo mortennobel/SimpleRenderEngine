@@ -37,7 +37,7 @@ Example usage can be found in the examples folder
 ## Documentation
 
 Online documentation:
-https://mortennobel.github.io/Renderer/
+https://mortennobel.github.io/SimpleRenderEngine/
  
 ## Other resources
  
@@ -47,6 +47,7 @@ https://mortennobel.github.io/Renderer/
  * https://www.opengl.org/registry/ OpenGL Registry
  
 ## Version history
+ * 0.5.1 Clean up documentation and minor API updates. 
  * 0.5.0 Rename SimpleRenderEngine class to Renderer. Add cube map support. 
  * 0.4.1 Add RenderStats
  * 0.4.0 Merged Mesh and ParticleMesh into the Mesh class

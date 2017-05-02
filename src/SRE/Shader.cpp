@@ -18,13 +18,13 @@
 
 namespace SRE {
 
-    Shader *standard = nullptr;
-    Shader *unlit = nullptr;
-    Shader *unlitSprite = nullptr;
-    Shader *standardParticles = nullptr;
-
 
     namespace {
+        Shader *standard = nullptr;
+        Shader *unlit = nullptr;
+        Shader *unlitSprite = nullptr;
+        Shader *standardParticles = nullptr;
+
         void logCurrentCompileException(GLuint shader, GLenum type) {
             GLint logSize = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
@@ -37,15 +37,20 @@ namespace SRE {
                 case GL_FRAGMENT_SHADER:
                     typeStr = "Fragment shader";
                     break;
-//                case GL_shader:
-//                    typeStr = "Incomplete shader";
-//                    break;
-//                case ShaderErrorType::Linker:
-//                    typeStr = "Linker";
-//                    break;
                 case GL_VERTEX_SHADER:
                     typeStr = "Vertex shader";
                     break;
+#ifndef EMSCRIPTEN
+                case GL_GEOMETRY_SHADER:
+                    typeStr = "Geometry shader";
+                    break;
+                case GL_TESS_CONTROL_SHADER:
+                    typeStr = "Tessellation control shader";
+                    break;
+                case GL_TESS_EVALUATION_SHADER:
+                    typeStr = "Tessellation eval shader";
+                    break;
+#endif
                 default:
                     typeStr = std::string("Unknown error type: ")+std::to_string(type);
                     break;
@@ -191,7 +196,7 @@ namespace SRE {
 			Uniform u;
 			memcpy(u.name, name, 50);
 			u.id = location;
-			u.arrayCount = size;
+			u.elementCount = size;
 			u.type = uniformType;
             uniforms.push_back(u);
         }
@@ -220,7 +225,7 @@ namespace SRE {
         if (uniform.type != UniformType::Mat4){
             std::cerr << "Invalid shader uniform type for "<<name<<std::endl;
         }
-        if (uniform.arrayCount != 1){
+        if (uniform.elementCount != 1){
             std::cerr << "Invalid shader uniform array count for "<<name<<std::endl;
         }
 #endif
@@ -241,7 +246,7 @@ namespace SRE {
         if (uniform.type != UniformType::Mat3){
             std::cerr << "Invalid shader uniform type for "<<name<<std::endl;
         }
-        if (uniform.arrayCount != 1){
+        if (uniform.elementCount != 1){
             std::cerr << "Invalid shader uniform array count for "<<name<<std::endl;
         }
 #endif
@@ -262,7 +267,7 @@ namespace SRE {
         if (uniform.type != UniformType::Vec4){
             std::cerr << "Invalid shader uniform type for "<<name<<std::endl;
         }
-        if (uniform.arrayCount != 1){
+        if (uniform.elementCount != 1){
             std::cerr << "Invalid shader uniform array count for "<<name<<std::endl;
         }
 #endif
@@ -284,7 +289,7 @@ namespace SRE {
         if (uniform.type != UniformType::Float){
             std::cerr << "Invalid shader uniform type for "<<name<<std::endl;
         }
-        if (uniform.arrayCount != 1){
+        if (uniform.elementCount != 1){
             std::cerr << "Invalid shader uniform array count for "<<name<<std::endl;
         }
 #endif
@@ -305,7 +310,7 @@ namespace SRE {
         if (uniform.type != UniformType::Int){
             std::cerr << "Invalid shader uniform type for "<<name << std::endl;
         }
-        if (uniform.arrayCount != 1){
+        if (uniform.elementCount != 1){
             std::cerr << "Invalid shader uniform array count for "<<name<<std::endl;
         }
 #endif
@@ -326,7 +331,7 @@ namespace SRE {
         if (uniform.type != UniformType::Texture && uniform.type != UniformType::TextureCube){
             std::cerr << "Invalid shader uniform type for "<<name <<std::endl;
         }
-        if (uniform.arrayCount != 1){
+        if (uniform.elementCount != 1){
             std::cerr << "Invalid shader uniform array count for "<<name << std::endl;
         }
 #endif
@@ -362,14 +367,14 @@ namespace SRE {
         }
         uniform = getType("lightPosType");
         if (uniform.id != -1) {
-            if (uniform.arrayCount != 4){
+            if (uniform.elementCount != 4){
                 std::cerr << "Invalid shader uniform array count for lightPosType"<<std::endl;
             }
             glUniform4fv(uniform.id, 4, glm::value_ptr(lightPosType[0]));
         }
         uniform = getType("lightColorRange");
         if (uniform.id != -1) {
-            if (uniform.arrayCount != 4){
+            if (uniform.elementCount != 4){
                 std::cerr << "Invalid shader uniform array count for lightColorRange"<<std::endl;
             }
             glUniform4fv(uniform.id, 4, glm::value_ptr(lightColorRange[0]));
@@ -470,7 +475,7 @@ namespace SRE {
 		Uniform u;
 		u.type = UniformType::Invalid;
 		u.id = -1;
-		u.arrayCount = -1;
+		u.elementCount = -1;
 		return u;
     }
 

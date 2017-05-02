@@ -9,7 +9,7 @@
 #include <vector>
 #include <fstream>
 #include <memory>
-#include <SRE/RenderStats.h>
+#include <SRE/RenderStats.hpp>
 #include <SRE/Renderer.hpp>
 
 namespace {

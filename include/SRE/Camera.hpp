@@ -21,8 +21,10 @@ namespace SRE {
      */
     class DllExport Camera {
     public:
+
         /// Set camera at (0,0,0) looking down the negative z-axis using orthographic viewing volume between -1 to 1
         Camera();
+
         /// set position of camera in world space using
         /// eye position of the camera
         /// at position that the camera looks at (must be different from pos)
@@ -53,13 +55,13 @@ namespace SRE {
         void setWindowCoordinates(int width = -1, int height = -1);
 
 
-        // set the view transform directly
+        // Set the view transform. Used to position the virtual camera position and orientation.
         void setViewTransform(const glm::mat4 &viewTransform);
 
-        // Set the projection transform directly
+        // Set the projection transform. Defines the view volume and how it is projected to the screen.
         void setProjectionTransform(const glm::mat4 &projectionTransform);
 
-        /// Get the view transform - used for rendering
+        /// Get the view transform. The matrix transformation contain the orientation and position of the virtual camera.
         glm::mat4 getViewTransform();
 
         /// Get the projection transform  - used for rendering

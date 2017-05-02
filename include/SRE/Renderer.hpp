@@ -6,7 +6,7 @@
 #include "SRE/Camera.hpp"
 
 #include "SRE/impl/Export.hpp"
-#include "RenderStats.h"
+#include "RenderStats.hpp"
 #include "Mesh.hpp"
 
 namespace SRE {
@@ -18,10 +18,10 @@ namespace SRE {
     class Shader;
 
     /// Maintains shared states for rendering.
-    /// An object of SimpleRenderEngine must be created once after the SDL_Window has been initialized.
-    /// After initialization this object can be referenced using the static field SimpleRenderEngine::instance;
+    /// An object of Renderer must be created once after the SDL_Window has been initialized.
+    /// After initialization this object can be referenced using the static field Renderer::instance;
     ///
-    /// SingleRenderEngine has two important states:
+    /// Renderer has two important states:
     /// - An active camera, which defines how meshes are drawn when rendered using the draw method
     /// - Light information (point lights, directional lights, ambient lights).
     ///
@@ -32,7 +32,7 @@ namespace SRE {
     /// SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
     /// SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     /// window = SDL_CreateWindow("Hello Engine",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,640,480,SDL_WINDOW_OPENGL);
-    /// SimpleRenderEngine r{window};
+    /// Renderer r{window};
     /// r.clearScreen({1,0,0,1});
     /// r.swapWindow();
     /// SDL_Delay(10000);
@@ -113,7 +113,7 @@ namespace SRE {
         void clearScreen(glm::vec4 color, bool clearColorBuffer=true, bool clearDepthBuffer=true);
 
         /**
-         * Update window with OpenGL rendering
+         * Update window with OpenGL rendering by swapping buffers
          */
         void swapWindow();
 
@@ -123,7 +123,7 @@ namespace SRE {
         void finishGPUCommandBuffer();
 
         // return stats of the last rendered frame
-        // only data maintained by SRE is included (imgui is not included)
+        // RenderStats only includes data maintained by SRE (imgui is not included)
         const RenderStats& getRenderStats();
 
         /**

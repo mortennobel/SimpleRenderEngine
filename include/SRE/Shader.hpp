@@ -32,7 +32,7 @@ namespace SRE {
         int id;
         UniformType type;
         // 1 means not array
-        int arrayCount;
+        int elementCount;
     };
 
     /**
@@ -67,7 +67,7 @@ namespace SRE {
 
         class DllExport ShaderBuilder {
         public:
-            ShaderBuilder& withSource(const char* vertexShader, const char* fragmentShader);
+            ShaderBuilder& withSource(const char* vertexShaderGLSL, const char* fragmentShaderGLSL);
             ShaderBuilder& withSourceStandard();
             ShaderBuilder& withSourceUnlit();
             ShaderBuilder& withSourceUnlitSprite();
@@ -123,6 +123,7 @@ namespace SRE {
         bool set(const char *name, glm::vec4 value);
         bool set(const char *name, float value);
         bool set(const char *name, int value);
+
         /// textureSlot: If sampling multiple textures from a single shader, each texture must be bound to a unique texture slot
         bool set(const char *name, Texture* texture, unsigned int textureSlot = 0);
 
@@ -136,6 +137,7 @@ namespace SRE {
         bool setLights(Light value[4], glm::vec4 ambient, glm::mat4 viewTransform);
 
         Shader();
+
         bool build(const char *vertexShader, const char *fragmentShader);
 
         void bind();
