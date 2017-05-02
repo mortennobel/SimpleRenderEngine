@@ -1,13 +1,13 @@
 # Renderer
 
-The goal of Renderer (SRE) is to provide easy way to get started with graphics 
+The goal of Renderer (sre) is to provide easy way to get started with graphics 
 programming in 2D or 3D without a deep knowledge about the low-level graphics APIs like 
 OpenGL, DirectX and Vulkan.
  
-SRE currently depends on Simple Direct Layer 2.x (SDL2), SDL2-image, OpenGL Mathematics (GLM), and OpenGL 3.3 (or higher),
+sre currently depends on Simple Direct Layer 2.x (SDL2), SDL2-image, OpenGL Mathematics (GLM), and OpenGL 3.3 (or higher),
 imgui and runs on both Windows, macOS and Linux.
  
-SRE provides:
+sre provides:
  * Virtual camera (perspective and orthographic)
  * Texture support (JPEG, PNG, Raw)
  * Cube map support
@@ -22,7 +22,7 @@ SRE provides:
  * GUI rendering (using dear ImGui)
  * Emscripten support
 
-To keep SRE as simple and flexible as possible the following features are not a part of SRE:
+To keep sre as simple and flexible as possible the following features are not a part of sre:
  * Resource management
  * Scenegraphs
  * Deferred rendering
@@ -47,6 +47,8 @@ https://mortennobel.github.io/SimpleRenderEngine/
  * https://www.opengl.org/registry/ OpenGL Registry
  
 ## Version history
+ * 0.5.3 Rename namespace and folders from SRE to sre 
+ * 0.5.2 Add mesh bounds 
  * 0.5.1 Clean up documentation and minor API updates. 
  * 0.5.0 Rename SimpleRenderEngine class to Renderer. Add cube map support. 
  * 0.4.1 Add RenderStats

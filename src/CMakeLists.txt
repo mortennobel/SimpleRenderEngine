@@ -1,7 +1,7 @@
 file(GLOB SOURCE_FILES
-	"SRE/*.cpp"
-	"../include/SRE/*.hpp"
-	"../include/SRE/impl/*.hpp"
+	"sre/*.cpp"
+	"../include/sre/*.hpp"
+	"../include/sre/impl/*.hpp"
     "imgui/*.cpp"
 )
 

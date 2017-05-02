@@ -2,9 +2,9 @@
 // Created by morten on 31/07/16.
 //
 
-#include "SRE/Shader.hpp"
+#include "sre/Shader.hpp"
 
-#include "SRE/impl/GL.hpp"
+#include "sre/impl/GL.hpp"
 #include <iostream>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
@@ -13,10 +13,10 @@
 #include <vector>
 #include <map>
 #include <sstream>
-#include <SRE/Renderer.hpp>
-#include "SRE/Texture.hpp"
+#include "sre/Renderer.hpp"
+#include "sre/Texture.hpp"
 
-namespace SRE {
+namespace sre {
 
 
     namespace {

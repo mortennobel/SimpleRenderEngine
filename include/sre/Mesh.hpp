@@ -2,11 +2,12 @@
 
 #include "glm/glm.hpp"
 #include <vector>
-#include "SRE/MeshTopology.hpp"
+#include <array>
+#include "sre/MeshTopology.hpp"
 
-#include "SRE/impl/Export.hpp"
+#include "sre/impl/Export.hpp"
 
-namespace SRE {
+namespace sre {
     /**
      * Represents a Mesh object.
      * A mesh is composed of a list of
@@ -58,6 +59,8 @@ namespace SRE {
         const std::vector<float>& getParticleSize();
         const std::vector<uint16_t>& getIndices();
 
+        std::array<glm::vec3,2> getBoundsMinMax();
+
         // get size of the mesh in bytes on GPU
         int getDataSize();
     private:
@@ -77,6 +80,8 @@ namespace SRE {
         std::vector<float> particleSize;
         std::vector<glm::vec4> colors;
         std::vector<uint16_t> indices;
+
+        std::array<glm::vec3,2> boundsMinMax;
 
         void bind();
 

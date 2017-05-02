@@ -2,16 +2,16 @@
 // Created by morten on 31/07/16.
 //
 
-#include "SRE/Mesh.hpp"
+#include "sre/Mesh.hpp"
 
-#include "SRE/impl/GL.hpp"
+#include "sre/impl/GL.hpp"
 #include <glm/gtc/constants.hpp>
 #include <iostream>
-#include <SRE/Renderer.hpp>
+#include "sre/Renderer.hpp"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
-namespace SRE {
+namespace sre {
     Mesh::Mesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals,
                const std::vector<glm::vec4> &uvs, const std::vector<glm::vec4> &colors, std::vector<float> particleSize, const std::vector<uint16_t> &indices, MeshTopology meshTopology)
 
@@ -75,7 +75,12 @@ namespace SRE {
         // interleave data
         int floatsPerVertex = 15;
         std::vector<float> interleavedData(vertexPositions.size() * floatsPerVertex);
+        float max = std::numeric_limits<float>::max();
+        boundsMinMax[0] = glm::vec3(max,max,max);
+        boundsMinMax[1] = glm::vec3(-max,-max,-max);
         for (int i=0;i<vertexPositions.size();i++){
+            boundsMinMax[0] = glm::min(boundsMinMax[0], vertexPositions[i]);
+            boundsMinMax[1] = glm::max(boundsMinMax[1], vertexPositions[i]);
             for (int j=0;j<4;j++){
                 // vertex position
                 if (j<3){
@@ -167,6 +172,10 @@ namespace SRE {
                sizeof(float)); // particle size
         size += indices.size() * sizeof(uint16_t);
         return size;
+    }
+
+    std::array<glm::vec3,2> Mesh::getBoundsMinMax() {
+        return boundsMinMax;
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withVertexPositions(const std::vector<glm::vec3> &vertexPositions) {

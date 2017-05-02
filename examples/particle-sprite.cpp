@@ -2,11 +2,11 @@
 #include <vector>
 #include <fstream>
 
-#include "SRE/Texture.hpp"
-#include "SRE/Renderer.hpp"
-#include "SRE/Camera.hpp"
-#include "SRE/Mesh.hpp"
-#include "SRE/Shader.hpp"
+#include "sre/Texture.hpp"
+#include "sre/Renderer.hpp"
+#include "sre/Camera.hpp"
+#include "sre/Mesh.hpp"
+#include "sre/Shader.hpp"
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
 
@@ -17,11 +17,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <imgui.h>
-#include "SRE/imgui_sre.hpp"
+#include "sre/imgui_sre.hpp"
 
-using namespace SRE;
+using namespace sre;
 
-SDL_Window *window;                    // Declare a pointer
+SDL_Window *window;
 bool quit = false;
 glm::vec2 spriteUV = glm::vec2(0, 0);
 bool spriteAnimation = false;
@@ -101,7 +101,6 @@ void update(){
     // 1. Show a simple window
     // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
     {
-
         ImGui::Text("Particle sprite");
         ImGui::Checkbox("Orthographic proj",&ortho);
         ImGui::Checkbox("Sprite animation",&spriteAnimation);

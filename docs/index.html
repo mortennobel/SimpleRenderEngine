@@ -218,7 +218,7 @@ SimpleRenderEngine. These objects should not be deleted.</li>
 
           <h1 id="simplerenderengine">SimpleRenderEngine</h1>
 
-<p><code class="prettyprint">#include &quot;SRE/Renderer.hpp&quot;</code></p>
+<p><code class="prettyprint">#include &quot;sre/Renderer.hpp&quot;</code></p>
 <pre class="highlight cpp"><code><span class="c1">// Example (hello-engine.cpp):
 </span><span class="n">SDL_Window</span> <span class="o">*</span><span class="n">window</span><span class="p">;</span>
 <span class="n">SDL_Init</span><span class="p">(</span><span class="n">SDL_INIT_VIDEO</span><span class="p">);</span>
@@ -436,7 +436,7 @@ RenderStats only includes data maintained by SRE (imgui is not included)</p>
 
           <h1 id="texture">Texture</h1>
 
-<p><code class="prettyprint">#include &quot;SRE/Texture.hpp&quot;</code></p>
+<p><code class="prettyprint">#include &quot;sre/Texture.hpp&quot;</code></p>
 
 <p>Represent a texture (uploaded to the GPU).
 In general the width and the height of the texture should be power-of-two (e.g. 256 or 512).</p>
@@ -507,7 +507,7 @@ Texture* build();
 
           <h1 id="shader">Shader</h1>
 
-<p><code class="prettyprint">#include &quot;SRE/Shader.hpp&quot;</code></p>
+<p><code class="prettyprint">#include &quot;sre/Shader.hpp&quot;</code></p>
 
 <p>Controls the appearance of the rendered objects.</p>
 
@@ -627,7 +627,7 @@ Shader* build();
 
           <h1 id="mesh">Mesh</h1>
 
-<p><code class="prettyprint">#include &quot;SRE/Mesh.hpp&quot;</code></p>
+<p><code class="prettyprint">#include &quot;sre/Mesh.hpp&quot;</code></p>
 
 <p>Represents a Mesh object.
 A mesh is composed of a list of</p>
@@ -706,7 +706,7 @@ See Mesh::create().</p>
 
           <h1 id="camera">Camera</h1>
 
-<p><code class="prettyprint">#include &quot;SRE/Camera.hpp&quot;</code></p>
+<p><code class="prettyprint">#include &quot;sre/Camera.hpp&quot;</code></p>
 
 <p>The camera contains two important properties:
 - <strong>view transform matrix</strong>: Contains information about location and orientation of the camera. This matrix will
@@ -907,7 +907,7 @@ rendering (default settings is the full window)</p>
 
           <h1 id="light">Light</h1>
 
-<p><code class="prettyprint">#include &quot;SRE/Light.hpp&quot;</code></p>
+<p><code class="prettyprint">#include &quot;sre/Light.hpp&quot;</code></p>
 
 <p>Contains information about a Light source</p>
 
@@ -972,7 +972,7 @@ Range == 0 means no attenuation</p>
 
           <h1 id="debug">Debug</h1>
 
-<p><code class="prettyprint">#include &quot;SRE/Debug.hpp&quot;</code></p>
+<p><code class="prettyprint">#include &quot;sre/Debug.hpp&quot;</code></p>
 
 <p>The purpose of this class is to draw debug information into the scene.
 The Debug class is using the current camera</p>
@@ -995,7 +995,7 @@ The Debug class is using the current camera</p>
 
           <h1 id="blendtype">BlendType</h1>
 
-<p><code class="prettyprint">#include &quot;SRE/Blendtype.hpp&quot;</code></p>
+<p><code class="prettyprint">#include &quot;sre/Blendtype.hpp&quot;</code></p>
 <pre class="highlight cpp"><code><span class="k">enum</span> <span class="k">class</span> <span class="nc">BlendType</span> <span class="p">{</span>
     <span class="n">Disabled</span><span class="p">,</span>
     <span class="n">AlphaBlending</span><span class="p">,</span>
@@ -1013,7 +1013,7 @@ The Debug class is using the current camera</p>
 
           <h1 id="lighttype">LightType</h1>
 
-<p><code class="prettyprint">#include &quot;SRE/LightType.hpp&quot;</code></p>
+<p><code class="prettyprint">#include &quot;sre/LightType.hpp&quot;</code></p>
 <pre class="highlight cpp"><code><span class="k">enum</span> <span class="k">class</span> <span class="nc">LightType</span> <span class="p">{</span>
     <span class="n">Point</span><span class="p">,</span>
     <span class="n">Directional</span><span class="p">,</span>
@@ -1025,7 +1025,7 @@ The Debug class is using the current camera</p>
 
           <h1 id="meshtopology">MeshTopology</h1>
 
-<p><code class="prettyprint">#include &quot;SRE/MeshTopology.hpp&quot;</code></p>
+<p><code class="prettyprint">#include &quot;sre/MeshTopology.hpp&quot;</code></p>
 <pre class="highlight cpp"><code><span class="k">enum</span> <span class="k">class</span> <span class="nc">MeshTopology</span> <span class="p">{</span>
     <span class="n">Points</span><span class="p">,</span>
     <span class="n">Lines</span><span class="p">,</span>
@@ -1040,7 +1040,7 @@ The Debug class is using the current camera</p>
 
           <h1 id="uniform">Uniform</h1>
 
-<p><code class="prettyprint">#include &quot;SRE/Shader.hpp&quot;</code></p>
+<p><code class="prettyprint">#include &quot;sre/Shader.hpp&quot;</code></p>
 <pre class="highlight cpp"><code><span class="k">struct</span> <span class="n">Uniform</span> <span class="p">{</span>
     <span class="kt">char</span><span class="o">*</span> <span class="n">name</span><span class="p">[</span><span class="mi">50</span><span class="p">];</span>
     <span class="kt">int</span> <span class="n">id</span><span class="p">;</span>
@@ -1054,7 +1054,7 @@ The Debug class is using the current camera</p>
 
           <h1 id="uniformtype">UniformType</h1>
 
-<p><code class="prettyprint">#include &quot;SRE/Shader.hpp&quot;</code></p>
+<p><code class="prettyprint">#include &quot;sre/Shader.hpp&quot;</code></p>
 <pre class="highlight cpp"><code><span class="k">enum</span> <span class="k">class</span> <span class="nc">UniformType</span> <span class="p">{</span>
     <span class="n">Int</span><span class="p">,</span>
     <span class="n">Float</span><span class="p">,</span>
@@ -1071,7 +1071,7 @@ The Debug class is using the current camera</p>
 
           <h1 id="renderstats">RenderStats</h1>
 
-<p><code class="prettyprint">#include &quot;SRE/RenderStats.hpp&quot;</code></p>
+<p><code class="prettyprint">#include &quot;sre/RenderStats.hpp&quot;</code></p>
 <pre class="highlight cpp"><code><span class="k">struct</span> <span class="n">DllExport</span> <span class="n">RenderStats</span> <span class="p">{</span>
     <span class="kt">int</span> <span class="n">frame</span><span class="p">;</span>
     <span class="kt">int</span> <span class="n">meshCount</span><span class="p">;</span>
@@ -1087,7 +1087,7 @@ The Debug class is using the current camera</p>
 
           <h1 id="imgui_sre">ImGui_SRE</h1>
 
-<p><code class="prettyprint">#include &quot;SRE/imgui_sre.hpp&quot;</code></p>
+<p><code class="prettyprint">#include &quot;sre/imgui_sre.hpp&quot;</code></p>
 
 <h2 id="imgui_sre_init">ImGui_SRE_Init</h2>
 

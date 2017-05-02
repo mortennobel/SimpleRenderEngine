@@ -2,11 +2,11 @@
 #include <vector>
 #include <fstream>
 
-#include "SRE/Texture.hpp"
-#include "SRE/Renderer.hpp"
-#include "SRE/Camera.hpp"
-#include "SRE/Mesh.hpp"
-#include "SRE/Shader.hpp"
+#include "sre/Texture.hpp"
+#include "sre/Renderer.hpp"
+#include "sre/Camera.hpp"
+#include "sre/Mesh.hpp"
+#include "sre/Shader.hpp"
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
 
@@ -17,12 +17,12 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <imgui.h>
-#include <SRE/impl/GL.hpp>
-#include "SRE/imgui_sre.hpp"
+#include "sre/impl/GL.hpp"
+#include "sre/imgui_sre.hpp"
 #ifdef EMSCRIPTEN
 #include "emscripten.h"
 #endif
-using namespace SRE;
+using namespace sre;
 
 Mesh* createParticles(int size = 2500){
     std::vector<glm::vec3> positions;
@@ -156,7 +156,7 @@ void update(){
         auto& renderStats = r.getRenderStats();
 
         float bytesToMB = 1.0f/(1024*1024);
-        ImGui::Text("SRE draw-calls %i meshes %i (%.2fMB) textures %i (%.2fMB) shaders %i", renderStats.drawCalls,renderStats.meshCount, renderStats.meshBytes*bytesToMB, renderStats.textureCount, renderStats.textureBytes*bytesToMB, renderStats.shaderCount);
+        ImGui::Text("sre draw-calls %i meshes %i (%.2fMB) textures %i (%.2fMB) shaders %i", renderStats.drawCalls,renderStats.meshCount, renderStats.meshBytes*bytesToMB, renderStats.textureCount, renderStats.textureBytes*bytesToMB, renderStats.shaderCount);
     }
     ImGui::Render();
     r.swapWindow();

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "SRE/impl/Export.hpp"
+#include "sre/impl/Export.hpp"
 
-namespace SRE {
+namespace sre {
     /**
      * Enum which defines blending types. Currently support types of blending is:
      *  - BlendType::Disabled - No blending

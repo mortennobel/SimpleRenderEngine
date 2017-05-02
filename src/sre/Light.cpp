@@ -2,9 +2,9 @@
 // Created by morten on 31/07/16.
 //
 
-#include "SRE/Light.hpp"
+#include "sre/Light.hpp"
 
-namespace SRE{
+namespace sre{
     Light::Light()
     :lightType(LightType::Unused),
      position(glm::vec3(0,0,0)),

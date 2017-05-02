@@ -1,9 +1,9 @@
 #pragma once
 
 
-#include "SRE/impl/Export.hpp"
+#include "sre/impl/Export.hpp"
 
-namespace SRE {
+namespace sre {
     /**
      * Mesh topology used to define the kind of mesh
      */

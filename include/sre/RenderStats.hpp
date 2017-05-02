@@ -1,8 +1,8 @@
 #pragma once
 
-#include "SRE/impl/Export.hpp"
+#include "sre/impl/Export.hpp"
 
-namespace SRE {
+namespace sre {
     // Render stats maintained by SimpleRenderEngine
     struct DllExport RenderStats {
         int frame;

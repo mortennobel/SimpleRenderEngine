@@ -2,14 +2,14 @@
 
 #include <SDL_video.h>
 #include "glm/glm.hpp"
-#include "SRE/Light.hpp"
-#include "SRE/Camera.hpp"
+#include "sre/Light.hpp"
+#include "sre/Camera.hpp"
 
-#include "SRE/impl/Export.hpp"
+#include "sre/impl/Export.hpp"
 #include "RenderStats.hpp"
 #include "Mesh.hpp"
 
-namespace SRE {
+namespace sre {
 
     // forward declaration
     class Mesh;
@@ -47,7 +47,7 @@ namespace SRE {
         static constexpr int maxSceneLights = 4;
         static constexpr int sre_version_major = 0;
         static constexpr int sre_version_minor = 5;
-        static constexpr int sre_version_point = 0;
+        static constexpr int sre_version_point = 3;
 
         /**
          * Set the light state - this affects all draw calls after the state has been set.
@@ -123,7 +123,7 @@ namespace SRE {
         void finishGPUCommandBuffer();
 
         // return stats of the last rendered frame
-        // RenderStats only includes data maintained by SRE (imgui is not included)
+        // RenderStats only includes data maintained by sre (imgui is not included)
         const RenderStats& getRenderStats();
 
         /**

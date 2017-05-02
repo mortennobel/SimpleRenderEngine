@@ -2,38 +2,38 @@
 #include <vector>
 #include <fstream>
 
-#include "SRE/Texture.hpp"
-#include "SRE/Renderer.hpp"
-#include "SRE/Camera.hpp"
-#include "SRE/Mesh.hpp"
-#include "SRE/Shader.hpp"
+#include "sre/Texture.hpp"
+#include "sre/Renderer.hpp"
+#include "sre/Camera.hpp"
+#include "sre/Mesh.hpp"
+#include "sre/Shader.hpp"
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
 #include <imgui.h>
-#include "SRE/imgui_sre.hpp"
+#include "sre/imgui_sre.hpp"
 
 #include <glm/glm.hpp>
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <SRE/Debug.hpp>
+#include "sre/Debug.hpp"
 
-using namespace SRE;
+using namespace sre;
 
 void drawCross(glm::vec3 p, float size = 0.3f){
-    SRE::Debug::drawLine(p-glm::vec3{size,0,0}, p+glm::vec3{size,0,0});
-    SRE::Debug::drawLine(p-glm::vec3{0,size,0}, p+glm::vec3{0,size,0});
-    SRE::Debug::drawLine(p-glm::vec3{0,0,size}, p+glm::vec3{0,0,size});
+    sre::Debug::drawLine(p-glm::vec3{size,0,0}, p+glm::vec3{size,0,0});
+    sre::Debug::drawLine(p-glm::vec3{0,size,0}, p+glm::vec3{0,size,0});
+    sre::Debug::drawLine(p-glm::vec3{0,0,size}, p+glm::vec3{0,0,size});
 }
 
 void drawLight(Light& l, float size){
     if (l.lightType == LightType::Point || l.lightType == LightType::Directional){
-        SRE::Debug::setColor({0,0,0,1});
+        sre::Debug::setColor({0,0,0,1});
         drawCross(l.position, size);
     }
     if (l.lightType == LightType::Directional){
-        SRE::Debug::setColor({1,1,0,1});
-        SRE::Debug::drawLine(l.position, l.position - l.direction*size*2.0f);
+        sre::Debug::setColor({1,1,0,1});
+        sre::Debug::drawLine(l.position, l.position - l.direction*size*2.0f);
     }
 }
 

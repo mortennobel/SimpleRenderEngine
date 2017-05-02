@@ -8,10 +8,10 @@
 
 #include "glm/glm.hpp"
 
-#include "SRE/impl/Export.hpp"
-#include "SRE/MeshTopology.hpp"
+#include "sre/impl/Export.hpp"
+#include "sre/MeshTopology.hpp"
 
-namespace SRE {
+namespace sre {
     // The purpose of this class is to draw debug information into the scene.
     // The Debug class is using the current camera
     class DllExport Debug {

@@ -4,9 +4,9 @@
 #include <vector>
 #include <map>
 
-#include "SRE/impl/Export.hpp"
+#include "sre/impl/Export.hpp"
 
-namespace SRE{
+namespace sre{
 
     /**
      * Represent a texture (uploaded to the GPU).

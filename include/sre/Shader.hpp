@@ -4,16 +4,16 @@
 
 #pragma once
 #include "glm/glm.hpp"
-#include "SRE/Light.hpp"
-#include "SRE/BlendType.hpp"
+#include "sre/Light.hpp"
+#include "sre/BlendType.hpp"
 
-#include "SRE/impl/Export.hpp"
+#include "sre/impl/Export.hpp"
 
-#include "SRE/impl/CPPShim.hpp"
+#include "sre/impl/CPPShim.hpp"
 #include <string>
 #include <vector>
 
-namespace SRE {
+namespace sre {
     class Texture;
 
     enum class UniformType {

@@ -2,11 +2,11 @@
 #include <vector>
 #include <fstream>
 
-#include "SRE/Texture.hpp"
-#include "SRE/Renderer.hpp"
-#include "SRE/Camera.hpp"
-#include "SRE/Mesh.hpp"
-#include "SRE/Shader.hpp"
+#include "sre/Texture.hpp"
+#include "sre/Renderer.hpp"
+#include "sre/Camera.hpp"
+#include "sre/Mesh.hpp"
+#include "sre/Shader.hpp"
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
 
@@ -24,7 +24,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 
-using namespace SRE;
+using namespace sre;
 
 SDL_Window *window;
 Shader *shader;

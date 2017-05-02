@@ -7,16 +7,16 @@
 // https://github.com/ocornut/imgui
 
 #include "imgui.h"
-#include "SRE/imgui_sre.hpp"
+#include "sre/imgui_sre.hpp"
 #include <string>
 #include <iostream>
-#include "SRE/Shader.hpp"
+#include "sre/Shader.hpp"
 
 // SDL,GL3W
 #include <SDL.h>
 #include <SDL_syswm.h>
 
-#include "SRE/impl/GL.hpp"
+#include "sre/impl/GL.hpp"
 
 // Data
 static double       g_Time = 0.0f;
@@ -269,8 +269,8 @@ bool ImGui_SRE_CreateDeviceObjects()
 #ifdef EMSCRIPTEN
     std::string vs = vertex_shader;
     std::string fs = fragment_shader;
-    SRE::Shader::translateToGLSLES(vs, true);
-    SRE::Shader::translateToGLSLES(fs, false);
+    sre::Shader::translateToGLSLES(vs, true);
+    sre::Shader::translateToGLSLES(fs, false);
     auto vsp = vs.c_str();
     auto fsp = fs.c_str();
     glShaderSource(g_VertHandle, 1, &vsp, 0);

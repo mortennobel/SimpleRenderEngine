@@ -2,11 +2,11 @@
 #include <vector>
 #include <fstream>
 
-#include "SRE/Texture.hpp"
-#include "SRE/Renderer.hpp"
-#include "SRE/Camera.hpp"
-#include "SRE/Mesh.hpp"
-#include "SRE/Shader.hpp"
+#include "sre/Texture.hpp"
+#include "sre/Renderer.hpp"
+#include "sre/Camera.hpp"
+#include "sre/Mesh.hpp"
+#include "sre/Shader.hpp"
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
 #ifdef EMSCRIPTEN
@@ -19,9 +19,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <imgui.h>
-#include "SRE/imgui_sre.hpp"
+#include "sre/imgui_sre.hpp"
 
-using namespace SRE;
+using namespace sre;
 
 SDL_Window *window;
 float f = 1.0f;
@@ -50,7 +50,7 @@ int main() {
 
     // Create an application window with the following settings:
     window = SDL_CreateWindow(
-            "SRE: GUI",                     // window title
+            "sre: GUI",                     // window title
             SDL_WINDOWPOS_UNDEFINED,              // initial x position
             SDL_WINDOWPOS_UNDEFINED,              // initial y position
             640,                                  // width, in pixels

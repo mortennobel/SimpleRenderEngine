@@ -2,19 +2,19 @@
 // Created by morten on 04/08/16.
 //
 
-#include "SRE/Debug.hpp"
-#include "SRE/Mesh.hpp"
-#include "SRE/Shader.hpp"
-#include "SRE/Renderer.hpp"
-#include "SRE/impl/GL.hpp"
+#include "sre/Debug.hpp"
+#include "sre/Mesh.hpp"
+#include "sre/Shader.hpp"
+#include "sre/Renderer.hpp"
+#include "sre/impl/GL.hpp"
 
 #include <vector>
 #include <iostream>
-#include <SRE/Texture.hpp>
+#include "sre/Texture.hpp"
 
 using namespace std;
 
-namespace SRE {
+namespace sre {
 
     glm::vec4 Debug::color = glm::vec4(1,0,1,1);
 

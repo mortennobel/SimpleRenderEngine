@@ -2,11 +2,11 @@
 
 #include "glm/glm.hpp"
 #include "LightType.hpp"
-#include "SRE/impl/CPPShim.hpp"
+#include "sre/impl/CPPShim.hpp"
 
-#include "SRE/impl/Export.hpp"
+#include "sre/impl/Export.hpp"
 
-namespace SRE {
+namespace sre {
     /**
      * Contains information about a Light source
      */

@@ -11,17 +11,17 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
 #endif
 
-#include "SRE/Renderer.hpp"
+#include "sre/Renderer.hpp"
 #include <cassert>
-#include "SRE/Shader.hpp"
-#include "SRE/Mesh.hpp"
+#include "sre/Shader.hpp"
+#include "sre/Mesh.hpp"
 
-#include "SRE/impl/GL.hpp"
+#include "sre/impl/GL.hpp"
 #include <iostream>
 #include <algorithm>
 #include <string>
 
-namespace SRE {
+namespace sre {
     Renderer* Renderer::instance = nullptr;
 
     Renderer::Renderer(SDL_Window * window)
@@ -49,7 +49,7 @@ namespace SRE {
 
 		std::string version = (char*)glGetString(GL_VERSION);
         std::cout << "OpenGL version "<<glGetString(GL_VERSION) << std::endl;
-        std::cout << "SRE version "<<sre_version_major<<"."<<sre_version_minor <<"."<<sre_version_point << std::endl;
+        std::cout << "sre version "<<sre_version_major<<"."<<sre_version_minor <<"."<<sre_version_point << std::endl;
 
         // setup opengl context
         glEnable(GL_DEPTH_TEST);
