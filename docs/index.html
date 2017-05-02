@@ -597,12 +597,17 @@ Shader* build();
 
 <h2 id="set">set</h2>
 
-<p><code class="prettyprint">bool set(const char *name, glm::mat4 value)</code>
-<code class="prettyprint">bool set(const char *name, glm::mat3 value)</code>
-<code class="prettyprint">bool set(const char *name, glm::vec4 value)</code>
-<code class="prettyprint">bool set(const char *name, float value)</code>
-<code class="prettyprint">bool set(const char *name, int value)</code>
-<code class="prettyprint">bool set(const char *name, Texture* texture, unsigned int textureSlot = 0)</code></p>
+<p><code class="prettyprint">bool set(const char *name, glm::mat4 value)</code> </p>
+
+<p><code class="prettyprint">bool set(const char *name, glm::mat3 value)</code> </p>
+
+<p><code class="prettyprint">bool set(const char *name, glm::vec4 value)</code></p>
+
+<p><code class="prettyprint">bool set(const char *name, float value)</code> </p>
+
+<p><code class="prettyprint">bool set(const char *name, int value)</code> </p>
+
+<p><code class="prettyprint">bool set(const char *name, Texture* texture, unsigned int textureSlot = 0)</code></p>
 
 <p>Sets the uniform to a given value. In debug mode, the shader will test for the existence of the uniform and write to cerr if not found.</p>
 
