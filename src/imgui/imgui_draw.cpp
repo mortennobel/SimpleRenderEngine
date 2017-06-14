@@ -133,7 +133,7 @@ void ImDrawList::Clear()
     _Path.resize(0);
     _ChannelsCurrent = 0;
     _ChannelsCount = 1;
-    // NB: Do not clear channels so our allocations are re-used after the first frame.
+    // NB: Do not clearScreen channels so our allocations are re-used after the first frame.
 }
 
 void ImDrawList::ClearFreeMemory()
@@ -283,7 +283,7 @@ void ImDrawList::ChannelsSplit(int channels_count)
     _ChannelsCount = channels_count;
 
     // _Channels[] (24 bytes each) hold storage that we'll swap with this->_CmdBuffer/_IdxBuffer
-    // The content of _Channels[0] at this point doesn't matter. We clear it to make state tidy in a debugger but we don't strictly need to.
+    // The content of _Channels[0] at this point doesn't matter. We clearScreen it to make state tidy in a debugger but we don't strictly need to.
     // When we switch to the next channel, we'll copy _CmdBuffer/_IdxBuffer into _Channels[0] and then _Channels[1] into _CmdBuffer/_IdxBuffer
     memset(&_Channels[0], 0, sizeof(ImDrawChannel));
     for (int i = 1; i < channels_count; i++)
@@ -1332,7 +1332,7 @@ bool    ImFontAtlas::Build()
     stbrp_rect* buf_rects = (stbrp_rect*)ImGui::MemAlloc(total_glyph_count * sizeof(stbrp_rect));
     stbtt_pack_range* buf_ranges = (stbtt_pack_range*)ImGui::MemAlloc(total_glyph_range_count * sizeof(stbtt_pack_range));
     memset(buf_packedchars, 0, total_glyph_count * sizeof(stbtt_packedchar));
-    memset(buf_rects, 0, total_glyph_count * sizeof(stbrp_rect));              // Unnecessary but let's clear this for the sake of sanity.
+    memset(buf_rects, 0, total_glyph_count * sizeof(stbrp_rect));              // Unnecessary but let's clearScreen this for the sake of sanity.
     memset(buf_ranges, 0, total_glyph_range_count * sizeof(stbtt_pack_range));
 
     // First font pass: pack all glyphs (no rendering at this point, we are working with rectangles in an infinitely tall texture at this point)
@@ -1428,7 +1428,7 @@ bool    ImFontAtlas::Build()
         dst_font->ConfigDataCount++;
         float off_y = (cfg.MergeMode && cfg.MergeGlyphCenterV) ? (ascent - dst_font->Ascent) * 0.5f : 0.0f;
 
-        dst_font->FallbackGlyph = NULL; // Always clear fallback so FindGlyph can return NULL. It will be set again in BuildLookupTable()
+        dst_font->FallbackGlyph = NULL; // Always clearScreen fallback so FindGlyph can return NULL. It will be set again in BuildLookupTable()
         for (int i = 0; i < tmp.RangesCount; i++)
         {
             stbtt_pack_range& range = tmp.Ranges[i];
@@ -1701,7 +1701,7 @@ ImFont::ImFont()
 
 ImFont::~ImFont()
 {
-    // Invalidate active font so that the user gets a clear crash instead of a dangling pointer.
+    // Invalidate active font so that the user gets a clearScreen crash instead of a dangling pointer.
     // If you want to delete fonts you need to do it between Render() and NewFrame().
     // FIXME-CLEANUP
     /*

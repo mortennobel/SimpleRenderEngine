@@ -44,7 +44,8 @@ int main() {
 
     Renderer r{window};
 
-    r.clearScreen({1,0,0,1});
+    auto renderPass = r.createRenderPass().build();
+    renderPass.clearScreen({1,0,0,1});
     r.swapWindow();
     SDL_Delay(10000);
 

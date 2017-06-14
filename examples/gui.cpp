@@ -31,6 +31,8 @@ bool show_another_window = false;
 ImVec4 clear_color = ImColor(114, 144, 154);
 Shader* shader;
 Mesh* mesh;
+Camera* camera;
+WorldLights* worldLights;
 
 void update();
 
@@ -70,21 +72,23 @@ int main() {
 
     Renderer r{window};
 
-    r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
-    r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
+    camera = new Camera();
+    camera->lookAt({0,0,3},{0,0,0},{0,1,0});
+    camera->setPerspectiveProjection(60,640,480,0.1,100);
     shader = Shader::getStandard();
     mesh = Mesh::create()
             .withCube()
             .build();
 
-
+    worldLights = new WorldLights();
+    worldLights->addLight(Light::create()
+                                  .withPointLight({0, 0,10})
+                                  .withColor({1,0,0})
+                                  .withRange(50)
+                                  .build());
 
     shader->set("specularity", 20.0f);
-    r.setLight(0, Light::create()
-                        .withPointLight({0, 0,10})
-                        .withColor({1,0,0})
-                        .withRange(50)
-                        .build());
+
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(update, 0, 1);
@@ -115,8 +119,12 @@ void update(){
             quit = true;
     }
 
-    r.clearScreen({clear_color.x,clear_color.y,clear_color.z,1.0f});
-    r.draw(mesh, glm::eulerAngleY(timeF), shader);
+    auto renderPass = r.createRenderPass()
+            .withCamera(*camera)
+            .withWorldLights(worldLights)
+            .build();
+    renderPass.clearScreen({clear_color.x,clear_color.y,clear_color.z,1.0f});
+    renderPass.draw(mesh, glm::eulerAngleY(timeF), shader);
 
     ImGui_SRE_NewFrame(window);
 
@@ -143,7 +151,7 @@ void update(){
 
         ImGui::Text("Hello, world!");
         ImGui::SliderFloat("rotationSpeed", &f, 0.0f, 1.0f);
-        ImGui::ColorEdit3("clear color", (float*)&clear_color);
+        ImGui::ColorEdit3("clearScreen color", (float*)&clear_color);
 
         ImGui::Checkbox("Another Window", &show_another_window);
 

@@ -59,6 +59,7 @@ namespace sre {
         const std::vector<float>& getParticleSize();
         const std::vector<uint16_t>& getIndices();
 
+        // get the local axis aligned bounding box
         std::array<glm::vec3,2> getBoundsMinMax();
 
         // get size of the mesh in bytes on GPU
@@ -85,6 +86,6 @@ namespace sre {
 
         void bind();
 
-        friend class Renderer;
+        friend class RenderPass;
     };
 }

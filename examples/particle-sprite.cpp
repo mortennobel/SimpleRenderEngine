@@ -32,6 +32,7 @@ float size = 10.0f;
 float timeF = 0;
 Mesh* particleMesh;
 Shader* shaderParticles;
+Camera* camera;
 
 Mesh* createParticles(){
     std::vector<glm::vec3> positions;
@@ -87,13 +88,17 @@ void update(){
     }
     int w,h;
     SDL_GetWindowSize(window,&w,&h);
-    r.getCamera()->setViewport(0,0,w,h);
+
+    camera->setViewport(0,0,w,h);
     if (ortho) {
-        r.getCamera()->setOrthographicProjection(-4,4,-4,4,-4,100);
+        camera->setOrthographicProjection(-4,4,-4,4,-4,100);
     } else {
-        r.getCamera()->setPerspectiveProjection(60,w,h,0.1,100);
+        camera->setPerspectiveProjection(60,w,h,0.1,100);
     }
-    r.clearScreen({0,0,0.0,1});
+    auto rp = r.createRenderPass()
+        .withCamera(*camera)
+        .build();
+    rp.clearScreen({0,0,0.0,1});
 
 
     ImGui_SRE_NewFrame(window);
@@ -115,7 +120,7 @@ void update(){
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     }
     updateParticles(particleMesh, spriteUV, uvSize, uvRotation, size);
-    r.draw(particleMesh, glm::mat4(1), shaderParticles);
+    rp.draw(particleMesh, glm::mat4(1), shaderParticles);
 
     ImGui::Render();
 
@@ -155,10 +160,10 @@ int main() {
     ImGui_SRE_Init(window);
 
     Renderer r{window};
-	
 
-    r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
-    r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
+    camera = new Camera();
+    camera->lookAt({0,0,3},{0,0,0},{0,1,0});
+    camera->setPerspectiveProjection(60,640,480,0.1,100);
     shaderParticles = Shader::getStandardParticles();
     shaderParticles->set("tex", Texture::create().withFile("examples-data/t_explosionsheet.png").build());
     particleMesh = createParticles();

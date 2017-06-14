@@ -46,9 +46,9 @@ int main() {
     }
 
     Renderer r{window};
-
-    r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
-    r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
+    Camera camera;
+    camera.lookAt({0,0,3},{0,0,0},{0,1,0});
+    camera.setPerspectiveProjection(60,640,480,0.1,100);
     Shader* shader = Shader::getUnlit();
     shader->set("tex", Texture::create().withFile("examples-data/test.jpg").withGenerateMipmaps(true).build());
     // shader->set("tex", Texture::create().withFile("examples-data/twitter.png").withGenerateMipmaps(true).build());
@@ -59,8 +59,11 @@ int main() {
 
     float duration = 10000;
     for (float i=0;i<duration ;i+=16){
-        r.clearScreen({1,0,0,1});
-        r.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shader);
+        auto renderPass = r.createRenderPass()
+                .withCamera(camera)
+                .build();
+        renderPass.clearScreen({1, 0, 0, 1});
+        renderPass.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shader);
         r.swapWindow();
         SDL_Delay(16);
     }

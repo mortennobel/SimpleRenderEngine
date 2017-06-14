@@ -69,9 +69,6 @@ namespace sre {
         viewportY = y;
         viewportWidth = width;
         viewportHeight = height;
-        if (Renderer::instance->getCamera() == this){
-            glViewport(x, y, width, height);
-            glScissor(x, y, width, height);
-        }
     }
+
 }

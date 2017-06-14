@@ -12,3 +12,8 @@
 #else
 #   include  <OpenGL/gl3.h>
 #endif
+
+// For internal debugging of gl errors
+inline void checkGLError();
+
+#include "GL.inl"

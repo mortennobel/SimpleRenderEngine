@@ -14,6 +14,7 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #include "sre/Renderer.hpp"
 #include <cassert>
 #include "sre/Shader.hpp"
+
 #include "sre/Mesh.hpp"
 
 #include "sre/impl/GL.hpp"
@@ -31,7 +32,6 @@ namespace sre {
             std::cerr << "Multiple versions of Renderer initialized. Only a single instance is supported." << std::endl;
         }
         instance = this;
-        camera = &defaultCamera;
 #ifndef EMSCRIPTEN
         glcontext = SDL_GL_CreateContext(window);
 #endif
@@ -64,7 +64,6 @@ namespace sre {
 		if (version.find_first_of("3.1") == 0){
 			glEnable(GL_POINT_SPRITE);
 		}
-        SDL_GetWindowSize(window,&camera->viewportWidth,&camera->viewportHeight);
 
         // reset render stats
         renderStats.frame = 0;
@@ -81,73 +80,8 @@ namespace sre {
         instance = nullptr;
     }
 
-    void Renderer::setLight(int lightIndex, Light light) {
-        assert(lightIndex >= 0);
-        assert(lightIndex < maxSceneLights);
-        sceneLights[lightIndex] = light;
-    }
-
-    Light Renderer::getLight(int lightIndex) {
-        assert(lightIndex >= 0);
-        assert(lightIndex < maxSceneLights);
-        return sceneLights[lightIndex];
-    }
-
-    void Renderer::draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader) {
-        renderStats.drawCalls++;
-        if (camera == nullptr){
-            std::cerr<<"Cannot render. Camera is null"<<std::endl;
-            return;
-        }
-        setupShader(modelTransform, shader);
-
-        mesh->bind();
-        int indexCount = (int) mesh->getIndices().size();
-        if (indexCount == 0){
-            glDrawArrays((GLenum) mesh->getMeshTopology(), 0, mesh->getVertexCount());
-        } else {
-            glDrawElements((GLenum) mesh->getMeshTopology(), indexCount, GL_UNSIGNED_SHORT, 0);
-        }
-    }
-
-    void Renderer::setupShader(const glm::mat4 &modelTransform, Shader *shader)  {
-        shader->bind();
-        if (shader->getType("model").type != UniformType::Invalid) {
-            shader->set("model", modelTransform);
-        }
-        if (shader->getType("view").type != UniformType::Invalid) {
-            shader->set("view", camera->getViewTransform());
-        }
-        if (shader->getType("projection").type != UniformType::Invalid) {
-            shader->set("projection", camera->getProjectionTransform());
-        }
-        if (shader->getType("normalMat").type != UniformType::Invalid){
-            auto normalMatrix = transpose(inverse((glm::mat3)(camera->getViewTransform() * modelTransform)));
-            shader->set("normalMat", normalMatrix);
-        }
-        if (shader->getType("view_height").type != UniformType::Invalid){
-            shader->set("view_height", (float)camera->viewportHeight);
-        }
-
-        shader->setLights(sceneLights, ambientLight, camera->getViewTransform());
-    }
-
-    void Renderer::setCamera(Camera *camera) {
-        this->camera = camera;
-        camera->setViewport(camera->viewportX, camera->viewportY, camera->viewportWidth, camera->viewportHeight);
-    }
-
-    void Renderer::clearScreen(glm::vec4 color, bool clearColorBuffer, bool clearDepthBuffer) {
-        glClearColor(color.r, color.g, color.b, color.a);
-        GLbitfield clear = 0;
-        if (clearColorBuffer){
-            clear |= GL_COLOR_BUFFER_BIT;
-        }
-        if (clearDepthBuffer){
-            glDepthMask(GL_TRUE);
-            clear |= GL_DEPTH_BUFFER_BIT;
-        }
-        glClear(clear);
+    RenderPass::RenderPassBuilder Renderer::createRenderPass(){
+        return RenderPass::RenderPassBuilder(&renderStats);
     }
 
     void Renderer::swapWindow() {
@@ -158,28 +92,18 @@ namespace sre {
         SDL_GL_SwapWindow(window);
     }
 
-    Camera *Renderer::getCamera() {
-        return camera;
-    }
-
-    Camera *Renderer::getDefaultCamera() {
-        return &defaultCamera;
-    }
-
-    glm::vec3 Renderer::getAmbientLight() const {
-        return glm::vec3(ambientLight);
-    }
-
-    void Renderer::setAmbientLight(const glm::vec3 &ambientLight) {
-        float maxAmbient = std::max(ambientLight.x, std::max(ambientLight.y,ambientLight.z));
-        Renderer::ambientLight = glm::vec4(ambientLight, maxAmbient);
-    }
-
     void Renderer::finishGPUCommandBuffer() {
         glFinish();
     }
 
     const RenderStats &Renderer::getRenderStats() {
         return renderStatsLast;
+    }
+
+
+    glm::ivec2 Renderer::getWindowSize() {
+        glm::ivec2 win;
+        SDL_GetWindowSize(window,&win.r,&win.g);
+        return win;
     }
 }

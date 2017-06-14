@@ -4,6 +4,7 @@
 #include "glm/glm.hpp"
 #include "sre/Light.hpp"
 #include "sre/Camera.hpp"
+#include "sre/RenderPass.hpp"
 
 #include "sre/impl/Export.hpp"
 #include "RenderStats.hpp"
@@ -31,7 +32,7 @@ namespace sre {
     /// SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     /// SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
     /// SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-    /// window = SDL_CreateWindow("Hello Engine",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,640,480,SDL_WINDOW_OPENGL);
+    /// window = SDL_CreateWindow("Hello Engine", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, SDL_WINDOW_OPENGL);
     /// Renderer r{window};
     /// r.clearScreen({1,0,0,1});
     /// r.swapWindow();
@@ -46,71 +47,17 @@ namespace sre {
         ~Renderer();
         static constexpr int maxSceneLights = 4;
         static constexpr int sre_version_major = 0;
-        static constexpr int sre_version_minor = 5;
-        static constexpr int sre_version_point = 3;
+        static constexpr int sre_version_minor = 6;
+        static constexpr int sre_version_point = 0;
+
+
+        RenderPass::RenderPassBuilder createRenderPass();
 
         /**
-         * Set the light state - this affects all draw calls after the state has been set.
-         * @sa Light
-         * @param lightIndex (must be between 0 and 3)
-         * @param light
+         * Return the current size of the window
+         * @return window
          */
-        void setLight(int lightIndex, Light light);
-
-        /**
-         * Returns the state of the given light index
-         * @param lightIndex
-         * @return
-         */
-        Light getLight(int lightIndex);
-
-        /**
-         * Set the ambient light color. This is used to add some light to the shadow side of objects. (default: 0.2,0.2,0.2)
-         * @param ambientLight
-         */
-        void setAmbientLight(const glm::vec3 &ambientLight);
-
-        /**
-         * Returns ambient light
-         * @sa setAmbientLight
-         * @return ambient light color
-         */
-        glm::vec3 getAmbientLight() const;
-
-        /**
-         * Draws a mesh instance to the current scene. Uses the current camera object to render the mesh in the scene.
-         * @param mesh
-         * @param modelTransform
-         * @param shader
-         */
-        void draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader);
-
-        /**
-         * Sets the current camera object.
-         * @param camera
-         */
-        void setCamera(Camera *camera);
-
-        /**
-         * Returns the current camera object.
-         * @sa getDefaultCamera()
-         * @return camera pointer
-         */
-        Camera* getCamera();
-
-        /**
-         * Returns a reference to the default camera. This camera is owned by the object and should never be deleted.
-         * @return
-         */
-        Camera* getDefaultCamera();
-
-        /**
-         * Clear the screen with the given color (default behavior is also clearing color and depth buffer)
-         * @param color
-         * @param clearColorBuffer
-         * @param clearDepthBuffer
-         */
-        void clearScreen(glm::vec4 color, bool clearColorBuffer=true, bool clearDepthBuffer=true);
+        glm::ivec2 getWindowSize();
 
         /**
          * Update window with OpenGL rendering by swapping buffers
@@ -122,8 +69,9 @@ namespace sre {
          */
         void finishGPUCommandBuffer();
 
-        // return stats of the last rendered frame
-        // RenderStats only includes data maintained by sre (imgui is not included)
+        /** Return stats of the last rendered frame
+         *  RenderStats only includes data maintained by sre (imgui calls are not included)
+         */
         const RenderStats& getRenderStats();
 
         /**
@@ -131,15 +79,9 @@ namespace sre {
          */
         static Renderer* instance;
     private:
-        glm::vec4 ambientLight = glm::vec4(0.2,0.2,0.2,0.2);
-        Light sceneLights[maxSceneLights];
-        Camera defaultCamera;
-        Camera *camera;
         SDL_Window *window;
         SDL_GLContext glcontext;
         friend class Camera;
-
-        void setupShader(const glm::mat4 &modelTransform, Shader *shader);
 
         RenderStats renderStatsLast;
         RenderStats renderStats;

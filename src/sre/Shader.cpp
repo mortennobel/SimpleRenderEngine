@@ -342,28 +342,29 @@ namespace sre {
         return true;
     }
 
-    bool Shader::setLights(Light value[4], glm::vec4 ambient, glm::mat4 viewTransform){
+    bool Shader::setLights(WorldLights* worldLights, glm::mat4 viewTransform){
         glUseProgram(shaderProgramId);
 
         auto uniform = getType("ambientLight");
         if (uniform.id != -1) {
-            glUniform4fv(uniform.id, 1, glm::value_ptr(ambient));
+            glUniform4fv(uniform.id, 1, glm::value_ptr(worldLights->ambientLight));
         }
 
         glm::vec4 lightPosType[4];
         glm::vec4 lightColorRange[4];
         for (int i=0;i<4;i++){
-            if (value[i].lightType == LightType::Point){
-                lightPosType[i] = glm::vec4(value[i].position, 1);
-            } else if (value[i].lightType == LightType::Directional){
-                lightPosType[i] = glm::vec4(value[i].direction, 0);
-            } else if (value[i].lightType == LightType::Unused){
-                lightPosType[i] = glm::vec4(value[i].direction, 2);
+            auto light = worldLights == nullptr?nullptr:worldLights->getLight(i);
+            if (light == nullptr || light->lightType == LightType::Unused){
+                lightPosType[i] = glm::vec4(0.0f,0.0f,0.0f, 2);
                 continue;
+            } else if (light->lightType == LightType::Point){
+                lightPosType[i] = glm::vec4(light->position, 1);
+            } else if (light->lightType == LightType::Directional){
+                lightPosType[i] = glm::vec4(light->direction, 0);
             }
             // transform to eye space
             lightPosType[i] = viewTransform * lightPosType[i];
-            lightColorRange[i] = glm::vec4(value[i].color, value[i].range);
+            lightColorRange[i] = glm::vec4(light->color, light->range);
         }
         uniform = getType("lightPosType");
         if (uniform.id != -1) {

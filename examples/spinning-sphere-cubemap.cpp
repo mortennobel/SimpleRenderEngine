@@ -16,24 +16,22 @@
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "sre/Debug.hpp"
 
 using namespace sre;
 
-void drawCross(glm::vec3 p, float size = 0.3f){
-    sre::Debug::drawLine(p-glm::vec3{size,0,0}, p+glm::vec3{size,0,0});
-    sre::Debug::drawLine(p-glm::vec3{0,size,0}, p+glm::vec3{0,size,0});
-    sre::Debug::drawLine(p-glm::vec3{0,0,size}, p+glm::vec3{0,0,size});
+void drawCross(RenderPass& rp,glm::vec3 p, float size = 0.3f, glm::vec4 color = {1,0,0,1}){
+    rp.drawLines({p-glm::vec3{size,0,0}, p+glm::vec3{size,0,0}},color);
+    rp.drawLines({p-glm::vec3{0,size,0}, p+glm::vec3{0,size,0}},color);
+    rp.drawLines({p-glm::vec3{0,0,size}, p+glm::vec3{0,0,size}},color);
 }
 
-void drawLight(Light& l, float size){
+void drawLight(RenderPass rp, Light& l, float size){
     if (l.lightType == LightType::Point || l.lightType == LightType::Directional){
-        sre::Debug::setColor({0,0,0,1});
-        drawCross(l.position, size);
+
+        drawCross(rp,l.position, size, {0,0,0,1});
     }
     if (l.lightType == LightType::Directional){
-        sre::Debug::setColor({1,1,0,1});
-        sre::Debug::drawLine(l.position, l.position - l.direction*size*2.0f);
+        rp.drawLines({l.position, l.position - l.direction*size*2.0f},{1,1,0,1});
     }
 }
 
@@ -70,8 +68,9 @@ int main() {
     glm::vec3 eye{0,0,5};
     glm::vec3 at{0,0,0};
     glm::vec3 up{0,1,0};
-    r.getCamera()->lookAt(eye,at, up);
-    r.getCamera()->setPerspectiveProjection(60,640,480,0.1f,100);
+    Camera camera;
+    camera.lookAt(eye,at, up);
+    camera.setPerspectiveProjection(60,640,480,0.1f,100);
     const char* vertexShaderStr = R"(#version 140
 in vec4 position;
 in vec3 normal;
@@ -127,9 +126,12 @@ void main(void)
             if (e.type == SDL_QUIT)
                 quit = true;
         }
-        r.clearScreen({1,0,0,1});
+        auto rp = r.createRenderPass()
+                    .withCamera(camera)
+                    .build();
+        rp.clearScreen({1,0,0,1});
 
-        r.draw(mesh, glm::eulerAngleY(time), shader);
+        rp.draw(mesh, glm::eulerAngleY(time), shader);
         time += 0.016f;
 
         ImGui_SRE_NewFrame(window);
@@ -142,7 +144,7 @@ void main(void)
                         cos(time*-0.2)*5.0f,
             };
         }
-        r.getCamera()->lookAt(eye,at, up);
+        camera.lookAt(eye,at, up);
 
         ImGui::Render();
 

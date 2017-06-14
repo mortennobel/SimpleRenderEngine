@@ -28,6 +28,8 @@ using namespace sre;
 
 SDL_Window *window;
 Shader *shader;
+Camera *camera;
+WorldLights *worldLights;
 Mesh *mesh;
 int i=0;
 
@@ -68,16 +70,18 @@ int main() {
 
     Renderer r{window};
 
-    r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
+    camera = new Camera();
+    camera->lookAt({0,0,3},{0,0,0},{0,1,0});
     shader = Shader::getStandard();
     shader->set("color", glm::vec4(1.0f,1.0f,1.0f,1.0f));
     shader->set("specularity",20.0f);
     mesh = Mesh::create().withCube().build();
-    r.setAmbientLight({0.5,0.5,0.5});
-    r.setLight(0, Light::create().withPointLight({0, 3,0}).withColor({1,0,0}).withRange(20).build());
-    r.setLight(1, Light::create().withPointLight({3, 0,0}).withColor({0,1,0}).withRange(20).build());
-    r.setLight(2, Light::create().withPointLight({0,-3,0}).withColor({0,0,1}).withRange(20).build());
-    r.setLight(3, Light::create().withPointLight({-3,0,0}).withColor({1,1,1}).withRange(20).build());
+    worldLights = new WorldLights();
+    worldLights->setAmbientLight({0.5,0.5,0.5});
+    worldLights->addLight(Light::create().withPointLight({0, 3,0}).withColor({1,0,0}).withRange(20).build());
+    worldLights->addLight(Light::create().withPointLight({3, 0,0}).withColor({0,1,0}).withRange(20).build());
+    worldLights->addLight(Light::create().withPointLight({0,-3,0}).withColor({0,0,1}).withRange(20).build());
+    worldLights->addLight(Light::create().withPointLight({-3,0,0}).withColor({1,1,1}).withRange(20).build());
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(update, 0, 1);
 #else
@@ -94,7 +98,6 @@ int main() {
         SDL_Delay(16);
     }
 
-
     // Close and destroy the window
     SDL_DestroyWindow(window);
 
@@ -107,12 +110,16 @@ int main() {
 
 void update() {
     Renderer &r = *Renderer::instance;
-    int w,h;
+    int w, h;
     SDL_GetWindowSize(window,&w,&h);
-    r.getCamera()->setViewport(0,0,w,h);
-    r.getCamera()->setPerspectiveProjection(60,w,h,0.1,100);
-    r.clearScreen({1,0,0,1});
-    r.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), shader);
+    camera->setViewport(0,0,w,h);
+    camera->setPerspectiveProjection(60,w,h,0.1,100);
+    auto renderPass = r.createRenderPass()
+            .withCamera(*camera)
+            .withWorldLights(worldLights)
+            .build();
+    renderPass.clearScreen({1, 0, 0, 1});
+    renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), shader);
     r.swapWindow();
     i++;
 }

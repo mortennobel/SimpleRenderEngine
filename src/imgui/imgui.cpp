@@ -498,7 +498,7 @@
  - input text: flag to disable live update of the user buffer (also applies to float/int text input) 
  - input text: resize behavior - field could stretch when being edited? hover tooltip shows more text?
  - input text: add ImGuiInputTextFlags_EnterToApply? (off #218)
- - input text: add discard flag (e.g. ImGuiInputTextFlags_DiscardActiveBuffer) or make it easier to clear active focus for text replacement during edition (#725)
+ - input text: add discard flag (e.g. ImGuiInputTextFlags_DiscardActiveBuffer) or make it easier to clearScreen active focus for text replacement during edition (#725)
  - input text multi-line: don't directly call AddText() which does an unnecessary vertex reserve for character count prior to clipping. and/or more line-based clipping to AddText(). and/or reorganize TextUnformatted/RenderText for more efficiency for large text (e.g TextUnformatted could clip and log separately, etc).
  - input text multi-line: way to dynamically grow the buffer without forcing the user to initially allocate for worse case (follow up on #200)
  - input text multi-line: line numbers? status bar? (follow up on #200)
@@ -2354,7 +2354,7 @@ void ImGui::NewFrame()
             }
 
     // No window should be open at the beginning of the frame.
-    // But in order to allow the user to call NewFrame() multiple times without calling Render(), we are doing an explicit clear.
+    // But in order to allow the user to call NewFrame() multiple times without calling Render(), we are doing an explicit clearScreen.
     g.CurrentWindowStack.resize(0);
     g.CurrentPopupStack.resize(0);
     CloseInactivePopups();
@@ -2369,7 +2369,7 @@ void ImGui::Shutdown()
 {
     ImGuiContext& g = *GImGui;
 
-    // The fonts atlas can be used prior to calling NewFrame(), so we clear it even if g.Initialized is FALSE (which would happen if we never called NewFrame)
+    // The fonts atlas can be used prior to calling NewFrame(), so we clearScreen it even if g.Initialized is FALSE (which would happen if we never called NewFrame)
     if (g.IO.Fonts) // Testing for NULL to allow user to NULLify in case of running Shutdown() on multiple contexts. Bit hacky.
         g.IO.Fonts->Clear();
 
@@ -4445,7 +4445,7 @@ void ImGui::End()
         LogFinish();
 
     // Pop
-    // NB: we don't clear 'window->RootWindow'. The pointer is allowed to live until the next call to Begin().
+    // NB: we don't clearScreen 'window->RootWindow'. The pointer is allowed to live until the next call to Begin().
     g.CurrentWindowStack.pop_back();
     if (window->Flags & ImGuiWindowFlags_Popup)
         g.CurrentPopupStack.pop_back();
@@ -4910,7 +4910,7 @@ static void SetWindowScrollY(ImGuiWindow* window, float new_scroll_y)
 
 static void SetWindowPos(ImGuiWindow* window, const ImVec2& pos, ImGuiSetCond cond)
 {
-    // Test condition (NB: bit 0 is always true) and clear flags for next time
+    // Test condition (NB: bit 0 is always true) and clearScreen flags for next time
     if (cond && (window->SetWindowPosAllowFlags & cond) == 0)
         return;
     window->SetWindowPosAllowFlags &= ~(ImGuiSetCond_Once | ImGuiSetCond_FirstUseEver | ImGuiSetCond_Appearing);
@@ -4944,7 +4944,7 @@ ImVec2 ImGui::GetWindowSize()
 
 static void SetWindowSize(ImGuiWindow* window, const ImVec2& size, ImGuiSetCond cond)
 {
-    // Test condition (NB: bit 0 is always true) and clear flags for next time
+    // Test condition (NB: bit 0 is always true) and clearScreen flags for next time
     if (cond && (window->SetWindowSizeAllowFlags & cond) == 0)
         return;
     window->SetWindowSizeAllowFlags &= ~(ImGuiSetCond_Once | ImGuiSetCond_FirstUseEver | ImGuiSetCond_Appearing);
@@ -4986,7 +4986,7 @@ void ImGui::SetWindowSize(const char* name, const ImVec2& size, ImGuiSetCond con
 
 static void SetWindowCollapsed(ImGuiWindow* window, bool collapsed, ImGuiSetCond cond)
 {
-    // Test condition (NB: bit 0 is always true) and clear flags for next time
+    // Test condition (NB: bit 0 is always true) and clearScreen flags for next time
     if (cond && (window->SetWindowCollapsedAllowFlags & cond) == 0)
         return;
     window->SetWindowCollapsedAllowFlags &= ~(ImGuiSetCond_Once | ImGuiSetCond_FirstUseEver | ImGuiSetCond_Appearing);
@@ -9633,7 +9633,7 @@ void ImGui::ValueColor(const char* prefix, ImU32 v)
 static const char* GetClipboardTextFn_DefaultImpl(void*)
 {
     static ImVector<char> buf_local;
-    buf_local.clear();
+    buf_local.clearScreen();
     if (!OpenClipboard(NULL))
         return NULL;
     HANDLE wbuf_handle = GetClipboardData(CF_UNICODETEXT);

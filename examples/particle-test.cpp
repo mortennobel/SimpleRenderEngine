@@ -46,6 +46,8 @@ Shader *shader;
 Mesh* particleMesh;
 Mesh *mesh;
 Shader* shaderParticles;
+Camera* camera;
+WorldLights* worldLights;
 int i=0;
 bool ortho = false;
 bool quit = false;
@@ -85,9 +87,9 @@ int main() {
     ImGui_SRE_Init(window);
 
     Renderer r{window};
-
-    r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
-    r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
+    camera = new Camera();
+    camera->lookAt({0,0,3},{0,0,0},{0,1,0});
+    camera->setPerspectiveProjection(60,640,480,0.1,100);
     shader = Shader::getStandard();
     shader->set("specularity",20.0f);
     shader->set("tex",Texture::getWhiteTexture());
@@ -96,10 +98,11 @@ int main() {
     particleMesh = createParticles();
     mesh = Mesh::create()
             .withCube().build();
-    r.setLight(0, Light::create().withPointLight({ 0, 1,0}).withColor({1,0,0}).withRange(2).build());
-    r.setLight(1, Light::create().withPointLight({ 1, 0,0}).withColor({0,1,0}).withRange(2).build());
-    r.setLight(2, Light::create().withPointLight({ 0,-1,0}).withColor({0,0,1}).withRange(2).build());
-    r.setLight(3, Light::create().withPointLight({-1, 0,0}).withColor({1,1,1}).withRange(2).build());
+    worldLights = new WorldLights();
+    worldLights->addLight(Light::create().withPointLight({ 0, 1,0}).withColor({1,0,0}).withRange(2).build());
+    worldLights->addLight(Light::create().withPointLight({ 1, 0,0}).withColor({0,1,0}).withRange(2).build());
+    worldLights->addLight(Light::create().withPointLight({ 0,-1,0}).withColor({0,0,1}).withRange(2).build());
+    worldLights->addLight(Light::create().withPointLight({-1, 0,0}).withColor({1,1,1}).withRange(2).build());
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(update, 0, 1);
@@ -130,18 +133,24 @@ void update(){
     Renderer &r = *Renderer::instance;
     int w,h;
     SDL_GetWindowSize(window,&w,&h);
-    r.getCamera()->setViewport(0,0,w,h);
+    camera->setViewport(0,0,w,h);
     float aspect = w/(float)h;
     if (ortho){
-        r.getCamera()->setOrthographicProjection(-2*aspect,2*aspect,-2,2,-2,100);
+        camera->setOrthographicProjection(-2*aspect,2*aspect,-2,2,-2,100);
     } else {
-        r.getCamera()->setPerspectiveProjection(60,w,h,0.1,100);
+        camera->setPerspectiveProjection(60,w,h,0.1,100);
     }
-    r.clearScreen({0,0,0.3,1});
+    auto rp = r.createRenderPass()
+            .withCamera(*camera)
+            .withWorldLights(worldLights)
+            .build();
+
+
+    rp.clearScreen({0,0,0.3,1});
     shader->set("tex", Texture::getWhiteTexture());
-    r.draw(mesh, glm::eulerAngleY(-glm::radians((float)i))*glm::scale(glm::mat4(1),{0.3f,0.3f,0.3f}), shader);
+    rp.draw(mesh, glm::eulerAngleY(-glm::radians((float)i))*glm::scale(glm::mat4(1),{0.3f,0.3f,0.3f}), shader);
     shaderParticles->set("tex", Texture::getSphereTexture());
-    r.draw(particleMesh, glm::eulerAngleY(glm::radians((float)i)), shaderParticles);
+    rp.draw(particleMesh, glm::eulerAngleY(glm::radians((float)i)), shaderParticles);
 
 
     ImGui_SRE_NewFrame(window);

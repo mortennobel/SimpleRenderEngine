@@ -6,6 +6,7 @@
 #include "glm/glm.hpp"
 #include "sre/Light.hpp"
 #include "sre/BlendType.hpp"
+#include "sre/WorldLights.hpp"
 
 #include "sre/impl/Export.hpp"
 
@@ -134,7 +135,7 @@ namespace sre {
         BlendType getBlend();
 
     private:
-        bool setLights(Light value[4], glm::vec4 ambient, glm::mat4 viewTransform);
+        bool setLights(WorldLights* worldLights, glm::mat4 viewTransform);
 
         Shader();
 
@@ -151,7 +152,7 @@ namespace sre {
         void updateUniforms();
 
         friend class Mesh;
-        friend class Renderer;
+        friend class RenderPass;
     public:
         static void translateToGLSLES(std::string &source, bool vertexShader);
     };

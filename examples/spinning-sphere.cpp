@@ -16,24 +16,22 @@
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include "sre/Debug.hpp"
 
 using namespace sre;
 
-void drawCross(glm::vec3 p, float size = 0.3f){
-    sre::Debug::drawLine(p-glm::vec3{size,0,0}, p+glm::vec3{size,0,0});
-    sre::Debug::drawLine(p-glm::vec3{0,size,0}, p+glm::vec3{0,size,0});
-    sre::Debug::drawLine(p-glm::vec3{0,0,size}, p+glm::vec3{0,0,size});
+void drawCross(RenderPass& rp, glm::vec3 p, float size = 0.3f){
+    rp.drawLines({p-glm::vec3{size,0,0}, p+glm::vec3{size,0,0}},{0,0,0,1});
+    rp.drawLines({p-glm::vec3{0,size,0}, p+glm::vec3{0,size,0}},{0,0,0,1});
+    rp.drawLines({p-glm::vec3{0,0,size}, p+glm::vec3{0,0,size}},{0,0,0,1});
 }
 
-void drawLight(Light& l, float size){
-    if (l.lightType == LightType::Point || l.lightType == LightType::Directional){
-        sre::Debug::setColor({0,0,0,1});
-        drawCross(l.position, size);
+void drawLight(RenderPass& rp, Light* l, float size){
+    if (l->lightType == LightType::Point || l->lightType == LightType::Directional){
+
+        drawCross(rp, l->position, size);
     }
-    if (l.lightType == LightType::Directional){
-        sre::Debug::setColor({1,1,0,1});
-        sre::Debug::drawLine(l.position, l.position - l.direction*size*2.0f);
+    if (l->lightType == LightType::Directional){
+        rp.drawLines({l->position, l->position - l->direction*size*2.0f},{1,1,0,1});
     }
 }
 
@@ -70,8 +68,9 @@ int main() {
     glm::vec3 eye{0,0,5};
     glm::vec3 at{0,0,0};
     glm::vec3 up{0,1,0};
-    r.getCamera()->lookAt(eye,at, up);
-    r.getCamera()->setPerspectiveProjection(60,640,480,0.1f,100);
+    Camera camera;
+    camera.lookAt(eye,at, up);
+    camera.setPerspectiveProjection(60,640,480,0.1f,100);
     Shader* shader = Shader::getStandard();
     float specularity = 20;
     glm::vec4 color {1,1,1,1};
@@ -79,12 +78,11 @@ int main() {
     shader->set("color", color);
     Mesh* mesh = Mesh::create().withSphere().build();
 
-    Light lights[] = {
-            Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build(),
-            Light::create().build(),
-            Light::create().build(),
-            Light::create().build()
-    };
+    WorldLights worldLights;
+    worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build());
+    worldLights.addLight(Light::create().build());
+    worldLights.addLight(Light::create().build());
+    worldLights.addLight(Light::create().build());
 
     bool debugLight = true;
     bool animatedLight = true;
@@ -101,10 +99,14 @@ int main() {
             if (e.type == SDL_QUIT)
                 quit = true;
         }
-        r.clearScreen({1,0,0,1});
-        drawCross({2,2,2});
-        drawCross({-2,-2,-2});
-        r.draw(mesh, glm::eulerAngleY(time), shader);
+        auto renderPass = r.createRenderPass()
+                .withCamera(camera)
+                .withWorldLights(&worldLights)
+                .build();
+        renderPass.clearScreen({1,0,0,1});
+        drawCross(renderPass,{2,2,2});
+        drawCross(renderPass,{-2,-2,-2});
+        renderPass.draw(mesh, glm::eulerAngleY(time), shader);
         time += 0.016f;
 
         ImGui_SRE_NewFrame(window);
@@ -125,9 +127,10 @@ int main() {
                         cos(time*-0.2)*5.0f,
             };
         }
-        r.getCamera()->lookAt(eye,at, up);
+
+        camera.lookAt(eye,at, up);
         if (animatedLight){
-            lights[0].position = {
+            worldLights.getLight(0)->position = {
                     sin(time)*1.5f,
                     sin(time*2)*0.5f,
                     cos(time)*1.5f,
@@ -139,25 +142,24 @@ int main() {
         }
         // Show Label (with invisible window)
         for (int i=0;i<4;i++){
+            auto l = worldLights.getLight(i);
             if (debugLight){
-                drawLight(lights[i],debugLightSize);
+                drawLight(renderPass,l,debugLightSize);
             }
             if (ImGui::TreeNode(labels[i].c_str())){
-                auto lightType = (int)lights[i].lightType;
+                auto lightType = (int)l->lightType;
                 ImGui::RadioButton("Point", &lightType, 0); ImGui::SameLine();
                 ImGui::RadioButton("Directional", &lightType, 1); ImGui::SameLine();
                 ImGui::RadioButton("Unused", &lightType, 2);
-                lights[i].lightType = (LightType)lightType;
+                l->lightType = (LightType)lightType;
 
-                ImGui::ColorEdit3("Color", &(lights[i].color.x));
-                ImGui::DragFloat3("Position", &(lights[i].position.x));
-                ImGui::DragFloat3("Direction", &(lights[i].direction.x));
-                ImGui::DragFloat("Range", &(lights[i].range),1,0,30);
-
+                ImGui::ColorEdit3("Color", &(l->color.x));
+                ImGui::DragFloat3("Position", &(l->position.x));
+                ImGui::DragFloat3("Direction", &(l->direction.x));
+                ImGui::DragFloat("Range", &(l->range),1,0,30);
 
                 ImGui::TreePop();
             }
-            r.setLight(i, lights[i]);
         }
 
         if (ImGui::TreeNode("Material")){

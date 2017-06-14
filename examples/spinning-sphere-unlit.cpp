@@ -3,9 +3,11 @@
 #include <fstream>
 
 #include "sre/Texture.hpp"
+
 #include "sre/Renderer.hpp"
 #include "sre/Camera.hpp"
 #include "sre/Mesh.hpp"
+#include "sre/RenderPass.hpp"
 #include "sre/Shader.hpp"
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
@@ -46,9 +48,10 @@ int main() {
     }
 
     Renderer r{window};
+    Camera camera;
 
-    r.getCamera()->lookAt({0,0,3},{0,0,0},{0,1,0});
-    r.getCamera()->setPerspectiveProjection(60,640,480,0.1,100);
+    camera.lookAt({0,0,3},{0,0,0},{0,1,0});
+    camera.setPerspectiveProjection(60,640,480,0.1,100);
     Shader* shader = Shader::getUnlit();
     Mesh* mesh = Mesh::create()
             .withSphere()
@@ -56,9 +59,13 @@ int main() {
     shader->set("color", {0,1,0,1});
 
     float duration = 10000;
+    
     for (float i=0;i<duration ;i+=16){
-        r.clearScreen({1,0,0,1});
-        r.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shader);
+        RenderPass rp = r.createRenderPass()
+                .withCamera(camera)
+                .build();
+        rp.clearScreen({1, 0, 0, 1});
+        rp.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shader);
         r.swapWindow();
         SDL_Delay(16);
     }

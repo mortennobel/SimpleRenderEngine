@@ -81,6 +81,7 @@ namespace sre {
         glm::mat4 projectionTransform;
         int viewportX, viewportY, viewportWidth, viewportHeight;
 
-        friend class Renderer;
+        friend class RenderPass;
+
     };
 }
