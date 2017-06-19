@@ -5,6 +5,7 @@
 #include "sre/Texture.hpp"
 #include "sre/Renderer.hpp"
 #include "sre/Camera.hpp"
+#include "sre/Material.hpp"
 #include "sre/Mesh.hpp"
 #include "sre/Shader.hpp"
 #define SDL_MAIN_HANDLED
@@ -72,21 +73,22 @@ int main() {
     camera.lookAt(eye,at, up);
     camera.setPerspectiveProjection(60,640,480,0.1f,100);
     Shader* shader = Shader::getStandard();
+    Material mat(shader);
     float specularity = 20;
     glm::vec4 color {1,1,1,1};
-    shader->set("specularity", 20.0f);
-    shader->set("color", color);
+
     Mesh* mesh = Mesh::create().withSphere().build();
 
     WorldLights worldLights;
     worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build());
-    worldLights.addLight(Light::create().build());
-    worldLights.addLight(Light::create().build());
-    worldLights.addLight(Light::create().build());
+    worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build());
+    worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build());
+    worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build());
 
     bool debugLight = true;
     bool animatedLight = true;
     bool animatedCamera = true;
+
     float debugLightSize = 0.2;
     bool quit = false;
     SDL_Event e;
@@ -99,6 +101,8 @@ int main() {
             if (e.type == SDL_QUIT)
                 quit = true;
         }
+        mat.setSpecularity(specularity);
+        mat.setColor(color);
         auto renderPass = r.createRenderPass()
                 .withCamera(camera)
                 .withWorldLights(&worldLights)
@@ -106,7 +110,7 @@ int main() {
         renderPass.clearScreen({1,0,0,1});
         drawCross(renderPass,{2,2,2});
         drawCross(renderPass,{-2,-2,-2});
-        renderPass.draw(mesh, glm::eulerAngleY(time), shader);
+        renderPass.draw(mesh, glm::eulerAngleY(time), &mat);
         time += 0.016f;
 
         ImGui_SRE_NewFrame(window);
@@ -137,7 +141,7 @@ int main() {
             };
         }
         ImGui::Checkbox("DebugLight",&debugLight);
-        if (debugLight){
+        if (debugLight) {
             ImGui::DragFloat("DebugLightSize", &debugLightSize,0.1f,0,3);
         }
         // Show Label (with invisible window)
@@ -164,9 +168,8 @@ int main() {
 
         if (ImGui::TreeNode("Material")){
             ImGui::DragFloat("Specularity", &specularity,1,0,200);
-            shader->set("specularity", specularity);
+            mat.setSpecularity(specularity);
             ImGui::ColorEdit3("Color", &(color.x));
-            shader->set("color", color);
             ImGui::TreePop();
         }
 

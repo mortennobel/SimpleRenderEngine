@@ -6,6 +6,7 @@
 #include "sre/Renderer.hpp"
 #include "sre/Camera.hpp"
 #include "sre/Mesh.hpp"
+#include "sre/Material.hpp"
 #include "sre/Shader.hpp"
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
@@ -31,6 +32,7 @@ bool show_another_window = false;
 ImVec4 clear_color = ImColor(114, 144, 154);
 Shader* shader;
 Mesh* mesh;
+Material* material;
 Camera* camera;
 WorldLights* worldLights;
 
@@ -87,7 +89,8 @@ int main() {
                                   .withRange(50)
                                   .build());
 
-    shader->set("specularity", 20.0f);
+    material = new Material(shader);
+    material->setSpecularity(20);
 
 
 #ifdef __EMSCRIPTEN__
@@ -124,7 +127,7 @@ void update(){
             .withWorldLights(worldLights)
             .build();
     renderPass.clearScreen({clear_color.x,clear_color.y,clear_color.z,1.0f});
-    renderPass.draw(mesh, glm::eulerAngleY(timeF), shader);
+    renderPass.draw(mesh, glm::eulerAngleY(timeF), material);
 
     ImGui_SRE_NewFrame(window);
 

@@ -6,6 +6,7 @@
 #include "sre/Renderer.hpp"
 #include "sre/Camera.hpp"
 #include "sre/Mesh.hpp"
+#include "sre/Material.hpp"
 #include "sre/Shader.hpp"
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
@@ -46,6 +47,8 @@ Shader *shader;
 Mesh* particleMesh;
 Mesh *mesh;
 Shader* shaderParticles;
+Material* defaultMat;
+Material* particleMat;
 Camera* camera;
 WorldLights* worldLights;
 int i=0;
@@ -91,9 +94,11 @@ int main() {
     camera->lookAt({0,0,3},{0,0,0},{0,1,0});
     camera->setPerspectiveProjection(60,640,480,0.1,100);
     shader = Shader::getStandard();
-    shader->set("specularity",20.0f);
-    shader->set("tex",Texture::getWhiteTexture());
     shaderParticles = Shader::getStandardParticles();
+    defaultMat = new Material(shader);
+    particleMat = new Material(shaderParticles);
+    defaultMat->setSpecularity(20.0f);
+    particleMat->setTexture(Texture::getSphereTexture());
 
     particleMesh = createParticles();
     mesh = Mesh::create()
@@ -147,10 +152,8 @@ void update(){
 
 
     rp.clearScreen({0,0,0.3,1});
-    shader->set("tex", Texture::getWhiteTexture());
-    rp.draw(mesh, glm::eulerAngleY(-glm::radians((float)i))*glm::scale(glm::mat4(1),{0.3f,0.3f,0.3f}), shader);
-    shaderParticles->set("tex", Texture::getSphereTexture());
-    rp.draw(particleMesh, glm::eulerAngleY(glm::radians((float)i)), shaderParticles);
+    rp.draw(mesh, glm::eulerAngleY(-glm::radians((float)i))*glm::scale(glm::mat4(1),{0.3f,0.3f,0.3f}), defaultMat);
+    rp.draw(particleMesh, glm::eulerAngleY(glm::radians((float)i)), particleMat);
 
 
     ImGui_SRE_NewFrame(window);

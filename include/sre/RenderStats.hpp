@@ -12,5 +12,8 @@ namespace sre {
         int textureBytes;
         int shaderCount;
         int drawCalls;
+        int stateChangesShader;
+        int stateChangesMaterial;
+        int stateChangesMesh;
     };
 }

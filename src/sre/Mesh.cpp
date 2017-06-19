@@ -223,8 +223,8 @@ namespace sre {
     Mesh::MeshBuilder &Mesh::MeshBuilder::withSphere() {
         using namespace glm;
         using namespace std;
-        int stacks = 16/2;
-        int slices = 32/2;
+        int stacks = 16;
+        int slices = 32;
         float radius = 1.0f;
         size_t vertexCount = (size_t) ((stacks + 1) * slices);
         vector<vec3> vertices{vertexCount};
@@ -234,17 +234,17 @@ namespace sre {
         int index = 0;
         // create vertices
         for (unsigned short j = 0; j <= stacks; j++) {
-            float latitude1 = (glm::pi<float>() / stacks) * j - (glm::pi<float>() / 2);
-            float sinLat1 = sin(latitude1);
-            float cosLat1 = cos(latitude1);
+            double latitude1 = (glm::pi<double>() / stacks) * j - (glm::pi<double>() / 2);
+            double sinLat1 = sin(latitude1);
+            double cosLat1 = cos(latitude1);
             for (int i = 0; i < slices; i++) {
-                float longitude = ((glm::pi<float>() * 2) / slices) * i;
-                float sinLong = sin(longitude);
-                float cosLong = cos(longitude);
-                vec3 normal{cosLong * cosLat1,
+                double longitude = ((glm::pi<double>() * 2) / slices) * i;
+                double sinLong = sin(longitude);
+                double cosLong = cos(longitude);
+                dvec3 normalD{cosLong * cosLat1,
                             sinLat1,
                             sinLong * cosLat1};
-                normal = normalize(normal);
+                vec3 normal = (vec3)normalize(normalD);
                 normals[index] = normal;
                 uvs[index] = vec4{1 - i /(float) slices, j /(float) stacks,0,0};
                 vertices[index] = normal * radius;

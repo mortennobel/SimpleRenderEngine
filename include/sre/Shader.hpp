@@ -16,6 +16,7 @@
 
 namespace sre {
     class Texture;
+    class Material;
 
     enum class UniformType {
         Int,
@@ -29,7 +30,7 @@ namespace sre {
     };
 
     struct DllExport Uniform {
-		char* name[50];
+		std::string name;
         int id;
         UniformType type;
         // 1 means not array
@@ -48,6 +49,7 @@ namespace sre {
      *    - Parameters:
      *      - color (vec4) (default white)
      *      - tex (Texture*) (default white texture)
+     *      - specular (float) (default 0.0) (means no specular)
      * - Shader::getUnlit()
      *    - Uses the camera states as well as the color and texture parameters to define the surface color
      *    - Parameters:
@@ -62,28 +64,31 @@ namespace sre {
      *    - Similar to getUnlitSprite() but with no depth write
      *    - Parameters:
      *      - tex (Texture*) (default alpha sphere texture)
+     *
+     *   Shaders have two kinds of uniforms variables:
+     *     - Global uniforms (prefixed with 'g_' which is automatically set by the engine)
+     *     - Material uniform (without 'g_' prefix). Which are exposed to materials.
      */
     class DllExport Shader {
     public:
 
         class DllExport ShaderBuilder {
         public:
-            ShaderBuilder& withSource(const char* vertexShaderGLSL, const char* fragmentShaderGLSL);
+            ShaderBuilder& withSource(const std::string& vertexShaderGLSL, const std::string& fragmentShaderGLSL);
             ShaderBuilder& withSourceStandard();
             ShaderBuilder& withSourceUnlit();
             ShaderBuilder& withSourceUnlitSprite();
             ShaderBuilder& withSourceStandardParticles();
             ShaderBuilder& withSourceDebugUV();
             ShaderBuilder& withSourceDebugNormals();
-            ShaderBuilder& widthDepthTest(bool enable);
             ShaderBuilder& withDepthTest(bool enable);
             ShaderBuilder& withDepthWrite(bool enable);
             ShaderBuilder& withBlend(BlendType blendType);
             Shader* build();
         private:
             ShaderBuilder() = default;
-            const char* vertexShaderStr;
-            const char* fragmentShaderStr;
+            std::string vertexShaderStr;
+            std::string fragmentShaderStr;
             bool depthTest = true;
             bool depthWrite = true;
             BlendType blend = BlendType::Disabled;
@@ -115,18 +120,9 @@ namespace sre {
 
         ~Shader();
 
-        bool contains(const char* name);
+        bool contains(const std::string & name);
 
-        Uniform getType(const char* name);
-
-        bool set(const char *name, glm::mat4 value);
-        bool set(const char *name, glm::mat3 value);
-        bool set(const char *name, glm::vec4 value);
-        bool set(const char *name, float value);
-        bool set(const char *name, int value);
-
-        /// textureSlot: If sampling multiple textures from a single shader, each texture must be bound to a unique texture slot
-        bool set(const char *name, Texture* texture, unsigned int textureSlot = 0);
+        Uniform getType(const std::string& name);
 
         bool isDepthTest();
 
@@ -139,7 +135,7 @@ namespace sre {
 
         Shader();
 
-        bool build(const char *vertexShader, const char *fragmentShader);
+        bool build(const std::string& vertexShader, const std::string& fragmentShader);
 
         void bind();
 
@@ -152,7 +148,18 @@ namespace sre {
         void updateUniforms();
 
         friend class Mesh;
+        friend class Material;
         friend class RenderPass;
+
+        int uniformLocationModel;
+        int uniformLocationView;
+        int uniformLocationProjection;
+        int uniformLocationNormal;
+        int uniformLocationViewport;
+        int uniformLocationAmbientLight;
+        int uniformLocationLightPosType;
+        int uniformLocationLightColorRange;
+
     public:
         static void translateToGLSLES(std::string &source, bool vertexShader);
     };

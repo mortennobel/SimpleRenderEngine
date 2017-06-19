@@ -11,6 +11,10 @@
 using namespace std;
 
 namespace sre {
+    WorldLights::WorldLights(){
+        setAmbientLight(glm::vec3(0.2,0.2,0.2));
+    }
+
     int WorldLights::addLight(const Light & light){
         lights.push_back(light);
         return lights.size()-1;

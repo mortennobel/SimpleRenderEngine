@@ -12,6 +12,7 @@
 namespace sre {
     class DllExport WorldLights {
     public:
+        WorldLights();
         int addLight(const Light & light);
         void removeLight(int index);
         Light* getLight(int index);

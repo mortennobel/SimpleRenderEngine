@@ -88,6 +88,9 @@ namespace sre {
         renderStatsLast = renderStats;
         renderStats.frame++;
         renderStats.drawCalls=0;
+        renderStats.stateChangesShader = 0;
+        renderStats.stateChangesMesh = 0;
+        renderStats.stateChangesMaterial = 0;
 
         SDL_GL_SwapWindow(window);
     }

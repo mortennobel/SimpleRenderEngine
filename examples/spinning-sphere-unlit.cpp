@@ -7,6 +7,7 @@
 #include "sre/Renderer.hpp"
 #include "sre/Camera.hpp"
 #include "sre/Mesh.hpp"
+#include "sre/Material.hpp"
 #include "sre/RenderPass.hpp"
 #include "sre/Shader.hpp"
 #define SDL_MAIN_HANDLED
@@ -56,7 +57,8 @@ int main() {
     Mesh* mesh = Mesh::create()
             .withSphere()
             .build();
-    shader->set("color", {0,1,0,1});
+    Material* mat = new Material(shader);
+    mat->setColor({0,1,0,1});
 
     float duration = 10000;
     
@@ -65,7 +67,7 @@ int main() {
                 .withCamera(camera)
                 .build();
         rp.clearScreen({1, 0, 0, 1});
-        rp.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shader);
+        rp.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), mat);
         r.swapWindow();
         SDL_Delay(16);
     }

@@ -6,6 +6,7 @@
 #include "sre/Renderer.hpp"
 #include "sre/Camera.hpp"
 #include "sre/Mesh.hpp"
+#include "sre/Material.hpp"
 #include "sre/Shader.hpp"
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
@@ -50,9 +51,8 @@ int main() {
     camera.lookAt({0,0,3},{0,0,0},{0,1,0});
     camera.setPerspectiveProjection(60,640,480,0.1,100);
     Shader* shader = Shader::getUnlit();
-    shader->set("tex", Texture::create().withFile("examples-data/test.jpg").withGenerateMipmaps(true).build());
-    // shader->set("tex", Texture::create().withFile("examples-data/twitter.png").withGenerateMipmaps(true).build());
-    // shader->set("tex", Texture::create().withFile("examples-data/cartman.png").withGenerateMipmaps(true).build());
+    Material* mat = new Material(shader);
+    mat->setTexture(Texture::create().withFile("examples-data/test.jpg").withGenerateMipmaps(true).build());
     Mesh* mesh = Mesh::create()
             .withCube()
             .build();
@@ -63,7 +63,7 @@ int main() {
                 .withCamera(camera)
                 .build();
         renderPass.clearScreen({1, 0, 0, 1});
-        renderPass.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shader);
+        renderPass.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), mat);
         r.swapWindow();
         SDL_Delay(16);
     }

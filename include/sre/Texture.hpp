@@ -71,6 +71,7 @@ public:
     // returns true if texture sampling is filtered when sampling (bi-linear or tri-linear sampling).
     bool isFilterSampling();
     bool isWrapTextureCoordinates();
+    bool isCubemap();
 
     // get size of the texture in bytes on GPU
     int getDataSize();
@@ -86,5 +87,8 @@ private:
     bool wrapTextureCoordinates = true;
     unsigned int textureId;
     friend class Shader;
+    friend class Material;
+
+    static Texture *getDefaultCubemapTexture();
 };
 }

@@ -15,6 +15,7 @@
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <sre/Material.hpp>
 
 using namespace sre;
 
@@ -56,13 +57,16 @@ int main() {
             .withCube()
             .build();
 
+    Material mat(shader);
+    mat.setColor(glm::vec4(1,1,0,1));
+
     float duration = 10000;
     for (float i=0;i<duration ;i+=16){
         RenderPass renderPass = r.createRenderPass()
                 .withCamera(camera)
                 .build();
         renderPass.clearScreen({1, 0, 0, 1});
-        renderPass.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), shader);
+        renderPass.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), &mat);
         r.swapWindow();
         SDL_Delay(16);
     }

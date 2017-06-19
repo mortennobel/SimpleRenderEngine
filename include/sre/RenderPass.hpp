@@ -15,9 +15,11 @@ namespace sre {
     class Renderer;
 
     class Shader;
+    class Material;
     class RenderStats;
 
     // A render pass encapsulates some render states and allows adding draw-calls.
+    // Materials and shaders are assumed not to be modified during a renderpass.
     // Note that only one render pass object can be active at a time.
     class DllExport RenderPass {
     public:
@@ -64,11 +66,15 @@ namespace sre {
          * @param modelTransform
          * @param shader
          */
-        void draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader);
+        void draw(Mesh *mesh, glm::mat4 modelTransform, Material *material);
     private:
         RenderPass(Camera&& camera, WorldLights* worldLights, RenderStats* renderStats);
 
         void setupShader(const glm::mat4 &modelTransform, Shader *shader);
+
+        Shader* lastBoundShader = nullptr;
+        Material* lastBoundMaterial = nullptr;
+        Mesh* lastBoundMesh = nullptr;
 
         Camera camera;
         WorldLights* worldLights;

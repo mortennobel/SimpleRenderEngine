@@ -6,6 +6,7 @@
 #include "sre/Renderer.hpp"
 #include "sre/Camera.hpp"
 #include "sre/Mesh.hpp"
+#include "sre/Material.hpp"
 #include "sre/Shader.hpp"
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
@@ -31,6 +32,7 @@ Shader *shader;
 Camera *camera;
 WorldLights *worldLights;
 Mesh *mesh;
+Material *material;
 int i=0;
 
 void update();
@@ -73,8 +75,10 @@ int main() {
     camera = new Camera();
     camera->lookAt({0,0,3},{0,0,0},{0,1,0});
     shader = Shader::getStandard();
-    shader->set("color", glm::vec4(1.0f,1.0f,1.0f,1.0f));
-    shader->set("specularity",20.0f);
+    material = new Material(shader);
+    material->setColor({1.0f,1.0f,1.0f,1.0f});
+    material->setSpecularity(20.0f);
+
     mesh = Mesh::create().withCube().build();
     worldLights = new WorldLights();
     worldLights->setAmbientLight({0.5,0.5,0.5});
@@ -119,7 +123,7 @@ void update() {
             .withWorldLights(worldLights)
             .build();
     renderPass.clearScreen({1, 0, 0, 1});
-    renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), shader);
+    renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), material);
     r.swapWindow();
     i++;
 }

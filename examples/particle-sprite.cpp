@@ -6,6 +6,7 @@
 #include "sre/Renderer.hpp"
 #include "sre/Camera.hpp"
 #include "sre/Mesh.hpp"
+#include "sre/Material.hpp"
 #include "sre/Shader.hpp"
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
@@ -32,6 +33,7 @@ float size = 10.0f;
 float timeF = 0;
 Mesh* particleMesh;
 Shader* shaderParticles;
+Material* material;
 Camera* camera;
 
 Mesh* createParticles(){
@@ -120,7 +122,7 @@ void update(){
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     }
     updateParticles(particleMesh, spriteUV, uvSize, uvRotation, size);
-    rp.draw(particleMesh, glm::mat4(1), shaderParticles);
+    rp.draw(particleMesh, glm::mat4(1), material);
 
     ImGui::Render();
 
@@ -165,7 +167,9 @@ int main() {
     camera->lookAt({0,0,3},{0,0,0},{0,1,0});
     camera->setPerspectiveProjection(60,640,480,0.1,100);
     shaderParticles = Shader::getStandardParticles();
-    shaderParticles->set("tex", Texture::create().withFile("examples-data/t_explosionsheet.png").build());
+    material = new Material(shaderParticles);
+    material->setTexture(Texture::create().withFile("examples-data/t_explosionsheet.png").build());
+
     particleMesh = createParticles();
 
 #ifdef __EMSCRIPTEN__

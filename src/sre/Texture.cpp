@@ -360,4 +360,13 @@ namespace sre {
 		}
 		return res;
 	}
+
+    bool Texture::isCubemap() {
+        return target != GL_TEXTURE_2D;
+    }
+
+    Texture *Texture::getDefaultCubemapTexture() {
+        // todo implement
+        return nullptr;
+    }
 }

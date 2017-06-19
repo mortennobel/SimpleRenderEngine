@@ -32,7 +32,7 @@ namespace sre{
 
     Light::LightBuilder& Light::LightBuilder::withDirectionalLight(glm::vec3 direction) {
         light->lightType = LightType::Directional;
-        light->direction = direction;
+        light->direction = glm::normalize(direction);
         return *this;
     }
 

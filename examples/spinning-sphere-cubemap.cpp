@@ -6,6 +6,7 @@
 #include "sre/Renderer.hpp"
 #include "sre/Camera.hpp"
 #include "sre/Mesh.hpp"
+#include "sre/Material.hpp"
 #include "sre/Shader.hpp"
 #define SDL_MAIN_HANDLED
 #include "SDL.h"
@@ -77,13 +78,13 @@ in vec3 normal;
 in vec2 uv;
 out vec3 vNormal;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
-uniform mat3 normalMat;
+uniform mat4 g_model;
+uniform mat4 g_view;
+uniform mat4 g_projection;
+uniform mat3 g_normal;
 
 void main(void) {
-    gl_Position = projection * view * model * position;
+    gl_Position = g_projection * g_view * g_model * position;
     vNormal = normal;
 }
 )";
@@ -99,7 +100,7 @@ void main(void)
 }
 )";
     Shader* shader = Shader::create().withSource(vertexShaderStr, fragmentShaderStr).build();
-
+    Material* material = new Material(shader);
     auto tex = Texture::create()
             .withFileCubemap("examples-data/cube-posx.png", Texture::TextureCubemapSide::PositiveX)
             .withFileCubemap("examples-data/cube-negx.png", Texture::TextureCubemapSide::NegativeX)
@@ -109,7 +110,7 @@ void main(void)
             .withFileCubemap("examples-data/cube-negz.png", Texture::TextureCubemapSide::NegativeZ)
             .build();
 
-    shader->set("tex", tex);
+    material->setTexture(tex);
 
     Mesh* mesh = Mesh::create().withSphere().build();
 
@@ -131,7 +132,7 @@ void main(void)
                     .build();
         rp.clearScreen({1,0,0,1});
 
-        rp.draw(mesh, glm::eulerAngleY(time), shader);
+        rp.draw(mesh, glm::eulerAngleY(time), material);
         time += 0.016f;
 
         ImGui_SRE_NewFrame(window);

@@ -4,6 +4,7 @@
 
 #include "sre/Texture.hpp"
 #include "sre/Renderer.hpp"
+#include "sre/Material.hpp"
 #include "sre/Camera.hpp"
 #include "sre/Mesh.hpp"
 #include "sre/Shader.hpp"
@@ -51,7 +52,6 @@ int main() {
     camera.lookAt({0,0,3},{0,0,0},{0,1,0});
     camera.setPerspectiveProjection(60,640,480,0.1f,100);
     Shader* shader = Shader::getStandard();
-
     Mesh* mesh = Mesh::create()
             .withSphere()
             .build();
@@ -59,10 +59,17 @@ int main() {
     WorldLights worldLights;
     worldLights.addLight(Light::create()
             .withDirectionalLight(glm::normalize(glm::vec3(1,1,1)))
-            .withRange(10)
             .build());
 
-    float duration = 10000;
+    Material* mat1 = new Material(shader);
+    mat1->setColor({1,1,1,1});
+    mat1->setSpecularity(50);
+
+    Material* mat2 = new Material(shader);
+    mat2->setColor({1,0,0,1});
+    mat2->setSpecularity(0);
+
+    float duration = 100000;
     glm::mat4 pos1 = glm::translate(glm::mat4(1), {-1,0,0});
     glm::mat4 pos2 = glm::translate(glm::mat4(1), {1,0,0});
     for (float i=0;i<duration ;i+=16){
@@ -71,14 +78,10 @@ int main() {
                     .withWorldLights(&worldLights)
                     .build();
         rp.clearScreen({1,0,0,1});
-        shader->set("color",{1,1,1,1});
-        shader->set("specularity",50.0f);
-        shader->set("tex",Texture::getWhiteTexture());
-        rp.draw(mesh, pos1, shader);
-        shader->set("color",{1,0,0,1});
-        shader->set("specularity",0.0f);
-        shader->set("tex",Texture::getWhiteTexture());
-        rp.draw(mesh, pos2, shader);
+
+        rp.draw(mesh, pos1, mat1);
+        rp.draw(mesh, pos2, mat2);
+
         r.swapWindow();
         SDL_Delay(16);
     }
