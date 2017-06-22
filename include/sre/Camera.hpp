@@ -54,7 +54,6 @@ namespace sre {
         /// height the height of the window, if -1 uses current window size
         void setWindowCoordinates(int width = -1, int height = -1);
 
-
         // Set the view transform. Used to position the virtual camera position and orientation.
         void setViewTransform(const glm::mat4 &viewTransform);
 

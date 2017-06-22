@@ -227,23 +227,19 @@ SimpleRenderEngine. These objects should not be deleted.</li>
 <span class="n">SDL_GL_SetAttribute</span><span class="p">(</span><span class="n">SDL_GL_CONTEXT_PROFILE_MASK</span><span class="p">,</span> <span class="n">SDL_GL_CONTEXT_PROFILE_CORE</span><span class="p">);</span>
 <span class="n">window</span> <span class="o">=</span> <span class="n">SDL_CreateWindow</span><span class="p">(</span><span class="s">"Hello Engine"</span><span class="p">,</span><span class="n">SDL_WINDOWPOS_UNDEFINED</span><span class="p">,</span><span class="n">SDL_WINDOWPOS_UNDEFINED</span><span class="p">,</span><span class="mi">640</span><span class="p">,</span><span class="mi">480</span><span class="p">,</span><span class="n">SDL_WINDOW_OPENGL</span><span class="p">);</span>
 <span class="n">Renderer</span> <span class="n">r</span><span class="p">{</span><span class="n">window</span><span class="p">};</span>
-<span class="n">r</span><span class="p">.</span><span class="n">clearScreen</span><span class="p">({</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">});</span>
+<span class="n">RenderPass</span> <span class="n">rp</span> <span class="o">=</span> <span class="n">r</span><span class="p">.</span><span class="n">createRenderPass</span><span class="p">().</span><span class="n">build</span><span class="p">();</span>
+<span class="n">rp</span><span class="p">.</span><span class="n">drawLines</span><span class="p">({{</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">},{</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">}});</span>
 <span class="n">r</span><span class="p">.</span><span class="n">swapWindow</span><span class="p">();</span>
 <span class="n">SDL_Delay</span><span class="p">(</span><span class="mi">10000</span><span class="p">);</span>
-<span class="n">SD_DestroyWindow</span><span class="p">(</span><span class="n">window</span><span class="p">);</span>
+<span class="n">SDL_DestroyWindow</span><span class="p">(</span><span class="n">window</span><span class="p">);</span>
 <span class="n">SDL_Quit</span><span class="p">();</span>
 </code></pre>
 
-<p>Maintains shared states for rendering.
+<p>Maintains rendering context.
 An object of Renderer must be created once after the SDL_Window has been initialized.
 After initialization this object can be referenced using the static field Renderer::instance;</p>
 
-<p>Renderer has two important states:</p>
-
-<ul>
-<li>An active camera, which defines how meshes are drawn when rendered using the draw method</li>
-<li>Light information (point lights, directional lights, ambient lights).</li>
-</ul>
+<p>A renderer can use one or more renderpasses before calling swapWindow()</p>
 
 <h2 id="renderer">Renderer</h2>
 
@@ -263,75 +259,71 @@ After initialization this object can be referenced using the static field Render
 </tr>
 </tbody></table>
 
-<h2 id="setlight">setLight</h2>
+<h2 id="createrenderpass">createRenderPass</h2>
 
-<p><code class="prettyprint">void setLight(int lightIndex, Light light)</code></p>
+<p><code class="prettyprint">RenderPass::RenderPassBuilder createRenderPass()</code></p>
 
-<p>Set the light state - this affects all draw calls after the state has been set.</p>
+<p>Usage:</p>
 
-<table><thead>
-<tr>
-<th>Parameter</th>
-<th>Description</th>
-</tr>
-</thead><tbody>
-<tr>
-<td>lightIndex</td>
-<td>must be between 0 and 3</td>
-</tr>
-<tr>
-<td>light</td>
-<td>light parameters</td>
-</tr>
-</tbody></table>
+<p><code class="prettyprint">class RenderPassBuilder {
+public:
+RenderPassBuilder&amp; withName(const std::string&amp; name);
+RenderPassBuilder&amp; withCamera(const Camera&amp; camera);
+RenderPassBuilder&amp; withWorldLights(WorldLights* worldLights);
+RenderPassBuilder&amp; withClearColor(bool enabled = true,glm::vec4 color = {0,0,0,1});
+RenderPassBuilder&amp; withClearDepth(bool enabled = true, float value = 1);
+RenderPassBuilder&amp; withClearStencil(bool enabled = false, int value = 0);
+RenderPassBuilder&amp; withGUI(bool enabled = true);
+RenderPass build();
+}</code></p>
 
-<h2 id="getlight">getLight</h2>
+<p>The RenderPassBuilder creates a renderpass using the builder pattern.
+Camera should always be defined (otherwise a default camera is used: orthographic with size 1.0).
+If lights is used (for 3D scenes) then the WorldLights need to be defined.
+The default behaviour is to clear color and depth buffer. This can be changed by using withClearXXX member functions.
+Another default behavior is GUI is expected, which allows ImGUI calls after the renderpass has been called.
+Finally, build need to be called to create the RenderPass object.</p>
 
-<p><code class="prettyprint">Light getLight(int lightIndex)</code></p>
+<h2 id="swapwindow">swapWindow</h2>
 
-<p>Returns the state of the given light index</p>
+<p><code class="prettyprint">void swapWindow()</code></p>
 
-<table><thead>
-<tr>
-<th>Parameter</th>
-<th>Description</th>
-</tr>
-</thead><tbody>
-<tr>
-<td>lightIndex</td>
-<td>must be between 0 and 3</td>
-</tr>
-</tbody></table>
+<p>Update window with OpenGL rendering by swapping buffers</p>
 
-<h2 id="setambientlight">setAmbientLight</h2>
+<h2 id="getwindowsize">getWindowSize</h2>
 
-<p><code class="prettyprint">void setAmbientLight(const glm::vec3 &amp;ambientLight)</code></p>
+<p><code class="prettyprint">glm::ivec2 getWindowSize()</code></p>
 
-<p>Set the ambient light color. This is used to add some light to the shadow side of objects.</p>
+<p>Return the current size of the window.</p>
 
-<table><thead>
-<tr>
-<th>Parameter</th>
-<th>Description</th>
-</tr>
-</thead><tbody>
-<tr>
-<td>ambientLight</td>
-<td>ambient light (usually should be low) (default: 0.2,0.2,0.2)</td>
-</tr>
-</tbody></table>
+<h2 id="finishgpucommandbuffer">finishGPUCommandBuffer</h2>
 
-<h2 id="getambientlight">getAmbientLight</h2>
+<p><code class="prettyprint">void finishGPUCommandBuffer()</code></p>
 
-<p><code class="prettyprint">glm::vec3 getAmbientLight() const</code></p>
+<p>GPU command buffer (must be called when profiling GPU time - should not be called when not profiling)</p>
 
-<p>Returns ambient light</p>
+<h2 id="getrenderstats">getRenderStats</h2>
+
+<p><code class="prettyprint">const RenderStats&amp; getRenderStats()</code></p>
+
+<p>Return stats of the last rendered frame
+RenderStats only includes data maintained by SRE (imgui is not included)</p>
+
+<h2 id="instance">instance</h2>
+
+<p><code class="prettyprint">static SimpleRenderEngine* instance</code></p>
+
+<p>Singleton reference to the engine after initialization.</p>
+
+          <h1 id="renderpass">RenderPass</h1>
+
+<p>See Renderer.createRenderPass() for initialization.</p>
 
 <h2 id="draw">draw</h2>
 
-<p><code class="prettyprint">void draw(Mesh *mesh, glm::mat4 modelTransform, Shader *shader)</code></p>
+<p><code class="prettyprint">Mesh *mesh, glm::mat4 modelTransform, Material *material</code></p>
 
-<p>Draws a mesh instance to the current scene. Uses the current camera object to render the mesh in the scene.</p>
+<p>Draws a mesh using the given transform and material.</p>
 
 <table><thead>
 <tr>
@@ -353,41 +345,12 @@ After initialization this object can be referenced using the static field Render
 </tr>
 </tbody></table>
 
-<h2 id="setcamera">setCamera</h2>
+<h2 id="drawlines">drawLines</h2>
 
-<p><code class="prettyprint">void setCamera(Camera *camera)</code></p>
+<p><code class="prettyprint">void drawLines(const std::vector&lt;glm::vec3&gt; &amp;verts, glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f}, MeshTopology meshTopology = MeshTopology::LineStrip)</code></p>
 
-<p>Sets the current camera object.</p>
-
-<table><thead>
-<tr>
-<th>Parameter</th>
-<th>Description</th>
-</tr>
-</thead><tbody>
-<tr>
-<td>camera</td>
-<td>The new camera state</td>
-</tr>
-</tbody></table>
-
-<h2 id="getcamera">getCamera</h2>
-
-<p><code class="prettyprint">Camera* getCamera()</code></p>
-
-<p>Returns the current camera object.</p>
-
-<h2 id="getdefaultcamera">getDefaultCamera</h2>
-
-<p><code class="prettyprint">Camera* getDefaultCamera()</code></p>
-
-<p>Returns a reference to the default camera. This camera is owned by the object and should never be deleted.</p>
-
-<h2 id="clearscreen">clearScreen</h2>
-
-<p><code class="prettyprint">void clearScreen(glm::vec4 color, bool clearColorBuffer=true, bool clearDepthBuffer=true)</code></p>
-
-<p>Clear the screen with the given color (default behavior is also clearing color and depth buffer)</p>
+<p>Draws world-space lines - using the unlit shader.
+Note that this member function is not expected to perform as efficient as draw()</p>
 
 <table><thead>
 <tr>
@@ -395,44 +358,19 @@ After initialization this object can be referenced using the static field Render
 <th>Description</th>
 </tr>
 </thead><tbody>
+<tr>
+<td>verts</td>
+<td>The mesh to draw</td>
+</tr>
 <tr>
 <td>color</td>
-<td>Clear color</td>
+<td>The color of the lines (default: {1.0f, 1.0f, 1.0f, 1.0f})</td>
 </tr>
 <tr>
-<td>clearColorBuffer</td>
-<td>Will clearScreen color buffer</td>
-</tr>
-<tr>
-<td>clearDepthBuffer</td>
-<td>Will clearScreen depth buffer</td>
+<td>meshTopology</td>
+<td>The mesh topology (default: MeshTopology::LineStrip)</td>
 </tr>
 </tbody></table>
-
-<h2 id="swapwindow">swapWindow</h2>
-
-<p><code class="prettyprint">void swapWindow()</code></p>
-
-<p>Update window with OpenGL rendering by swapping buffers</p>
-
-<h2 id="finishgpucommandbuffer">finishGPUCommandBuffer</h2>
-
-<p><code class="prettyprint">void finishGPUCommandBuffer()</code></p>
-
-<p>GPU command buffer (must be called when profiling GPU time - should not be called when not profiling)</p>
-
-<h2 id="getrenderstats">getRenderStats</h2>
-
-<p><code class="prettyprint">const RenderStats&amp; getRenderStats()</code></p>
-
-<p>return stats of the last rendered frame
-RenderStats only includes data maintained by SRE (imgui is not included)</p>
-
-<h2 id="instance">instance</h2>
-
-<p><code class="prettyprint">static SimpleRenderEngine* instance</code></p>
-
-<p>Singleton reference to the engine after initialization.</p>
 
           <h1 id="texture">Texture</h1>
 
@@ -670,7 +608,8 @@ Mesh build();
 <p><code class="prettyprint">MeshBuilder update()</code></p>
 
 <p>Updates a mesh using the builder pattern.
-See Mesh::create().</p>
+See Mesh::create().
+Performance-wise it is more efficient to update an existing mesh than to create a new mesh.</p>
 
 <h2 id="getvertexcount">getVertexCount</h2>
 
@@ -970,29 +909,6 @@ In the light color may have values above 1.0</p>
 <p>The range of a point light (due to attenuation)
 Range == 0 means no attenuation</p>
 
-          <h1 id="debug">Debug</h1>
-
-<p><code class="prettyprint">#include &quot;sre/Debug.hpp&quot;</code></p>
-
-<p>The purpose of this class is to draw debug information into the scene.
-The Debug class is using the current camera</p>
-
-<h2 id="getcolor">getColor</h2>
-
-<p><code class="prettyprint">static glm::vec4 getColor()</code></p>
-
-<h2 id="setcolor">setColor</h2>
-
-<p><code class="prettyprint">static void setColor(glm::vec4 color)</code></p>
-
-<h2 id="drawline">drawLine</h2>
-
-<p><code class="prettyprint">static void drawLine(glm::vec3 from, glm::vec3 to)</code></p>
-
-<h2 id="drawlines">drawLines</h2>
-
-<p><code class="prettyprint">static void drawLines(const std::vector&lt;glm::vec3&gt; &amp;verts, MeshTopology meshTopology = MeshTopology::LineStrip)</code></p>
-
           <h1 id="blendtype">BlendType</h1>
 
 <p><code class="prettyprint">#include &quot;sre/Blendtype.hpp&quot;</code></p>
@@ -1072,7 +988,7 @@ The Debug class is using the current camera</p>
           <h1 id="renderstats">RenderStats</h1>
 
 <p><code class="prettyprint">#include &quot;sre/RenderStats.hpp&quot;</code></p>
-<pre class="highlight cpp"><code><span class="k">struct</span> <span class="n">DllExport</span> <span class="n">RenderStats</span> <span class="p">{</span>
+<pre class="highlight cpp"><code><span class="k">struct</span> <span class="n">RenderStats</span> <span class="p">{</span>
     <span class="kt">int</span> <span class="n">frame</span><span class="p">;</span>
     <span class="kt">int</span> <span class="n">meshCount</span><span class="p">;</span>
     <span class="kt">int</span> <span class="n">meshBytes</span><span class="p">;</span>
@@ -1080,6 +996,9 @@ The Debug class is using the current camera</p>
     <span class="kt">int</span> <span class="n">textureBytes</span><span class="p">;</span>
     <span class="kt">int</span> <span class="n">shaderCount</span><span class="p">;</span>
     <span class="kt">int</span> <span class="n">drawCalls</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">stateChangesShader</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">stateChangesMaterial</span><span class="p">;</span>
+    <span class="kt">int</span> <span class="n">stateChangesMesh</span><span class="p">;</span>
 <span class="p">};</span>
 </code></pre>
 
@@ -1089,29 +1008,48 @@ The Debug class is using the current camera</p>
 
 <p><code class="prettyprint">#include &quot;sre/imgui_sre.hpp&quot;</code></p>
 
-<h2 id="imgui_sre_init">ImGui_SRE_Init</h2>
+<p>The ImGUI library is included in SRE.</p>
 
-<p><code class="prettyprint">bool        ImGui_SRE_Init(SDL_Window *window);</code></p>
+<p>The Github project: <a href="https://github.com/ocornut/imgui">github.com/ocornut/imgui</a></p>
 
-<p>ImGui_SRE_Init must be called before usage (usually in a setup step)</p>
+<p>Documentation: </p>
 
-<h2 id="imgui_sre_newframe">ImGui_SRE_NewFrame</h2>
+<ul>
+<li><a href="https://github.com/ocornut/imgui/blob/master/imgui.h">github.com/ocornut/imgui/blob/master/imgui.h</a></li>
+<li><a href="https://github.com/ocornut/imgui/blob/master/imgui_demo.cpp">github.com/ocornut/imgui/blob/master/imgui_demo.cpp</a></li>
+</ul>
 
-<p><code class="prettyprint">void        ImGui_SRE_NewFrame(SDL_Window *window);</code></p>
-
-<p>ImGui_SRE_NewFrame must be invoked in the beginning of each frame before any other ImGui calls</p>
-
-<h2 id="imgui_sre_newframe">ImGui_SRE_NewFrame</h2>
+<h2 id="imgui_sre_processevent">ImGui_SRE_ProcessEvent</h2>
 
 <p><code class="prettyprint">bool        ImGui_SRE_ProcessEvent(SDL_Event *event);</code></p>
 
-<p>ImGui_SRE_ProcessEvent must be invoked in the beginning of each frame before any other ImGui calls</p>
+<p>ImGui_SRE_ProcessEvent must be invoked in the beginning of each frame before any other ImGui calls to capture events from SDL.</p>
+<pre class="highlight cpp"><code>    <span class="k">while</span> <span class="p">(</span><span class="o">!</span><span class="n">quit</span><span class="p">){</span>
+        <span class="c1">//Handle events on queue
+</span>        <span class="k">while</span><span class="p">(</span> <span class="n">SDL_PollEvent</span><span class="p">(</span> <span class="o">&amp;</span><span class="n">e</span> <span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span> <span class="p">)</span>
+        <span class="p">{</span>
+            <span class="n">ImGui_SRE_ProcessEvent</span><span class="p">(</span><span class="o">&amp;</span><span class="n">e</span><span class="p">);</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">SDL_QUIT</span><span class="p">)</span>
+                <span class="n">quit</span> <span class="o">=</span> <span class="nb">true</span><span class="p">;</span>
+        <span class="p">}</span>
 
-<h2 id="imgui_sre_shutdown">ImGui_SRE_Shutdown</h2>
+        <span class="k">auto</span> <span class="n">renderPass</span> <span class="o">=</span> <span class="n">r</span><span class="p">.</span><span class="n">createRenderPass</span><span class="p">()</span>
+                <span class="p">.</span><span class="n">withCamera</span><span class="p">(</span><span class="n">camera</span><span class="p">)</span>
+                <span class="p">.</span><span class="n">withWorldLights</span><span class="p">(</span><span class="o">&amp;</span><span class="n">worldLights</span><span class="p">)</span>
+                <span class="p">.</span><span class="n">withClearColor</span><span class="p">(</span><span class="nb">true</span><span class="p">,</span> <span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">})</span>
+                <span class="p">.</span><span class="n">build</span><span class="p">();</span>
 
-<p><code class="prettyprint">void        ImGui_SRE_Shutdown();</code></p>
+        <span class="c1">// draw geometry
+</span>        <span class="n">renderPass</span><span class="p">.</span><span class="n">draw</span><span class="p">(</span><span class="n">mesh</span><span class="p">,</span> <span class="n">modelMatrix</span><span class="p">,</span> <span class="n">materialPointer</span><span class="p">);</span>
 
-<p>ImGui_SRE_Shutdown destroys and releases resources owned by ImGui</p>
+        <span class="c1">// draw gui
+</span>        <span class="n">ImGui</span><span class="o">::</span><span class="n">Text</span><span class="p">(</span><span class="s">"Dear ImGui says hello."</span><span class="p">);</span>
+
+        <span class="n">r</span><span class="p">.</span><span class="n">swapWindow</span><span class="p">();</span>
+        <span class="n">SDL_Delay</span><span class="p">(</span><span class="mi">16</span><span class="p">);</span>
+    <span class="p">}</span>
+
+</code></pre>
 
       </div>
       <div class="dark-box">

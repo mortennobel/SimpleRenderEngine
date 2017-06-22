@@ -73,10 +73,10 @@ namespace sre {
         void drawLines(const std::vector<glm::vec3> &verts, glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f}, MeshTopology meshTopology = MeshTopology::LineStrip);
 
         /**
-         * Draws a mesh instance to the current scene. Uses the current camera object to render the mesh in the scene.
+         * Draws a mesh using the given transform and material.
          * @param mesh
          * @param modelTransform
-         * @param shader
+         * @param material
          */
         void draw(Mesh *mesh, glm::mat4 modelTransform, Material *material);
 

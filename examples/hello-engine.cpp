@@ -18,41 +18,18 @@
 using namespace sre;
 
 int main() {
-    SDL_Window *window;                    // Declare a pointer
-
-    SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
-
+    SDL_Window *window;
+    SDL_Init(SDL_INIT_VIDEO);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-    window = SDL_CreateWindow(
-            "Hello Engine",                  // window title
-            SDL_WINDOWPOS_UNDEFINED,           // initial x position
-            SDL_WINDOWPOS_UNDEFINED,           // initial y position
-            640,                               // width, in pixels
-            480,                               // height, in pixels
-            SDL_WINDOW_OPENGL                  // flags
-    );
-
-    // Check that the window was successfully made
-    if (window == NULL) {
-        // In the event that the window could not be made...
-        printf("Could not create window: %s\n", SDL_GetError());
-        return 1;
-    }
-
+    window = SDL_CreateWindow("Hello Engine",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,640,480,SDL_WINDOW_OPENGL);
     Renderer r{window};
-
-    auto renderPass = r.createRenderPass()
-            .build();
+    RenderPass rp = r.createRenderPass().build();
+    rp.drawLines({{0,0,0},{1,1,1}});
     r.swapWindow();
     SDL_Delay(10000);
-
-    // Close and destroy the window
     SDL_DestroyWindow(window);
-
-    // Clean up
     SDL_Quit();
 
     return 0;
