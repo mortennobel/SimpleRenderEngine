@@ -47,6 +47,7 @@ https://mortennobel.github.io/SimpleRenderEngine/
  * https://www.opengl.org/registry/ OpenGL Registry
  
 ## Version history
+ * 0.6.0 Add Material and Renderpass. Improve ImGUI integration. 
  * 0.5.3 Rename namespace and folders from SRE to sre 
  * 0.5.2 Add mesh bounds 
  * 0.5.1 Clean up documentation and minor API updates. 
