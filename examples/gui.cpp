@@ -63,7 +63,7 @@ int main() {
     );
 #endif
 
-    ImGui_SRE_Init(window);
+
 
     // Check that the window was successfully made
     if (window == NULL) {

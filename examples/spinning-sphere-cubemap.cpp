@@ -65,7 +65,7 @@ int main() {
     }
 
     Renderer r{window};
-    ImGui_SRE_Init(window);
+
     glm::vec3 eye{0,0,5};
     glm::vec3 at{0,0,0};
     glm::vec3 up{0,1,0};

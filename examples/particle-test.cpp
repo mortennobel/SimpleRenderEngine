@@ -87,7 +87,7 @@ int main() {
         printf("Could not create window: %s\n", SDL_GetError());
         return 1;
     }
-    ImGui_SRE_Init(window);
+
 
     Renderer r{window};
     camera = new Camera();

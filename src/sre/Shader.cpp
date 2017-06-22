@@ -281,6 +281,13 @@ namespace sre {
     }
 
     bool Shader::setLights(WorldLights* worldLights, glm::mat4 viewTransform){
+        if (worldLights==nullptr){
+            glUniform4f(uniformLocationAmbientLight, 0,0,0,0);
+            static float noLight[4*4] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+            glUniform4fv(uniformLocationLightPosType, 4, noLight);
+            glUniform4fv(uniformLocationLightColorRange, 4, noLight);
+            return false;
+        }
         if (uniformLocationAmbientLight != -1) {
             glUniform4fv(uniformLocationAmbientLight, 1, glm::value_ptr(worldLights->ambientLight));
         }

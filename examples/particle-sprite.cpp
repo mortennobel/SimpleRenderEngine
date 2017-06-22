@@ -155,8 +155,6 @@ int main() {
         return 1;
     }
 
-    ImGui_SRE_Init(window);
-
     Renderer r{window};
 
     camera = new Camera();

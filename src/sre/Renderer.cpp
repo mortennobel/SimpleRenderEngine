@@ -21,6 +21,7 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #include <iostream>
 #include <algorithm>
 #include <string>
+#include <sre/imgui_sre.hpp>
 
 namespace sre {
     Renderer* Renderer::instance = nullptr;
@@ -31,6 +32,9 @@ namespace sre {
         if (instance != nullptr){
             std::cerr << "Multiple versions of Renderer initialized. Only a single instance is supported." << std::endl;
         }
+        // initialize ImGUI
+        ImGui_SRE_Init(window);
+
         instance = this;
 #ifndef EMSCRIPTEN
         glcontext = SDL_GL_CreateContext(window);
