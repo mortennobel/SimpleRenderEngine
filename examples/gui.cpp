@@ -125,11 +125,9 @@ void update(){
     auto renderPass = r.createRenderPass()
             .withCamera(*camera)
             .withWorldLights(worldLights)
+            .withClearColor(true,{clear_color.x,clear_color.y,clear_color.z,1.0f})
             .build();
-    renderPass.clearScreen({clear_color.x,clear_color.y,clear_color.z,1.0f});
     renderPass.draw(mesh, glm::eulerAngleY(timeF), material);
-
-    ImGui_SRE_NewFrame(window);
 
     bool open = true;
 
@@ -171,8 +169,6 @@ void update(){
         ImGui::Text("Hello");
         ImGui::End();
     }
-
-    ImGui::Render();
 
     r.swapWindow();
     timeF += .016f*f;

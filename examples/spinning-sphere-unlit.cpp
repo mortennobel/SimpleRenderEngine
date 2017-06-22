@@ -65,8 +65,8 @@ int main() {
     for (float i=0;i<duration ;i+=16){
         RenderPass rp = r.createRenderPass()
                 .withCamera(camera)
+                .withClearColor(true, {1, 0, 0, 1})
                 .build();
-        rp.clearScreen({1, 0, 0, 1});
         rp.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), mat);
         r.swapWindow();
         SDL_Delay(16);

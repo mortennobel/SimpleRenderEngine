@@ -99,11 +99,8 @@ void update(){
     }
     auto rp = r.createRenderPass()
         .withCamera(*camera)
+        .withClearColor(true,{0,0,0.0,1})
         .build();
-    rp.clearScreen({0,0,0.0,1});
-
-
-    ImGui_SRE_NewFrame(window);
 
     // 1. Show a simple window
     // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
@@ -124,7 +121,6 @@ void update(){
     updateParticles(particleMesh, spriteUV, uvSize, uvRotation, size);
     rp.draw(particleMesh, glm::mat4(1), material);
 
-    ImGui::Render();
 
     r.swapWindow();
 

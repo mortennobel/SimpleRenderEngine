@@ -44,6 +44,7 @@ public:
         TextureBuilder& withRGBData(const char* data, int width, int height);
         TextureBuilder& withRGBAData(const char* data, int width, int height);
         TextureBuilder& withWhiteData(int width=2, int height=2);
+        TextureBuilder& withWhiteCubemapData(int width=2, int height=2);
         Texture* build();
     private:
         int width = -1;

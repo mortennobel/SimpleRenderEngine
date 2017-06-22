@@ -121,8 +121,8 @@ void update() {
     auto renderPass = r.createRenderPass()
             .withCamera(*camera)
             .withWorldLights(worldLights)
+            .withClearColor(true, {1, 0, 0, 1})
             .build();
-    renderPass.clearScreen({1, 0, 0, 1});
     renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), material);
     r.swapWindow();
     i++;

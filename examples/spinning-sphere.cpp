@@ -106,14 +106,13 @@ int main() {
         auto renderPass = r.createRenderPass()
                 .withCamera(camera)
                 .withWorldLights(&worldLights)
+                .withClearColor(true, {1,0,0,1})
                 .build();
-        renderPass.clearScreen({1,0,0,1});
         drawCross(renderPass,{2,2,2});
         drawCross(renderPass,{-2,-2,-2});
         renderPass.draw(mesh, glm::eulerAngleY(time), &mat);
         time += 0.016f;
 
-        ImGui_SRE_NewFrame(window);
         std::string labels[] = {
                 "Light 1",
                 "Light 2",
@@ -172,8 +171,6 @@ int main() {
             ImGui::ColorEdit3("Color", &(color.x));
             ImGui::TreePop();
         }
-
-        ImGui::Render();
 
         r.swapWindow();
         SDL_Delay(16);

@@ -76,8 +76,8 @@ int main() {
         auto rp = r.createRenderPass()
                     .withCamera(camera)
                     .withWorldLights(&worldLights)
+                    .withClearColor(true,{1,0,0,1})
                     .build();
-        rp.clearScreen({1,0,0,1});
 
         rp.draw(mesh, pos1, mat1);
         rp.draw(mesh, pos2, mat2);

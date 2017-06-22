@@ -91,5 +91,6 @@ namespace sre {
         friend class Shader;
         friend class Shader;
         friend class Texture;
+        friend class RenderPass;
     };
 }

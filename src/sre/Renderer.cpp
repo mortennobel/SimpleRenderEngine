@@ -85,6 +85,10 @@ namespace sre {
     }
 
     void Renderer::swapWindow() {
+        if (RenderPass::instance){
+            RenderPass::instance->finish();
+        }
+
         renderStatsLast = renderStats;
         renderStats.frame++;
         renderStats.drawCalls=0;

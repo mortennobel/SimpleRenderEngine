@@ -49,12 +49,6 @@ namespace sre {
 
         template<typename T>
         inline T get(std::string uniformName);
-
-        bool deleteUniform(std::string uniformName);
-
-        std::vector<std::string> getUniformNames();
-
-        UniformType getUniformType(std::string uniformName);
     private:
         std::string name;
         sre::Shader *shader;

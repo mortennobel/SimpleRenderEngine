@@ -11,9 +11,11 @@
 #include "sre/impl/GL.hpp"
 #include <cassert>
 #include <glm/gtc/type_ptr.hpp>
+#include <sre/imgui_sre.hpp>
+#include <sre/Renderer.hpp>
 
 namespace sre {
-    RenderPass * RenderPass::currentRenderPass = nullptr;
+    RenderPass * RenderPass::instance = nullptr;
 
     RenderPass::RenderPassBuilder::RenderPassBuilder(RenderStats* renderStats)
     :renderStats(renderStats)
@@ -35,25 +37,72 @@ namespace sre {
         return *this;
     }
 
+    RenderPass::RenderPassBuilder &RenderPass::RenderPassBuilder::withClearColor(bool enabled, glm::vec4 color) {
+        this->clearColor = enabled;
+        this->clearColorValue = color;
+        return *this;
+    }
+
+    RenderPass::RenderPassBuilder &RenderPass::RenderPassBuilder::withClearDepth(bool enabled, float value) {
+        this->clearDepth = enabled;
+        this->clearDepthValue = value;
+        return *this;
+    }
+
+    RenderPass::RenderPassBuilder &RenderPass::RenderPassBuilder::withClearStencil(bool enabled, int value) {
+        this->clearStencil = enabled;
+        this->clearStencilValue = value;
+        return *this;
+    }
+
+    RenderPass::RenderPassBuilder &RenderPass::RenderPassBuilder::withGUI(bool enabled) {
+        this->gui = enabled;
+        return *this;
+    }
+
     RenderPass RenderPass::RenderPassBuilder::build(){
-        return RenderPass(std::move(camera), worldLights, renderStats);
+        GLbitfield clear = 0;
+        if (clearColor) {
+            glClearColor(clearColorValue.r, clearColorValue.g, clearColorValue.b, clearColorValue.a);
+            clear |= GL_COLOR_BUFFER_BIT;
+        }
+        if (clearDepth) {
+            glClearDepth(clearDepthValue);
+            glDepthMask(GL_TRUE);
+            clear |= GL_DEPTH_BUFFER_BIT;
+        }
+        if (clearStencil) {
+            glClearStencil(clearStencilValue);
+            clear |= GL_STENCIL_BUFFER_BIT;
+        }
+        if (clear){
+            glClear(clear);
+        }
+
+        if (this->gui){
+            ImGui_SRE_NewFrame(Renderer::instance->window);
+        }
+
+        return RenderPass(std::move(camera), worldLights, renderStats, gui);
     }
 
     RenderPass::~RenderPass(){
-        if (currentRenderPass == this){
-            currentRenderPass = nullptr;
-        }
+
     }
 
-    RenderPass::RenderPass(Camera&& camera, WorldLights* worldLights, RenderStats* renderStats)
-        :camera(camera), worldLights(worldLights),renderStats(renderStats)
+    RenderPass::RenderPass(Camera &&camera, WorldLights *worldLights, RenderStats *renderStats, bool gui)
+        :camera(camera), worldLights(worldLights),renderStats(renderStats), gui(gui)
     {
-        currentRenderPass = this;
+        if (instance){
+            instance->finish();
+        }
         glViewport(camera.viewportX, camera.viewportY, camera.viewportWidth, camera.viewportHeight);
         glScissor(camera.viewportX, camera.viewportY, camera.viewportWidth, camera.viewportHeight);
+        instance = this;
     }
 
     void RenderPass::draw(Mesh *mesh, glm::mat4 modelTransform, Material *material) {
+        assert(instance != nullptr);
         renderStats->drawCalls++;
         setupShader(modelTransform, material->getShader());
         if (material != lastBoundMaterial){
@@ -109,23 +158,9 @@ namespace sre {
         }
     }
 
-    void RenderPass::clearScreen(glm::vec4 color, bool clearColorBuffer, bool clearDepthBuffer, bool clearStencil) {
-        glClearColor(color.r, color.g, color.b, color.a);
-        GLbitfield clear = 0;
-        if (clearColorBuffer) {
-            clear |= GL_COLOR_BUFFER_BIT;
-        }
-        if (clearDepthBuffer) {
-            glDepthMask(GL_TRUE);
-            clear |= GL_DEPTH_BUFFER_BIT;
-        }
-        if (clearStencil) {
-            clear |= GL_STENCIL_BUFFER_BIT;
-        }
-        glClear(clear);
-    }
 
     void RenderPass::drawLines(const std::vector<glm::vec3> &verts, glm::vec4 color, MeshTopology meshTopology) {
+        assert(instance != nullptr);
         Mesh *mesh = Mesh::create()
                 .withVertexPositions(verts)
                 .withMeshTopology(meshTopology)
@@ -135,5 +170,13 @@ namespace sre {
         material.setColor(color);
         draw(mesh, glm::mat4(1), &material);
         delete mesh;
+    }
+
+    void RenderPass::finish() {
+        assert(instance != nullptr);
+        if (gui){
+            ImGui::Render();
+        }
+        instance = nullptr;
     }
 }

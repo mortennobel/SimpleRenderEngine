@@ -148,20 +148,17 @@ void update(){
     auto rp = r.createRenderPass()
             .withCamera(*camera)
             .withWorldLights(worldLights)
+            .withClearColor(true,{0,0,0.3,1})
             .build();
 
-
-    rp.clearScreen({0,0,0.3,1});
     rp.draw(mesh, glm::eulerAngleY(-glm::radians((float)i))*glm::scale(glm::mat4(1),{0.3f,0.3f,0.3f}), defaultMat);
     rp.draw(particleMesh, glm::eulerAngleY(glm::radians((float)i)), particleMat);
 
 
-    ImGui_SRE_NewFrame(window);
 
     // 1. Show a simple window
     // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
     {
-
         ImGui::Text("Particle sprite");
         ImGui::Checkbox("Orthographic proj",&ortho);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
@@ -170,7 +167,6 @@ void update(){
         float bytesToMB = 1.0f/(1024*1024);
         ImGui::Text("sre draw-calls %i meshes %i (%.2fMB) textures %i (%.2fMB) shaders %i", renderStats.drawCalls,renderStats.meshCount, renderStats.meshBytes*bytesToMB, renderStats.textureCount, renderStats.textureBytes*bytesToMB, renderStats.shaderCount);
     }
-    ImGui::Render();
     r.swapWindow();
 
     SDL_Delay(16);

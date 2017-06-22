@@ -135,6 +135,7 @@ namespace {
 
 namespace sre {
 	Texture* whiteTexture = nullptr;
+	Texture* whiteCubemapTexture = nullptr;
 	Texture* sphereTexture = nullptr;
 
 	Texture::Texture(unsigned int textureId, int width, int height, uint32_t target)
@@ -246,8 +247,31 @@ namespace sre {
 
 	Texture::TextureBuilder &Texture::TextureBuilder::withWhiteData(int width, int height) {
 		char one = (char)0xff;
+        this->width = width;
+        this->height = height;
         std::vector<char> dataOwned (width * height * 4, one);
         withRGBAData(dataOwned.data(), width, height);
+		return *this;
+	}
+
+
+    Texture::TextureBuilder &Texture::TextureBuilder::withWhiteCubemapData(int width, int height) {
+		char one = (char)0xff;
+        std::vector<char> dataOwned (width * height * 4, one);
+        this->width = width;
+        this->height = height;
+        for (int i=0;i<6;i++){
+            GLenum format = GL_RGBA;
+            this->target = GL_TEXTURE_CUBE_MAP;
+            GLint mipmapLevel = 0;
+            GLint internalFormat = GL_RGBA;
+            GLint border = 0;
+            GLenum type = GL_UNSIGNED_BYTE;
+            glBindTexture(target, textureId);
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+(unsigned int)i, mipmapLevel, internalFormat, width, height, border, format, type, dataOwned.data());
+        }
+
+
 		return *this;
 	}
 
@@ -366,7 +390,13 @@ namespace sre {
     }
 
     Texture *Texture::getDefaultCubemapTexture() {
-        // todo implement
-        return nullptr;
+        if (whiteCubemapTexture != nullptr) {
+            return whiteCubemapTexture;
+        }
+        whiteCubemapTexture = create()
+                .withWhiteCubemapData()
+                .withFilterSampling(false)
+                .build();
+        return whiteCubemapTexture;
     }
 }

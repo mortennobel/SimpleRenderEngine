@@ -114,7 +114,6 @@ void main(void)
 
     Mesh* mesh = Mesh::create().withSphere().build();
 
-
     bool animatedCamera = true;
     bool quit = false;
     SDL_Event e;
@@ -129,13 +128,11 @@ void main(void)
         }
         auto rp = r.createRenderPass()
                     .withCamera(camera)
+                    .withClearColor(true,{1,0,0,1})
                     .build();
-        rp.clearScreen({1,0,0,1});
 
         rp.draw(mesh, glm::eulerAngleY(time), material);
         time += 0.016f;
-
-        ImGui_SRE_NewFrame(window);
 
         ImGui::DragFloat3("CameraPos",&eye.x);
         if (animatedCamera){
@@ -147,7 +144,6 @@ void main(void)
         }
         camera.lookAt(eye,at, up);
 
-        ImGui::Render();
 
         r.swapWindow();
         SDL_Delay(16);

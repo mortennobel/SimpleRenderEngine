@@ -28,28 +28,40 @@ namespace sre {
             RenderPassBuilder& withName(const std::string& name);
             RenderPassBuilder& withCamera(const Camera& camera);
             RenderPassBuilder& withWorldLights(WorldLights* worldLights);
+            // Set the clear color.
+            // Default enabled with the color value {0.0,0.0,0.0,1.0}
+            RenderPassBuilder& withClearColor(bool enabled = true,glm::vec4 color = {0,0,0,1});
+            // Set the clear depth. Value is clamped between [0.0;1.0]
+            // Default: enabled with depth value 1.0
+            RenderPassBuilder& withClearDepth(bool enabled = true, float value = 1);
+            // Set the clear depth. Value is clamped between
+            // Default: disabled
+            RenderPassBuilder& withClearStencil(bool enabled = false, int value = 0);
+            // Allows ImGui calls to be called in the renderpass and
+            // calls ImGui::Render() in the end of the renderpass
+            RenderPassBuilder& withGUI(bool enabled = true);
             RenderPass build();
         private:
             std::string name;
             WorldLights* worldLights = nullptr;
             Camera camera;
             RenderStats* renderStats;
+
+            bool clearColor = true;
+            glm::vec4 clearColorValue = {0,0,0,1};
+            bool clearDepth = true;
+            float clearDepthValue = 1.0f;
+            bool clearStencil = false;
+            int clearStencilValue = 0;
+
+            bool gui = true;
+
             RenderPassBuilder(RenderStats* renderStats);
             friend class RenderPass;
             friend class Renderer;
         };
 
         virtual ~RenderPass();
-
-        /**
-         * Clear the screen with the given color (default behavior is also clearing color and depth buffer but not the stencil buffer)
-         * @param color
-         * @param clearColorBuffer  {=true}
-         * @param clearDepthBuffer {=true}
-         * @param clearStencil {=false}
-         */
-        void clearScreen(glm::vec4 color, bool clearColorBuffer = true, bool clearDepthBuffer = true,
-                         bool clearStencil = false);
 
         /**
          * Draws world-space lines.
@@ -67,20 +79,25 @@ namespace sre {
          * @param shader
          */
         void draw(Mesh *mesh, glm::mat4 modelTransform, Material *material);
+
+
     private:
-        RenderPass(Camera&& camera, WorldLights* worldLights, RenderStats* renderStats);
+        void finish();
+
+        RenderPass(Camera &&camera, WorldLights *worldLights, RenderStats *renderStats, bool gui);
 
         void setupShader(const glm::mat4 &modelTransform, Shader *shader);
 
         Shader* lastBoundShader = nullptr;
         Material* lastBoundMaterial = nullptr;
         Mesh* lastBoundMesh = nullptr;
+        bool gui;
 
         Camera camera;
         WorldLights* worldLights;
         RenderStats* renderStats;
 
-        static RenderPass * currentRenderPass;
+        static RenderPass * instance;
 
         friend class Renderer;
     };
