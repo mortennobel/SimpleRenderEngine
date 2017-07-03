@@ -8,39 +8,47 @@
 #include <glm/gtc/constants.hpp>
 #include <iostream>
 #include "sre/Renderer.hpp"
+#include "sre/Shader.hpp"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 namespace sre {
-    Mesh::Mesh(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals,
-               const std::vector<glm::vec4> &uvs, const std::vector<glm::vec4> &colors, std::vector<float> particleSize, const std::vector<uint16_t> &indices, MeshTopology meshTopology)
-
+    Mesh::Mesh(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<uint16_t> &indices, MeshTopology meshTopology)
     {
         glGenBuffers(1, &vertexBufferId);
         glGenBuffers(1, &elementBufferId);
-#ifndef EMSCRIPTEN
-        glGenVertexArrays(1, &vertexArrayObject);
-#endif
-        update(vertexPositions, normals, uvs, colors, particleSize,indices, meshTopology);
+        update(attributesFloat, attributesVec2, attributesVec3,attributesVec4,attributesIVec4, indices, meshTopology);
     }
 
     Mesh::~Mesh(){
         RenderStats& renderStats = Renderer::instance->renderStats;
         renderStats.meshBytes -= getDataSize();
         renderStats.meshCount--;
+
 #ifndef EMSCRIPTEN
-        glDeleteVertexArrays(1, &vertexArrayObject);
+        for (auto arrayObj : shaderToVertexArrayObject) {
+            glDeleteVertexArrays(1, &(arrayObj.second));
+        }
 #endif
-        glDeleteBuffers(1,&vertexBufferId);
-        glDeleteBuffers(1,&elementBufferId);
+        glDeleteBuffers(1, &vertexBufferId);
+        glDeleteBuffers(1, &elementBufferId);
     }
 
-    void Mesh::bind(){
+    void Mesh::bind(Shader* shader){
 #ifndef EMSCRIPTEN
-        glBindVertexArray(vertexArrayObject);
+        auto res = shaderToVertexArrayObject.find(shader->shaderProgramId);
+        if (res != shaderToVertexArrayObject.end()){
+            GLuint vao = res->second;
+            glBindVertexArray(vao);
+        } else {
+            GLuint index;
+            glGenVertexArrays(1, &index);
+            glBindVertexArray(index);
+            setVertexAttributePointers(shader);
+            shaderToVertexArrayObject[shader->shaderProgramId] = index;
+        }
 #else
-        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
-        setVertexAttributePointers();
+        setVertexAttributePointers(shader);
 #endif
         if (indices.empty()){
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -57,95 +65,198 @@ namespace sre {
         return vertexCount;
     }
 
-    void Mesh::update(const std::vector<glm::vec3> &vertexPositions, const std::vector<glm::vec3> &normals,
-                      const std::vector<glm::vec4> &uvs, const std::vector<glm::vec4> &colors, std::vector<float> particleSize, const std::vector<uint16_t> &indices, MeshTopology meshTopology) {
+    void Mesh::update(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<uint16_t> &indices, MeshTopology meshTopology) {
         this->meshTopology = meshTopology;
-        this->vertexPositions = vertexPositions;
-        this->normals = normals;
-        this->uvs = uvs;
-        this->colors = colors;
-        this->particleSize = particleSize;
-        this->vertexCount = (int) vertexPositions.size();
-        this->indices = indices;
-        bool hasNormals = normals.size() == vertexPositions.size();
-        bool hasUVs = uvs.size() == vertexPositions.size();
-        bool hasColors = colors.size() == vertexPositions.size();
-        bool hasParticleSize = particleSize.size() == vertexPositions.size();
 
-        // interleave data
-        int floatsPerVertex = 15;
-        std::vector<float> interleavedData(vertexPositions.size() * floatsPerVertex);
-        float max = std::numeric_limits<float>::max();
-        boundsMinMax[0] = glm::vec3(max,max,max);
-        boundsMinMax[1] = glm::vec3(-max,-max,-max);
-        for (int i=0;i<vertexPositions.size();i++){
-            boundsMinMax[0] = glm::min(boundsMinMax[0], vertexPositions[i]);
-            boundsMinMax[1] = glm::max(boundsMinMax[1], vertexPositions[i]);
-            for (int j=0;j<4;j++){
-                // vertex position
-                if (j<3){
-                    interleavedData[i*floatsPerVertex+j] = vertexPositions[i][j];
-                }
-                if (j==3){
-                    interleavedData[i*floatsPerVertex+j] = hasParticleSize ? particleSize[i]:1.0f;
-                }
-                // normals
-                if (j<3) {
-                    interleavedData[i * floatsPerVertex + j + 4] = hasNormals ? normals[i][j] : 0.0f;
-                }
-                interleavedData[i*floatsPerVertex+j+7] = hasUVs ? uvs[i][j] : (j==2?1.0f:0.0f);
-                interleavedData[i*floatsPerVertex+j+11] = hasColors ? colors[i][j] : 1.0f;
+        vertexCount = 0;
+        totalBytesPerVertex = 0;
+        std::vector<int> offset;
+
+#ifndef EMSCRIPTEN
+        for (auto arrayObj : shaderToVertexArrayObject){
+            glDeleteVertexArrays(1, &(arrayObj.second));
+        }
+        shaderToVertexArrayObject.clear();
+#endif
+        attributeByName.clear();
+
+        // enforced std140 layout rules ( https://learnopengl.com/#!Advanced-OpenGL/Advanced-GLSL )
+        // the order is vec3, vec4, ivec4, vec2, float
+        for (auto & pair : attributesVec3){
+            vertexCount = std::max(vertexCount, (int)pair.second.size());
+            offset.push_back(totalBytesPerVertex);
+            attributeByName[pair.first] = {totalBytesPerVertex, 3, GL_FLOAT, GL_FLOAT_VEC3};
+            totalBytesPerVertex += sizeof(glm::vec4); // note use vec4 size
+        }
+        for (auto & pair : attributesVec4){
+            vertexCount = std::max(vertexCount, (int)pair.second.size());
+            offset.push_back(totalBytesPerVertex);
+            attributeByName[pair.first] = {totalBytesPerVertex, 4, GL_FLOAT, GL_FLOAT_VEC4};
+            totalBytesPerVertex += sizeof(glm::vec4);
+        }
+        for (auto & pair : attributesIVec4){
+            vertexCount = std::max(vertexCount, (int)pair.second.size());
+            offset.push_back(totalBytesPerVertex);
+            attributeByName[pair.first] = {totalBytesPerVertex, 4,GL_INT, GL_INT_VEC4};
+            totalBytesPerVertex += sizeof(glm::i32vec4);
+        }
+        for (auto & pair : attributesVec2){
+            vertexCount = std::max(vertexCount, (int)pair.second.size());
+            offset.push_back(totalBytesPerVertex);
+            attributeByName[pair.first] = {totalBytesPerVertex, 2, GL_FLOAT,GL_FLOAT_VEC2};
+            totalBytesPerVertex += sizeof(glm::vec2);
+        }
+        for (auto & pair : attributesFloat){
+            vertexCount = std::max(vertexCount, (int)pair.second.size());
+            offset.push_back(totalBytesPerVertex);
+            attributeByName[pair.first] = {totalBytesPerVertex, 1, GL_FLOAT, GL_FLOAT};
+            totalBytesPerVertex += sizeof(float);
+        }
+        // add final padding (make vertex align with vec4)
+        if (totalBytesPerVertex%(sizeof(float)*4) != 0) {
+            totalBytesPerVertex += sizeof(float)*4 - totalBytesPerVertex%(sizeof(float)*4);
+        }
+        std::vector<float> interleavedData((vertexCount * totalBytesPerVertex) / sizeof(float), 0);
+        const char * dataPtr = (char*) interleavedData.data();
+
+        // add data (copy each element into interleaved buffer)
+        for (auto & pair : attributesVec3){
+            auto& offsetBytes = attributeByName[pair.first];
+            for (int i=0;i<pair.second.size();i++){
+                glm::vec3 * locationPtr = (glm::vec3 *) (dataPtr + (totalBytesPerVertex * i) + offsetBytes.offset);
+                *locationPtr = pair.second[i];
             }
         }
+        for (auto & pair : attributesVec4){
+            auto& offsetBytes = attributeByName[pair.first];
+            for (int i=0;i<pair.second.size();i++) {
+                glm::vec4 * locationPtr = (glm::vec4 *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
+                *locationPtr = pair.second[i];
+            }
+        }
+        for (auto & pair : attributesIVec4){
+            auto& offsetBytes = attributeByName[pair.first];
+            for (int i=0;i<pair.second.size();i++) {
+                glm::i32vec4 * locationPtr = (glm::i32vec4 *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
+                *locationPtr = pair.second[i];
+            }
+        }
+        for (auto & pair : attributesVec2){
+            auto& offsetBytes = attributeByName[pair.first];
+            for (int i=0;i<pair.second.size();i++) {
+                glm::vec2 * locationPtr = (glm::vec2 *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
+                *locationPtr = pair.second[i];
+            }
+        }
+        for (auto & pair : attributesFloat){
+            auto& offsetBytes = attributeByName[pair.first];
+            for (int i=0;i<pair.second.size();i++) {
+                float * locationPtr = (float *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
+                *locationPtr = pair.second[i];
+            }
+        }
+
 #ifndef EMSCRIPTEN
-        glBindVertexArray(vertexArrayObject);
+        glBindVertexArray(0);
 #endif
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float)*interleavedData.size(), interleavedData.data(), GL_STATIC_DRAW);
 
-        setVertexAttributePointers();
         if (!indices.empty()){
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferId);
             GLsizeiptr indicesSize = indices.size()*sizeof(uint16_t);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices.data(), GL_STATIC_DRAW);
         }
+
+        this->attributesFloat = std::move(attributesFloat);
+        this->attributesVec2  = std::move(attributesVec2);
+        this->attributesVec3  = std::move(attributesVec3);
+        this->attributesVec4  = std::move(attributesVec4);
+        this->attributesIVec4 = std::move(attributesIVec4);
     }
 
-    void Mesh::setVertexAttributePointers(){
-        // bind vertex attributes (position+size, normal, uv, color)
-        int length[4] = {4,3,4,4};
-        int offset[4] = {0,4,7,11};
-        int floatsPerVertex = 15;
-        for (int i=0;i<4;i++){
-            glEnableVertexAttribArray(i);
-            glVertexAttribPointer(i, length[i],GL_FLOAT,GL_FALSE, floatsPerVertex * sizeof(float), BUFFER_OFFSET(offset[i] * sizeof(float)));
+    void Mesh::setVertexAttributePointers(Shader* shader) {
+        glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
+        int vertexAttribArray = 0;
+        for (auto attribute : shader->attributes) {
+            auto res = attributeByName.find(attribute.first);
+            if (res != attributeByName.end() && attribute.second.type == res->second.attributeType && attribute.second.arraySize == 1) {
+                glEnableVertexAttribArray(attribute.second.position);
+                glVertexAttribPointer(attribute.second.position, res->second.elementCount, res->second.dataType, GL_FALSE, totalBytesPerVertex, BUFFER_OFFSET(res->second.offset));
+                vertexAttribArray++;
+            } else {
+                glDisableVertexAttribArray(attribute.second.position);
+                switch (attribute.second.type){
+                    case GL_FLOAT:
+                        if (attribute.second.arraySize==1){
+                            glVertexAttrib1f(attribute.second.position,0);
+                        } else if (attribute.second.arraySize==2){
+                            glVertexAttrib2f(attribute.second.position,0,0);
+                        } else if (attribute.second.arraySize==3){
+                            glVertexAttrib3f(attribute.second.position,0,0,0);
+                        } else if (attribute.second.arraySize==4){
+                            glVertexAttrib4f(attribute.second.position,0,0,0,0);
+                        }
+                        break;
+#ifndef EMSCRIPTEN
+                    case GL_INT:
+                        if (attribute.second.arraySize==1){
+                            glVertexAttribI1i(attribute.second.position,0);
+                        } else if (attribute.second.arraySize==2){
+                            glVertexAttribI2i(attribute.second.position,0,0);
+                        } else if (attribute.second.arraySize==3){
+                            glVertexAttribI3i(attribute.second.position,0,0,0);
+                        } else if (attribute.second.arraySize==4){
+                            glVertexAttribI4i(attribute.second.position,0,0,0,0);
+                        }
+                        break;
+#endif
+                }
+            }
         }
     }
 
-    const std::vector<glm::vec3> &Mesh::getVertexPositions() {
-        return vertexPositions;
+    std::vector<glm::vec3> Mesh::getPosition() {
+        std::vector<glm::vec3> res;
+        auto ref = attributesVec3.find("position");
+        if (ref != attributesVec3.end()){
+            res = ref->second;
+        }
+        return res;
     }
 
-    const std::vector<glm::vec3> &Mesh::getNormals() {
-        return normals;
+    std::vector<glm::vec3> Mesh::getNormal() {
+        std::vector<glm::vec3> res;
+        auto ref = attributesVec3.find("normal");
+        if (ref != attributesVec3.end()){
+            res = ref->second;
+        }
+        return res;
     }
 
-    const std::vector<glm::vec4> &Mesh::getUVs() {
-        return uvs;
+    std::vector<glm::vec4> Mesh::getUV() {
+        std::vector<glm::vec4> res;
+        auto ref = attributesVec4.find("uv");
+        if (ref != attributesVec4.end()){
+            res = ref->second;
+        }
+        return res;
     }
 
-    const std::vector<uint16_t> &Mesh::getIndices() {
+    std::vector<uint16_t> Mesh::getIndices() {
         return indices;
     }
 
     Mesh::MeshBuilder Mesh::update() {
         Mesh::MeshBuilder res;
         res.updateMesh = this;
-        res.vertexPositions = vertexPositions;
-        res.normals = normals;
-        res.uvs = uvs;
-        res.particleSize = particleSize;
-        res.colors = colors;
+
+        res.attributesFloat = attributesFloat;
+        res.attributesVec2 = attributesVec2;
+        res.attributesVec3 = attributesVec3;
+        res.attributesVec4 = attributesVec4;
+        res.attributesIVec4 = attributesIVec4;
+
         res.indices = indices;
         res.meshTopology = meshTopology;
         return res;
@@ -155,41 +266,70 @@ namespace sre {
         return Mesh::MeshBuilder();
     }
 
-    const std::vector<glm::vec4> &Mesh::getColors() {
-        return colors;
+    std::vector<glm::vec4> Mesh::getColor() {
+        std::vector<glm::vec4> res;
+        auto ref = attributesVec4.find("color");
+        if (ref != attributesVec4.end()){
+            res = ref->second;
+        }
+        return res;
     }
 
-    const std::vector<float> &Mesh::getParticleSize() {
-        return particleSize;
+    std::vector<float> Mesh::getParticleSize() {
+        std::vector<float> res;
+        auto ref = attributesFloat.find("particleSize");
+        if (ref != attributesFloat.end()){
+            res = ref->second;
+        }
+        return res;
     }
 
     int Mesh::getDataSize() {
-        int size = 0;
-        size += vertexPositions.size() * (sizeof(glm::vec3)+
-                sizeof(glm::vec3)+ // normals
-               sizeof(glm::vec4)+ // uvs
-               sizeof(glm::vec4)+ // colors
-               sizeof(float)); // particle size
-        size += indices.size() * sizeof(uint16_t);
-        return size;
+        return totalBytesPerVertex;
     }
 
     std::array<glm::vec3,2> Mesh::getBoundsMinMax() {
         return boundsMinMax;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withVertexPositions(const std::vector<glm::vec3> &vertexPositions) {
-        this->vertexPositions = vertexPositions;
+    std::pair<int,int> Mesh::getType(const std::string &name) {
+        auto res = attributeByName.find(name);
+        if (res != attributeByName.end()){
+            return {res->second.dataType,res->second.elementCount};
+        }
+        return {-1,-1};
+    }
+
+    std::vector<std::string> Mesh::getNames() {
+        std::vector<std::string> res;
+        for (auto & u : attributeByName){
+            res.push_back(u.first);
+        }
+        return res;
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withPosition(const std::vector<glm::vec3> &vertexPositions) {
+        withUniform("position",vertexPositions);
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withNormals(const std::vector<glm::vec3> &normals) {
-        this->normals = normals;
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withNormal(const std::vector<glm::vec3> &normals) {
+        withUniform("normal",normals);
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withUvs(const std::vector<glm::vec4> &uvs) {
-        this->uvs = uvs;
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withUV(const std::vector<glm::vec4> &uvs) {
+        withUniform("uv",uvs);
+        return *this;
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withColor(const std::vector<glm::vec4> &colors) {
+        withUniform("color",colors);
+        return *this;
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withParticleSize(const std::vector<float> &particleSize) {
+        withUniform("particleSize",particleSize);
         return *this;
     }
 
@@ -209,10 +349,10 @@ namespace sre {
         Mesh *res;
         if (updateMesh != nullptr){
             renderStats.meshBytes -= updateMesh->getDataSize();
-            updateMesh->update(vertexPositions, normals, uvs, colors, particleSize,indices, meshTopology);
+            updateMesh->update(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology);
             res = updateMesh;
         } else {
-            res = new Mesh(vertexPositions, normals, uvs, colors, particleSize,indices, meshTopology);
+            res = new Mesh(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology);
             renderStats.meshCount++;
         }
         renderStats.meshBytes += res->getDataSize();
@@ -279,16 +419,15 @@ namespace sre {
             }
         }
 
-        withVertexPositions(finalPosition);
-        withNormals(finalNormals);
-        withUvs(finalUVs);
+        withPosition(finalPosition);
+        withNormal(finalNormals);
+        withUV(finalUVs);
         withMeshTopology(MeshTopology::Triangles);
 
         return *this;
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withCube() {
-
         using namespace glm;
         using namespace std;
         float length = 1.0f;
@@ -368,13 +507,11 @@ namespace sre {
                                      vec3{0, -1, 0},
                                      vec3{0, -1, 0},
                                      vec3{0, -1, 0},
-
-
                              });
 
-        withVertexPositions(positions);
-        withNormals(normals);
-        withUvs(uvs);
+        withPosition(positions);
+        withNormal(normals);
+        withUV(uvs);
         withMeshTopology(MeshTopology::Triangles);
 
         return *this;
@@ -404,22 +541,57 @@ namespace sre {
                 0,1,2,
                 2,1,3
         };
-        withVertexPositions(vertices);
-        withNormals(normals);
-        withUvs(uvs);
+        withPosition(vertices);
+        withNormal(normals);
+        withUV(uvs);
         withIndices(indices);
         withMeshTopology(MeshTopology::Triangles);
 
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withColors(const std::vector<glm::vec4> &colors) {
-        this->colors = colors;
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withUniform(std::string name, const std::vector<float> &values) {
+        if (updateMesh != nullptr && attributesFloat.find(name) == attributesFloat.end()){
+            std::cout << "Cannot change mesh structure. "<<name<<" did not exist in original mesh."<< std::endl;
+        } else {
+            attributesFloat[name] = values;
+        }
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withParticleSize(const std::vector<float> &particleSize) {
-        this->particleSize = particleSize;
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withUniform(std::string name, const std::vector<glm::vec2> &values) {
+        if (updateMesh != nullptr && attributesVec2.find(name) == attributesVec2.end()){
+            std::cout << "Cannot change mesh structure. "<<name<<" did not exist in original mesh."<< std::endl;
+        } else {
+            attributesVec2[name] = values;
+        }
+        return *this;
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withUniform(std::string name, const std::vector<glm::vec3> &values) {
+        if (updateMesh != nullptr && attributesVec3.find(name) == attributesVec3.end()){
+            std::cout << "Cannot change mesh structure. "<<name<<" did not exist in original mesh."<< std::endl;
+        } else {
+            attributesVec3[name] = values;
+        }
+        return *this;
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withUniform(std::string name, const std::vector<glm::vec4> &values) {
+        if (updateMesh != nullptr && attributesVec4.find(name) == attributesVec4.end()){
+            std::cout << "Cannot change mesh structure. "<<name<<" did not exist in original mesh."<< std::endl;
+        } else {
+            attributesVec4[name] = values;
+        }
+        return *this;
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withUniform(std::string name, const std::vector<glm::ivec4> &values) {
+        if (updateMesh != nullptr && attributesIVec4.find(name) == attributesIVec4.end()){
+            std::cout << "Cannot change mesh structure. "<<name<<" did not exist in original mesh."<< std::endl;
+        } else {
+            attributesIVec4[name] = values;
+        }
         return *this;
     }
 }

@@ -47,7 +47,7 @@ namespace sre {
         ~Renderer();
         static constexpr int maxSceneLights = 4;
         static constexpr int sre_version_major = 0;
-        static constexpr int sre_version_minor = 6;
+        static constexpr int sre_version_minor = 7;
         static constexpr int sre_version_point = 0;
 
 

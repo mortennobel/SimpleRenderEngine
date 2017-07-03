@@ -80,7 +80,6 @@ namespace sre {
          */
         void draw(Mesh *mesh, glm::mat4 modelTransform, Material *material);
 
-
     private:
         void finish();
 

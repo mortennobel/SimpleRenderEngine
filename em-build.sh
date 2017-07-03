@@ -2,13 +2,22 @@
 
 EMSDK=/Users/mnob/programming/cpp/emsdk_portable
 source ${EMSDK}/emsdk_env.sh
-emcc -Iinclude src/imgui/imgui.cpp src/imgui/imgui_draw.cpp src/imgui/imgui_sre.cpp src/SRE/Camera.cpp src/SRE/Debug.cpp src/SRE/Light.cpp src/SRE/Mesh.cpp src/SRE/Renderer.cpp src/SRE/Shader.cpp src/SRE/Texture.cpp examples/gui.cpp -O2 -std=c++14 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s USE_SDL=2 -o sre-gui.html
-emcc -Iinclude src/imgui/imgui.cpp src/imgui/imgui_draw.cpp src/imgui/imgui_sre.cpp src/SRE/Camera.cpp src/SRE/Debug.cpp src/SRE/Light.cpp src/SRE/Mesh.cpp src/SRE/Renderer.cpp src/SRE/Shader.cpp src/SRE/Texture.cpp examples/hello-engine.cpp -O2 -std=c++14 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s USE_SDL=2 -o sre-hello-engine.html
-emcc -Iinclude src/imgui/imgui.cpp src/imgui/imgui_draw.cpp src/imgui/imgui_sre.cpp src/SRE/Camera.cpp src/SRE/Debug.cpp src/SRE/Light.cpp src/SRE/Mesh.cpp src/SRE/Renderer.cpp src/SRE/Shader.cpp src/SRE/Texture.cpp examples/particle-sprite.cpp -O2 -std=c++14 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s USE_SDL=2 -o sre-particle-sprite.html
-emcc -Iinclude src/imgui/imgui.cpp src/imgui/imgui_draw.cpp src/imgui/imgui_sre.cpp src/SRE/Camera.cpp src/SRE/Debug.cpp src/SRE/Light.cpp src/SRE/Mesh.cpp src/SRE/Renderer.cpp src/SRE/Shader.cpp src/SRE/Texture.cpp examples/particle-test.cpp -O2 -std=c++14 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s USE_SDL=2 -o sre-particle-test.html
-emcc -Iinclude src/imgui/imgui.cpp src/imgui/imgui_draw.cpp src/imgui/imgui_sre.cpp src/SRE/Camera.cpp src/SRE/Debug.cpp src/SRE/Light.cpp src/SRE/Mesh.cpp src/SRE/Renderer.cpp src/SRE/Shader.cpp src/SRE/Texture.cpp examples/spheres.cpp -O2 -std=c++14 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s USE_SDL=2 -o sre-spheres.html
-emcc -Iinclude src/imgui/imgui.cpp src/imgui/imgui_draw.cpp src/imgui/imgui_sre.cpp src/SRE/Camera.cpp src/SRE/Debug.cpp src/SRE/Light.cpp src/SRE/Mesh.cpp src/SRE/Renderer.cpp src/SRE/Shader.cpp src/SRE/Texture.cpp examples/spinning-cube.cpp -O2 -std=c++14 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s USE_SDL=2 -o sre-spinning-cube.html
-emcc -Iinclude src/imgui/imgui.cpp src/imgui/imgui_draw.cpp src/imgui/imgui_sre.cpp src/SRE/Camera.cpp src/SRE/Debug.cpp src/SRE/Light.cpp src/SRE/Mesh.cpp src/SRE/Renderer.cpp src/SRE/Shader.cpp src/SRE/Texture.cpp examples/spinning-cube-tex.cpp -O2 -std=c++14 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s USE_SDL=2 -o sre-spinning-cube-tex.html
-emcc -Iinclude src/imgui/imgui.cpp src/imgui/imgui_draw.cpp src/imgui/imgui_sre.cpp src/SRE/Camera.cpp src/SRE/Debug.cpp src/SRE/Light.cpp src/SRE/Mesh.cpp src/SRE/Renderer.cpp src/SRE/Shader.cpp src/SRE/Texture.cpp examples/spinning-cube-unlit.cpp -O2 -std=c++14 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s USE_SDL=2 -o sre-spinning-cube-unlit.html
-emcc -Iinclude src/imgui/imgui.cpp src/imgui/imgui_draw.cpp src/imgui/imgui_sre.cpp src/SRE/Camera.cpp src/SRE/Debug.cpp src/SRE/Light.cpp src/SRE/Mesh.cpp src/SRE/Renderer.cpp src/SRE/Shader.cpp src/SRE/Texture.cpp examples/spinning-sphere.cpp -O2 -std=c++14 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s USE_SDL=2 -o sre-spinning-sphere.html
-emcc -Iinclude src/imgui/imgui.cpp src/imgui/imgui_draw.cpp src/imgui/imgui_sre.cpp src/SRE/Camera.cpp src/SRE/Debug.cpp src/SRE/Light.cpp src/SRE/Mesh.cpp src/SRE/Renderer.cpp src/SRE/Shader.cpp src/SRE/Texture.cpp examples/spinning-sphere-unlit.cpp -O2 -std=c++14 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s USE_SDL=2 -o sre-spinning-sphere-unlit.html
+
+for FILENAME in hello-engine gui spheres particle-sprite particle-test spinning-cube-tex multiple-lights spinning-sphere-cubemap spinning-cube
+do
+emcc -Iinclude src/imgui/imgui.cpp \
+               src/imgui/imgui_draw.cpp \
+               src/imgui/imgui_sre.cpp \
+               src/sre/Camera.cpp \
+               src/sre/Light.cpp \
+               src/sre/Material.cpp \
+               src/sre/Mesh.cpp \
+               src/sre/Renderer.cpp \
+               src/sre/RenderPass.cpp \
+               src/sre/SDLRenderer.cpp \
+               src/sre/Shader.cpp \
+               src/sre/Texture.cpp \
+               src/sre/WorldLights.cpp \
+               examples/$FILENAME.cpp \
+               -O2 -std=c++14 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' -s USE_SDL=2 -o html/$FILENAME.html
+done

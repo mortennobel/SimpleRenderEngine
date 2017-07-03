@@ -124,7 +124,7 @@ namespace sre{
     }
 
     bool Material::set(std::string uniformName, glm::vec4 value){
-        auto type = shader->getType(uniformName);
+        auto type = shader->getUniformType(uniformName);
         for (auto & v : vectorValues){
             if (v.id==type.id){
                 v.value = value;
@@ -135,7 +135,7 @@ namespace sre{
     }
 
     bool Material::set(std::string uniformName, float value){
-        auto type = shader->getType(uniformName);
+        auto type = shader->getUniformType(uniformName);
         for (auto & v : floatValues){
             if (v.id==type.id){
                 v.value = value;
@@ -146,7 +146,7 @@ namespace sre{
     }
 
     bool Material::set(std::string uniformName, sre::Texture * value){
-        auto type = shader->getType(uniformName);
+        auto type = shader->getUniformType(uniformName);
         for (auto & v : textureValues){
             if (v.id==type.id){
                 v.value = value;

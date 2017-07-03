@@ -15,65 +15,52 @@
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <sre/SDLRenderer.hpp>
 
 using namespace sre;
 
-int main() {
-    std::cout << "Spinning cube" << std::endl;
-    SDL_Window *window;                    // Declare a pointer
+class SpinningCubeTexExample {
+public:
+    SpinningCubeTexExample(){
+        r.init();
+        camera.lookAt({0,0,3},{0,0,0},{0,1,0});
+        camera.setPerspectiveProjection(60,0.1,100);
+        shader = Shader::getUnlit();
+        mat = new Material(shader);
+        mat->setTexture(Texture::create().withFile("examples-data/test.jpg").withGenerateMipmaps(true).build());
+        mesh = Mesh::create()
+                .withCube()
+                .build();
 
-    SDL_Init(SDL_INIT_VIDEO);              // Initialize SDL2
-
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
-
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-
-    // Create an application window with the following settings:
-    window = SDL_CreateWindow(
-            "An SDL2 window",                  // window title
-            SDL_WINDOWPOS_UNDEFINED,           // initial x position
-            SDL_WINDOWPOS_UNDEFINED,           // initial y position
-            640,                               // width, in pixels
-            480,                               // height, in pixels
-            SDL_WINDOW_OPENGL                  // flags
-    );
-
-    // Check that the window was successfully made
-    if (window == NULL) {
-        // In the event that the window could not be made...
-        printf("Could not create window: %s\n", SDL_GetError());
-        return 1;
+        r.frameRender = [&](Renderer* r){
+            render(r);
+        };
+        r.startEventLoop();
     }
 
-    Renderer r{window};
-    Camera camera;
-    camera.lookAt({0,0,3},{0,0,0},{0,1,0});
-    camera.setPerspectiveProjection(60,640,480,0.1,100);
-    Shader* shader = Shader::getUnlit();
-    Material* mat = new Material(shader);
-    mat->setTexture(Texture::create().withFile("examples-data/test.jpg").withGenerateMipmaps(true).build());
-    Mesh* mesh = Mesh::create()
-            .withCube()
-            .build();
-
-    float duration = 10000;
-    for (float i=0;i<duration ;i+=16){
-        auto renderPass = r.createRenderPass()
+    void render(Renderer * r){
+        auto renderPass = r->createRenderPass()
                 .withCamera(camera)
                 .withClearColor(true,{1, 0, 0, 1})
                 .build();
 
-        renderPass.draw(mesh, glm::eulerAngleY(glm::radians(360 * i / duration)), mat);
-        r.swapWindow();
-        SDL_Delay(16);
+        const float speed = .5f;
+        renderPass.draw(mesh, glm::eulerAngleY(glm::radians( i * speed)), mat);
+        i++;
     }
+private:
+    SDLRenderer r;
+    Camera camera;
+    Shader* shader;
+    Material* mat;
 
-    // Close and destroy the window
-    SDL_DestroyWindow(window);
+    Mesh* mesh;
+    int i=0;
 
-    // Clean up
-    SDL_Quit();
+};
+
+int main() {
+    new SpinningCubeTexExample();
 
     return 0;
 }

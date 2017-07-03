@@ -18,6 +18,9 @@ namespace sre {
      *
      * The default camera is positioned at (0,0,0) and looking down the negative z-axis. Everything inside the volume
      * between -1 to 1 is viewed.
+     *
+     * Note that if the window size is resized the camera must explicit be updated using `setViewport`,
+     * `setPerspectiveProjection`/`setWindowCoordinates`
      */
     class DllExport Camera {
     public:
@@ -33,11 +36,9 @@ namespace sre {
 
         /// set the projectionTransform to perspective projection
         /// fieldOfViewY field of view in degrees
-        /// viewportWidth width of the current viewport
-        /// viewportHeight height of the current viewport
         /// nearPlane near clipping plane, defines how close an object can be to the camera before clipping
         /// farPlane far clipping plane, defines how far an object can be to the camera before clipping
-        void setPerspectiveProjection(float fieldOfViewY, float viewportWidth,float viewportHeight, float nearPlane, float farPlane);
+        void setPerspectiveProjection(float fieldOfViewY, float nearPlane, float farPlane);
 
         /// set the projectionTransform to orthographic parallel viewing volume.
         /// left left plane of projection
@@ -76,9 +77,10 @@ namespace sre {
          */
         void setViewport(int x, int y, int width, int height);
     private:
+        void lazyInstantiateViewport();
         glm::mat4 viewTransform;
         glm::mat4 projectionTransform;
-        int viewportX, viewportY, viewportWidth, viewportHeight;
+        int viewportX, viewportY, viewportWidth = -1, viewportHeight = -1;
 
         friend class RenderPass;
 

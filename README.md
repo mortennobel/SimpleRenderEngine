@@ -1,18 +1,17 @@
 # Renderer
 
-The goal of Renderer (sre) is to provide easy way to get started with graphics 
+The goal of SimpleRenderEngine (sre) is to provide easy way to get started with graphics 
 programming in 2D or 3D without a deep knowledge about the low-level graphics APIs like 
 OpenGL, DirectX and Vulkan.
  
-sre currently depends on Simple Direct Layer 2.x (SDL2), SDL2-image, OpenGL Mathematics (GLM), and OpenGL 3.3 (or higher),
-imgui and runs on both Windows, macOS and Linux.
+SimpleRenderEngine currently depends on Simple Direct Layer 2.x (SDL2), SDL2-image, OpenGL Mathematics (GLM), and OpenGL 
+3.3 (or higher), imgui and runs on both Windows, macOS and Linux.
  
 sre provides:
  * Virtual camera (perspective and orthographic)
  * Texture support (JPEG, PNG, Raw)
  * Cube map support
- * Mesh support (with normals and texture coordinates)
- * Mesh support (with color, particle-size and texture coordinates)
+ * Mesh support (with custom vertex attributes)
  * Shaders (unlit, specular, alpha blending, and custom shaders)
  * Light and shading
  * Enforces efficient use of OpenGL
@@ -47,6 +46,7 @@ https://mortennobel.github.io/SimpleRenderEngine/
  * https://www.opengl.org/registry/ OpenGL Registry
  
 ## Version history
+ * 0.7.0 Add SDLRenderer. Custom mesh attributes. Simplify Camera::setPerspectiveProjection.
  * 0.6.0 Add Material and RenderPass. Improve ImGUI integration. 
  * 0.5.3 Rename namespace and folders from SRE to sre 
  * 0.5.2 Add mesh bounds 

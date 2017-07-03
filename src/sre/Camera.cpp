@@ -14,12 +14,11 @@ namespace sre {
     Camera::Camera()
     : viewTransform{1.0f},projectionTransform {1.0f}, viewportX{0}, viewportY{0}
     {
-        if (Renderer::instance){
-            SDL_GetWindowSize(Renderer::instance->window,&viewportWidth,&viewportHeight);
-        }
+        lazyInstantiateViewport();
     }
 
-    void Camera::setPerspectiveProjection(float fieldOfViewY, float viewportWidth,float viewportHeight, float nearPlane, float farPlane) {
+    void Camera::setPerspectiveProjection(float fieldOfViewY, float nearPlane, float farPlane) {
+        lazyInstantiateViewport();
         projectionTransform = glm::perspectiveFov<float>(glm::radians( fieldOfViewY),
                                                           viewportWidth,
                                                           viewportHeight,
@@ -71,4 +70,9 @@ namespace sre {
         viewportHeight = height;
     }
 
+    void Camera::lazyInstantiateViewport() {
+        if (Renderer::instance && viewportWidth==-1){
+            SDL_GetWindowSize(Renderer::instance->window,&viewportWidth,&viewportHeight);
+        }
+    }
 }

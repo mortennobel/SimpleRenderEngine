@@ -13,6 +13,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <sre/imgui_sre.hpp>
 #include <sre/Renderer.hpp>
+#include <imgui_internal.h>
 
 namespace sre {
     RenderPass * RenderPass::instance = nullptr;
@@ -67,7 +68,7 @@ namespace sre {
             clear |= GL_COLOR_BUFFER_BIT;
         }
         if (clearDepth) {
-            glClearDepth(clearDepthValue);
+            glClearDepthf(clearDepthValue);
             glDepthMask(GL_TRUE);
             clear |= GL_DEPTH_BUFFER_BIT;
         }
@@ -96,6 +97,7 @@ namespace sre {
         if (instance){
             instance->finish();
         }
+        camera.lazyInstantiateViewport();
         glViewport(camera.viewportX, camera.viewportY, camera.viewportWidth, camera.viewportHeight);
         glScissor(camera.viewportX, camera.viewportY, camera.viewportWidth, camera.viewportHeight);
         instance = this;
@@ -113,7 +115,7 @@ namespace sre {
         if (mesh != lastBoundMesh){
             renderStats->stateChangesMesh++;
             lastBoundMesh = mesh;
-            mesh->bind();
+            mesh->bind(material->getShader());
         }
 
         int indexCount = (int) mesh->getIndices().size();
@@ -151,7 +153,7 @@ namespace sre {
                 glUniformMatrix3fv(shader->uniformLocationNormal, 1, GL_FALSE, glm::value_ptr(normalMatrix));
             }
             if (shader->uniformLocationViewport != -1){
-                glm::vec4 viewport((float)camera.viewportWidth,(float)camera.viewportHeight,0,0);
+                glm::vec4 viewport((float)camera.viewportWidth,(float)camera.viewportHeight,(float)camera.viewportX,(float)camera.viewportY);
                 glUniform4fv(shader->uniformLocationViewport, 1, glm::value_ptr(viewport));
             }
             shader->setLights(worldLights, camera.getViewTransform());
@@ -162,7 +164,7 @@ namespace sre {
     void RenderPass::drawLines(const std::vector<glm::vec3> &verts, glm::vec4 color, MeshTopology meshTopology) {
         assert(instance != nullptr);
         Mesh *mesh = Mesh::create()
-                .withVertexPositions(verts)
+                .withPosition(verts)
                 .withMeshTopology(meshTopology)
                 .build();
         Shader *shader = Shader::getUnlit();

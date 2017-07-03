@@ -99,8 +99,9 @@ namespace sre {
         renderStats.stateChangesShader = 0;
         renderStats.stateChangesMesh = 0;
         renderStats.stateChangesMaterial = 0;
-
+#ifndef EMSCRIPTEN
         SDL_GL_SwapWindow(window);
+#endif
     }
 
     void Renderer::finishGPUCommandBuffer() {
@@ -110,7 +111,6 @@ namespace sre {
     const RenderStats &Renderer::getRenderStats() {
         return renderStatsLast;
     }
-
 
     glm::ivec2 Renderer::getWindowSize() {
         glm::ivec2 win;

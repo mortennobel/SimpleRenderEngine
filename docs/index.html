@@ -372,6 +372,139 @@ Note that this member function is not expected to perform as efficient as draw()
 </tr>
 </tbody></table>
 
+          <h1 id="sdlrenderer">SDLRenderer</h1>
+
+<p><code class="prettyprint">#include &quot;sre/SDLRenderer.hpp&quot;</code></p>
+
+<p>Simplifies SDL applications by abstracting away boilerplate code. </p>
+
+<p>SDLRenderer is a pure helper-class, and no other class in the SimpleRenderEngine depends on it. </p>
+
+<p>The class will create a window with a graphics context in the <code class="prettyprint">init()</code> member function.
+The <code class="prettyprint">startEventLoop()</code> will start the event loop, which polls the event queue in the 
+beginning of each frame (and providing callbacks to <code class="prettyprint">keyEvent</code> and <code class="prettyprint">mouseEvent</code>), followed by a <code class="prettyprint">frameUpdate(float)</code> and a <code class="prettyprint">frameRender(Renderer)</code>.</p>
+
+<p>Example:</p>
+<pre class="highlight plaintext"><code>using namespace sre;
+
+int main() {
+    SDLRenderer r;
+    r.init();
+    r.frameRender = [](Renderer* renderer){
+        RenderPass rp = renderer-&gt;createRenderPass().build();
+        rp.drawLines({{-.5,-.5,0},{.5,.5,0},{-.5,.5,0},{.5,-.5,0}});
+    };
+    r.startEventLoop();
+
+    return 0;
+}
+</code></pre>
+
+<h2 id="sdlrenderer">SDLRenderer</h2>
+
+<p><code class="prettyprint">SDLRenderer</code></p>
+
+<p>Constructor.</p>
+
+<h2 id="setwindowtitle">setWindowTitle</h2>
+
+<p><code class="prettyprint">void setWindowTitle(std::string title)</code></p>
+
+<p>Set the window title. If window has already been created the window title is set instantly - 
+otherwise the new title will be used when creating the window. </p>
+
+<h2 id="setwindowsize">setWindowSize</h2>
+
+<p><code class="prettyprint">void setWindowSize(int width, int height)</code></p>
+
+<p>Set the window size. If window has already been created the window size is set instantly - 
+otherwise the new size will be used when creating the window.</p>
+
+<h2 id="init">init</h2>
+
+<p><code class="prettyprint">void init(uint32_t sdlInitFlag = SDL_INIT_EVERYTHING)</code></p>
+
+<p>Create the window and the graphics context (instantiates the sre::Renderer). Note that most 
+other sre classes requires the graphics content to be created before they can be used (e.g. a Shader cannot be created before <code class="prettyprint">init()</code>).</p>
+
+<p>The parameter sdlInitFlag is forwarded to SDL_Init. For production only modules needed should be initialized. See <a href="https://wiki.libsdl.org/SDL_Init">wiki.libsdl.org/SDL_Init</a></p>
+
+<h2 id="frameupdate">frameUpdate</h2>
+
+<p><code class="prettyprint">std::function&lt;void(float deltaTimeSec)&gt; frameUpdate</code></p>
+
+<p>Subscribe to update events from the main loop used for updating the model with the number of seconds since last update.</p>
+<pre class="highlight plaintext"><code>// Example - use frameUpdate callback to print delta time
+SDLRenderer r;
+r.init();
+r.frameUpdate = [](float deltaTime){
+    cout &lt;&lt; deltaTime &lt;&lt; endl;
+};
+// ...
+</code></pre>
+
+<h2 id="framerender">frameRender</h2>
+
+<p><code class="prettyprint">std::function&lt;void(Renderer* renderer)&gt; frameRender</code></p>
+
+<p>Subscript be render events. The <code class="prettyprint">Renderer::swapFrame()</code> is automatically invoked after the callback.</p>
+
+<h2 id="keyevent">keyEvent</h2>
+
+<p><code class="prettyprint">std::function&lt;void(SDL_Event&amp; e)&gt; keyEvent</code></p>
+
+<p>Call back of <code class="prettyprint">SDL_KEYDOWN</code> and <code class="prettyprint">SDL_KEYUP</code>.</p>
+
+<h2 id="mouseevent">mouseEvent</h2>
+
+<p><code class="prettyprint">std::function&lt;void(SDL_Event&amp; e)&gt; keyEvent</code></p>
+
+<p>Call back of <code class="prettyprint">SDL_MOUSEMOTION</code>, <code class="prettyprint">SDL_MOUSEBUTTONDOWN</code>, <code class="prettyprint">SDL_MOUSEBUTTONUP</code>, <code class="prettyprint">SDL_MOUSEWHEEL</code>.</p>
+
+<h2 id="controllerevent">controllerEvent</h2>
+
+<p><code class="prettyprint">std::function&lt;void(SDL_Event&amp; e)&gt; controllerEvent</code></p>
+
+<p>Call back of <code class="prettyprint">SDL_CONTROLLERAXISMOTION</code>, <code class="prettyprint">SDL_CONTROLLERBUTTONDOWN</code>, <code class="prettyprint">SDL_CONTROLLERBUTTONUP</code>, <code class="prettyprint">SDL_CONTROLLERDEVICEADDED</code>, <code class="prettyprint">SDL_CONTROLLERDEVICEREMOVED</code> and <code class="prettyprint">SDL_CONTROLLERDEVICEREMAPPED</code>.</p>
+
+<h2 id="joystickevent">joystickEvent</h2>
+
+<p><code class="prettyprint">std::function&lt;void(SDL_Event&amp; e)&gt; joystickEvent</code></p>
+
+<p>Call back of <code class="prettyprint">SDL_JOYAXISMOTION</code>, <code class="prettyprint">SDL_JOYBALLMOTION</code>, <code class="prettyprint">SDL_JOYHATMOTION</code>, <code class="prettyprint">SDL_JOYBUTTONDOWN</code>, <code class="prettyprint">SDL_JOYBUTTONUP</code>, <code class="prettyprint">SDL_JOYDEVICEADDED</code>, <code class="prettyprint">SDL_JOYDEVICEREMOVED</code>.</p>
+
+<h2 id="touchevent">touchEvent</h2>
+
+<p><code class="prettyprint">std::function&lt;void(SDL_Event&amp; e)&gt; touchEvent</code></p>
+
+<p>Call back of <code class="prettyprint">SDL_FINGERDOWN</code>, <code class="prettyprint">SDL_FINGERUP</code>, <code class="prettyprint">SDL_FINGERMOTION</code>.</p>
+
+<h2 id="otherevent">otherEvent</h2>
+
+<p><code class="prettyprint">std::function&lt;void(SDL_Event&amp; e)&gt; otherEvent</code></p>
+
+<p>Invoked if unhandled event</p>
+
+<h2 id="starteventloop">startEventLoop</h2>
+
+<p><code class="prettyprint">void startEventLoop()</code></p>
+
+<p>Start the event loop. Note that this member function in usually blocking (until the <code class="prettyprint">stopEventLoop()</code> has been called). 
+Using Emscripten the event loop is not blocking (but internally using a callback function), which means that when using 
+Emscripten avoid allocating objects on the stack (see examples for a workaround).</p>
+
+<h2 id="stopeventloop">stopEventLoop</h2>
+
+<p><code class="prettyprint">void stopEventLoop()</code></p>
+
+<p>The render loop will stop running when the frame is complete.</p>
+
+<h2 id="getsdlwindow">getSDLWindow</h2>
+
+<p><code class="prettyprint">SDL_Window *getSDLWindow()</code></p>
+
+<p>Returns a pointer to <code class="prettyprint">SDL_Window</code>.</p>
+
           <h1 id="texture">Texture</h1>
 
 <p><code class="prettyprint">#include &quot;sre/Texture.hpp&quot;</code></p>
@@ -660,6 +793,9 @@ rendering (default settings is the full window)</p>
 <p>The default camera is positioned at (0,0,0) and looking down the negative z-axis. Everything inside the volume
 between -1 to 1 is viewed.</p>
 
+<p>Note that if the window size is resized the camera must explicit be updated using <code class="prettyprint">setViewport</code>,
+<code class="prettyprint">setPerspectiveProjection</code>/<code class="prettyprint">setWindowCoordinates</code></p>
+
 <h2 id="camera">Camera</h2>
 
 <p><code class="prettyprint">Camera()</code></p>
@@ -698,7 +834,7 @@ between -1 to 1 is viewed.</p>
 
 <p><code class="prettyprint">void setPerspectiveProjection(float fieldOfViewY, float viewportWidth,float viewportHeight, float nearPlane, float farPlane)</code></p>
 
-<p>set the projectionTransform to perspective projection</p>
+<p>set the projectionTransform to perspective projection.</p>
 
 <table><thead>
 <tr>
@@ -709,14 +845,6 @@ between -1 to 1 is viewed.</p>
 <tr>
 <td>fieldOfViewY</td>
 <td>field of view in degrees</td>
-</tr>
-<tr>
-<td>viewportWidth</td>
-<td>width of the current viewport</td>
-</tr>
-<tr>
-<td>viewportHeight</td>
-<td>height of the current viewport</td>
 </tr>
 <tr>
 <td>nearPlane</td>

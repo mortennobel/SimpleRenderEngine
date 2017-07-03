@@ -17,8 +17,6 @@
 #include "sre/Texture.hpp"
 
 namespace sre {
-
-
     namespace {
         Shader *standard = nullptr;
         Shader *unlit = nullptr;
@@ -52,15 +50,15 @@ namespace sre {
                     break;
 #endif
                 default:
-                    typeStr = std::string("Unknown error type: ")+std::to_string(type);
+                    typeStr = std::string("Unknown error type: ") + std::to_string(type);
                     break;
             }
-            std::cerr<<(std::string{errorLog.data()}+"\n"+ typeStr +" error\n")<<std::endl;
+            std::cerr << (std::string{errorLog.data()} + "\n" + typeStr + " error\n") << std::endl;
         }
 
         bool compileShader(std::string& source, GLenum type, GLuint& shader){
 #ifdef EMSCRIPTEN
-            Shader::translateToGLSLES(source, type==GL_VERTEX_SHADER);
+            source = Shader::translateToGLSLES(source, type==GL_VERTEX_SHADER);
 #endif
             shader = glCreateShader(type);
             auto stringPtr = source.c_str();
@@ -97,7 +95,7 @@ namespace sre {
         }
     }
 
-    void Shader::translateToGLSLES(std::string &source, bool vertexShader) {
+    std::string Shader::translateToGLSLES(std::string source, bool vertexShader) {
         using namespace std;
 
         string replace = "#version 140";
@@ -109,20 +107,20 @@ namespace sre {
 
         // replace textures
         if (vertexShader){
-            static regex regExpSearchShim3 { R"(\n\s*out\b)"};
+            regex regExpSearchShim3 { R"(\n\s*out\b)"};
             source = regex_replace(source, regExpSearchShim3, "\nvarying");
-            static regex regExpSearchShim4 { R"(\n\s*in\b)"};
+            regex regExpSearchShim4 { R"(\n\s*in\b)"};
             source = regex_replace(source, regExpSearchShim4, "\nattribute");
         } else {
-            static regex regExpSearchShim2 { R"(\bfragColor\b)"};
+            regex regExpSearchShim2 { R"(\bfragColor\b)"};
             source = regex_replace(source, regExpSearchShim2, "gl_FragColor");
-            static regex regExpSearchShim3 { R"(\n\s*out\b)"};
+            regex regExpSearchShim3 { R"(\n\s*out\b)"};
             source = regex_replace(source, regExpSearchShim3, "\n// out");
-            static regex regExpSearchShim4 { R"(\n\s*in\b)"};
+            regex regExpSearchShim4 { R"(\n\s*in\b)"};
             source = regex_replace(source, regExpSearchShim4, "\nvarying");
         }
 
-        static regex regExpSearchShim1 { R"(\s*uniform\s+sampler([\w]*)\s+([\w_]*)\s*;.*)"};
+        regex regExpSearchShim1 { R"(\s*uniform\s+sampler([\w]*)\s+([\w_]*)\s*;.*)"};
         istringstream iss(source);
         map<string,string> textureType;
         smatch match;
@@ -141,9 +139,10 @@ namespace sre {
             regex regExpSearchShim4 { string{"texture\\s*\\(\\s*"}+val.first+"\\s*," };
             source = regex_replace(source, regExpSearchShim4, string{"texture"}+val.second+"("+val.first+",");
         }
+        return source;
     }
 
-    void Shader::updateUniforms() {
+    void Shader::updateUniformsAndAttributes() {
         uniformLocationModel = -1;
         uniformLocationView = -1;
         uniformLocationProjection = -1;
@@ -206,7 +205,7 @@ namespace sre {
                 Uniform u;
                 u.name = name;
                 u.id = location;
-                u.elementCount = size;
+                u.arraySize = size;
                 u.type = uniformType;
                 uniforms.push_back(u);
             } else {
@@ -268,6 +267,28 @@ namespace sre {
                 }
             }
         }
+
+        // update attributes
+        attributes.clear();
+        GLint attributeCount;
+        glGetProgramiv(shaderProgramId, GL_ACTIVE_ATTRIBUTES, &attributeCount);
+
+        for (int i=0;i<attributeCount;i++){
+            const int nameSize = 50;
+            GLchar name[nameSize];
+            GLsizei nameLength;
+            GLint size;
+            GLenum type;
+            glGetActiveAttrib(	shaderProgramId,
+                                   i,
+                                   nameSize,
+                                   &nameLength,
+                                   &size,
+                                   &type,
+                                   name);
+            auto location = glGetAttribLocation( shaderProgramId, name);
+            attributes[std::string(name)] = {location,type, size};
+        }
     }
 
     Shader::Shader() {
@@ -295,7 +316,7 @@ namespace sre {
             glm::vec4 lightPosType[4];
             glm::vec4 lightColorRange[4];
             for (int i=0;i<4;i++){
-                auto light = worldLights == nullptr?nullptr:worldLights->getLight(i);
+                auto light = worldLights->getLight(i);
                 if (light == nullptr || light->lightType == LightType::Unused) {
                     lightPosType[i] = glm::vec4(0.0f,0.0f,0.0f, 2);
                     continue;
@@ -388,15 +409,7 @@ namespace sre {
         return standard;
     }
 
-    bool Shader::contains(const std::string& name) {
-		for (auto i = uniforms.begin(); i != uniforms.end(); i++) {
-			if (i->name.compare(name) == 0)
-				return true;
-		}
-        return false;
-    }
-
-    Uniform Shader::getType(const std::string& name) {
+    Uniform Shader::getUniformType(const std::string &name) {
 		for (auto i = uniforms.begin(); i != uniforms.end(); i++) {
 			if (i->name.compare(name) == 0)
 				return *i;
@@ -404,7 +417,7 @@ namespace sre {
 		Uniform u;
 		u.type = UniformType::Invalid;
 		u.id = -1;
-		u.elementCount = -1;
+		u.arraySize = -1;
 		return u;
     }
 
@@ -437,18 +450,63 @@ namespace sre {
             glAttachShader(shaderProgramId,  s);
         }
 
-        // enforce layout
-        std::string attributeNames[4] = {"position", "normal", "uv", "color"};
-        for (int i=0;i<4;i++) {
-            glBindAttribLocation(shaderProgramId, i, attributeNames[i].c_str());
-        }
-
         bool linked = linkProgram(shaderProgramId);
         if (!linked){
             return false;
         }
-        updateUniforms();
+        updateUniformsAndAttributes();
         return true;
+    }
+
+    std::vector<std::string> Shader::getAttributeNames() {
+        std::vector<std::string> res;
+        for (auto& u : attributes){
+            res.push_back(u.first);
+        }
+        return res;
+    }
+
+    std::vector<std::string> Shader::getUniformNames() {
+        std::vector<std::string> res;
+        for (auto& u : uniforms){
+            res.push_back(u.name);
+        }
+        return res;
+    }
+
+    // return element type, element count
+    std::pair<int,int> Shader::getAttributeType(const std::string &name) {
+        auto res = attributes.find(name);
+        if (res != attributes.end()){
+            return {res->second.type, res->second.arraySize};
+        }
+        return {-1,-1};
+    }
+
+    bool Shader::validateMesh(Mesh *mesh, std::string &info) {
+        bool valid = true;
+        for (auto& shaderVertexAttribute : attributes){
+            auto meshType = mesh->getType(shaderVertexAttribute.first);
+            if (meshType.first == -1){
+                valid = false;
+                info += "Cannot find vertex attribute '"+shaderVertexAttribute.first+"' in mesh of type ";
+                if (shaderVertexAttribute.second.type == GL_FLOAT){
+                    info += "float";
+                } else if (shaderVertexAttribute.second.type == GL_FLOAT_VEC2){
+                    info += "vec2";
+                } else if (shaderVertexAttribute.second.type == GL_FLOAT_VEC3){
+                    info += "vec3";
+                } else if (shaderVertexAttribute.second.type == GL_FLOAT_VEC4){
+                    info += "vec4";
+                } else if (shaderVertexAttribute.second.type == GL_INT_VEC4){
+                    info += "ivec4";
+                }
+                info += "\n";
+            } else {
+
+            }
+        }
+        return valid;
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSource(const std::string& vertexShader, const std::string& fragmentShader) {
@@ -459,7 +517,7 @@ namespace sre {
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceStandard() {
         this->vertexShaderStr = R"(#version 140
-in vec4 position;
+in vec3 position;
 in vec3 normal;
 in vec2 uv;
 out vec3 vNormal;
@@ -472,7 +530,7 @@ uniform mat4 g_projection;
 uniform mat3 g_normal;
 
 void main(void) {
-    vec4 eyePos = g_view * g_model * position;
+    vec4 eyePos = g_view * g_model * vec4(position,1.0);
     gl_Position = g_projection * eyePos;
     vNormal = normalize(g_normal * normal);
     vUV = uv;
@@ -556,9 +614,9 @@ void main(void)
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceUnlit() {
         this->vertexShaderStr = R"(#version 140
-in vec4 position;
+in vec3 position;
 in vec3 normal;
-in vec2 uv;
+in vec4 uv;
 out vec2 vUV;
 
 uniform mat4 g_model;
@@ -566,8 +624,8 @@ uniform mat4 g_view;
 uniform mat4 g_projection;
 
 void main(void) {
-    gl_Position = g_projection * g_view * g_model * position;
-    vUV = uv;
+    gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
+    vUV = uv.xy;
 }
 )";
         this->fragmentShaderStr = R"(#version 140
@@ -587,7 +645,7 @@ void main(void)
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceUnlitSprite() {
         this->vertexShaderStr = R"(#version 140
-        in vec4 position;
+        in vec3 position;
         in vec3 normal;
         in vec2 uv;
         out vec2 vUV;
@@ -597,7 +655,7 @@ void main(void)
         uniform mat4 g_projection;
 
         void main(void) {
-            gl_Position = g_projection * g_view * g_model * position;
+            gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
             vUV = uv;
         }
         )";
@@ -616,10 +674,13 @@ void main(void)
         return *this;
     }
 
+    // The particle size used in this shader depends on the height of the screensize (to make the particles resolution independent):
+    // for perspective projection, the size of particles are defined in screenspace size at the distance of 1.0 on a viewport of height 600.
+    // for orthographic projection, the size of particles are defined in screenspace size on a viewport of height 600.
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceStandardParticles() {
         this->vertexShaderStr = R"(#version 140
-in vec4 position;
-in vec3 normal;
+in vec3 position;
+in float particleSize;
 in vec4 uv;
 in vec4 color;
 out mat3 vUVMat;
@@ -646,20 +707,13 @@ mat3 scale(float s){
 }
 
 void main(void) {
-    vec4 pos = vec4( position.xyz, 1.0);
-    gl_Position = g_projection * g_view * g_model * pos;
+    vec4 pos = vec4( position, 1.0);
+    vec4 eyeSpacePos = g_view * g_model * pos;
+    gl_Position = g_projection * eyeSpacePos;
     if (g_projection[2][3] != 0.0){ // if perspective projection
-        vec3 ndc = gl_Position.xyz / gl_Position.w ; // perspective divide.
-
-
-        float zDist = 1.0-ndc.z ; // 1 is close (right up in your face,)
-        if (zDist < 0.0 || zDist > 1.0)
-        {
-            zDist = 0.0;
-        }
-        gl_PointSize = g_viewport.y * position.w * zDist;
+        gl_PointSize = (g_viewport.y / 600.0) * particleSize * 1.0 / -eyeSpacePos.z;
     } else {
-        gl_PointSize = 0.1 * g_viewport.y * position.w;
+        gl_PointSize = particleSize*(g_viewport.y / 600.0);
     }
 
     vUVMat = translate(uv.xy)*scale(uv.z) * translate(vec2(0.5,0.5))*rotate(uv.w) * translate(vec2(-0.5,-0.5));
@@ -672,6 +726,7 @@ out vec4 fragColor;
 in mat3 vUVMat;
 in vec3 uvSize;
 in vec4 vColor;
+uniform vec4 g_viewport;
 
 uniform sampler2D tex;
 
@@ -691,7 +746,7 @@ void main(void)
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceDebugUV() {
         this->vertexShaderStr = R"(#version 140
-in vec4 position;
+in vec3 position;
 in vec3 normal;
 in vec2 uv;
 out vec2 vUV;
@@ -701,7 +756,7 @@ uniform mat4 g_view;
 uniform mat4 g_projection;
 
 void main(void) {
-    gl_Position = g_projection * g_view * g_model * position;
+    gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
     vUV = uv;
 }
 )";
@@ -719,7 +774,7 @@ void main(void)
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceDebugNormals() {
         this->vertexShaderStr = R"(#version 140
-in vec4 position;
+in vec3 position;
 in vec3 normal;
 in vec2 uv;
 out vec3 vNormal;
@@ -730,7 +785,7 @@ uniform mat4 g_projection;
 uniform mat3 g_normal;
 
 void main(void) {
-    gl_Position = g_projection * g_view * g_model * position;
+    gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
     vNormal = g_normal * normal;
 }
 )";

@@ -269,8 +269,8 @@ bool ImGui_SRE_CreateDeviceObjects()
 #ifdef EMSCRIPTEN
     std::string vs = vertex_shader;
     std::string fs = fragment_shader;
-    sre::Shader::translateToGLSLES(vs, true);
-    sre::Shader::translateToGLSLES(fs, false);
+    vs = sre::Shader::translateToGLSLES(vs, true);
+    fs = sre::Shader::translateToGLSLES(fs, false);
     auto vsp = vs.c_str();
     auto fsp = fs.c_str();
     glShaderSource(g_VertHandle, 1, &vsp, 0);
@@ -278,9 +278,7 @@ bool ImGui_SRE_CreateDeviceObjects()
 #else
     glShaderSource(g_VertHandle, 1, &vertex_shader, 0);
     glShaderSource(g_FragHandle, 1, &fragment_shader, 0);
-
 #endif
-
     glCompileShader(g_VertHandle);
     glCompileShader(g_FragHandle);
     glAttachShader(g_ShaderHandle, g_VertHandle);
@@ -345,7 +343,7 @@ void    ImGui_SRE_InvalidateDeviceObjects()
     }
 }
 
-bool    ImGui_SRE_Init(SDL_Window *window)
+bool ImGui_SRE_Init(SDL_Window *window)
 {
     ImGuiIO& io = ImGui::GetIO();
     io.KeyMap[ImGuiKey_Tab] = SDLK_TAB;                     // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.

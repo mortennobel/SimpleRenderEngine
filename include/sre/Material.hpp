@@ -66,7 +66,7 @@ namespace sre {
 
     template<>
     inline sre::Texture* Material::get(std::string uniformName) {
-        auto t = shader->getType(uniformName.c_str());
+        auto t = shader->getUniformType(uniformName.c_str());
         if (t.type != UniformType::Texture && t.type != UniformType::TextureCube){
             return nullptr;
         }
@@ -80,7 +80,7 @@ namespace sre {
 
     template<>
     inline glm::vec4 Material::get(std::string uniformName)  {
-        auto t = shader->getType(uniformName.c_str());
+        auto t = shader->getUniformType(uniformName.c_str());
         if (t.type != UniformType::Vec4){
             return glm::vec4(0,0,0,0);
         }
@@ -94,7 +94,7 @@ namespace sre {
 
     template<>
     inline float Material::get(std::string uniformName) {
-        auto t = shader->getType(uniformName.c_str());
+        auto t = shader->getUniformType(uniformName.c_str());
         if (t.type != UniformType::Vec4){
             return 0.0f;
         }

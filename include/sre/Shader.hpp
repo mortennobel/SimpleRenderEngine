@@ -13,8 +13,10 @@
 #include "sre/impl/CPPShim.hpp"
 #include <string>
 #include <vector>
+#include <map>
 
 namespace sre {
+    class Mesh;
     class Texture;
     class Material;
 
@@ -34,7 +36,7 @@ namespace sre {
         int id;
         UniformType type;
         // 1 means not array
-        int elementCount;
+        int arraySize;
     };
 
     /**
@@ -120,15 +122,23 @@ namespace sre {
 
         ~Shader();
 
-        bool contains(const std::string & name);
+        Uniform getUniformType(const std::string &name);
 
-        Uniform getType(const std::string& name);
+        // return element type, element count
+        std::pair<int,int> getAttributeType(const std::string &name);
 
         bool isDepthTest();
 
         bool isDepthWrite();
 
         BlendType getBlend();
+
+        std::vector<std::string> getAttributeNames();
+        std::vector<std::string> getUniformNames();
+
+        // Validates the mesh attributes. If invalid, then set info variable to error message.
+        // This method should be used for debug purpose only
+        bool validateMesh(Mesh* mesh, std::string & info);
 
     private:
         bool setLights(WorldLights* worldLights, glm::mat4 viewTransform);
@@ -145,7 +155,15 @@ namespace sre {
         BlendType blend = BlendType::Disabled;
 
         std::vector<Uniform> uniforms;
-        void updateUniforms();
+
+        struct ShaderAttribute {
+            int32_t position;
+            unsigned int type;
+            int32_t arraySize;
+        };
+
+        std::map<std::string, ShaderAttribute> attributes;
+        void updateUniformsAndAttributes();
 
         friend class Mesh;
         friend class Material;
@@ -161,6 +179,6 @@ namespace sre {
         int uniformLocationLightColorRange;
 
     public:
-        static void translateToGLSLES(std::string &source, bool vertexShader);
+        static std::string translateToGLSLES(std::string source, bool vertexShader);
     };
 }
