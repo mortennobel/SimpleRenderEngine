@@ -726,11 +726,11 @@ MeshBuilder object has following member functions:</p>
 <pre class="highlight plaintext"><code>MeshBuilder&amp; withSphere();
 MeshBuilder&amp; withCube();
 MeshBuilder&amp; withQuad();
-MeshBuilder&amp; withVertexPositions(const std::vector&lt;glm::vec3&gt; &amp;vertexPositions);
+MeshBuilder&amp; withPositions(const std::vector&lt;glm::vec3&gt; &amp;vertexPositions);
 MeshBuilder&amp; withNormals(const std::vector&lt;glm::vec3&gt; &amp;normals);
-MeshBuilder&amp; withUvs(const std::vector&lt;glm::vec4&gt; &amp;uvs);
+MeshBuilder&amp; withUVs(const std::vector&lt;glm::vec4&gt; &amp;uvs);
 MeshBuilder&amp; withColors(const std::vector&lt;glm::vec4&gt; &amp;colors);
-MeshBuilder&amp; withParticleSize(const std::vector&lt;float&gt; &amp;particleSize);
+MeshBuilder&amp; withParticleSizes(const std::vector&lt;float&gt; &amp;particleSize);
 MeshBuilder&amp; withMeshTopology(MeshTopology meshTopology);
 MeshBuilder&amp; withIndices(const std::vector&lt;uint16_t&gt; &amp;indices);
 Mesh build();
@@ -752,9 +752,9 @@ Performance-wise it is more efficient to update an existing mesh than to create 
 
 <p><code class="prettyprint">MeshTopology getMeshTopology()</code></p>
 
-<h2 id="getvertexpositions">getVertexPositions</h2>
+<h2 id="getpositions">getPositions</h2>
 
-<p><code class="prettyprint">const std::vector&lt;glm::vec3&gt;&amp; getVertexPositions()</code></p>
+<p><code class="prettyprint">const std::vector&lt;glm::vec3&gt;&amp; getPositions()</code></p>
 
 <h2 id="getnormals">getNormals</h2>
 
@@ -768,9 +768,9 @@ Performance-wise it is more efficient to update an existing mesh than to create 
 
 <p><code class="prettyprint">const std::vector&lt;glm::vec4&gt;&amp; getColors()</code></p>
 
-<h2 id="getparticlesize">getParticleSize</h2>
+<h2 id="getparticlesizes">getParticleSizes</h2>
 
-<p><code class="prettyprint">const std::vector&lt;float&gt;&amp; getParticleSize()</code></p>
+<p><code class="prettyprint">const std::vector&lt;float&gt;&amp; getParticleSizes()</code></p>
 
 <h2 id="getindices">getIndices</h2>
 

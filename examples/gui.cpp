@@ -19,8 +19,9 @@ public:
     GUIExample()
     {
         r.init();
-        camera.lookAt({0,0,3},{0,0,0},{0,1,0});
-        camera.setPerspectiveProjection(60,0.1,100);
+        camera = new Camera();
+        camera->lookAt({0,0,3},{0,0,0},{0,1,0});
+        camera->setPerspectiveProjection(60,0.1,100);
         shader = Shader::getStandard();
         mesh = Mesh::create()
                 .withCube()
@@ -51,7 +52,7 @@ public:
 
     void frameRender(Renderer* renderer){
         RenderPass rp = renderer->createRenderPass()
-                .withCamera(camera)
+                .withCamera(*camera)
                 .withWorldLights(&worldLights)
                 .withClearColor(true,{clear_color.x,clear_color.y,clear_color.z,1.0f})
                 .build();
@@ -107,7 +108,7 @@ private:
     Shader* shader = nullptr;
     Mesh* mesh = nullptr;
     Material* material = nullptr;
-    Camera camera;
+    Camera* camera;
     WorldLights worldLights;
 };
 

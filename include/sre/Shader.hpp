@@ -25,6 +25,7 @@ namespace sre {
         Float,
         Mat3,
         Mat4,
+        Vec3,
         Vec4,
         Texture,
         TextureCube,
@@ -89,6 +90,7 @@ namespace sre {
             Shader* build();
         private:
             ShaderBuilder() = default;
+            ShaderBuilder(const ShaderBuilder&) = default;
             std::string vertexShaderStr;
             std::string fragmentShaderStr;
             bool depthTest = true;

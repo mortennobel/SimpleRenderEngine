@@ -42,6 +42,10 @@ namespace sre {
             RenderPassBuilder& withGUI(bool enabled = true);
             RenderPass build();
         private:
+            RenderPassBuilder() = default;
+            // prevent creating instances of this object
+            // (note it is still possible to keep a universal reference)
+            RenderPassBuilder(const RenderPassBuilder& r) = default;
             std::string name;
             WorldLights* worldLights = nullptr;
             Camera camera;
@@ -68,9 +72,9 @@ namespace sre {
          * Note that this member function is not expected to perform as efficient as draw()
          * @param verts
          * @param color {1,1,1,1}
-         * @param meshTopology {LineStrip}
+         * @param meshTopology {Lines}
          */
-        void drawLines(const std::vector<glm::vec3> &verts, glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f}, MeshTopology meshTopology = MeshTopology::LineStrip);
+        void drawLines(const std::vector<glm::vec3> &verts, glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f}, MeshTopology meshTopology = MeshTopology::Lines);
 
         /**
          * Draws a mesh using the given transform and material.

@@ -15,6 +15,9 @@
 namespace sre {
     Mesh::Mesh(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<uint16_t> &indices, MeshTopology meshTopology)
     {
+        if (! Renderer::instance ){
+            throw std::runtime_error("Cannot instantiate sre::Mesh before sre::Renderer is created.");
+        }
         glGenBuffers(1, &vertexBufferId);
         glGenBuffers(1, &elementBufferId);
         update(attributesFloat, attributesVec2, attributesVec3,attributesVec4,attributesIVec4, indices, meshTopology);
@@ -216,7 +219,7 @@ namespace sre {
         }
     }
 
-    std::vector<glm::vec3> Mesh::getPosition() {
+    std::vector<glm::vec3> Mesh::getPositions() {
         std::vector<glm::vec3> res;
         auto ref = attributesVec3.find("position");
         if (ref != attributesVec3.end()){
@@ -225,7 +228,7 @@ namespace sre {
         return res;
     }
 
-    std::vector<glm::vec3> Mesh::getNormal() {
+    std::vector<glm::vec3> Mesh::getNormals() {
         std::vector<glm::vec3> res;
         auto ref = attributesVec3.find("normal");
         if (ref != attributesVec3.end()){
@@ -234,7 +237,7 @@ namespace sre {
         return res;
     }
 
-    std::vector<glm::vec4> Mesh::getUV() {
+    std::vector<glm::vec4> Mesh::getUVs() {
         std::vector<glm::vec4> res;
         auto ref = attributesVec4.find("uv");
         if (ref != attributesVec4.end()){
@@ -266,7 +269,7 @@ namespace sre {
         return Mesh::MeshBuilder();
     }
 
-    std::vector<glm::vec4> Mesh::getColor() {
+    std::vector<glm::vec4> Mesh::getColors() {
         std::vector<glm::vec4> res;
         auto ref = attributesVec4.find("color");
         if (ref != attributesVec4.end()){
@@ -275,7 +278,7 @@ namespace sre {
         return res;
     }
 
-    std::vector<float> Mesh::getParticleSize() {
+    std::vector<float> Mesh::getParticleSizes() {
         std::vector<float> res;
         auto ref = attributesFloat.find("particleSize");
         if (ref != attributesFloat.end()){
@@ -308,27 +311,27 @@ namespace sre {
         return res;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withPosition(const std::vector<glm::vec3> &vertexPositions) {
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withPositions(const std::vector<glm::vec3> &vertexPositions) {
         withUniform("position",vertexPositions);
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withNormal(const std::vector<glm::vec3> &normals) {
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withNormals(const std::vector<glm::vec3> &normals) {
         withUniform("normal",normals);
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withUV(const std::vector<glm::vec4> &uvs) {
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withUVs(const std::vector<glm::vec4> &uvs) {
         withUniform("uv",uvs);
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withColor(const std::vector<glm::vec4> &colors) {
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withColors(const std::vector<glm::vec4> &colors) {
         withUniform("color",colors);
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withParticleSize(const std::vector<float> &particleSize) {
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withParticleSizes(const std::vector<float> &particleSize) {
         withUniform("particleSize",particleSize);
         return *this;
     }
@@ -419,9 +422,9 @@ namespace sre {
             }
         }
 
-        withPosition(finalPosition);
-        withNormal(finalNormals);
-        withUV(finalUVs);
+        withPositions(finalPosition);
+        withNormals(finalNormals);
+        withUVs(finalUVs);
         withMeshTopology(MeshTopology::Triangles);
 
         return *this;
@@ -509,9 +512,9 @@ namespace sre {
                                      vec3{0, -1, 0},
                              });
 
-        withPosition(positions);
-        withNormal(normals);
-        withUV(uvs);
+        withPositions(positions);
+        withNormals(normals);
+        withUVs(uvs);
         withMeshTopology(MeshTopology::Triangles);
 
         return *this;
@@ -541,9 +544,9 @@ namespace sre {
                 0,1,2,
                 2,1,3
         };
-        withPosition(vertices);
-        withNormal(normals);
-        withUV(uvs);
+        withPositions(vertices);
+        withNormals(normals);
+        withUVs(uvs);
         withIndices(indices);
         withMeshTopology(MeshTopology::Triangles);
 

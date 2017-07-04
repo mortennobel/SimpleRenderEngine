@@ -14,11 +14,13 @@ namespace sre {
     Camera::Camera()
     : viewTransform{1.0f},projectionTransform {1.0f}, viewportX{0}, viewportY{0}
     {
-        lazyInstantiateViewport();
+        if (! Renderer::instance ){
+            throw std::runtime_error("Cannot instantiate sre::Camera before sre::Renderer is created.");
+        }
+        SDL_GetWindowSize(Renderer::instance->window, &viewportWidth, &viewportHeight);
     }
 
     void Camera::setPerspectiveProjection(float fieldOfViewY, float nearPlane, float farPlane) {
-        lazyInstantiateViewport();
         projectionTransform = glm::perspectiveFov<float>(glm::radians( fieldOfViewY),
                                                           viewportWidth,
                                                           viewportHeight,
@@ -68,11 +70,5 @@ namespace sre {
         viewportY = y;
         viewportWidth = width;
         viewportHeight = height;
-    }
-
-    void Camera::lazyInstantiateViewport() {
-        if (Renderer::instance && viewportWidth==-1){
-            SDL_GetWindowSize(Renderer::instance->window,&viewportWidth,&viewportHeight);
-        }
     }
 }

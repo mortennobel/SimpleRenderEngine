@@ -69,7 +69,9 @@ namespace sre {
 
         /**
          * defines which part of the window is used for
-         * rendering (default settings is the full window)
+         * rendering (default settings is the full window).
+         * The width and the height are used for computing perspective projection. If changed the setPerspectiveProjection must be called again.
+         *
          * @param x the x coordinate of the viewport (default 0)
          * @param y the y coordinate of the viewport (default 0)
          * @param width the width of the viewport (default window width)
@@ -77,7 +79,6 @@ namespace sre {
          */
         void setViewport(int x, int y, int width, int height);
     private:
-        void lazyInstantiateViewport();
         glm::mat4 viewTransform;
         glm::mat4 projectionTransform;
         int viewportX, viewportY, viewportWidth = -1, viewportHeight = -1;

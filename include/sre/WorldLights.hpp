@@ -17,10 +17,9 @@ namespace sre {
         void removeLight(int index);
         Light* getLight(int index);
         int lightCount();
-
         void setAmbientLight(const glm::vec3& light);
     private:
-        glm::vec4 ambientLight;
+        glm::vec3 ambientLight;
         std::vector<Light> lights;
 
         friend class Shader;

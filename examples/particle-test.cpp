@@ -109,10 +109,10 @@ public:
         }
 
         auto particleMesh = Mesh::create ()
-                .withPosition(positions)
-                .withColor(colors)
-                .withParticleSize(sizes)
-                .withUV(uvs)
+                .withPositions(positions)
+                .withColors(colors)
+                .withParticleSizes(sizes)
+                .withUVs(uvs)
                 .withMeshTopology(MeshTopology::Points)
                 .build();
 

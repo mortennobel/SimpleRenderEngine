@@ -19,7 +19,7 @@ sre provides:
  * Full C++14 support
  * Support for 2D or 3D rendering
  * GUI rendering (using dear ImGui)
- * Emscripten support
+ * Emscripten support (allows cross compiling to HTML 5 + WebGL)
 
 To keep sre as simple and flexible as possible the following features are not a part of sre:
  * Resource management
@@ -46,6 +46,7 @@ https://mortennobel.github.io/SimpleRenderEngine/
  * https://www.opengl.org/registry/ OpenGL Registry
  
 ## Version history
+ * 0.7.1 sRGB. Improve MSVC support. Improve builder pattern.
  * 0.7.0 Add SDLRenderer. Custom mesh attributes. Simplify Camera::setPerspectiveProjection.
  * 0.6.0 Add Material and RenderPass. Improve ImGUI integration. 
  * 0.5.3 Rename namespace and folders from SRE to sre 

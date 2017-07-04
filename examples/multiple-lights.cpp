@@ -25,9 +25,9 @@ class MultipleLightsExample {
     public:
     MultipleLightsExample (){
         r.init();
-
-        camera.lookAt(eye,at, up);
-        camera.setPerspectiveProjection(60,0.1f,100);
+        camera = new Camera();
+        camera->lookAt(eye,at, up);
+        camera->setPerspectiveProjection(60,0.1f,100);
 
         mesh = Mesh::create().withSphere().build();
 
@@ -56,7 +56,7 @@ class MultipleLightsExample {
     }
     void render(Renderer *r) {
         auto renderPass = r->createRenderPass()
-                .withCamera(camera)
+                .withCamera(*camera)
                 .withWorldLights(&worldLights)
                 .withClearColor(true, {1,0,0,1})
                 .build();
@@ -83,7 +83,7 @@ class MultipleLightsExample {
             };
         }
 
-        camera.lookAt(eye,at, up);
+        camera->lookAt(eye,at, up);
         if (animatedLight){
             worldLights.getLight(0)->position = {
                     sin(time)*1.5f,
@@ -128,9 +128,10 @@ class MultipleLightsExample {
     }
 
     void drawCross(RenderPass& rp, glm::vec3 p, float size = 0.3f){
-        rp.drawLines({p-glm::vec3{size,0,0}, p+glm::vec3{size,0,0}},{0,0,0,1});
-        rp.drawLines({p-glm::vec3{0,size,0}, p+glm::vec3{0,size,0}},{0,0,0,1});
-        rp.drawLines({p-glm::vec3{0,0,size}, p+glm::vec3{0,0,size}},{0,0,0,1});
+        rp.drawLines({p-glm::vec3{size,0,0}, p+glm::vec3{size,0,0},
+                      p-glm::vec3{0,size,0}, p+glm::vec3{0,size,0},
+                      p-glm::vec3{0,0,size}, p+glm::vec3{0,0,size}
+                     },{0,0,0,1});
     }
     void drawLight(RenderPass& rp, Light* l, float size){
         if (l->lightType == LightType::Point || l->lightType == LightType::Directional){
@@ -147,7 +148,7 @@ class MultipleLightsExample {
     glm::vec3 eye{0,0,5};
     glm::vec3 at{0,0,0};
     glm::vec3 up{0,1,0};
-    Camera camera;
+    Camera* camera;
 
     Shader* shader;
     Material* mat;

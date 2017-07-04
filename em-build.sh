@@ -5,6 +5,7 @@ source ${EMSDK}/emsdk_env.sh
 
 for FILENAME in hello-engine gui spheres particle-sprite particle-test spinning-cube-tex multiple-lights spinning-sphere-cubemap spinning-cube
 do
+echo $FILENAME
 emcc -Iinclude src/imgui/imgui.cpp \
                src/imgui/imgui_draw.cpp \
                src/imgui/imgui_sre.cpp \

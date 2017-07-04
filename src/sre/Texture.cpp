@@ -12,6 +12,14 @@
 #include "sre/RenderStats.hpp"
 #include "sre/Renderer.hpp"
 
+#ifndef GL_SRGB_ALPHA
+#define GL_SRGB_ALPHA 0x8C42
+#endif
+#ifndef GL_SRGB
+#define GL_SRGB 0x8C40
+#endif
+
+
 namespace {
 	static std::vector<char> readAllBytes(char const* filename)
 	{
@@ -26,6 +34,7 @@ namespace {
 
 		ifs.seekg(0, ios::beg);
 		ifs.read(&result[0], pos);
+        ifs.close();
 
 		return result;
 	}
@@ -33,31 +42,41 @@ namespace {
     GLenum getFormat(SDL_Surface *image) {
         SDL_PixelFormat *format = image->format;
         auto pixelFormat = format->format;
-        bool isBGR = format->Rshift == 16;
 
-#ifdef EMSCRIPTEN
-        GLenum RGB = GL_RGB;
-        GLenum RGBA = GL_RGBA;
-#else
-        GLenum RGB = isBGR ? GL_BGR : GL_RGB;
-        GLenum RGBA = isBGR ? GL_BGRA : GL_RGBA;
-#endif
         const bool alpha = SDL_ISPIXELFORMAT_ALPHA(pixelFormat);
         if (alpha) {
-            return RGBA;
+            return GL_RGBA;
         }
         else {
             if (format->BytesPerPixel == 4) {
-                return RGBA;
+                return GL_RGBA;
             }
             else if (format->BytesPerPixel == 3) {
-                return RGB;
+                return GL_RGB;
             }
             else {
                 SDL_SetError("Unknown image format. Only PNG-24 and JPEG is supported.");
                 return 0;
             }
         }
+    }
+
+    int convert_to_rgb(int pixelWidth, int pixelHeight, char *image_pixels, SDL_PixelFormat *format) {
+        int colorChannels = format->BytesPerPixel;
+        for (int index = 0; index < pixelHeight; index++) {
+            char * row = image_pixels + pixelWidth * colorChannels * index;
+            for (int c=0;c<pixelWidth;c++){
+                int i = c*colorChannels;
+                uint32_t val = *((uint32_t*)&row[i]);
+                row[i] =  (val &format->Rmask) >> format->Rshift;
+                row[i+1] = (val&format->Gmask) >> format->Gshift;
+                row[i+2] =  (val&format->Bmask) >> format->Bshift;
+                if (colorChannels==4){
+                    row[i+3] = (val&format->Amask) >> format->Ashift;
+                }
+            }
+        }
+        return 0;
     }
 
     int invert_image(int width, int height, void *image_pixels) {
@@ -106,7 +125,6 @@ namespace {
                 // handle error
             }
         }
-
         SDL_RWops *source = SDL_RWFromConstMem(data, dataSize);
         SDL_Surface *res_texture = IMG_Load_RW(source, 1);
         if (res_texture == NULL) {
@@ -117,15 +135,14 @@ namespace {
         height = res_texture->h;
         format = getFormat(res_texture);
 
-        bytesPerPixel =
-#ifndef EMSCRIPTEN
-                format == GL_BGR ||
-#endif
-                format == GL_RGB ? 3 : 4;
+        bytesPerPixel = format == GL_RGB ? 3 : 4;
         char *pixels = static_cast<char *>(res_texture->pixels);
         if (invertY){
             invert_image(width*bytesPerPixel, height, pixels);
         }
+
+        convert_to_rgb(width, height, pixels, res_texture->format);
+
         std::vector<char> res(pixels, pixels+width*bytesPerPixel*height);
 
         SDL_FreeSurface(res_texture);
@@ -140,7 +157,9 @@ namespace sre {
 
 	Texture::Texture(unsigned int textureId, int width, int height, uint32_t target)
 		: width{ width }, height{ height }, target{ target}, textureId{textureId} {
-
+        if (! Renderer::instance ){
+            throw std::runtime_error("Cannot instantiate sre::Texture before sre::Renderer is created.");
+        }
 		// update stats
 		RenderStats& renderStats = Renderer::instance->renderStats;
 		renderStats.textureCount++;
@@ -178,11 +197,18 @@ namespace sre {
         fileData = loadFileFromMemory(fileData.data(), (int) fileData.size(), format, width, height,bytesPerPixel);
         this->target = GL_TEXTURE_2D;
         GLint mipmapLevel = 0;
-        GLint internalFormat = bytesPerPixel==4?GL_RGBA:GL_RGB;
+#ifdef EMSCRIPTEN
+        GLint internalFormat = has_sRGB()?(bytesPerPixel==4?GL_SRGB_ALPHA:GL_SRGB):(bytesPerPixel==4?GL_RGBA:GL_RGB);
+#else
+        GLint internalFormat = bytesPerPixel==4?GL_SRGB_ALPHA:GL_SRGB;
+#endif
         GLint border = 0;
         GLenum type = GL_UNSIGNED_BYTE;
+        checkGLError();
         glBindTexture(target, textureId);
+        checkGLError();
         glTexImage2D(target, mipmapLevel, internalFormat, width, height, border, format, type, fileData.data());
+        checkGLError();
         return *this;
     }
 
@@ -193,7 +219,12 @@ namespace sre {
         fileData = loadFileFromMemory(fileData.data(), (int) fileData.size(), format, width, height,bytesPerPixel, false);
         this->target = GL_TEXTURE_CUBE_MAP;
         GLint mipmapLevel = 0;
-        GLint internalFormat = bytesPerPixel==4?GL_RGBA:GL_RGB;
+
+#ifdef EMSCRIPTEN
+        GLint internalFormat = has_sRGB()?(bytesPerPixel==4?GL_SRGB_ALPHA:GL_SRGB):(bytesPerPixel==4?GL_RGBA:GL_RGB);
+#else
+        GLint internalFormat = bytesPerPixel==4 ? GL_SRGB_ALPHA : GL_SRGB;
+#endif
         GLint border = 0;
         GLenum type = GL_UNSIGNED_BYTE;
         glBindTexture(target, textureId);
@@ -204,7 +235,10 @@ namespace sre {
     Texture::TextureBuilder &Texture::TextureBuilder::withRGBData(const char *data, int width, int height) {
         this->width = width;
         this->height = height;
+
         GLenum format = GL_RGB;
+
+
         this->target = GL_TEXTURE_2D;
         GLint mipmapLevel = 0;
         GLint internalFormat = format;
@@ -218,7 +252,9 @@ namespace sre {
     Texture::TextureBuilder &Texture::TextureBuilder::withRGBAData(const char *data, int width, int height) {
         this->width = width;
         this->height = height;
+
         GLenum format = GL_RGBA;
+
         this->target = GL_TEXTURE_2D;
         GLint mipmapLevel = 0;
         GLint internalFormat = format;
@@ -261,10 +297,16 @@ namespace sre {
         this->width = width;
         this->height = height;
         for (int i=0;i<6;i++){
+
             GLenum format = GL_RGBA;
+
             this->target = GL_TEXTURE_CUBE_MAP;
             GLint mipmapLevel = 0;
-            GLint internalFormat = GL_RGBA;
+#ifdef EMSCRIPTEN
+            GLenum internalFormat = has_sRGB()?GL_SRGB_ALPHA:GL_RGBA;
+#else
+            GLint internalFormat = GL_SRGB_ALPHA;
+#endif
             GLint border = 0;
             GLenum type = GL_UNSIGNED_BYTE;
             glBindTexture(target, textureId);

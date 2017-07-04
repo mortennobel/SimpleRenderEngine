@@ -23,8 +23,9 @@ class SpinningCubeTexExample {
 public:
     SpinningCubeTexExample(){
         r.init();
-        camera.lookAt({0,0,3},{0,0,0},{0,1,0});
-        camera.setPerspectiveProjection(60,0.1,100);
+        camera = new Camera();
+        camera->lookAt({0,0,3},{0,0,0},{0,1,0});
+        camera->setPerspectiveProjection(60,0.1,100);
         shader = Shader::getUnlit();
         mat = new Material(shader);
         mat->setTexture(Texture::create().withFile("examples-data/test.jpg").withGenerateMipmaps(true).build());
@@ -40,7 +41,7 @@ public:
 
     void render(Renderer * r){
         auto renderPass = r->createRenderPass()
-                .withCamera(camera)
+                .withCamera(*camera)
                 .withClearColor(true,{1, 0, 0, 1})
                 .build();
 
@@ -50,7 +51,7 @@ public:
     }
 private:
     SDLRenderer r;
-    Camera camera;
+    Camera* camera;
     Shader* shader;
     Material* mat;
 

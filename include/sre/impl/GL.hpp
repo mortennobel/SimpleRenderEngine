@@ -12,8 +12,15 @@
 #else
 #   include  <OpenGL/gl3.h>
 #endif
+#include <string>
+#include <vector>
 
 // For internal debugging of gl errors
 inline void checkGLError();
+
+inline bool hasExtension(std::string extensionName);
+inline std::vector<std::string> listExtension();
+
+inline bool has_sRGB();
 
 #include "GL.inl"

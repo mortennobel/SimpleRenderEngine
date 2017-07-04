@@ -15,8 +15,9 @@ class SpheresExample{
 public:
     SpheresExample(){
         r.init();
-        camera.lookAt({0,0,3},{0,0,0},{0,1,0});
-        camera.setPerspectiveProjection(60,0.1f,100);
+        camera = new Camera();
+        camera->lookAt({0,0,3},{0,0,0},{0,1,0});
+        camera->setPerspectiveProjection(60,0.1f,100);
 
         shader = Shader::getStandard();
         mesh = Mesh::create()
@@ -51,7 +52,7 @@ public:
 
     void render(Renderer* r){
         auto rp = r->createRenderPass()
-                .withCamera(camera)
+                .withCamera(*camera)
                 .withWorldLights(&worldLights)
                 .withClearColor(true,{1,0,0,1})
                 .build();
@@ -63,7 +64,7 @@ public:
 private:
     float time;
     SDLRenderer r;
-    Camera camera;
+    Camera* camera;
     Shader* shader;
     Mesh* mesh;
     WorldLights worldLights;

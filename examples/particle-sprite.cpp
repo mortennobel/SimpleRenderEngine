@@ -92,10 +92,10 @@ public:
         sizes.push_back(10.0f);
 
         return Mesh::create()
-                .withPosition(positions)
-                .withParticleSize(sizes)
-                .withColor(colors)
-                .withUV(uvs)
+                .withPositions(positions)
+                .withParticleSizes(sizes)
+                .withColors(colors)
+                .withUVs(uvs)
                 .withMeshTopology(MeshTopology::Points)
                 .build();
     }
@@ -119,13 +119,11 @@ public:
         sizes.push_back(size);
 
         particleMesh->update()
-                .withPosition(positions)
-                .withUV(uvs)
-                .withParticleSize(sizes)
+                .withPositions(positions)
+                .withUVs(uvs)
+                .withParticleSizes(sizes)
                 .build();
     }
-
-
 private:
     SDLRenderer r;
     glm::vec2 spriteUV = glm::vec2(0, 0);

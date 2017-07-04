@@ -172,6 +172,9 @@ namespace sre {
                 case GL_FLOAT:
                     uniformType = UniformType::Float;
                     break;
+                case GL_FLOAT_VEC3:
+                    uniformType = UniformType::Vec3;
+                    break;
                 case GL_FLOAT_VEC4:
                     uniformType = UniformType::Vec4;
                     break;
@@ -245,10 +248,10 @@ namespace sre {
                     }
                 }
                 if (strcmp(name, "g_ambientLight")==0){
-                    if (uniformType == UniformType::Vec4){
+                    if (uniformType == UniformType::Vec3){
                         uniformLocationAmbientLight = location;
                     } else {
-                        std::cerr << "Invalid g_ambientLight uniform type. Expected vec4.";
+                        std::cerr << "Invalid g_ambientLight uniform type. Expected vec3."<<(int)uniformType;
                     }
                 }
                 if (strcmp(name, "g_lightPosType")==0){
@@ -292,6 +295,9 @@ namespace sre {
     }
 
     Shader::Shader() {
+        if (! Renderer::instance ){
+            throw std::runtime_error("Cannot instantiate sre::Shader before sre::Renderer is created.");
+        }
         shaderProgramId = glCreateProgram();
         Renderer::instance->renderStats.shaderCount++;
     }
@@ -310,7 +316,7 @@ namespace sre {
             return false;
         }
         if (uniformLocationAmbientLight != -1) {
-            glUniform4fv(uniformLocationAmbientLight, 1, glm::value_ptr(worldLights->ambientLight));
+            glUniform3fv(uniformLocationAmbientLight, 1, glm::value_ptr(worldLights->ambientLight));
         }
         if (uniformLocationLightPosType != -1 && uniformLocationLightColorRange != -1){
             glm::vec4 lightPosType[4];
@@ -543,7 +549,7 @@ in vec3 vNormal;
 in vec2 vUV;
 in vec3 vEyePos;
 
-uniform vec4 g_ambientLight;
+uniform vec3 g_ambientLight;
 uniform vec4 color;
 uniform sampler2D tex;
 
@@ -552,10 +558,8 @@ uniform vec4 g_lightColorRange[4];
 uniform float specularity;
 
 vec3 computeLight(){
-    vec3 lightColor = g_ambientLight.xyz;
+    vec3 lightColor = vec3(0.0,0.0,0.0);
     vec3 normal = normalize(vNormal);
-
-    float diffuseFrac = 1.0 - g_ambientLight.w;
 
     for (int i=0;i<4;i++){
         bool isDirectional = g_lightPosType[i].w == 0.0;
@@ -583,7 +587,7 @@ vec3 computeLight(){
         // diffuse light
         float thisDiffuse = max(0.0,dot(lightDirection, normal));
         if (thisDiffuse > 0.0){
-           lightColor += (att * diffuseFrac * thisDiffuse) * g_lightColorRange[i].xyz;
+           lightColor += (att * thisDiffuse) * g_lightColorRange[i].xyz;
         }
 
         // specular light
@@ -592,10 +596,11 @@ vec3 computeLight(){
             float nDotHV = dot(normal, H);
             if (nDotHV > 0.0){
                 float pf = pow(nDotHV, specularity);
-                lightColor += vec3(att * diffuseFrac * pf); // white specular highlights
+                lightColor += vec3(att * pf); // white specular highlights
             }
         }
     }
+    lightColor = max(g_ambientLight.xyz, lightColor);
 
     return lightColor;
 }

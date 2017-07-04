@@ -26,8 +26,9 @@ public:
     SpinningSphereCubemapExample(){
         r.init();
 
-        camera.lookAt(eye,at, up);
-        camera.setPerspectiveProjection(60,0.1f,100);
+        camera = new Camera();
+        camera->lookAt(eye,at, up);
+        camera->setPerspectiveProjection(60,0.1f,100);
         const char* vertexShaderStr = R"(#version 140
 in vec3 position;
 in vec3 normal;
@@ -77,7 +78,7 @@ void main(void)
 
     void render(Renderer* r){
         auto rp = r->createRenderPass()
-                .withCamera(camera)
+                .withCamera(*camera)
                 .withClearColor(true,{1,0,0,1})
                 .build();
 
@@ -92,7 +93,7 @@ void main(void)
                     cos(time*-0.2)*5.0f,
             };
         }
-        camera.lookAt(eye,at, up);
+        camera->lookAt(eye,at, up);
 
     }
 
@@ -113,7 +114,7 @@ void main(void)
     }
 private:
     SDLRenderer r;
-    Camera camera;
+    Camera* camera;
     Shader* shader;
     Material* material;
     Texture* tex;

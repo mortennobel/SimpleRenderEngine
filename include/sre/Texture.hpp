@@ -47,6 +47,8 @@ public:
         TextureBuilder& withWhiteCubemapData(int width=2, int height=2);
         Texture* build();
     private:
+        TextureBuilder();
+        TextureBuilder(const TextureBuilder&) = default;
         int width = -1;
         int height = -1;
         bool generateMipmaps = false;
@@ -54,7 +56,7 @@ public:
         bool wrapTextureCoordinates = true;
         uint32_t target = 0;
         unsigned int textureId = 0;
-        TextureBuilder();
+
         friend class Texture;
     };
 

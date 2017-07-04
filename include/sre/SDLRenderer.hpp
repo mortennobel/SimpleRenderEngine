@@ -28,7 +28,7 @@ class Renderer;
 /// The `startEventLoop()` will start the event loop, which polls the event queue in the
 /// beginning of each frame (and providing callbacks to `keyEvent` and `mouseEvent`), followed by a `frameUpdate(float)`
 /// and a `frameRender(Renderer)`.
-class SDLRenderer {
+class DllExport SDLRenderer {
 public:
     SDLRenderer();
     virtual ~SDLRenderer();

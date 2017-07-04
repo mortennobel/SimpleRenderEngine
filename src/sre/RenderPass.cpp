@@ -97,7 +97,6 @@ namespace sre {
         if (instance){
             instance->finish();
         }
-        camera.lazyInstantiateViewport();
         glViewport(camera.viewportX, camera.viewportY, camera.viewportWidth, camera.viewportHeight);
         glScissor(camera.viewportX, camera.viewportY, camera.viewportWidth, camera.viewportHeight);
         instance = this;
@@ -163,15 +162,21 @@ namespace sre {
 
     void RenderPass::drawLines(const std::vector<glm::vec3> &verts, glm::vec4 color, MeshTopology meshTopology) {
         assert(instance != nullptr);
-        Mesh *mesh = Mesh::create()
-                .withPosition(verts)
+
+        // Keep a shared mesh and material
+        static Shader *shader = Shader::getUnlit();
+        static Material material{shader};
+        static Mesh* mesh = Mesh::create()
+                .withPositions(verts)
                 .withMeshTopology(meshTopology)
                 .build();
-        Shader *shader = Shader::getUnlit();
-        static Material material{shader};
+
+        // update shared mesh
+        mesh->update().withPositions(verts).build();
+
+        // update material
         material.setColor(color);
         draw(mesh, glm::mat4(1), &material);
-        delete mesh;
     }
 
     void RenderPass::finish() {

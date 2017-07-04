@@ -37,7 +37,6 @@ namespace sre {
     }
 
     void WorldLights::setAmbientLight(const glm::vec3& ambientLight){
-        float maxAmbient = std::max(ambientLight.x, std::max(ambientLight.y,ambientLight.z));
-        this->ambientLight = glm::vec4(ambientLight, maxAmbient);
+        this->ambientLight = ambientLight;
     }
 }

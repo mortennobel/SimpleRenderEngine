@@ -4,10 +4,14 @@
 #include "sre/Material.hpp"
 #include "sre/impl/GL.hpp"
 #include <glm/gtc/type_ptr.hpp>
+#include <sre/Renderer.hpp>
 
 namespace sre{
 
     Material::Material(){
+        if (! Renderer::instance ){
+            throw std::runtime_error("Cannot instantiate sre::Material before sre::Renderer is created.");
+        }
         shader = sre::Shader::getStandard();
         setShader(shader);
         name = "Undefined material";

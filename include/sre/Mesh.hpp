@@ -33,11 +33,11 @@ namespace sre {
             MeshBuilder& withSphere();
             MeshBuilder& withCube();
             MeshBuilder& withQuad();
-            MeshBuilder& withPosition(const std::vector<glm::vec3> &vertexPositions);
-            MeshBuilder& withNormal(const std::vector<glm::vec3> &normals);
-            MeshBuilder& withUV(const std::vector<glm::vec4> &uvs);
-            MeshBuilder& withColor(const std::vector<glm::vec4> &colors);
-            MeshBuilder& withParticleSize(const std::vector<float> &particleSize);
+            MeshBuilder& withPositions(const std::vector<glm::vec3> &vertexPositions);
+            MeshBuilder& withNormals(const std::vector<glm::vec3> &normals);
+            MeshBuilder& withUVs(const std::vector<glm::vec4> &uvs);
+            MeshBuilder& withColors(const std::vector<glm::vec4> &colors);
+            MeshBuilder& withParticleSizes(const std::vector<float> &particleSize);
             MeshBuilder& withUniform(std::string name,const std::vector<float> &values);
             MeshBuilder& withUniform(std::string name,const std::vector<glm::vec2> &values);
             MeshBuilder& withUniform(std::string name,const std::vector<glm::vec3> &values);
@@ -48,6 +48,7 @@ namespace sre {
             Mesh* build();
         private:
             MeshBuilder() = default;
+            MeshBuilder(const MeshBuilder&) = default;
             std::map<std::string,std::vector<float>> attributesFloat;
             std::map<std::string,std::vector<glm::vec2>> attributesVec2;
             std::map<std::string,std::vector<glm::vec3>> attributesVec3;
@@ -66,11 +67,11 @@ namespace sre {
         int getVertexCount();
         MeshTopology getMeshTopology();
 
-        std::vector<glm::vec3> getPosition();
-        std::vector<glm::vec3> getNormal();
-        std::vector<glm::vec4> getUV();
-        std::vector<glm::vec4> getColor();
-        std::vector<float> getParticleSize();
+        std::vector<glm::vec3> getPositions();
+        std::vector<glm::vec3> getNormals();
+        std::vector<glm::vec4> getUVs();
+        std::vector<glm::vec4> getColors();
+        std::vector<float> getParticleSizes();
 
         template<typename T>
         inline T get(std::string attributeName);
@@ -98,7 +99,7 @@ namespace sre {
         Mesh       (std::map<std::string,std::vector<float>>& attributesFloat, std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string, std::vector<glm::vec3>>& attributesVec3, std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::i32vec4>>& attributesIVec4, const std::vector<uint16_t> &indices, MeshTopology meshTopology);
         void update(std::map<std::string,std::vector<float>>& attributesFloat, std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string, std::vector<glm::vec3>>& attributesVec3, std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::i32vec4>>& attributesIVec4, const std::vector<uint16_t> &indices, MeshTopology meshTopology);
 
-        int totalBytesPerVertex;
+        int totalBytesPerVertex = 0;
 
         void setVertexAttributePointers(Shader* shader);
         MeshTopology meshTopology;
