@@ -46,7 +46,7 @@ https://mortennobel.github.io/SimpleRenderEngine/
  * https://www.opengl.org/registry/ OpenGL Registry
  
 ## Version history
- * 0.7.1 sRGB. Improve MSVC support. Improve builder pattern.
+ * 0.7.1 sRGB. Improve MSVC improvement. Improve builder pattern.
  * 0.7.0 Add SDLRenderer. Custom mesh attributes. Simplify Camera::setPerspectiveProjection.
  * 0.6.0 Add Material and RenderPass. Improve ImGUI integration. 
  * 0.5.3 Rename namespace and folders from SRE to sre 
