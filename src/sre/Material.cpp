@@ -57,7 +57,7 @@ namespace sre{
                 break;
                 case UniformType::Texture:
                 {
-                    Uniform<sre::Texture*> uniform;
+                    Uniform<std::shared_ptr<sre::Texture>> uniform;
                     uniform.id = u.id;
                     uniform.value = Texture::getWhiteTexture();
                     textureValues.push_back(uniform);
@@ -65,7 +65,7 @@ namespace sre{
                 break;
                 case UniformType::TextureCube:
                 {
-                    Uniform<sre::Texture*> uniform;
+                    Uniform<std::shared_ptr<sre::Texture>> uniform;
                     uniform.id = u.id;
                     uniform.value = Texture::getDefaultCubemapTexture();
                     textureValues.push_back(uniform);
@@ -102,11 +102,11 @@ namespace sre{
         return set("specularity", specularity);
     }
 
-    sre::Texture *Material::getTexture()  {
-        return get<sre::Texture*>("tex");
+    std::shared_ptr<sre::Texture> Material::getTexture()  {
+        return get<std::shared_ptr<sre::Texture>>("tex");
     }
 
-    bool Material::setTexture(sre::Texture *texture) {
+    bool Material::setTexture(std::shared_ptr<sre::Texture> texture) {
         return set("tex",texture);
     }
 
@@ -140,7 +140,7 @@ namespace sre{
         return false;
     }
 
-    bool Material::set(std::string uniformName, sre::Texture * value){
+    bool Material::set(std::string uniformName, std::shared_ptr<sre::Texture> value){
         auto type = shader->getUniformType(uniformName);
         for (auto & v : textureValues){
             if (v.id==type.id){

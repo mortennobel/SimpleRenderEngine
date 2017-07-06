@@ -116,7 +116,7 @@ private:
     SDLRenderer r;
     Camera* camera;
     std::shared_ptr<Material> material;
-    Texture* tex;
+    std::shared_ptr<Texture> tex;
     std::shared_ptr<Mesh> mesh;
     bool animatedCamera = true;
     glm::vec3 eye{0,0,5};

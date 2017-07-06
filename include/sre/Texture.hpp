@@ -45,7 +45,7 @@ public:
         TextureBuilder& withRGBAData(const char* data, int width, int height);
         TextureBuilder& withWhiteData(int width=2, int height=2);
         TextureBuilder& withWhiteCubemapData(int width=2, int height=2);
-        Texture* build();
+        std::shared_ptr<Texture> build();
     private:
         TextureBuilder();
         TextureBuilder(const TextureBuilder&) = default;
@@ -62,8 +62,9 @@ public:
 
     virtual ~Texture();
 
-    static Texture* getWhiteTexture();
-    static Texture* getSphereTexture();
+    static std::shared_ptr<Texture> getWhiteTexture();
+    static std::shared_ptr<Texture> getSphereTexture();
+    static std::shared_ptr<Texture> getDefaultCubemapTexture();
 
     // Create a new texture using the builder pattern
     static TextureBuilder create();
@@ -91,7 +92,5 @@ private:
     unsigned int textureId;
     friend class Shader;
     friend class Material;
-
-    static Texture *getDefaultCubemapTexture();
 };
 }

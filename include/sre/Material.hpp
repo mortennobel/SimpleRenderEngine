@@ -37,13 +37,13 @@ namespace sre {
 
         bool setSpecularity(float specularity);
 
-        sre::Texture *getTexture();
+        std::shared_ptr<sre::Texture> getTexture();
 
-        bool setTexture(sre::Texture *texture);
+        bool setTexture(std::shared_ptr<sre::Texture> texture);
 
         bool set(std::string uniformName, glm::vec4 value);
         bool set(std::string uniformName, float value);
-        bool set(std::string uniformName, sre::Texture *);
+        bool set(std::string uniformName, std::shared_ptr<sre::Texture>);
 
         template<typename T>
         inline T get(std::string uniformName);
@@ -58,7 +58,7 @@ namespace sre {
             T value;
         };
 
-        std::vector<Uniform<Texture*>> textureValues;
+        std::vector<Uniform<std::shared_ptr<sre::Texture>>> textureValues;
         std::vector<Uniform<glm::vec4>> vectorValues;
         std::vector<Uniform<float>> floatValues;
 
@@ -66,7 +66,7 @@ namespace sre {
     };
 
     template<>
-    inline sre::Texture* Material::get(std::string uniformName) {
+    inline std::shared_ptr<sre::Texture> Material::get(std::string uniformName) {
         auto t = shader->getUniformType(uniformName.c_str());
         if (t.type != UniformType::Texture && t.type != UniformType::TextureCube){
             return nullptr;

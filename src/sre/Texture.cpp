@@ -151,9 +151,9 @@ namespace {
 }
 
 namespace sre {
-	Texture* whiteTexture = nullptr;
-	Texture* whiteCubemapTexture = nullptr;
-	Texture* sphereTexture = nullptr;
+	std::shared_ptr<Texture> whiteTexture;
+    std::shared_ptr<Texture> whiteCubemapTexture;
+    std::shared_ptr<Texture> sphereTexture;
 
 	Texture::Texture(unsigned int textureId, int width, int height, uint32_t target)
 		: width{ width }, height{ height }, target{ target}, textureId{textureId} {
@@ -167,12 +167,14 @@ namespace sre {
 	}
 
 	Texture::~Texture() {
-		// update stats
-		RenderStats& renderStats = Renderer::instance->renderStats;
-		renderStats.textureCount--;
-		renderStats.textureBytes -= getDataSize();
+        if (Renderer::instance){
+            // update stats
+            RenderStats& renderStats = Renderer::instance->renderStats;
+            renderStats.textureCount--;
+            renderStats.textureBytes -= getDataSize();
 
-        glDeleteTextures(1, &textureId);
+            glDeleteTextures(1, &textureId);
+        }
     }
 
     Texture::TextureBuilder &Texture::TextureBuilder::withGenerateMipmaps(bool enable) {
@@ -265,7 +267,7 @@ namespace sre {
         return *this;
     }
 
-    Texture *Texture::TextureBuilder::build() {
+    std::shared_ptr<Texture> Texture::TextureBuilder::build() {
         if (this->target == 0){
             throw std::runtime_error("Texture contain no data");
         }
@@ -278,7 +280,7 @@ namespace sre {
         }
         res->updateTextureSampler(filterSampling, wrapTextureCoordinates);
         textureId = 0;
-        return res;
+        return std::shared_ptr<Texture>(res);
     }
 
 	Texture::TextureBuilder &Texture::TextureBuilder::withWhiteData(int width, int height) {
@@ -368,7 +370,7 @@ namespace sre {
 		glTexParameteri(target, GL_TEXTURE_MIN_FILTER, minification);
 	}
 
-	Texture *Texture::getWhiteTexture() {
+    std::shared_ptr<Texture> Texture::getWhiteTexture() {
 		if (whiteTexture != nullptr) {
 			return whiteTexture;
 		}
@@ -379,7 +381,7 @@ namespace sre {
         return whiteTexture;
 	}
 
-	Texture *Texture::getSphereTexture() {
+    std::shared_ptr<Texture> Texture::getSphereTexture() {
 		if (sphereTexture != nullptr) {
 			return sphereTexture;
 		}
@@ -431,7 +433,7 @@ namespace sre {
         return target != GL_TEXTURE_2D;
     }
 
-    Texture *Texture::getDefaultCubemapTexture() {
+    std::shared_ptr<Texture> Texture::getDefaultCubemapTexture() {
         if (whiteCubemapTexture != nullptr) {
             return whiteCubemapTexture;
         }
