@@ -65,8 +65,8 @@ private:
     float time;
     SDLRenderer r;
     Camera* camera;
-    Shader* shader;
-    Mesh* mesh;
+    std::shared_ptr<Shader> shader;
+    std::shared_ptr<Mesh> mesh;
     WorldLights worldLights;
     Material* mat1;
     Material* mat2;

@@ -82,12 +82,12 @@ namespace sre {
          * @param modelTransform
          * @param material
          */
-        void draw(Mesh *mesh, glm::mat4 modelTransform, Material *material);
+        void draw(std::shared_ptr<Mesh>& mesh, glm::mat4 modelTransform, Material *material);
 
     private:
         void finish();
 
-        RenderPass(Camera &&camera, WorldLights *worldLights, RenderStats *renderStats, bool gui);
+        RenderPass(Camera&& camera, WorldLights *worldLights, RenderStats *renderStats, bool gui);
 
         void setupShader(const glm::mat4 &modelTransform, Shader *shader);
 

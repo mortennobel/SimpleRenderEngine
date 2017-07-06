@@ -24,9 +24,11 @@ namespace sre {
     }
 
     Mesh::~Mesh(){
-        RenderStats& renderStats = Renderer::instance->renderStats;
-        renderStats.meshBytes -= getDataSize();
-        renderStats.meshCount--;
+        if (Renderer::instance){
+            RenderStats& renderStats = Renderer::instance->renderStats;
+            renderStats.meshBytes -= getDataSize();
+            renderStats.meshCount--;
+        }
 
 #ifndef EMSCRIPTEN
         for (auto arrayObj : shaderToVertexArrayObject) {
@@ -346,21 +348,20 @@ namespace sre {
         return *this;
     }
 
-    Mesh * Mesh::MeshBuilder::build() {
+    std::shared_ptr<Mesh> Mesh::MeshBuilder::build() {
         // update stats
         RenderStats& renderStats = Renderer::instance->renderStats;
-        Mesh *res;
+
         if (updateMesh != nullptr){
             renderStats.meshBytes -= updateMesh->getDataSize();
             updateMesh->update(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology);
-            res = updateMesh;
+            renderStats.meshBytes += updateMesh->getDataSize();
+            return updateMesh->shared_from_this();
         } else {
-            res = new Mesh(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology);
+            auto res = new Mesh(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology);
             renderStats.meshCount++;
+            return std::shared_ptr<Mesh>(res);
         }
-        renderStats.meshBytes += res->getDataSize();
-
-        return res;
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withSphere() {

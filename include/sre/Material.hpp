@@ -17,14 +17,14 @@ namespace sre {
     class DllExport Material {
     public:
         Material();
-        Material(Shader* shader);
+        Material(std::shared_ptr<sre::Shader> shader);
         ~Material();
 
         void bind();
 
-        sre::Shader *getShader();
+        std::shared_ptr<sre::Shader> getShader();
 
-        void setShader(sre::Shader *shader);
+        void setShader(std::shared_ptr<sre::Shader> shader);
 
         const std::string &getName();
 
@@ -51,7 +51,7 @@ namespace sre {
         inline T get(std::string uniformName);
     private:
         std::string name;
-        sre::Shader *shader;
+        std::shared_ptr<sre::Shader> shader;
 
         template<typename T>
         struct DllExport Uniform {

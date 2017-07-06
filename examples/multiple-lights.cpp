@@ -150,12 +150,12 @@ class MultipleLightsExample {
     glm::vec3 up{0,1,0};
     Camera* camera;
 
-    Shader* shader;
+    std::shared_ptr<Shader> shader;
     Material* mat;
     float specularity = 20;
     glm::vec4 color {1,1,1,1};
 
-    Mesh* mesh;
+    std::shared_ptr<Mesh> mesh;
 
     WorldLights worldLights;
 

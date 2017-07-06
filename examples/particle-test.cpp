@@ -33,10 +33,8 @@ public:
         camera = new Camera();
         camera->lookAt({0,0,3},{0,0,0},{0,1,0});
         camera->setPerspectiveProjection(60,0.1,100);
-        shader = Shader::getStandard();
-        shaderParticles = Shader::getStandardParticles();
-        defaultMat  = new Material(shader);
-        particleMat = new Material(shaderParticles);
+        defaultMat  = new Material(Shader::getStandard());
+        particleMat = new Material(Shader::getStandardParticles());
         defaultMat->setSpecularity(20.0f);
         particleMat->setTexture(Texture::getSphereTexture());
 
@@ -96,7 +94,7 @@ public:
         }
     }
 
-    Mesh* createParticles(int size = 2500){
+    std::shared_ptr<Mesh> createParticles(int size = 2500){
         std::vector<glm::vec3> positions;
         std::vector<glm::vec4> colors;
         std::vector<float> sizes;
@@ -120,9 +118,9 @@ public:
     }
 private:
     SDLRenderer r;
-    Shader *shader;
-    Mesh* particleMesh;
-    Mesh *mesh;
+    std::shared_ptr<Shader> shader;
+    std::shared_ptr<Mesh> particleMesh;
+    std::shared_ptr<Mesh> mesh;
     Shader* shaderParticles;
     Material* defaultMat;
     Material* particleMat;

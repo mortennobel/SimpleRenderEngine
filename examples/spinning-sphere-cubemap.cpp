@@ -59,12 +59,12 @@ void main(void)
         shader = Shader::create().withSource(vertexShaderStr, fragmentShaderStr).build();
         material = new Material(shader);
         tex = Texture::create()
-                .withFileCubemap("examples-data/cube-posx.png", Texture::TextureCubemapSide::PositiveX)
-                .withFileCubemap("examples-data/cube-negx.png", Texture::TextureCubemapSide::NegativeX)
-                .withFileCubemap("examples-data/cube-posy.png", Texture::TextureCubemapSide::PositiveY)
-                .withFileCubemap("examples-data/cube-negy.png", Texture::TextureCubemapSide::NegativeY)
-                .withFileCubemap("examples-data/cube-posz.png", Texture::TextureCubemapSide::PositiveZ)
-                .withFileCubemap("examples-data/cube-negz.png", Texture::TextureCubemapSide::NegativeZ)
+                .withFileCubemap("examples/data/cube-posx.png", Texture::TextureCubemapSide::PositiveX)
+                .withFileCubemap("examples/data/cube-negx.png", Texture::TextureCubemapSide::NegativeX)
+                .withFileCubemap("examples/data/cube-posy.png", Texture::TextureCubemapSide::PositiveY)
+                .withFileCubemap("examples/data/cube-negy.png", Texture::TextureCubemapSide::NegativeY)
+                .withFileCubemap("examples/data/cube-posz.png", Texture::TextureCubemapSide::PositiveZ)
+                .withFileCubemap("examples/data/cube-negz.png", Texture::TextureCubemapSide::NegativeZ)
                 .build();
 
         material->setTexture(tex);
@@ -115,10 +115,10 @@ void main(void)
 private:
     SDLRenderer r;
     Camera* camera;
-    Shader* shader;
+    std::shared_ptr<Shader> shader;
     Material* material;
     Texture* tex;
-    Mesh* mesh;
+    std::shared_ptr<Mesh> mesh;
     bool animatedCamera = true;
     glm::vec3 eye{0,0,5};
     glm::vec3 at{0,0,0};

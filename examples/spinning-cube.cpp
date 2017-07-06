@@ -69,10 +69,10 @@ public:
     }
 private:
     SDLRenderer r;
-    Shader *shader;
+    std::shared_ptr<Shader> shader;
     Camera *camera;
     WorldLights worldLights;
-    Mesh *mesh;
+    std::shared_ptr<Mesh> mesh;
     Material *material;
     int i=0;
 };

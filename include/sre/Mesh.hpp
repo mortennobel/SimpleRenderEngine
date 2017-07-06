@@ -26,7 +26,7 @@ namespace sre {
      * The number and types of vertex attributes cannot be changed after the mesh has been created. The number of
      * vertices is allow to change.
      */
-    class DllExport Mesh {
+    class DllExport Mesh : public std::enable_shared_from_this<Mesh> {
     public:
         class DllExport MeshBuilder {
         public:
@@ -45,7 +45,7 @@ namespace sre {
             MeshBuilder& withUniform(std::string name,const std::vector<glm::i32vec4> &values);
             MeshBuilder& withMeshTopology(MeshTopology meshTopology);
             MeshBuilder& withIndices(const std::vector<uint16_t> &indices);
-            Mesh* build();
+            std::shared_ptr<Mesh> build();
         private:
             MeshBuilder() = default;
             MeshBuilder(const MeshBuilder&) = default;
@@ -56,10 +56,10 @@ namespace sre {
             std::map<std::string,std::vector<glm::i32vec4>> attributesIVec4;
             MeshTopology meshTopology = MeshTopology::Triangles;
             std::vector<uint16_t> indices;
-            Mesh* updateMesh = nullptr;
+            Mesh *updateMesh = nullptr;
             friend class Mesh;
         };
-        ~Mesh();
+        virtual ~Mesh();
 
         static MeshBuilder create();
         MeshBuilder update();

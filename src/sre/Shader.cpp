@@ -18,10 +18,10 @@
 
 namespace sre {
     namespace {
-        Shader *standard = nullptr;
-        Shader *unlit = nullptr;
-        Shader *unlitSprite = nullptr;
-        Shader *standardParticles = nullptr;
+        std::shared_ptr<Shader> standard;
+        std::shared_ptr<Shader> unlit;
+        std::shared_ptr<Shader> unlitSprite;
+        std::shared_ptr<Shader> standardParticles;
 
         void logCurrentCompileException(GLuint shader, GLenum type) {
             GLint logSize = 0;
@@ -303,8 +303,10 @@ namespace sre {
     }
 
     Shader::~Shader() {
-        glDeleteShader(shaderProgramId);
-        Renderer::instance->renderStats.shaderCount--;
+        if (Renderer::instance){
+            glDeleteShader(shaderProgramId);
+            Renderer::instance->renderStats.shaderCount--;
+        }
     }
 
     bool Shader::setLights(WorldLights* worldLights, glm::mat4 viewTransform){
@@ -384,7 +386,7 @@ namespace sre {
         return blend;
     }
 
-    Shader *Shader::getUnlit() {
+    std::shared_ptr<Shader> Shader::getUnlit() {
         if (unlit != nullptr){
             return unlit;
         }
@@ -392,8 +394,8 @@ namespace sre {
         unlit = create().withSourceUnlit().build();
         return unlit;
     }
-    
-    Shader *Shader::getUnlitSprite() {
+
+    std::shared_ptr<Shader> Shader::getUnlitSprite() {
         if (unlitSprite != nullptr){
             return unlitSprite;
         }
@@ -407,7 +409,7 @@ namespace sre {
     }
 
 
-    Shader *Shader::getStandard() {
+    std::shared_ptr<Shader> Shader::getStandard() {
         if (standard != nullptr){
             return standard;
         }
@@ -427,7 +429,7 @@ namespace sre {
 		return u;
     }
 
-    Shader *Shader::getStandardParticles() {
+    std::shared_ptr<Shader> Shader::getStandardParticles() {
         if (standardParticles != nullptr){
             return standardParticles;
         }
@@ -821,15 +823,15 @@ void main(void)
         return *this;
     }
 
-    Shader *Shader::ShaderBuilder::build() {
+    std::shared_ptr<Shader> Shader::ShaderBuilder::build() {
         Shader* res = new Shader();
         if (!res->build(vertexShaderStr, fragmentShaderStr)){
             delete res;
-            return nullptr;
+            return std::shared_ptr<Shader>();
         }
         res->depthTest = this->depthTest;
         res->depthWrite = this->depthWrite;
         res->blend = this->blend;
-        return res;
+        return std::shared_ptr<Shader>(res);
     }
 }

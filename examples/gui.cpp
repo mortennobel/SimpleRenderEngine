@@ -105,8 +105,8 @@ private:
     float timeF = 0.0f;
     bool show_another_window = false;
     ImVec4 clear_color = ImColor(114, 144, 154);
-    Shader* shader = nullptr;
-    Mesh* mesh = nullptr;
+    std::shared_ptr<Shader> shader = nullptr;
+    std::shared_ptr<Mesh> mesh = nullptr;
     Material* material = nullptr;
     Camera* camera;
     WorldLights worldLights;

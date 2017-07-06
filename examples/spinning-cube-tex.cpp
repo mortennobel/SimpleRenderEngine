@@ -28,7 +28,7 @@ public:
         camera->setPerspectiveProjection(60,0.1,100);
         shader = Shader::getUnlit();
         mat = new Material(shader);
-        mat->setTexture(Texture::create().withFile("examples-data/test.jpg").withGenerateMipmaps(true).build());
+        mat->setTexture(Texture::create().withFile("examples/data/test.jpg").withGenerateMipmaps(true).build());
         mesh = Mesh::create()
                 .withCube()
                 .build();
@@ -52,10 +52,10 @@ public:
 private:
     SDLRenderer r;
     Camera* camera;
-    Shader* shader;
+    std::shared_ptr<Shader> shader;
     Material* mat;
 
-    Mesh* mesh;
+    std::shared_ptr<Mesh> mesh;
     int i=0;
 
 };

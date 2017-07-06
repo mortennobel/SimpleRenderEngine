@@ -32,7 +32,7 @@ public:
         camera->setPerspectiveProjection(60,0.1,100);
         shaderParticles = Shader::getStandardParticles();
         material = new Material(shaderParticles);
-        material->setTexture(Texture::create().withFile("examples-data/t_explosionsheet.png").build());
+        material->setTexture(Texture::create().withFile("examples/data/t_explosionsheet.png").build());
 
         particleMesh = createParticles();
         r.frameUpdate = [&](float deltaTime){
@@ -81,7 +81,7 @@ public:
         }
     }
 
-    Mesh* createParticles(){
+    std::shared_ptr<Mesh> createParticles(){
         std::vector<glm::vec3> positions;
         std::vector<glm::vec4> colors;
         std::vector<glm::vec4> uvs;
@@ -109,7 +109,7 @@ public:
         rotation = 0;
     }
 
-    void updateParticles(Mesh* particleMesh, glm::vec2 uv, float uvSize, float rotation, float size){
+    void updateParticles(std::shared_ptr<Mesh> particleMesh, glm::vec2 uv, float uvSize, float rotation, float size){
         std::vector<glm::vec3> positions;
         std::vector<glm::vec4> uvs;
         std::vector<float> sizes;
@@ -133,8 +133,8 @@ private:
     float uvRotation = 0.0;
     float size = 200.0f;
     float timeF = 0;
-    Mesh* particleMesh;
-    Shader* shaderParticles;
+    std::shared_ptr<Mesh> particleMesh;
+    std::shared_ptr<Shader> shaderParticles;
     Material* material;
     Camera* camera;
 };

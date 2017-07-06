@@ -102,10 +102,14 @@ namespace sre {
         instance = this;
     }
 
-    void RenderPass::draw(Mesh *mesh, glm::mat4 modelTransform, Material *material) {
+    void RenderPass::draw(std::shared_ptr<Mesh>& meshPtr, glm::mat4 modelTransform, Material *material) {
         assert(instance != nullptr);
+
+        Mesh* mesh = meshPtr.get();
+        auto shader = material->getShader().get();
+        assert(mesh  != nullptr);
         renderStats->drawCalls++;
-        setupShader(modelTransform, material->getShader());
+        setupShader(modelTransform, shader);
         if (material != lastBoundMaterial){
             renderStats->stateChangesMaterial++;
             lastBoundMaterial = material;
@@ -114,7 +118,7 @@ namespace sre {
         if (mesh != lastBoundMesh){
             renderStats->stateChangesMesh++;
             lastBoundMesh = mesh;
-            mesh->bind(material->getShader());
+            mesh->bind(shader);
         }
 
         int indexCount = (int) mesh->getIndices().size();
@@ -164,9 +168,8 @@ namespace sre {
         assert(instance != nullptr);
 
         // Keep a shared mesh and material
-        static Shader *shader = Shader::getUnlit();
-        static Material material{shader};
-        static Mesh* mesh = Mesh::create()
+        static Material material{Shader::getUnlit()};
+        static std::shared_ptr<Mesh> mesh = Mesh::create()
                 .withPositions(verts)
                 .withMeshTopology(meshTopology)
                 .build();

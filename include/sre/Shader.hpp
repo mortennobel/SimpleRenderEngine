@@ -87,7 +87,7 @@ namespace sre {
             ShaderBuilder& withDepthTest(bool enable);
             ShaderBuilder& withDepthWrite(bool enable);
             ShaderBuilder& withBlend(BlendType blendType);
-            Shader* build();
+            std::shared_ptr<Shader> build();
         private:
             ShaderBuilder() = default;
             ShaderBuilder(const ShaderBuilder&) = default;
@@ -104,21 +104,21 @@ namespace sre {
         // "color" vec4 (default (1,1,1,1))
         // "tex" Texture* (default white texture)
         // "specularity" float (default 0 = no specularity)
-        static Shader *getStandard();
+        static std::shared_ptr<Shader> getStandard();
         // Unlit model.
         // Attributes
         // "color" vec4 (default (1,1,1,1))
         // "tex" Texture* (default white texture)
-        static Shader *getUnlit();
+        static std::shared_ptr<Shader> getUnlit();
         // UnlitSprite = no depth examples and alpha blending
         // Attributes
         // "color" vec4 (default (1,1,1,1))
         // "tex" Texture* (default white texture)
-        static Shader *getUnlitSprite();
+        static std::shared_ptr<Shader> getUnlitSprite();
         // StandardParticles
         // Attributes
         // "tex" Texture* (default alpha sphere texture)
-        static Shader *getStandardParticles();
+        static std::shared_ptr<Shader> getStandardParticles();
 
         static ShaderBuilder create();
 

@@ -12,12 +12,12 @@ namespace sre{
         if (! Renderer::instance ){
             throw std::runtime_error("Cannot instantiate sre::Material before sre::Renderer is created.");
         }
-        shader = sre::Shader::getStandard();
-        setShader(shader);
+
+        setShader(sre::Shader::getStandard());
         name = "Undefined material";
     }
 
-    Material::Material(Shader *shader)
+    Material::Material(std::shared_ptr<Shader> shader)
     :shader{nullptr}
     {
         setShader(shader);
@@ -42,11 +42,11 @@ namespace sre{
         }
     }
 
-    sre::Shader *Material::getShader()  {
+    std::shared_ptr<sre::Shader> Material::getShader()  {
         return shader;
     }
 
-    void Material::setShader(sre::Shader *shader) {
+    void Material::setShader(std::shared_ptr<sre::Shader> shader) {
         Material::shader = shader;
 
         textureValues.clear();
