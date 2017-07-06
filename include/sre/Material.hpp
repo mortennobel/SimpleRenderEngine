@@ -16,8 +16,6 @@ namespace sre {
 
     class DllExport Material {
     public:
-        Material();
-        Material(std::shared_ptr<sre::Shader> shader);
         ~Material();
 
         void bind();
@@ -50,6 +48,7 @@ namespace sre {
         template<typename T>
         inline T get(std::string uniformName);
     private:
+        Material(std::shared_ptr<sre::Shader> shader);
         std::string name;
         std::shared_ptr<sre::Shader> shader;
 
@@ -62,6 +61,8 @@ namespace sre {
         std::vector<Uniform<Texture*>> textureValues;
         std::vector<Uniform<glm::vec4>> vectorValues;
         std::vector<Uniform<float>> floatValues;
+
+        friend class Shader;
     };
 
     template<>

@@ -59,7 +59,7 @@ namespace sre {
             Mesh *updateMesh = nullptr;
             friend class Mesh;
         };
-        virtual ~Mesh();
+        ~Mesh();
 
         static MeshBuilder create();
         MeshBuilder update();

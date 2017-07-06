@@ -56,8 +56,8 @@ void main(void)
     fragColor = texture(tex, vNormal);
 }
 )";
-        shader = Shader::create().withSource(vertexShaderStr, fragmentShaderStr).build();
-        material = new Material(shader);
+        auto shader = Shader::create().withSource(vertexShaderStr, fragmentShaderStr).build();
+        material = shader->createMaterial();
         tex = Texture::create()
                 .withFileCubemap("examples/data/cube-posx.png", Texture::TextureCubemapSide::PositiveX)
                 .withFileCubemap("examples/data/cube-negx.png", Texture::TextureCubemapSide::NegativeX)
@@ -115,8 +115,7 @@ void main(void)
 private:
     SDLRenderer r;
     Camera* camera;
-    std::shared_ptr<Shader> shader;
-    Material* material;
+    std::shared_ptr<Material> material;
     Texture* tex;
     std::shared_ptr<Mesh> mesh;
     bool animatedCamera = true;

@@ -22,7 +22,7 @@ public:
         camera = new Camera();
         camera->lookAt({0,0,3},{0,0,0},{0,1,0});
         camera->setPerspectiveProjection(60,0.1,100);
-        shader = Shader::getStandard();
+
         mesh = Mesh::create()
                 .withCube()
                 .build();
@@ -31,7 +31,7 @@ public:
                                       .withColor({1,0,0})
                                       .withRange(50)
                                       .build());
-        material = new Material(shader);
+        material = Shader::getStandard()->createMaterial();
         material->setSpecularity(20);
 
         // connect update callback
@@ -105,9 +105,8 @@ private:
     float timeF = 0.0f;
     bool show_another_window = false;
     ImVec4 clear_color = ImColor(114, 144, 154);
-    std::shared_ptr<Shader> shader = nullptr;
-    std::shared_ptr<Mesh> mesh = nullptr;
-    Material* material = nullptr;
+    std::shared_ptr<Mesh> mesh;
+    std::shared_ptr<Material> material;
     Camera* camera;
     WorldLights worldLights;
 };

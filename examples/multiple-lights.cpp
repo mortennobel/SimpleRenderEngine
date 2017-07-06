@@ -36,8 +36,7 @@ class MultipleLightsExample {
         worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build());
         worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build());
 
-        shader = Shader::getStandard();
-        mat = new Material(shader);
+        mat = Shader::getStandard()->createMaterial();
         r.frameUpdate = [&](float deltaTime){
             update(deltaTime);
         };
@@ -150,8 +149,7 @@ class MultipleLightsExample {
     glm::vec3 up{0,1,0};
     Camera* camera;
 
-    std::shared_ptr<Shader> shader;
-    Material* mat;
+    std::shared_ptr<Material> mat;
     float specularity = 20;
     glm::vec4 color {1,1,1,1};
 

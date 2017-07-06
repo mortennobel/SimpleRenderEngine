@@ -19,7 +19,6 @@ public:
         camera->lookAt({0,0,3},{0,0,0},{0,1,0});
         camera->setPerspectiveProjection(60,0.1f,100);
 
-        shader = Shader::getStandard();
         mesh = Mesh::create()
                 .withSphere()
                 .build();
@@ -29,11 +28,11 @@ public:
                                      .withDirectionalLight(glm::normalize(glm::vec3(1,1,1)))
                                      .build());
 
-        mat1 = new Material(shader);
+        mat1 = Shader::getStandard()->createMaterial();
         mat1->setColor({1,1,1,1});
         mat1->setSpecularity(50);
 
-        mat2 = new Material(shader);
+        mat2 = Shader::getStandard()->createMaterial();
         mat2->setColor({1,0,0,1});
         mat2->setSpecularity(0);
 
@@ -65,11 +64,10 @@ private:
     float time;
     SDLRenderer r;
     Camera* camera;
-    std::shared_ptr<Shader> shader;
     std::shared_ptr<Mesh> mesh;
     WorldLights worldLights;
-    Material* mat1;
-    Material* mat2;
+    std::shared_ptr<Material> mat1;
+    std::shared_ptr<Material> mat2;
     glm::mat4 pos1 = glm::translate(glm::mat4(1), {-1,0,0});
     glm::mat4 pos2 = glm::translate(glm::mat4(1), {1,0,0});
 };

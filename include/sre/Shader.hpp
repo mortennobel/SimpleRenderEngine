@@ -72,7 +72,7 @@ namespace sre {
      *     - Global uniforms (prefixed with 'g_' which is automatically set by the engine)
      *     - Material uniform (without 'g_' prefix). Which are exposed to materials.
      */
-    class DllExport Shader {
+    class DllExport Shader : public std::enable_shared_from_this<Shader> {
     public:
 
         class DllExport ShaderBuilder {
@@ -123,6 +123,8 @@ namespace sre {
         static ShaderBuilder create();
 
         ~Shader();
+
+        std::shared_ptr<Material> createMaterial();
 
         Uniform getUniformType(const std::string &name);
 

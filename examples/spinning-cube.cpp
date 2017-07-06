@@ -35,8 +35,8 @@ public:
 
         camera = new Camera();
         camera->lookAt({0,0,3},{0,0,0},{0,1,0});
-        shader = Shader::getStandard();
-        material = new Material(shader);
+
+        material = Shader::getStandard()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
         material->setSpecularity(20.0f);
 
@@ -69,11 +69,10 @@ public:
     }
 private:
     SDLRenderer r;
-    std::shared_ptr<Shader> shader;
     Camera *camera;
     WorldLights worldLights;
     std::shared_ptr<Mesh> mesh;
-    Material *material;
+    std::shared_ptr<Material> material;
     int i=0;
 };
 

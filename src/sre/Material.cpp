@@ -8,15 +8,6 @@
 
 namespace sre{
 
-    Material::Material(){
-        if (! Renderer::instance ){
-            throw std::runtime_error("Cannot instantiate sre::Material before sre::Renderer is created.");
-        }
-
-        setShader(sre::Shader::getStandard());
-        name = "Undefined material";
-    }
-
     Material::Material(std::shared_ptr<Shader> shader)
     :shader{nullptr}
     {

@@ -3,6 +3,7 @@
 //
 
 #include "sre/Shader.hpp"
+#include "sre/Material.hpp"
 
 #include "sre/impl/GL.hpp"
 #include <iostream>
@@ -515,6 +516,10 @@ namespace sre {
             }
         }
         return valid;
+    }
+
+    std::shared_ptr<Material> Shader::createMaterial() {
+        return std::shared_ptr<Material>(new Material(shared_from_this()));
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSource(const std::string& vertexShader, const std::string& fragmentShader) {

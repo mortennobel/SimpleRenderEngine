@@ -82,7 +82,7 @@ namespace sre {
          * @param modelTransform
          * @param material
          */
-        void draw(std::shared_ptr<Mesh>& mesh, glm::mat4 modelTransform, Material *material);
+        void draw(std::shared_ptr<Mesh>& mesh, glm::mat4 modelTransform, std::shared_ptr<Material>& material);
 
     private:
         void finish();

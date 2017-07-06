@@ -102,10 +102,11 @@ namespace sre {
         instance = this;
     }
 
-    void RenderPass::draw(std::shared_ptr<Mesh>& meshPtr, glm::mat4 modelTransform, Material *material) {
+    void RenderPass::draw(std::shared_ptr<Mesh>& meshPtr, glm::mat4 modelTransform, std::shared_ptr<Material>& material_ptr) {
         assert(instance != nullptr);
 
         Mesh* mesh = meshPtr.get();
+        auto material = material_ptr.get();
         auto shader = material->getShader().get();
         assert(mesh  != nullptr);
         renderStats->drawCalls++;
@@ -168,7 +169,7 @@ namespace sre {
         assert(instance != nullptr);
 
         // Keep a shared mesh and material
-        static Material material{Shader::getUnlit()};
+        static auto material = Shader::getUnlit()->createMaterial();
         static std::shared_ptr<Mesh> mesh = Mesh::create()
                 .withPositions(verts)
                 .withMeshTopology(meshTopology)
@@ -178,8 +179,8 @@ namespace sre {
         mesh->update().withPositions(verts).build();
 
         // update material
-        material.setColor(color);
-        draw(mesh, glm::mat4(1), &material);
+        material->setColor(color);
+        draw(mesh, glm::mat4(1), material);
     }
 
     void RenderPass::finish() {

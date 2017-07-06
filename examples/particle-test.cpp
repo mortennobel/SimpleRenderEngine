@@ -33,8 +33,8 @@ public:
         camera = new Camera();
         camera->lookAt({0,0,3},{0,0,0},{0,1,0});
         camera->setPerspectiveProjection(60,0.1,100);
-        defaultMat  = new Material(Shader::getStandard());
-        particleMat = new Material(Shader::getStandardParticles());
+        defaultMat  = Shader::getStandard()->createMaterial();
+        particleMat = Shader::getStandardParticles()->createMaterial();
         defaultMat->setSpecularity(20.0f);
         particleMat->setTexture(Texture::getSphereTexture());
 
@@ -71,7 +71,6 @@ public:
     }
 
     void render(Renderer* re){
-
         auto rp = re->createRenderPass()
                 .withCamera(*camera)
                 .withWorldLights(worldLights)
@@ -121,9 +120,8 @@ private:
     std::shared_ptr<Shader> shader;
     std::shared_ptr<Mesh> particleMesh;
     std::shared_ptr<Mesh> mesh;
-    Shader* shaderParticles;
-    Material* defaultMat;
-    Material* particleMat;
+    std::shared_ptr<Material> defaultMat;
+    std::shared_ptr<Material> particleMat;
     Camera* camera;
     WorldLights* worldLights;
     float i=0;

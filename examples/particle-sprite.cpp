@@ -30,8 +30,7 @@ public:
         camera = new Camera();
         camera->lookAt({0,0,3},{0,0,0},{0,1,0});
         camera->setPerspectiveProjection(60,0.1,100);
-        shaderParticles = Shader::getStandardParticles();
-        material = new Material(shaderParticles);
+        material = Shader::getStandardParticles()->createMaterial();
         material->setTexture(Texture::create().withFile("examples/data/t_explosionsheet.png").build());
 
         particleMesh = createParticles();
@@ -134,8 +133,7 @@ private:
     float size = 200.0f;
     float timeF = 0;
     std::shared_ptr<Mesh> particleMesh;
-    std::shared_ptr<Shader> shaderParticles;
-    Material* material;
+    std::shared_ptr<Material> material;
     Camera* camera;
 };
 
