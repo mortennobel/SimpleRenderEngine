@@ -177,11 +177,6 @@ namespace sre {
     }
 
     Texture::TextureBuilder &Texture::TextureBuilder::withFile(const char *filename) {
-#ifndef  EMSCRIPTEN
-        SDL_Surface * surface = IMG_Load(filename);
-        std::cout << "IMG_Load "<<filename<<" "<<surface->h<<" "<<surface->w<<std::endl;
-
-#endif
         auto fileData = readAllBytes(filename);
         GLenum format;
         int bytesPerPixel;

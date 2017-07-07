@@ -172,7 +172,7 @@ namespace sre {
             GLsizeiptr indicesSize = indices.size()*sizeof(uint16_t);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices.data(), GL_STATIC_DRAW);
         }
-
+        this->indices = std::move(indices);
         this->attributesFloat = std::move(attributesFloat);
         this->attributesVec2  = std::move(attributesVec2);
         this->attributesVec3  = std::move(attributesVec3);
@@ -368,7 +368,7 @@ namespace sre {
         using namespace glm;
         using namespace std;
 
-        size_t vertexCount = (size_t) ((stacks + 1) * slices);
+        size_t vertexCount = (size_t) ((stacks + 1) * (slices+1));
         vector<vec3> vertices{vertexCount};
         vector<vec3> normals{vertexCount};
         vector<vec4> uvs{vertexCount};
@@ -379,7 +379,7 @@ namespace sre {
             double latitude1 = (glm::pi<double>() / stacks) * j - (glm::pi<double>() / 2);
             double sinLat1 = sin(latitude1);
             double cosLat1 = cos(latitude1);
-            for (int i = 0; i < slices; i++) {
+            for (int i = 0; i <= slices; i++) {
                 double longitude = ((glm::pi<double>() * 2) / slices) * i;
                 double sinLong = sin(longitude);
                 double cosLong = cos(longitude);
@@ -398,21 +398,21 @@ namespace sre {
         vector<vec4> finalUVs;
         // create indices
         for (int j = 0; j < stacks; j++) {
-            for (int i = 0; i < slices; i++) {
+            for (int i = 0; i <= slices; i++) {
                 glm::u8vec2 offset [] = {
                         // first triangle
                         glm::u8vec2{i,j},
-                        glm::u8vec2{(i+1)%slices,j+1},
-                        glm::u8vec2{(i+1)%slices,j},
+                        glm::u8vec2{(i+1)%(slices+1),j+1},
+                        glm::u8vec2{(i+1)%(slices+1),j},
 
                         // second triangle
                         glm::u8vec2{i,j},
                         glm::u8vec2{i,j+1},
-                        glm::u8vec2{(i+1)%slices,j+1},
+                        glm::u8vec2{(i+1)%(slices+1),j+1},
 
                 };
                 for (auto o : offset){
-                    index = o[1] * slices  + o[0];
+                    index = o[1] * (slices+1)  + o[0];
                     finalPosition.push_back(vertices[index]);
                     finalNormals.push_back(normals[index]);
                     finalUVs.push_back(uvs[index]);
@@ -522,9 +522,9 @@ namespace sre {
     Mesh::MeshBuilder &Mesh::MeshBuilder::withQuad() {
 
         std::vector<glm::vec3> vertices({
-                                                glm::vec3{1, -1, 0},
-                                                glm::vec3{1, 1, 0},
-                                                glm::vec3{-1, -1, 0},
+                                                glm::vec3{ 1,-1, 0},
+                                                glm::vec3{ 1, 1, 0},
+                                                glm::vec3{-1,-1, 0},
                                                 glm::vec3{-1, 1, 0}
                                         });
         std::vector<glm::vec3> normals({
