@@ -31,12 +31,12 @@ public:
         mesh[0] = Mesh::create()
                 .withQuad()
                 .build();
-        /*mesh[1] = Mesh::create()
+        mesh[1] = Mesh::create()
                 .withSphere()
                 .build();
         mesh[2] = Mesh::create()
                 .withCube()
-                .build();*/
+                .build();
 
 
         r.frameRender = [&](Renderer* r){
@@ -55,13 +55,12 @@ public:
         int index = 0;
         for (int x=0;x<2;x++){
             for (int y=0;y<2;y++){
-                if (index<1){
+                if (index<3){
                     renderPass.draw(mesh[index], glm::translate(glm::vec3(-1.5+x*3,-1.5+y*3,0))*glm::eulerAngleY(glm::radians( i * speed)), mat);
                 }
                 index++;
             }
         }
-
         i++;
     }
 private:
