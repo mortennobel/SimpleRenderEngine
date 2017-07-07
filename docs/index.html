@@ -321,7 +321,7 @@ RenderStats only includes data maintained by SRE (imgui is not included)</p>
 
 <h2 id="draw">draw</h2>
 
-<p><code class="prettyprint">Mesh *mesh, glm::mat4 modelTransform, Material *material</code></p>
+<p><code class="prettyprint">void draw(std::shared_ptr&lt;Mesh&gt;&amp; mesh, glm::mat4 modelTransform, std::shared_ptr&lt;Material&gt;&amp; material)</code></p>
 
 <p>Draws a mesh using the given transform and material.</p>
 
@@ -340,8 +340,8 @@ RenderStats only includes data maintained by SRE (imgui is not included)</p>
 <td>The local to world transformation (usually composed of translations, rotations and scales)</td>
 </tr>
 <tr>
-<td>shader</td>
-<td>The shader used for rendering</td>
+<td>material</td>
+<td>The material used for rendering</td>
 </tr>
 </tbody></table>
 
@@ -385,7 +385,10 @@ The <code class="prettyprint">startEventLoop()</code> will start the event loop,
 beginning of each frame (and providing callbacks to <code class="prettyprint">keyEvent</code> and <code class="prettyprint">mouseEvent</code>), followed by a <code class="prettyprint">frameUpdate(float)</code> and a <code class="prettyprint">frameRender(Renderer)</code>.</p>
 
 <p>Example:</p>
-<pre class="highlight plaintext"><code>using namespace sre;
+<pre class="highlight plaintext"><code>#include "sre/SDLRenderer.hpp"
+
+using namespace sre;
+using namespace std;
 
 int main() {
     SDLRenderer r;
@@ -512,8 +515,8 @@ Emscripten avoid allocating objects on the stack (see examples for a workaround)
 <p>Represent a texture (uploaded to the GPU).
 In general the width and the height of the texture should be power-of-two (e.g. 256 or 512).</p>
 
-<p>Textures can be created from files (png or jpeg). Alternative textures can be created using memory representation
-of the texture in RGBA (one byte per color channel).</p>
+<p>Textures can be created from files (png). Alternative textures can be created using memory representation
+of the texture in RGB/RGBA (one byte per color channel).</p>
 
 <p>The Texture class also provides a white texture using the Texture::getWhiteTexture()</p>
 
@@ -541,16 +544,20 @@ TextureBuilder&amp; withFile(const char *filename);
 TextureBuilder&amp; withRGBData(const char* data, int width, int height);
 TextureBuilder&amp; withRGBAData(const char* data, int width, int height);
 TextureBuilder&amp; withWhiteData(int width=2, int height=2);
-Texture* build();
+std::shared_ptr&lt;Texture&gt; build();
 </code></pre>
 
 <h2 id="getwhitetexture">getWhiteTexture</h2>
 
-<p><code class="prettyprint">static Texture* getWhiteTexture()</code></p>
+<p><code class="prettyprint">static std::shared_ptr&lt;Texture&gt; getWhiteTexture()</code></p>
 
 <h2 id="getspheretexture">getSphereTexture</h2>
 
-<p><code class="prettyprint">static Texture* getSphereTexture()</code></p>
+<p><code class="prettyprint">static std::shared_ptr&lt;Texture&gt; getSphereTexture()</code></p>
+
+<h2 id="getdefaultcubemaptexture">getDefaultCubemapTexture</h2>
+
+<p><code class="prettyprint">static std::shared_ptr&lt;Texture&gt; getDefaultCubemapTexture()</code></p>
 
 <h2 id="getwidth">getWidth</h2>
 
@@ -569,6 +576,10 @@ Texture* build();
 <h2 id="iswraptexturecoordinates">isWrapTextureCoordinates</h2>
 
 <p><code class="prettyprint">bool isWrapTextureCoordinates()</code></p>
+
+<h2 id="iscubemap">isCubemap</h2>
+
+<p><code class="prettyprint">bool isCubemap()</code></p>
 
 <h2 id="getdatasize">getDataSize</h2>
 
@@ -590,21 +601,21 @@ Texture* build();
      the color and texture parameters
    - Parameters:
      - color (vec4) (default white)
-     - tex (Texture*) (default white texture)
+     - tex (shared_ptr<Texture>) (default white texture)
 - Shader::getUnlit()
    - Uses the camera states as well as the color and texture parameters to define the surface color
    - Parameters:
      - color (vec4) (default white)
-     - tex (Texture*) (default white texture)
+     - tex (shared_ptr<Texture>) (default white texture)
 - Shader::getUnlitSprite()
    - Similar to getUnlit() but with no depth write
    - Parameters:
      - color (vec4) (default white)
-     - tex (Texture*) (default white texture)
+     - tex (shared_ptr<Texture>) (default white texture)
 - Shader::getStandardParticles()
    - Similar to getUnlit() but with no depth write
    - Parameters:
-     - tex (Texture*) (default alpha sphere texture)</p>
+     - tex (shared_ptr<Texture>) (default alpha sphere texture)</p>
 
 <h2 id="create">create</h2>
 
@@ -623,36 +634,42 @@ ShaderBuilder&amp; widthDepthTest(bool enable);
 ShaderBuilder&amp; withDepthTest(bool enable);
 ShaderBuilder&amp; withDepthWrite(bool enable);
 ShaderBuilder&amp; withBlend(BlendType blendType);
-Shader* build();
+std::shared_ptr&lt;Shader&gt; build();
 </code></pre>
 
 <h2 id="getstandard">getStandard</h2>
 
-<p><code class="prettyprint">static Shader *getStandard()</code></p>
+<p><code class="prettyprint">static std::shared_ptr&lt;Shader&gt; getStandard()</code></p>
 
 <h2 id="getunlit">getUnlit</h2>
 
-<p><code class="prettyprint">static Shader *getUnlit()</code></p>
+<p><code class="prettyprint">static std::shared_ptr&lt;Shader&gt; getUnlit()</code></p>
 
 <h2 id="getunlitsprite">getUnlitSprite</h2>
 
-<p><code class="prettyprint">static Shader *getUnlitSprite()</code></p>
+<p><code class="prettyprint">static std::shared_ptr&lt;Shader&gt; getUnlitSprite()</code></p>
 
 <h2 id="getstandardparticles">getStandardParticles</h2>
 
-<p><code class="prettyprint">static Shader *getStandardParticles()</code></p>
+<p><code class="prettyprint">static std::shared_ptr&lt;Shader&gt; getStandardParticles()</code></p>
 
 <h2 id="getdebuguv">getDebugUV</h2>
 
-<p><code class="prettyprint">static Shader *getDebugUV()</code></p>
+<p><code class="prettyprint">static std::shared_ptr&lt;Shader&gt; getDebugUV()</code></p>
 
 <p>Shader for visualizing texture coordinates on mesh(UVs)</p>
 
 <h2 id="getdebugnormals">getDebugNormals</h2>
 
-<p><code class="prettyprint">static Shader *getDebugNormals()</code></p>
+<p><code class="prettyprint">static std::shared_ptr&lt;Shader&gt; getDebugNormals()</code></p>
 
 <p>Shader for visualizing mesh normals.</p>
+
+<h2 id="creatematerial">createMaterial</h2>
+
+<p><code class="prettyprint">std::shared_ptr&lt;Material&gt; createMaterial()</code></p>
+
+<p>Create a material instance with the current shader.</p>
 
 <h2 id="contains">contains</h2>
 
@@ -666,24 +683,6 @@ Shader* build();
 
 <p>Returns uniform information with a uniform of a given name.</p>
 
-<h2 id="set">set</h2>
-
-<p><code class="prettyprint">bool set(const char *name, glm::mat4 value)</code> </p>
-
-<p><code class="prettyprint">bool set(const char *name, glm::mat3 value)</code> </p>
-
-<p><code class="prettyprint">bool set(const char *name, glm::vec4 value)</code></p>
-
-<p><code class="prettyprint">bool set(const char *name, float value)</code> </p>
-
-<p><code class="prettyprint">bool set(const char *name, int value)</code> </p>
-
-<p><code class="prettyprint">bool set(const char *name, Texture* texture, unsigned int textureSlot = 0)</code></p>
-
-<p>Sets the uniform to a given value. In debug mode, the shader will test for the existence of the uniform and write to cerr if not found.</p>
-
-<p>textureSlot: If sampling multiple textures from a single shader, each texture must be bound to a unique texture slot.</p>
-
 <h2 id="isdepthtest">isDepthTest</h2>
 
 <p><code class="prettyprint">bool isDepthTest()</code></p>
@@ -695,6 +694,21 @@ Shader* build();
 <h2 id="getblend">getBlend</h2>
 
 <p><code class="prettyprint">BlendType getBlend()</code></p>
+
+<h2 id="getattributenames">getAttributeNames</h2>
+
+<p><code class="prettyprint">std::vector&lt;std::string&gt; getAttributeNames()</code></p>
+
+<h2 id="getuniformnames">getUniformNames</h2>
+
+<p><code class="prettyprint">std::vector&lt;std::string&gt; getUniformNames()</code></p>
+
+<h2 id="validatemesh">validateMesh</h2>
+
+<p>Validates the mesh attributes. If invalid, then set info variable to error message.
+This method should be used for debug purpose only</p>
+
+<p><code class="prettyprint">bool validateMesh(Mesh* mesh, std::string &amp; info)</code></p>
 
           <h1 id="mesh">Mesh</h1>
 
@@ -723,8 +737,8 @@ Otherwise the indices is used to define the mesh. </p>
 
 <p>Creates a mesh using the builder pattern. 
 MeshBuilder object has following member functions:</p>
-<pre class="highlight plaintext"><code>MeshBuilder&amp; withSphere();
-MeshBuilder&amp; withCube();
+<pre class="highlight plaintext"><code>MeshBuilder&amp; withSphere(int stacks = 16, int slices = 32, float radius = 1);
+MeshBuilder&amp; withCube(float length = 1);
 MeshBuilder&amp; withQuad();
 MeshBuilder&amp; withPositions(const std::vector&lt;glm::vec3&gt; &amp;vertexPositions);
 MeshBuilder&amp; withNormals(const std::vector&lt;glm::vec3&gt; &amp;normals);
@@ -733,7 +747,7 @@ MeshBuilder&amp; withColors(const std::vector&lt;glm::vec4&gt; &amp;colors);
 MeshBuilder&amp; withParticleSizes(const std::vector&lt;float&gt; &amp;particleSize);
 MeshBuilder&amp; withMeshTopology(MeshTopology meshTopology);
 MeshBuilder&amp; withIndices(const std::vector&lt;uint16_t&gt; &amp;indices);
-Mesh build();
+std::shared_ptr&lt;Mesh&gt; build();
 </code></pre>
 
 <h2 id="update">update</h2>
@@ -1090,7 +1104,7 @@ Range == 0 means no attenuation</p>
     <span class="kt">int</span> <span class="n">id</span><span class="p">;</span>
     <span class="n">UniformType</span> <span class="n">type</span><span class="p">;</span>
     <span class="c1">// 1 means not array
-</span>    <span class="kt">int</span> <span class="n">elementCount</span><span class="p">;</span>
+</span>    <span class="kt">int</span> <span class="n">arraySize</span><span class="p">;</span>
 <span class="p">};</span>
 </code></pre>
 

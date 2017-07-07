@@ -5,7 +5,7 @@ programming in 2D or 3D without a deep knowledge about the low-level graphics AP
 OpenGL, DirectX and Vulkan.
  
 SimpleRenderEngine currently depends on Simple Direct Layer 2.x (SDL2), SDL2-image, OpenGL Mathematics (GLM), and OpenGL 
-3.3 (or higher), imgui and runs on both Windows, macOS and Linux.
+3.1 (or higher), imgui and runs on both Windows, macOS and Linux.
  
 sre provides:
  * Virtual camera (perspective and orthographic)
@@ -22,7 +22,6 @@ sre provides:
  * Emscripten support (allows cross compiling to HTML 5 + WebGL)
 
 To keep sre as simple and flexible as possible the following features are not a part of sre:
- * Resource management
  * Scenegraphs
  * Deferred rendering
  * Bump mapping
@@ -46,6 +45,7 @@ https://mortennobel.github.io/SimpleRenderEngine/
  * https://www.opengl.org/registry/ OpenGL Registry
  
 ## Version history
+ * 0.8.0 Resource memory management using shared_ptr. Materials created by Shader.createMaterial().
  * 0.7.1 sRGB. Improve MSVC improvement. Improve builder pattern.
  * 0.7.0 Add SDLRenderer. Custom mesh attributes. Simplify Camera::setPerspectiveProjection.
  * 0.6.0 Add Material and RenderPass. Improve ImGUI integration. 

@@ -40,6 +40,7 @@ public:
         TextureBuilder& withFilterSampling(bool enable);
         TextureBuilder& withWrappedTextureCoordinates(bool enable);
         TextureBuilder& withFileCubemap(const char *filename, TextureCubemapSide side);
+        // Currently only PNG files supported
         TextureBuilder& withFile(const char *filename);
         TextureBuilder& withRGBData(const char* data, int width, int height);
         TextureBuilder& withRGBAData(const char* data, int width, int height);
@@ -62,12 +63,12 @@ public:
 
     virtual ~Texture();
 
+    // Create a new texture using the builder pattern
+    static TextureBuilder create();
+
     static std::shared_ptr<Texture> getWhiteTexture();
     static std::shared_ptr<Texture> getSphereTexture();
     static std::shared_ptr<Texture> getDefaultCubemapTexture();
-
-    // Create a new texture using the builder pattern
-    static TextureBuilder create();
 
     int getWidth();
     int getHeight();

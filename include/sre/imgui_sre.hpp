@@ -11,6 +11,7 @@
 struct SDL_Window;
 typedef union SDL_Event SDL_Event;
 
+namespace sre{
 // ImGui_SRE_Init must be called before usage (usually in a setup step)
 IMGUI_API bool        ImGui_SRE_Init(SDL_Window *window);
 // ImGui_SRE_NewFrame must be invoked in the beginning of each frame before any other ImGui calls
@@ -24,3 +25,4 @@ IMGUI_API void        ImGui_SRE_Shutdown();
 // Use if you want to reset your rendering device without losing ImGui state.
 IMGUI_API void        ImGui_SRE_InvalidateDeviceObjects();
 IMGUI_API bool        ImGui_SRE_CreateDeviceObjects();
+}

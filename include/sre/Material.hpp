@@ -13,12 +13,11 @@ namespace sre {
 
     class Shader;
     class Texture;
+    class RenderPass;
 
     class DllExport Material {
     public:
         ~Material();
-
-        void bind();
 
         std::shared_ptr<sre::Shader> getShader();
 
@@ -48,6 +47,8 @@ namespace sre {
         template<typename T>
         inline T get(std::string uniformName);
     private:
+        void bind();
+
         Material(std::shared_ptr<sre::Shader> shader);
         std::string name;
         std::shared_ptr<sre::Shader> shader;
@@ -63,6 +64,7 @@ namespace sre {
         std::vector<Uniform<float>> floatValues;
 
         friend class Shader;
+        friend class RenderPass;
     };
 
     template<>

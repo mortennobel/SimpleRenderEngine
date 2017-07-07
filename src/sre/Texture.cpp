@@ -1,14 +1,11 @@
 #include "sre/Texture.hpp"
 
 #include "sre/impl/GL.hpp"
-#include <stdio.h>
+
 #include <SDL_surface.h>
 
 #include <SDL_image.h>
-#include <iostream>
-#include <vector>
 #include <fstream>
-#include <memory>
 #include "sre/RenderStats.hpp"
 #include "sre/Renderer.hpp"
 
@@ -19,7 +16,7 @@
 #define GL_SRGB 0x8C40
 #endif
 
-
+// anonymous (file local) namespace
 namespace {
 	static std::vector<char> readAllBytes(char const* filename)
 	{
@@ -55,28 +52,10 @@ namespace {
                 return GL_RGB;
             }
             else {
-                SDL_SetError("Unknown image format. Only PNG-24 and JPEG is supported.");
+                SDL_SetError("Unknown image format. Only PNG is supported.");
                 return 0;
             }
         }
-    }
-
-    int convert_to_rgb(int pixelWidth, int pixelHeight, char *image_pixels, SDL_PixelFormat *format) {
-        int colorChannels = format->BytesPerPixel;
-        for (int index = 0; index < pixelHeight; index++) {
-            char * row = image_pixels + pixelWidth * colorChannels * index;
-            for (int c=0;c<pixelWidth;c++){
-                int i = c*colorChannels;
-                uint32_t val = *((uint32_t*)&row[i]);
-                row[i] =  (val &format->Rmask) >> format->Rshift;
-                row[i+1] = (val&format->Gmask) >> format->Gshift;
-                row[i+2] =  (val&format->Bmask) >> format->Bshift;
-                if (colorChannels==4){
-                    row[i+3] = (val&format->Amask) >> format->Ashift;
-                }
-            }
-        }
-        return 0;
     }
 
     int invert_image(int width, int height, void *image_pixels) {
@@ -114,6 +93,7 @@ namespace {
     }
 
     std::vector<char> loadFileFromMemory(const char* data, int dataSize, GLenum& format, int& width, int& height, int& bytesPerPixel, bool invertY = true){
+#ifndef EMSCRIPTEN
         static bool initialized = false;
         if (!initialized) {
             initialized = true;
@@ -125,27 +105,31 @@ namespace {
                 // handle error
             }
         }
+#endif
+
         SDL_RWops *source = SDL_RWFromConstMem(data, dataSize);
         SDL_Surface *res_texture = IMG_Load_RW(source, 1);
         if (res_texture == NULL) {
             std::cerr << "IMG_Load: " << SDL_GetError() << std::endl;
             return {};
         }
-        width = res_texture->w;
-        height = res_texture->h;
-        format = getFormat(res_texture);
+        const bool alpha = SDL_ISPIXELFORMAT_ALPHA(res_texture->format->format);
+        SDL_Surface *formattedSurf = SDL_ConvertSurfaceFormat(res_texture,
+                                                              alpha ?SDL_PIXELFORMAT_RGBA32 : SDL_PIXELFORMAT_RGB24, 0);
+        width = formattedSurf->w;
+        height = formattedSurf->h;
+        format = getFormat(formattedSurf);
 
         bytesPerPixel = format == GL_RGB ? 3 : 4;
-        char *pixels = static_cast<char *>(res_texture->pixels);
+        char *pixels = static_cast<char *>(formattedSurf->pixels);
         if (invertY){
             invert_image(width*bytesPerPixel, height, pixels);
         }
 
-        convert_to_rgb(width, height, pixels, res_texture->format);
-
         std::vector<char> res(pixels, pixels+width*bytesPerPixel*height);
-
+        SDL_FreeSurface(formattedSurf);
         SDL_FreeSurface(res_texture);
+
         return res;
     }
 }
@@ -193,6 +177,11 @@ namespace sre {
     }
 
     Texture::TextureBuilder &Texture::TextureBuilder::withFile(const char *filename) {
+#ifndef  EMSCRIPTEN
+        SDL_Surface * surface = IMG_Load(filename);
+        std::cout << "IMG_Load "<<filename<<" "<<surface->h<<" "<<surface->w<<std::endl;
+
+#endif
         auto fileData = readAllBytes(filename);
         GLenum format;
         int bytesPerPixel;
@@ -200,7 +189,7 @@ namespace sre {
         this->target = GL_TEXTURE_2D;
         GLint mipmapLevel = 0;
 #ifdef EMSCRIPTEN
-        GLint internalFormat = has_sRGB()?(bytesPerPixel==4?GL_SRGB_ALPHA:GL_SRGB):(bytesPerPixel==4?GL_RGBA:GL_RGB);
+        GLint internalFormat = (bytesPerPixel==4?GL_RGBA:GL_RGB);
 #else
         GLint internalFormat = bytesPerPixel==4?GL_SRGB_ALPHA:GL_SRGB;
 #endif
@@ -223,7 +212,7 @@ namespace sre {
         GLint mipmapLevel = 0;
 
 #ifdef EMSCRIPTEN
-        GLint internalFormat = has_sRGB()?(bytesPerPixel==4?GL_SRGB_ALPHA:GL_SRGB):(bytesPerPixel==4?GL_RGBA:GL_RGB);
+        GLint internalFormat = (bytesPerPixel==4?GL_RGBA:GL_RGB);
 #else
         GLint internalFormat = bytesPerPixel==4 ? GL_SRGB_ALPHA : GL_SRGB;
 #endif
@@ -335,7 +324,7 @@ namespace sre {
 	}
 
 	bool Texture::isWrapTextureCoordinates() {
-		return filterSampling;
+		return wrapTextureCoordinates;
 	}
 
 	int Texture::getWidth() {
@@ -430,7 +419,7 @@ namespace sre {
 	}
 
     bool Texture::isCubemap() {
-        return target != GL_TEXTURE_2D;
+        return target == GL_TEXTURE_CUBE_MAP;
     }
 
     std::shared_ptr<Texture> Texture::getDefaultCubemapTexture() {

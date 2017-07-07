@@ -7,7 +7,7 @@
 #include "sre/Light.hpp"
 #include "sre/BlendType.hpp"
 #include "sre/WorldLights.hpp"
-
+#include "sre/imgui_sre.hpp"
 #include "sre/impl/Export.hpp"
 
 #include "sre/impl/CPPShim.hpp"
@@ -16,6 +16,7 @@
 #include <map>
 
 namespace sre {
+
     class Mesh;
     class Texture;
     class Material;
@@ -51,22 +52,22 @@ namespace sre {
      *      the color and texture parameters
      *    - Parameters:
      *      - color (vec4) (default white)
-     *      - tex (Texture*) (default white texture)
+     *      - tex (shared_ptr<Texture>) (default white texture)
      *      - specular (float) (default 0.0) (means no specular)
      * - Shader::getUnlit()
      *    - Uses the camera states as well as the color and texture parameters to define the surface color
      *    - Parameters:
      *      - color (vec4) (default white)
-     *      - tex (Texture*) (default white texture)
+     *      - tex (shared_ptr<Texture>) (default white texture)
      * - Shader::getUnlitSprite()
      *    - Similar to getUnlit() but with no depth write
      *    - Parameters:
      *      - color (vec4) (default white)
-     *      - tex (Texture*) (default white texture)
+     *      - tex (shared_ptr<Texture>) (default white texture)
      * - Shader::getStandardParticles()
      *    - Similar to getUnlitSprite() but with no depth write
      *    - Parameters:
-     *      - tex (Texture*) (default alpha sphere texture)
+     *      - tex (shared_ptr<Texture>) (default alpha sphere texture)
      *
      *   Shaders have two kinds of uniforms variables:
      *     - Global uniforms (prefixed with 'g_' which is automatically set by the engine)
@@ -102,22 +103,22 @@ namespace sre {
         // Phong Light Model. Uses light objects and ambient light set in Renderer.
         // Attributes
         // "color" vec4 (default (1,1,1,1))
-        // "tex" Texture* (default white texture)
+        // "tex" shared_ptr<Texture> (default white texture)
         // "specularity" float (default 0 = no specularity)
         static std::shared_ptr<Shader> getStandard();
         // Unlit model.
         // Attributes
         // "color" vec4 (default (1,1,1,1))
-        // "tex" Texture* (default white texture)
+        // "tex" shared_ptr<Texture> (default white texture)
         static std::shared_ptr<Shader> getUnlit();
         // UnlitSprite = no depth examples and alpha blending
         // Attributes
         // "color" vec4 (default (1,1,1,1))
-        // "tex" Texture* (default white texture)
+        // "tex" shared_ptr<Texture> (default white texture)
         static std::shared_ptr<Shader> getUnlitSprite();
         // StandardParticles
         // Attributes
-        // "tex" Texture* (default alpha sphere texture)
+        // "tex" shared_ptr<Texture> (default alpha sphere texture)
         static std::shared_ptr<Shader> getStandardParticles();
 
         static ShaderBuilder create();
@@ -127,9 +128,6 @@ namespace sre {
         std::shared_ptr<Material> createMaterial();
 
         Uniform getUniformType(const std::string &name);
-
-        // return element type, element count
-        std::pair<int,int> getAttributeType(const std::string &name);
 
         bool isDepthTest();
 
@@ -184,5 +182,6 @@ namespace sre {
 
     public:
         static std::string translateToGLSLES(std::string source, bool vertexShader);
+
     };
 }

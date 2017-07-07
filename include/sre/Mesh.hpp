@@ -30,8 +30,8 @@ namespace sre {
     public:
         class DllExport MeshBuilder {
         public:
-            MeshBuilder& withSphere();
-            MeshBuilder& withCube();
+            MeshBuilder& withSphere(int stacks = 16, int slices = 32, float radius = 1);
+            MeshBuilder& withCube(float length = 1);
             MeshBuilder& withQuad();
             MeshBuilder& withPositions(const std::vector<glm::vec3> &vertexPositions);
             MeshBuilder& withNormals(const std::vector<glm::vec3> &normals);

@@ -18,6 +18,7 @@
 #include "sre/Texture.hpp"
 
 namespace sre {
+    // anonymous (file local) namespace
     namespace {
         std::shared_ptr<Shader> standard;
         std::shared_ptr<Shader> unlit;
@@ -481,15 +482,6 @@ namespace sre {
             res.push_back(u.name);
         }
         return res;
-    }
-
-    // return element type, element count
-    std::pair<int,int> Shader::getAttributeType(const std::string &name) {
-        auto res = attributes.find(name);
-        if (res != attributes.end()){
-            return {res->second.type, res->second.arraySize};
-        }
-        return {-1,-1};
     }
 
     bool Shader::validateMesh(Mesh *mesh, std::string &info) {

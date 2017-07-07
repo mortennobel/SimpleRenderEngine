@@ -1,6 +1,3 @@
-#include <iostream>
-#include <vector>
-
 #include "sre/SDLRenderer.hpp"
 
 using namespace sre;

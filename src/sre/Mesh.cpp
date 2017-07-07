@@ -364,12 +364,10 @@ namespace sre {
         }
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withSphere() {
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withSphere(int stacks, int slices, float radius) {
         using namespace glm;
         using namespace std;
-        int stacks = 16;
-        int slices = 32;
-        float radius = 1.0f;
+
         size_t vertexCount = (size_t) ((stacks + 1) * slices);
         vector<vec3> vertices{vertexCount};
         vector<vec3> normals{vertexCount};
@@ -431,10 +429,10 @@ namespace sre {
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withCube() {
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withCube(float length) {
         using namespace glm;
         using namespace std;
-        float length = 1.0f;
+
         //    v5----- v4
         //   /|      /|
         //  v1------v0|

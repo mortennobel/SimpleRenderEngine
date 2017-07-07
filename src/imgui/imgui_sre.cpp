@@ -18,6 +18,7 @@
 
 #include "sre/impl/GL.hpp"
 
+namespace sre{
 // Data
 static double       g_Time = 0.0f;
 static bool         g_MousePressed[3] = { false, false, false };
@@ -432,4 +433,5 @@ void ImGui_SRE_NewFrame(SDL_Window *window)
 
     // Start the frame
     ImGui::NewFrame();
+}
 }
