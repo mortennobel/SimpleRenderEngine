@@ -1,4 +1,6 @@
 ## Version history
+
+ * 0.9.0 RenderPass::readPixels().
  * 0.8.0 Resource memory management using shared_ptr. Materials created by Shader.createMaterial().
  * 0.7.1 sRGB. Improve MSVC improvement. Improve builder pattern.
  * 0.7.0 Add SDLRenderer. Custom mesh attributes. Simplify Camera::setPerspectiveProjection.

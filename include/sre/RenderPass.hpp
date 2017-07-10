@@ -83,6 +83,9 @@ namespace sre {
          * @param material
          */
         void draw(std::shared_ptr<Mesh>& mesh, glm::mat4 modelTransform, std::shared_ptr<Material>& material);
+
+        std::vector<glm::vec4> readPixels(unsigned int x, unsigned int y, unsigned int width = 1, unsigned int height = 1);
+
     private:
         void finish();
 

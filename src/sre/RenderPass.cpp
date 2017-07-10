@@ -14,7 +14,7 @@
 #include <sre/imgui_sre.hpp>
 #include <sre/Renderer.hpp>
 #include <imgui_internal.h>
-
+#include <glm/gtc/type_precision.hpp>
 namespace sre {
     RenderPass * RenderPass::instance = nullptr;
 
@@ -189,6 +189,20 @@ namespace sre {
             ImGui::Render();
         }
         instance = nullptr;
+    }
+
+    std::vector<glm::vec4> RenderPass::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+        std::vector<glm::vec4> res(width * height);
+        std::vector<glm::u8vec4> resUnsigned(width * height);
+
+        glReadPixels(x,y,width, height, GL_RGBA,GL_UNSIGNED_BYTE,resUnsigned.data());
+        for (int i=0;i<resUnsigned.size();i++){
+            for (int j=0;j<4;j++){
+                res[i][j] = resUnsigned[i][j]/255.0f;
+            }
+        }
+
+        return res;
     }
 
 }

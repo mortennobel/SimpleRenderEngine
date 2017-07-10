@@ -64,7 +64,9 @@ public:
     void init(uint32_t sdlInitFlag = SDL_INIT_EVERYTHING);
 
     void setWindowTitle(std::string title);
-    void setWindowSize(int width, int height);
+    void setWindowSize(glm::ivec2 size);
+
+    glm::ivec2 getWindowSize();
 
     // Start the event loop. Note that this member function in usually blocking (until the `stopEventLoop()` has been
     // called). Using Emscripten the event loop is not blocking (but internally using a callback function), which means

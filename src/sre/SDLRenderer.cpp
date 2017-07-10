@@ -244,7 +244,9 @@ namespace sre{
         running = false;
     }
 
-    void SDLRenderer::setWindowSize(int width, int height) {
+    void SDLRenderer::setWindowSize(glm::ivec2 size) {
+        int width = size.x;
+        int height = size.y;
         windowWidth = width;
         windowHeight = height;
         if (window!= nullptr){
@@ -261,6 +263,14 @@ namespace sre{
 
     SDL_Window *SDLRenderer::getSDLWindow() {
         return window;
+    }
+
+    glm::ivec2 SDLRenderer::getWindowSize() {
+        glm::ivec2 res;
+
+        SDL_GetWindowSize(window, &res.x, &res.y);
+
+        return res;
     }
 
 
