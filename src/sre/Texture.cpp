@@ -259,6 +259,7 @@ namespace sre {
             throw std::runtime_error("Texture is already build");
         }
         Texture* res = new Texture(textureId, width, height, target);
+        res->generateMipmap = this->generateMipmaps;
         if (this->generateMipmaps){
             res->invokeGenerateMipmap();
         }

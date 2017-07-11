@@ -16,7 +16,9 @@
 #include <imgui_internal.h>
 #include <glm/gtc/type_precision.hpp>
 namespace sre {
-    RenderPass * RenderPass::instance = nullptr;
+    bool RenderPass::instance = false;
+    bool RenderPass::lastGui = false;
+    std::shared_ptr<Framebuffer> RenderPass::lastFramebuffer;
 
     RenderPass::RenderPassBuilder RenderPass::create() {
         return RenderPass::RenderPassBuilder(&Renderer::instance->renderStats);
@@ -66,33 +68,12 @@ namespace sre {
     }
 
     RenderPass RenderPass::RenderPassBuilder::build(){
-        GLbitfield clear = 0;
-        if (clearColor) {
-            glClearColor(clearColorValue.r, clearColorValue.g, clearColorValue.b, clearColorValue.a);
-            clear |= GL_COLOR_BUFFER_BIT;
-        }
-        if (clearDepth) {
-            glClearDepthf(clearDepthValue);
-            glDepthMask(GL_TRUE);
-            clear |= GL_DEPTH_BUFFER_BIT;
-        }
-        if (clearStencil) {
-            glClearStencil(clearStencilValue);
-            clear |= GL_STENCIL_BUFFER_BIT;
-        }
-        if (clear){
-            glClear(clear);
-        }
 
-        if (this->gui){
-            ImGui_SRE_NewFrame(Renderer::instance->window);
-        }
-
-        return RenderPass(std::move(camera), worldLights, renderStats, gui);
+        return RenderPass(*this);
     }
 
     RenderPass::RenderPassBuilder & RenderPass::RenderPassBuilder::withFramebuffer(std::shared_ptr<Framebuffer> framebuffer) {
-        this->framebuffer = framebuffer.get();
+        this->framebuffer = framebuffer;
         return *this;
     }
 
@@ -100,24 +81,53 @@ namespace sre {
 
     }
 
-    RenderPass::RenderPass(Camera &&camera, WorldLights *worldLights, RenderStats *renderStats, bool gui)
-        :camera(camera), worldLights(worldLights),renderStats(renderStats), gui(gui)
+    RenderPass::RenderPass(RenderPass::RenderPassBuilder& builder)
+        :camera(builder.camera), worldLights(builder.worldLights),renderStats(builder.renderStats), framebuffer(builder.framebuffer)
     {
         if (instance){
-            instance->finish();
+            finish();
         }
+
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer!=nullptr?framebuffer->frameBufferObjectId:0);
+
+        GLbitfield clear = 0;
+        if (builder.clearColor) {
+            glClearColor(builder.clearColorValue.r, builder.clearColorValue.g, builder.clearColorValue.b, builder.clearColorValue.a);
+            clear |= GL_COLOR_BUFFER_BIT;
+        }
+        if (builder.clearDepth) {
+            glClearDepthf(builder.clearDepthValue);
+            glDepthMask(GL_TRUE);
+            clear |= GL_DEPTH_BUFFER_BIT;
+        }
+        if (builder.clearStencil) {
+            glClearStencil(builder.clearStencilValue);
+            clear |= GL_STENCIL_BUFFER_BIT;
+        }
+        if (clear){
+            glClear(clear);
+        }
+
+        if (builder.gui){
+            ImGui_SRE_NewFrame(Renderer::instance->window);
+        }
+
         auto windowSize = static_cast<glm::vec2>(Renderer::instance->getWindowSize());
+        if (framebuffer){
+            windowSize = framebuffer->size;
+        }
         viewportOffset = static_cast<glm::uvec2>(camera.viewportOffset * windowSize);
         viewportSize = static_cast<glm::uvec2>(windowSize * camera.viewportSize);
 
         projection = camera.getProjectionTransform(windowSize);
         glViewport(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
         glScissor(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
-        instance = this;
+        instance = true;
+        lastGui = builder.gui;
     }
 
     void RenderPass::draw(std::shared_ptr<Mesh>& meshPtr, glm::mat4 modelTransform, std::shared_ptr<Material>& material_ptr) {
-        assert(instance != nullptr);
+        assert(instance);
 
         Mesh* mesh = meshPtr.get();
         auto material = material_ptr.get();
@@ -180,7 +190,7 @@ namespace sre {
 
 
     void RenderPass::drawLines(const std::vector<glm::vec3> &verts, glm::vec4 color, MeshTopology meshTopology) {
-        assert(instance != nullptr);
+        assert(instance);
 
         // Keep a shared mesh and material
         static auto material = Shader::getUnlit()->createMaterial();
@@ -198,11 +208,24 @@ namespace sre {
     }
 
     void RenderPass::finish() {
-        assert(instance != nullptr);
-        if (gui){
+        assert(instance);
+        if (lastGui){
             ImGui::Render();
         }
-        instance = nullptr;
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        auto framebuffer = lastFramebuffer.get();
+        if (framebuffer){
+            for(auto& tex : framebuffer->textures){
+                if (tex->generateMipmap){
+                    glBindTexture(tex->target,tex->textureId);
+                    glGenerateMipmap(tex->target);
+                    glBindTexture(tex->target,0);
+                }
+            }
+        }
+        lastFramebuffer.reset();
+        instance = false;
+        lastGui = false;
     }
 
     std::vector<glm::vec4> RenderPass::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {

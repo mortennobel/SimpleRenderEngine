@@ -50,7 +50,7 @@ namespace sre {
             // (note it is still possible to keep a universal reference)
             RenderPassBuilder(const RenderPassBuilder& r) = default;
             std::string name;
-            Framebuffer* framebuffer = nullptr;
+            std::shared_ptr<Framebuffer> framebuffer;
             WorldLights* worldLights = nullptr;
             Camera camera;
             RenderStats* renderStats;
@@ -87,25 +87,28 @@ namespace sre {
                                                                     // Reads pixel(s) from the current framebuffer
                                                                     // The defined rectable must be within the size of the current framebuffer
     private:
-        void finish();
+        static void finish();
 
-        RenderPass(Camera&& camera, WorldLights *worldLights, RenderStats *renderStats, bool gui);
+        RenderPass(RenderPass::RenderPassBuilder& builder);
 
         void setupShader(const glm::mat4 &modelTransform, Shader *shader);
 
         Shader* lastBoundShader = nullptr;
         Material* lastBoundMaterial = nullptr;
         Mesh* lastBoundMesh = nullptr;
-        bool gui;
 
         Camera camera;
         WorldLights* worldLights;
         RenderStats* renderStats;
+        std::shared_ptr<Framebuffer> framebuffer;
         glm::mat4 projection;
         glm::uvec2 viewportOffset;
         glm::uvec2 viewportSize;
 
-        static RenderPass * instance;
+
+        static bool instance;
+        static bool lastGui;
+        static std::shared_ptr<Framebuffer> lastFramebuffer;
 
         friend class Renderer;
     };

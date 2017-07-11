@@ -86,7 +86,7 @@ namespace sre {
 
     void Renderer::swapWindow() {
         if (RenderPass::instance){
-            RenderPass::instance->finish();
+            RenderPass::finish();
         }
 
         renderStatsLast = renderStats;

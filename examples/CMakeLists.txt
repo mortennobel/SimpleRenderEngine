@@ -10,6 +10,7 @@ add_executable(SRE-GUI gui.cpp)
 add_executable(SRE-Spheres spheres.cpp)
 add_executable(SRE-Benchmark64k benchmark64k.cpp)
 add_executable(SRE-Picking picking.cpp)
+add_executable(SRE-RenderToTexture render-to-texture.cpp)
 
 target_link_libraries(SRE-Spinning-Cube ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Multiple-Lights ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
@@ -22,6 +23,7 @@ target_link_libraries(SRE-Spheres ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIB
 target_link_libraries(SRE-Spinning-Sphere-Cubemap ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Benchmark64k ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Picking ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
+target_link_libraries(SRE-RenderToTexture ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 
 file(COPY ../examples/data DESTINATION Debug)
 file(COPY ../examples/data DESTINATION Release)

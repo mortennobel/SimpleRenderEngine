@@ -5,8 +5,11 @@
 #include <map>
 
 #include "sre/impl/Export.hpp"
+#include "sre/Framebuffer.hpp"
 
 namespace sre{
+
+    class RenderPass;
 
     /**
      * Represent a texture (uploaded to the GPU).
@@ -57,6 +60,7 @@ public:
         unsigned int textureId = 0;
 
         friend class Texture;
+        friend class RenderPass;
     };
 
     virtual ~Texture();
@@ -89,5 +93,8 @@ private:
     unsigned int textureId;
     friend class Shader;
     friend class Material;
+    friend class Framebuffer;
+    friend class RenderPass;
+    friend class sre::Framebuffer::FrameBufferBuilder;
 };
 }
