@@ -39,8 +39,8 @@ public:
             update(deltaTime);
         };
         // connect render callback
-        r.frameRender = [&](Renderer* renderer){
-            frameRender(renderer);
+        r.frameRender = [&](){
+            frameRender();
         };
         // start render loop
         r.startEventLoop();
@@ -50,8 +50,8 @@ public:
         timeF += deltaTime * f;
     }
 
-    void frameRender(Renderer* renderer){
-        RenderPass rp = renderer->createRenderPass()
+    void frameRender(){
+        RenderPass rp = RenderPass::create()
                 .withCamera(*camera)
                 .withWorldLights(&worldLights)
                 .withClearColor(true,{clear_color.x,clear_color.y,clear_color.z,1.0f})

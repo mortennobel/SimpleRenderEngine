@@ -17,6 +17,7 @@ namespace sre {
     class Shader;
     class Material;
     class RenderStats;
+    class Framebuffer;
 
     // A render pass encapsulates some render states and allows adding draw-calls.
     // Materials and shaders are assumed not to be modified during a renderpass.
@@ -28,18 +29,20 @@ namespace sre {
             RenderPassBuilder& withName(const std::string& name);
             RenderPassBuilder& withCamera(const Camera& camera);
             RenderPassBuilder& withWorldLights(WorldLights* worldLights);
-            // Set the clear color.
-            // Default enabled with the color value {0.0,0.0,0.0,1.0}
-            RenderPassBuilder& withClearColor(bool enabled = true,glm::vec4 color = {0,0,0,1});
-            // Set the clear depth. Value is clamped between [0.0;1.0]
-            // Default: enabled with depth value 1.0
-            RenderPassBuilder& withClearDepth(bool enabled = true, float value = 1);
-            // Set the clear depth. Value is clamped between
-            // Default: disabled
-            RenderPassBuilder& withClearStencil(bool enabled = false, int value = 0);
-            // Allows ImGui calls to be called in the renderpass and
-            // calls ImGui::Render() in the end of the renderpass
-            RenderPassBuilder& withGUI(bool enabled = true);
+
+            RenderPassBuilder& withClearColor(bool enabled = true,glm::vec4 color = {0,0,0,1});    // Set the clear color.
+                                                                                                   // Default enabled with the color value {0.0,0.0,0.0,1.0}
+
+            RenderPassBuilder& withClearDepth(bool enabled = true, float value = 1);               // Set the clear depth. Value is clamped between [0.0;1.0]
+                                                                                                   // Default: enabled with depth value 1.0
+
+            RenderPassBuilder& withClearStencil(bool enabled = false, int value = 0);              // Set the clear depth. Value is clamped between
+                                                                                                   // Default: disabled
+
+            RenderPassBuilder& withGUI(bool enabled = true);                                       // Allows ImGui calls to be called in the renderpass and
+                                                                                                   // calls ImGui::Render() in the end of the renderpass
+
+            RenderPassBuilder& withFramebuffer(std::shared_ptr<Framebuffer> framebuffer);
             RenderPass build();
         private:
             RenderPassBuilder() = default;
@@ -47,6 +50,7 @@ namespace sre {
             // (note it is still possible to keep a universal reference)
             RenderPassBuilder(const RenderPassBuilder& r) = default;
             std::string name;
+            Framebuffer* framebuffer = nullptr;
             WorldLights* worldLights = nullptr;
             Camera camera;
             RenderStats* renderStats;
@@ -65,27 +69,23 @@ namespace sre {
             friend class Renderer;
         };
 
+        static RenderPassBuilder create();   // Create a RenderPass
+
         virtual ~RenderPass();
 
-        /**
-         * Draws world-space lines.
-         * Note that this member function is not expected to perform as efficient as draw()
-         * @param verts
-         * @param color {1,1,1,1}
-         * @param meshTopology {Lines}
-         */
-        void drawLines(const std::vector<glm::vec3> &verts, glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f}, MeshTopology meshTopology = MeshTopology::Lines);
 
-        /**
-         * Draws a mesh using the given transform and material.
-         * @param mesh
-         * @param modelTransform
-         * @param material
-         */
+        void drawLines(const std::vector<glm::vec3> &verts, glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f}, MeshTopology meshTopology = MeshTopology::Lines);
+                                                                    // Draws worldspace lines.
+                                                                    // Note that this member function is not expected to perform as efficient as draw()
+
+
         void draw(std::shared_ptr<Mesh>& mesh, glm::mat4 modelTransform, std::shared_ptr<Material>& material);
+                                                                    // Draws a mesh using the given transform and material.
+                                                                    // The  modelTransform defines the modelToWorld transformation
 
         std::vector<glm::vec4> readPixels(unsigned int x, unsigned int y, unsigned int width = 1, unsigned int height = 1);
-
+                                                                    // Reads pixel(s) from the current framebuffer
+                                                                    // The defined rectable must be within the size of the current framebuffer
     private:
         void finish();
 
@@ -101,6 +101,9 @@ namespace sre {
         Camera camera;
         WorldLights* worldLights;
         RenderStats* renderStats;
+        glm::mat4 projection;
+        glm::uvec2 viewportOffset;
+        glm::uvec2 viewportSize;
 
         static RenderPass * instance;
 

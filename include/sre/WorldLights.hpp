@@ -12,12 +12,12 @@
 namespace sre {
     class DllExport WorldLights {
     public:
-        WorldLights();
-        int addLight(const Light & light);
-        void removeLight(int index);
-        Light* getLight(int index);
-        int lightCount();
-        void setAmbientLight(const glm::vec3& light);
+        WorldLights();                                      // Create world light
+        int addLight(const Light & light);                  // Add light
+        void removeLight(int index);                        // Remove light by index
+        Light* getLight(int index);                         // Get light at position
+        int lightCount();                                   // The number of lights
+        void setAmbientLight(const glm::vec3& light);       // Set ambient light
     private:
         glm::vec3 ambientLight;
         std::vector<Light> lights;

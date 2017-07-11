@@ -92,7 +92,7 @@ namespace sre{
 
     SDLRenderer::SDLRenderer()
     :frameUpdate ([](float){}),
-     frameRender ([](Renderer*){}),
+     frameRender ([](){}),
      keyEvent ([](SDL_Event&){}),
      mouseEvent ([](SDL_Event&){}),
      controllerEvent ([](SDL_Event&){}),
@@ -165,7 +165,7 @@ namespace sre{
         }
 
         frameUpdate(deltaTimeSec);
-        frameRender(r);
+        frameRender();
 
         r->swapWindow();
     }
@@ -264,14 +264,4 @@ namespace sre{
     SDL_Window *SDLRenderer::getSDLWindow() {
         return window;
     }
-
-    glm::ivec2 SDLRenderer::getWindowSize() {
-        glm::ivec2 res;
-
-        SDL_GetWindowSize(window, &res.x, &res.y);
-
-        return res;
-    }
-
-
 }

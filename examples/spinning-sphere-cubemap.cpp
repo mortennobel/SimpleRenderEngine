@@ -70,14 +70,14 @@ void main(void)
         material->setTexture(tex);
 
         mesh = Mesh::create().withSphere().build();
-        r.frameRender = [&](Renderer* r){
-            render(r);
+        r.frameRender = [&](){
+            render();
         };
         r.startEventLoop();
     }
 
-    void render(Renderer* r){
-        auto rp = r->createRenderPass()
+    void render(){
+        auto rp = RenderPass::create()
                 .withCamera(*camera)
                 .withClearColor(true,{1,0,0,1})
                 .build();

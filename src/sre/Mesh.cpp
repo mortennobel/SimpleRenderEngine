@@ -314,27 +314,27 @@ namespace sre {
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withPositions(const std::vector<glm::vec3> &vertexPositions) {
-        withUniform("position",vertexPositions);
+        withAttribute("position", vertexPositions);
         return *this;
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withNormals(const std::vector<glm::vec3> &normals) {
-        withUniform("normal",normals);
+        withAttribute("normal", normals);
         return *this;
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withUVs(const std::vector<glm::vec4> &uvs) {
-        withUniform("uv",uvs);
+        withAttribute("uv", uvs);
         return *this;
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withColors(const std::vector<glm::vec4> &colors) {
-        withUniform("color",colors);
+        withAttribute("color", colors);
         return *this;
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withParticleSizes(const std::vector<float> &particleSize) {
-        withUniform("particleSize",particleSize);
+        withAttribute("particleSize", particleSize);
         return *this;
     }
 
@@ -552,7 +552,7 @@ namespace sre {
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withUniform(std::string name, const std::vector<float> &values) {
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withAttribute(std::string name, const std::vector<float> &values) {
         if (updateMesh != nullptr && attributesFloat.find(name) == attributesFloat.end()){
             std::cout << "Cannot change mesh structure. "<<name<<" did not exist in original mesh."<< std::endl;
         } else {
@@ -561,7 +561,7 @@ namespace sre {
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withUniform(std::string name, const std::vector<glm::vec2> &values) {
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withAttribute(std::string name, const std::vector<glm::vec2> &values) {
         if (updateMesh != nullptr && attributesVec2.find(name) == attributesVec2.end()){
             std::cout << "Cannot change mesh structure. "<<name<<" did not exist in original mesh."<< std::endl;
         } else {
@@ -570,7 +570,7 @@ namespace sre {
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withUniform(std::string name, const std::vector<glm::vec3> &values) {
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withAttribute(std::string name, const std::vector<glm::vec3> &values) {
         if (updateMesh != nullptr && attributesVec3.find(name) == attributesVec3.end()){
             std::cout << "Cannot change mesh structure. "<<name<<" did not exist in original mesh."<< std::endl;
         } else {
@@ -579,7 +579,7 @@ namespace sre {
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withUniform(std::string name, const std::vector<glm::vec4> &values) {
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withAttribute(std::string name, const std::vector<glm::vec4> &values) {
         if (updateMesh != nullptr && attributesVec4.find(name) == attributesVec4.end()){
             std::cout << "Cannot change mesh structure. "<<name<<" did not exist in original mesh."<< std::endl;
         } else {
@@ -588,7 +588,7 @@ namespace sre {
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withUniform(std::string name, const std::vector<glm::ivec4> &values) {
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withAttribute(std::string name, const std::vector<glm::ivec4> &values) {
         if (updateMesh != nullptr && attributesIVec4.find(name) == attributesIVec4.end()){
             std::cout << "Cannot change mesh structure. "<<name<<" did not exist in original mesh."<< std::endl;
         } else {

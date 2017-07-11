@@ -50,28 +50,24 @@ public:
         r.frameUpdate = [&](float deltaTime){
             update(deltaTime);
         };
-        r.frameRender = [&](Renderer* r){
-            render(r);
+        r.frameRender = [&](){
+            render();
         };
 
         r.startEventLoop();
     }
 
     void update(float deltaTime){
-        int w,h;
-        SDL_GetWindowSize(r.getSDLWindow(),&w,&h);
-        camera->setViewport(0,0,w,h);
-        float aspect = w/(float)h;
         if (ortho){
-            camera->setOrthographicProjection(-2*aspect,2*aspect,-2,2,-2,100);
+            camera->setOrthographicProjection(2,-2,100);
         } else {
             camera->setPerspectiveProjection(60,0.1,100);
         }
         i += deltaTime;
     }
 
-    void render(Renderer* re){
-        auto rp = re->createRenderPass()
+    void render(){
+        auto rp = RenderPass::create()
                 .withCamera(*camera)
                 .withWorldLights(worldLights)
                 .withClearColor(true,{0,0,0.3,1})
@@ -86,7 +82,7 @@ public:
             ImGui::Text("Particle sprite");
             ImGui::Checkbox("Orthographic proj",&ortho);
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-            auto& renderStats = re->getRenderStats();
+            auto& renderStats = Renderer::instance->getRenderStats();
 
             float bytesToMB = 1.0f/(1024*1024);
             ImGui::Text("sre draw-calls %i meshes %i (%.2fMB) textures %i (%.2fMB) shaders %i", renderStats.drawCalls,renderStats.meshCount, renderStats.meshBytes*bytesToMB, renderStats.textureCount, renderStats.textureBytes*bytesToMB, renderStats.shaderCount);

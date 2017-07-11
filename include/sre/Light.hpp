@@ -14,12 +14,10 @@ namespace sre {
         class DllExport LightBuilder {
         public:
             ~LightBuilder();
-            LightBuilder& withPointLight(glm::vec3 position);
-            LightBuilder& withDirectionalLight(glm::vec3 direction);
-            // light color.
-            LightBuilder& withColor(glm::vec3 color);
-            // range only valid using point light
-            LightBuilder& withRange(float range);
+            LightBuilder& withPointLight(glm::vec3 position);           // Using point light with a worldspace position
+            LightBuilder& withDirectionalLight(glm::vec3 direction);    // Using directional light with a worldspace direction
+            LightBuilder& withColor(glm::vec3 color);                   // light color - note intensity can extend 1.0
+            LightBuilder& withRange(float range);                       // range only valid using point light
             Light build();
         private:
             LightBuilder();
@@ -27,28 +25,26 @@ namespace sre {
             Light *light;
             friend class Light;
         };
-        // Create light using builder pattern
-        static LightBuilder create();
-        // create light of type unused
-        Light();
+        static LightBuilder create();       // Create light using builder pattern
 
-        /// Defines the type of light source (note: ambient light is stored as a vec3 directly in SimpleRenderEngine)
-        /// LightType::Point,
-        /// LightType::Directional,
-        /// LightType::Unused
-        LightType lightType;
-        // position in worldspace
-        // only used for point lights
-        glm::vec3 position;
-        // direction towards the lightsource
-        // only used for directional light
-        glm::vec3 direction;
-        // The color (or intensity) of the light
-        // In some cases the light color may have values above 1.0
-        glm::vec3 color;
-        // The range of a point light (due to attenuation)
-        // Range == 0 means no attenuation
-        float range;
+        Light();                            // create light of type unused
+
+        LightType lightType;                // Defines the type of light source (note: ambient light is stored as a vec3 directly in SimpleRenderEngine)
+                                            // LightType::Point,
+                                            // LightType::Directional,
+                                            // LightType::Unused
+
+        glm::vec3 position;                 // position in worldspace
+                                            // only used for point lights
+
+        glm::vec3 direction;                // direction towards the lightsource
+                                            // only used for directional light
+
+        glm::vec3 color;                    // The color (or intensity) of the light
+                                            // In some cases the light color may have values above 1.0
+
+        float range;                        // The range of a point light (due to attenuation)
+                                            // Range == 0 means no attenuation
     private:
 
     };

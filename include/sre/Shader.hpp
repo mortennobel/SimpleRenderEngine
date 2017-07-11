@@ -37,8 +37,7 @@ namespace sre {
 		std::string name;
         int id;
         UniformType type;
-        // 1 means not array
-        int arraySize;
+        int arraySize;                  // 1 means not array
     };
 
     /**
@@ -100,26 +99,29 @@ namespace sre {
             friend class Shader;
         };
 
-        // Phong Light Model. Uses light objects and ambient light set in Renderer.
-        // Attributes
-        // "color" vec4 (default (1,1,1,1))
-        // "tex" shared_ptr<Texture> (default white texture)
-        // "specularity" float (default 0 = no specularity)
-        static std::shared_ptr<Shader> getStandard();
-        // Unlit model.
-        // Attributes
-        // "color" vec4 (default (1,1,1,1))
-        // "tex" shared_ptr<Texture> (default white texture)
-        static std::shared_ptr<Shader> getUnlit();
-        // UnlitSprite = no depth examples and alpha blending
-        // Attributes
-        // "color" vec4 (default (1,1,1,1))
-        // "tex" shared_ptr<Texture> (default white texture)
-        static std::shared_ptr<Shader> getUnlitSprite();
-        // StandardParticles
-        // Attributes
-        // "tex" shared_ptr<Texture> (default alpha sphere texture)
-        static std::shared_ptr<Shader> getStandardParticles();
+        static std::shared_ptr<Shader> getStandard();          // Phong Light Model. Uses light objects and ambient light set in Renderer.
+                                                               // Uniforms
+                                                               // "color" vec4 (default (1,1,1,1))
+                                                               // "tex" shared_ptr<Texture> (default white texture)
+                                                               // "specularity" float (default 0 = no specularity)
+                                                               // VertexAttributes
+                                                               // "position" vec3
+                                                               // "normal" vec3
+                                                               // "uv" vec4
+
+        static std::shared_ptr<Shader> getUnlit();             // Unlit model.
+                                                               // Uniforms
+                                                               // "color" vec4 (default (1,1,1,1))
+                                                               // "tex" shared_ptr<Texture> (default white texture)
+
+        static std::shared_ptr<Shader> getUnlitSprite();       // UnlitSprite = no depth examples and alpha blending
+                                                               // Uniforms
+                                                               // "color" vec4 (default (1,1,1,1))
+                                                               // "tex" shared_ptr<Texture> (default white texture)
+
+        static std::shared_ptr<Shader> getStandardParticles(); // StandardParticles
+                                                               // Uniforms
+                                                               // "tex" shared_ptr<Texture> (default alpha sphere texture)
 
         static ShaderBuilder create();
 

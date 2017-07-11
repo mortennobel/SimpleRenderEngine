@@ -40,8 +40,8 @@ class MultipleLightsExample {
         r.frameUpdate = [&](float deltaTime){
             update(deltaTime);
         };
-        r.frameRender = [&](Renderer* r){
-            render(r);
+        r.frameRender = [&](){
+            render();
         };
         r.startEventLoop();
     }
@@ -53,8 +53,8 @@ class MultipleLightsExample {
 
         time += deltaTime;
     }
-    void render(Renderer *r) {
-        auto renderPass = r->createRenderPass()
+    void render() {
+        auto renderPass = RenderPass::create()
                 .withCamera(*camera)
                 .withWorldLights(&worldLights)
                 .withClearColor(true, {1,0,0,1})

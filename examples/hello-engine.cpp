@@ -6,8 +6,8 @@ using namespace std;
 int main() {
     SDLRenderer r;
     r.init();
-    r.frameRender = [](Renderer* renderer){
-        RenderPass rp = renderer->createRenderPass().build();
+    r.frameRender = [](){
+        RenderPass rp = RenderPass::create().build();
         rp.drawLines({{-.5,-.5,0},{.5,.5,0},{-.5,.5,0},{.5,-.5,0}});
     };
     r.startEventLoop();

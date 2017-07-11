@@ -25,63 +25,79 @@ namespace sre {
     class DllExport Camera {
     public:
 
-        /// Set camera at (0,0,0) looking down the negative z-axis using orthographic viewing volume between -1 to 1
-        Camera();
 
-        /// set position of camera in world space using
-        /// eye position of the camera
-        /// at position that the camera looks at (must be different from pos)
-        /// up the up axis (used for rotating camera around z-axis). Must not be parallel with view direction (at - pos).
-        void lookAt(glm::vec3 eye, glm::vec3 at, glm::vec3 up);
+        Camera();                                               // Set camera at (0,0,0) looking down the negative
+                                                                // z-axis using orthographic viewing volume between -1 to 1
 
-        /// set the projectionTransform to perspective projection
-        /// fieldOfViewY field of view in degrees
-        /// nearPlane near clipping plane, defines how close an object can be to the camera before clipping
-        /// farPlane far clipping plane, defines how far an object can be to the camera before clipping
-        void setPerspectiveProjection(float fieldOfViewY, float nearPlane, float farPlane);
+        void lookAt(glm::vec3 eye, glm::vec3 at, glm::vec3 up); // set position of camera in world space using
+                                                                // eye position of the camera
+                                                                // at position that the camera looks at (must be different from pos)
+                                                                // up the up axis (used for rotating camera around z-axis). Must not be parallel with view direction (at - pos).
 
-        /// set the projectionTransform to orthographic parallel viewing volume.
-        /// left left plane of projection
-        /// right right plane of projection
-        /// bottom bottom plane of projection
-        /// top top plane of projection
-        /// nearPlane near clipping plane, defines how close an object can be to the camera before clipping
-        /// farPlane far clipping plane, defines how far an object can be to the camera before clipping
-        void setOrthographicProjection(float left, float right, float  bottom, float top, float nearPlane, float farPlane);
 
-        /// set orthographic transform and view, where the origin is located in the lower left corner
-        /// z depth is between -1 and 1
-        /// width the width of the window, if -1 uses current window size
-        /// height the height of the window, if -1 uses current window size
-        void setWindowCoordinates(int width = -1, int height = -1);
+        void setPerspectiveProjection(float fieldOfViewY, float nearPlane, float farPlane);      // set the projectionTransform to perspective projection
+                                                                                                 // fieldOfViewY field of view in degrees
+                                                                                                 // nearPlane near clipping plane, defines how close an object can be to the camera before clipping
+                                                                                                 // farPlane far clipping plane, defines how far an object can be to the camera before clipping
 
-        // Set the view transform. Used to position the virtual camera position and orientation.
-        void setViewTransform(const glm::mat4 &viewTransform);
+        void setOrthographicProjection(float orthographicSize, float nearPlane, float farPlane); // set the projectionTransform to orthographic parallel viewing volume.
+                                                                                                 // orthographicSize half the height of the view volume (the width is computed using the viewport size)
+                                                                                                 // nearPlane near clipping plane, defines how close an object can be to the camera before clipping
+                                                                                                 // farPlane far clipping plane, defines how far an object can be to the camera before clipping
 
-        // Set the projection transform. Defines the view volume and how it is projected to the screen.
-        void setProjectionTransform(const glm::mat4 &projectionTransform);
+        void setWindowCoordinates();                             // set orthographic transform and view, where the origin is located in the lower left corner
+                                                                 // z depth is between -1 and 1
+                                                                 // width the width of the window, if -1 uses current window size
+                                                                 // height the height of the window, if -1 uses current window size
 
-        /// Get the view transform. The matrix transformation contain the orientation and position of the virtual camera.
-        glm::mat4 getViewTransform();
+        void setViewTransform(const glm::mat4 &viewTransform);   // Set the view transform. Used to position the virtual camera position and orientation.
+                                                                 // This is commonly set using lookAt
 
-        /// Get the projection transform  - used for rendering
-        glm::mat4 getProjectionTransform();
 
-        /**
-         * defines which part of the window is used for
-         * rendering (default settings is the full window).
-         * The width and the height are used for computing perspective projection. If changed the setPerspectiveProjection must be called again.
-         *
-         * @param x the x coordinate of the viewport (default 0)
-         * @param y the y coordinate of the viewport (default 0)
-         * @param width the width of the viewport (default window width)
-         * @param height the height of the viewport (default window height)
-         */
-        void setViewport(int x, int y, int width, int height);
+        void setProjectionTransform(const glm::mat4 &projectionTransform);                       // Set a custom projection transform. Defines the view volume and how it is projected to the screen.
+                                                                                                 // This is commonly set using setPerspectiveProjection(), setOrthographicProjection() or setWindowCoordinates()
+
+
+        glm::mat4 getViewTransform();                            // Get the view transform. The matrix transformation
+                                                                 // contain the orientation and position of the virtual
+                                                                 // camera.
+
+        glm::mat4 getProjectionTransform(glm::uvec2 viewportSize);// Get the projection transform - used for rendering
+
+
+        void setViewport(glm::vec2 offset = glm::vec2{0,0}, glm::vec2 size = glm::vec2{1,1});    // defines which part of the window is used for
+                                                                                                 // rendering (default settings is the full window).
+                                                                                                 // x the x coordinate of the viewport (default 0)
+                                                                                                 // y the y coordinate of the viewport (default 0)
+                                                                                                 // width the width of the viewport (default window width)
+                                                                                                 // height the height of the viewport (default window height)
     private:
+        enum class ProjectionType {
+            Perspective,
+            Orthographic,
+            OrthographicWindow,
+            Custom
+        };
+        ProjectionType projectionType = ProjectionType::Orthographic;
+        union {
+            struct {
+                float fieldOfViewY;
+                float nearPlane;
+                float farPlane;
+            } perspective;
+            struct {
+                float orthographicSize;
+                float nearPlane;
+                float farPlane;
+            } orthographic;
+            float customProjectionMatrix[16];
+
+        } projectionValue;
+
         glm::mat4 viewTransform;
-        glm::mat4 projectionTransform;
-        int viewportX, viewportY, viewportWidth = -1, viewportHeight = -1;
+
+        glm::vec2 viewportOffset = glm::vec2{0,0};
+        glm::vec2 viewportSize = glm::vec2{1,1};
 
         friend class RenderPass;
 

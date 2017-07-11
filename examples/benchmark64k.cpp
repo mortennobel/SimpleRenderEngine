@@ -60,25 +60,21 @@ public:
                 }
             }
         }
-        r.frameRender = [&](Renderer* r){
-            render(r);
+        r.frameRender = [&](){
+            render();
         };
 
         r.startEventLoop();
     }
 
-    void render(Renderer * re){
-        int w, h;
-        SDL_GetWindowSize(r.getSDLWindow(),&w,&h);
-        camera->setViewport(0,0,w,h);
-
+    void render(){
         eyeRotation += 0.002;
         eyePosition[0] = (float) (sin(eyeRotation) * eyeRadius);
         eyePosition[2] = (float) (cos(eyeRotation) * eyeRadius);
 
         camera->lookAt(eyePosition, {0, -5, 0}, {0, 1, 0});
 
-        auto renderPass = re->createRenderPass()
+        auto renderPass = RenderPass::create()
                 .withCamera(*camera)
                 .withClearColor(true, {0, 0, 0, 1})
                 .build();
@@ -95,7 +91,7 @@ public:
         }
         i++;
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        auto renderStats = re->getRenderStats();
+        auto renderStats = Renderer::instance->getRenderStats();
         float bytesToMB = 1.0f/(1024*1024);
         ImGui::Text("sre draw-calls %i meshes %i (%.2fMB) textures %i (%.2fMB) shaders %i", renderStats.drawCalls,renderStats.meshCount, renderStats.meshBytes*bytesToMB, renderStats.textureCount, renderStats.textureBytes*bytesToMB, renderStats.shaderCount);
         ImGui::SliderInt("Grid size",&gridSize,1,BOX_GRID_DIM);

@@ -41,43 +41,25 @@ namespace sre {
     /// SDL_Quit();
     class DllExport Renderer {
     public:
-        /// SimpleRenderEngine constructor
-        /// \param window pointer to the SDL window (must be initialized using OpenGL)
-        Renderer(SDL_Window *window);
+        Renderer(SDL_Window *window);                       // SimpleRenderEngine constructor
+                                                            // param window pointer to the SDL window (must be initialized using OpenGL)
         ~Renderer();
-        static constexpr int maxSceneLights = 4;
+        static constexpr int maxSceneLights = 4;            // Maximum of scene lights
         static constexpr int sre_version_major = 0;
         static constexpr int sre_version_minor = 9;
         static constexpr int sre_version_point = 0;
 
+        glm::ivec2 getWindowSize();                         // Return the current size of the window
 
-        RenderPass::RenderPassBuilder createRenderPass();
+        void swapWindow();                                  // Update window with OpenGL rendering by swapping buffers
 
-        /**
-         * Return the current size of the window
-         * @return window
-         */
-        glm::ivec2 getWindowSize();
+        void finishGPUCommandBuffer();                      // GPU command buffer (must be called when profiling GPU time - should not be called when not profiling)
 
-        /**
-         * Update window with OpenGL rendering by swapping buffers
-         */
-        void swapWindow();
+        const RenderStats& getRenderStats();                // Return stats of the last rendered frame
+                                                            // RenderStats only includes data maintained by sre (imgui calls are not included)
 
-        /**
-         * GPU command buffer (must be called when profiling GPU time - should not be called when not profiling)
-         */
-        void finishGPUCommandBuffer();
+        static Renderer* instance;                          // Singleton reference to the engine after initialization.
 
-        /** Return stats of the last rendered frame
-         *  RenderStats only includes data maintained by sre (imgui calls are not included)
-         */
-        const RenderStats& getRenderStats();
-
-        /**
-         * Singleton reference to the engine after initialization.
-         */
-        static Renderer* instance;
     private:
         SDL_Window *window;
         SDL_GLContext glcontext;
@@ -92,5 +74,6 @@ namespace sre {
         friend class Shader;
         friend class Texture;
         friend class RenderPass;
+        friend class RenderPass::RenderPassBuilder;
     };
 }

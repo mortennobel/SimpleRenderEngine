@@ -30,21 +30,24 @@ namespace sre {
     public:
         class DllExport MeshBuilder {
         public:
-            MeshBuilder& withSphere(int stacks = 16, int slices = 32, float radius = 1);
-            MeshBuilder& withCube(float length = 1);
-            MeshBuilder& withQuad();
-            MeshBuilder& withPositions(const std::vector<glm::vec3> &vertexPositions);
-            MeshBuilder& withNormals(const std::vector<glm::vec3> &normals);
-            MeshBuilder& withUVs(const std::vector<glm::vec4> &uvs);
-            MeshBuilder& withColors(const std::vector<glm::vec4> &colors);
-            MeshBuilder& withParticleSizes(const std::vector<float> &particleSize);
-            MeshBuilder& withUniform(std::string name,const std::vector<float> &values);
-            MeshBuilder& withUniform(std::string name,const std::vector<glm::vec2> &values);
-            MeshBuilder& withUniform(std::string name,const std::vector<glm::vec3> &values);
-            MeshBuilder& withUniform(std::string name,const std::vector<glm::vec4> &values);
-            MeshBuilder& withUniform(std::string name,const std::vector<glm::i32vec4> &values);
-            MeshBuilder& withMeshTopology(MeshTopology meshTopology);
-            MeshBuilder& withIndices(const std::vector<uint16_t> &indices);
+            // primitives
+            MeshBuilder& withSphere(int stacks = 16, int slices = 32, float radius = 1);        // Creates a sphere mesh including UV coordinates, positions and normals
+            MeshBuilder& withCube(float length = 1);                                            // Creates a cube including UV coordinates, positions and normals
+            MeshBuilder& withQuad();                                                            // Creates a quad z,y = [-1;1] and z=0, UV=[0;1], normals=(0,0,1)
+            // raw data
+            MeshBuilder& withPositions(const std::vector<glm::vec3> &vertexPositions);          // Set vertex attribute "position" of type vec3
+            MeshBuilder& withNormals(const std::vector<glm::vec3> &normals);                    // Set vertex attribute "normal" of type vec3
+            MeshBuilder& withUVs(const std::vector<glm::vec4> &uvs);                            // Set vertex attribute "uv" of type vec4 (treated as two sets of texture coordinates)
+            MeshBuilder& withColors(const std::vector<glm::vec4> &colors);                      // Set vertex attribute "colors" of type vec4
+            MeshBuilder& withParticleSizes(const std::vector<float> &particleSize);             // Set vertex attribute "particleSize" of type float
+            MeshBuilder& withMeshTopology(MeshTopology meshTopology);                           // Defines the meshTopology (default is Triangles)
+            MeshBuilder& withIndices(const std::vector<uint16_t> &indices);                     // Defines the indices (if no indices defined then the vertices are rendered sequeantial)
+            // custom data layout
+            MeshBuilder& withAttribute(std::string name, const std::vector<float> &values);       // Set a named vertex attribute of float
+            MeshBuilder& withAttribute(std::string name, const std::vector<glm::vec2> &values);   // Set a named vertex attribute of vec2
+            MeshBuilder& withAttribute(std::string name, const std::vector<glm::vec3> &values);   // Set a named vertex attribute of vec3
+            MeshBuilder& withAttribute(std::string name, const std::vector<glm::vec4> &values);   // Set a named vertex attribute of vec4
+            MeshBuilder& withAttribute(std::string name, const std::vector<glm::i32vec4> &values);// Set a named vertex attribute of i32vec4
             std::shared_ptr<Mesh> build();
         private:
             MeshBuilder() = default;
@@ -61,33 +64,30 @@ namespace sre {
         };
         ~Mesh();
 
-        static MeshBuilder create();
-        MeshBuilder update();
+        static MeshBuilder create();                                // Create Mesh using the builder pattern. (Must end with build()).
+        MeshBuilder update();                                       // Update the mesh using the builder pattern. (Must end with build()).
 
-        int getVertexCount();
-        MeshTopology getMeshTopology();
+        int getVertexCount();                                       // Number of vertices in mesh
+        MeshTopology getMeshTopology();                             // Mesh topology used
 
-        std::vector<glm::vec3> getPositions();
-        std::vector<glm::vec3> getNormals();
-        std::vector<glm::vec4> getUVs();
-        std::vector<glm::vec4> getColors();
-        std::vector<float> getParticleSizes();
+        std::vector<glm::vec3> getPositions();                      // Get position vertex attribute
+        std::vector<glm::vec3> getNormals();                        // Get normal vertex attribute
+        std::vector<glm::vec4> getUVs();                            // Get uv vertex attribute
+        std::vector<glm::vec4> getColors();                         // Get color vertex attribute
+        std::vector<float> getParticleSizes();                      // Get particle size vertex attribute
 
         template<typename T>
-        inline T get(std::string attributeName);
+        inline T get(std::string attributeName);                    // Get the vertex attribute of a given type. Type must be float,glm::vec2,glm::vec3,glm::vec4,glm::i32vec4
 
-        // return element type, element count
-        std::pair<int,int> getType(const std::string& name);
+        std::pair<int,int> getType(const std::string& name);        // return element type, element count
 
-        std::vector<std::string> getNames();
+        std::vector<std::string> getNames();                        // Names of the vertex attributes
 
-        std::vector<uint16_t> getIndices();
+        std::vector<uint16_t> getIndices();                         // Indices used in the mesh (empty array means vertices rendered sequential)
 
-        // get the local axis aligned bounding box (AABB)
-        std::array<glm::vec3,2> getBoundsMinMax();
+        std::array<glm::vec3,2> getBoundsMinMax();                  // get the local axis aligned bounding box (AABB)
 
-        // get size of the mesh in bytes on GPU
-        int getDataSize();
+        int getDataSize();                                          // get size of the mesh in bytes on GPU
     private:
         struct Attribute {
             int offset;
@@ -145,7 +145,7 @@ namespace sre {
     }
 
     template<>
-    inline const std::vector<glm::ivec4>& Mesh::get(std::string uniformName) {
+    inline const std::vector<glm::i32vec4>& Mesh::get(std::string uniformName) {
         return attributesIVec4[uniformName];
     }
 }

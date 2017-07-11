@@ -43,21 +43,22 @@ public:
                 .withCube()
                 .build();
 
-        r.frameRender = [&](Renderer* r){
-            render(r);
+        r.frameRender = [&](){
+            render();
         };
 
         r.mouseEvent = [&](SDL_Event& e){
             if (e.type == SDL_MOUSEMOTION){
                 mouseX = e.motion.x;
-                mouseY = r.getWindowSize().y - e.motion.y;
+                auto r = Renderer::instance;
+                mouseY = r->getWindowSize().y - e.motion.y;
             }
         };
         r.startEventLoop();
     }
 
-    void render(Renderer * r){
-        auto renderPass = r->createRenderPass()
+    void render(){
+        auto renderPass = RenderPass::create()
                 .withCamera(*camera)
                 .withClearColor(true,{0, 0, 0, 1})
                 .build();

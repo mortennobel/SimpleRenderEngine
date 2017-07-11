@@ -36,14 +36,12 @@ public:
     public:
         ~TextureBuilder();
         TextureBuilder& withGenerateMipmaps(bool enable);
-        // if true texture sampling is filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
-        TextureBuilder& withFilterSampling(bool enable);
+        TextureBuilder& withFilterSampling(bool enable);                                    // if true texture sampling is filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
         TextureBuilder& withWrappedTextureCoordinates(bool enable);
-        TextureBuilder& withFileCubemap(const char *filename, TextureCubemapSide side);
-        // Currently only PNG files supported
-        TextureBuilder& withFile(const char *filename);
-        TextureBuilder& withRGBData(const char* data, int width, int height);
-        TextureBuilder& withRGBAData(const char* data, int width, int height);
+        TextureBuilder& withFileCubemap(const char *filename, TextureCubemapSide side);     // Must define a cubemap for each side
+        TextureBuilder& withFile(const char *filename);                                     // Currently only PNG files supported
+        TextureBuilder& withRGBData(const char* data, int width, int height);               // data may be null (for a uninitialized texture)
+        TextureBuilder& withRGBAData(const char* data, int width, int height);              // data may be null (for a uninitialized texture)
         TextureBuilder& withWhiteData(int width=2, int height=2);
         TextureBuilder& withWhiteCubemapData(int width=2, int height=2);
         std::shared_ptr<Texture> build();
@@ -53,7 +51,7 @@ public:
         int width = -1;
         int height = -1;
         bool generateMipmaps = false;
-        bool filterSampling = true; // true = linear/trilinear sampling, false = point sampling
+        bool filterSampling = true;                                                         // true = linear/trilinear sampling, false = point sampling
         bool wrapTextureCoordinates = true;
         uint32_t target = 0;
         unsigned int textureId = 0;
@@ -73,13 +71,11 @@ public:
     int getWidth();
     int getHeight();
 
-    // returns true if texture sampling is filtered when sampling (bi-linear or tri-linear sampling).
-    bool isFilterSampling();
-    bool isWrapTextureCoordinates();
-    bool isCubemap();
+    bool isFilterSampling();                                                                // returns true if texture sampling is filtered when sampling (bi-linear or tri-linear sampling).
+    bool isWrapTextureCoordinates();                                                        // returns false if texture coordinates are clamped otherwise wrapped
+    bool isCubemap();                                                                       // is cubemap texture
 
-    // get size of the texture in bytes on GPU
-    int getDataSize();
+    int getDataSize();                                                                      // get size of the texture in bytes on GPU
 private:
     Texture(unsigned int textureId, int width, int height, uint32_t target);
     void updateTextureSampler(bool filterSampling, bool wrapTextureCoordinates);

@@ -47,19 +47,16 @@ public:
         worldLights.addLight(Light::create().withPointLight({0,-3,0}).withColor({0,0,1}).withRange(20).build());
         worldLights.addLight(Light::create().withPointLight({-3,0,0}).withColor({1,1,1}).withRange(20).build());
 
-        r.frameRender = [&](Renderer* r){
-            render(r);
+        r.frameRender = [&](){
+            render();
         };
 
         r.startEventLoop();
     }
 
-    void render(Renderer * re){
-        int w, h;
-        SDL_GetWindowSize(r.getSDLWindow(),&w,&h);
-        camera->setViewport(0,0,w,h);
+    void render(){
         camera->setPerspectiveProjection(60,0.1,100);
-        auto renderPass = re->createRenderPass()
+        auto renderPass = RenderPass::create()
                 .withCamera(*camera)
                 .withWorldLights(&worldLights)
                 .withClearColor(true, {1, 0, 0, 1})

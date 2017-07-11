@@ -37,8 +37,8 @@ public:
         r.frameUpdate = [&](float deltaTime){
             update(deltaTime);
         };
-        r.frameRender = [&](Renderer* r){
-            render(r);
+        r.frameRender = [&](){
+            render();
         };
         r.startEventLoop();
     }
@@ -46,16 +46,16 @@ public:
     void update(float deltaTime){
         timeF += deltaTime;
         if (ortho) {
-            camera->setOrthographicProjection(-4,4,-4,4,-4,100);
+            camera->setOrthographicProjection(4,0,100);
         } else {
             camera->setPerspectiveProjection(60,0.1,10);
         }
         updateParticles(particleMesh, spriteUV, uvSize, uvRotation, size);
     }
 
-    void render(Renderer* r){
+    void render(){
 
-        auto rp = r->createRenderPass()
+        auto rp = RenderPass::create()
                 .withCamera(*camera)
                 .withClearColor(true,{1,0,0.0,1})
                 .build();

@@ -18,6 +18,10 @@
 namespace sre {
     RenderPass * RenderPass::instance = nullptr;
 
+    RenderPass::RenderPassBuilder RenderPass::create() {
+        return RenderPass::RenderPassBuilder(&Renderer::instance->renderStats);
+    }
+
     RenderPass::RenderPassBuilder::RenderPassBuilder(RenderStats* renderStats)
     :renderStats(renderStats)
     {
@@ -87,6 +91,11 @@ namespace sre {
         return RenderPass(std::move(camera), worldLights, renderStats, gui);
     }
 
+    RenderPass::RenderPassBuilder & RenderPass::RenderPassBuilder::withFramebuffer(std::shared_ptr<Framebuffer> framebuffer) {
+        this->framebuffer = framebuffer.get();
+        return *this;
+    }
+
     RenderPass::~RenderPass(){
 
     }
@@ -97,8 +106,13 @@ namespace sre {
         if (instance){
             instance->finish();
         }
-        glViewport(camera.viewportX, camera.viewportY, camera.viewportWidth, camera.viewportHeight);
-        glScissor(camera.viewportX, camera.viewportY, camera.viewportWidth, camera.viewportHeight);
+        auto windowSize = static_cast<glm::vec2>(Renderer::instance->getWindowSize());
+        viewportOffset = static_cast<glm::uvec2>(camera.viewportOffset * windowSize);
+        viewportSize = static_cast<glm::uvec2>(windowSize * camera.viewportSize);
+
+        projection = camera.getProjectionTransform(windowSize);
+        glViewport(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
+        glScissor(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
         instance = this;
     }
 
@@ -150,14 +164,14 @@ namespace sre {
                 glUniformMatrix4fv(shader->uniformLocationView, 1, GL_FALSE, glm::value_ptr(camera.viewTransform));
             }
             if (shader->uniformLocationProjection != -1){
-                glUniformMatrix4fv(shader->uniformLocationProjection, 1, GL_FALSE, glm::value_ptr(camera.projectionTransform));
+                glUniformMatrix4fv(shader->uniformLocationProjection, 1, GL_FALSE, glm::value_ptr(projection));
             }
             if (shader->uniformLocationNormal != -1){
                 auto normalMatrix = transpose(inverse(((glm::mat3)camera.getViewTransform()) * ((glm::mat3)modelTransform)));
                 glUniformMatrix3fv(shader->uniformLocationNormal, 1, GL_FALSE, glm::value_ptr(normalMatrix));
             }
             if (shader->uniformLocationViewport != -1){
-                glm::vec4 viewport((float)camera.viewportWidth,(float)camera.viewportHeight,(float)camera.viewportX,(float)camera.viewportY);
+                glm::vec4 viewport((float)viewportSize.x,(float)viewportSize.y,(float)viewportOffset.x,(float)viewportOffset.y);
                 glUniform4fv(shader->uniformLocationViewport, 1, glm::value_ptr(viewport));
             }
             shader->setLights(worldLights, camera.getViewTransform());
@@ -204,5 +218,4 @@ namespace sre {
 
         return res;
     }
-
 }

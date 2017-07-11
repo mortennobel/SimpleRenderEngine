@@ -84,10 +84,6 @@ namespace sre {
         instance = nullptr;
     }
 
-    RenderPass::RenderPassBuilder Renderer::createRenderPass(){
-        return RenderPass::RenderPassBuilder(&renderStats);
-    }
-
     void Renderer::swapWindow() {
         if (RenderPass::instance){
             RenderPass::instance->finish();

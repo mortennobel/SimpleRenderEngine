@@ -524,7 +524,7 @@ namespace sre {
         this->vertexShaderStr = R"(#version 140
 in vec3 position;
 in vec3 normal;
-in vec2 uv;
+in vec4 uv;
 out vec3 vNormal;
 out vec2 vUV;
 out vec3 vEyePos;
@@ -538,7 +538,7 @@ void main(void) {
     vec4 eyePos = g_view * g_model * vec4(position,1.0);
     gl_Position = g_projection * eyePos;
     vNormal = normalize(g_normal * normal);
-    vUV = uv;
+    vUV = uv.xy;
     vEyePos = eyePos.xyz;
 }
 )";
@@ -651,7 +651,7 @@ void main(void)
         this->vertexShaderStr = R"(#version 140
         in vec3 position;
         in vec3 normal;
-        in vec2 uv;
+        in vec4 uv;
         out vec2 vUV;
 
         uniform mat4 g_model;
@@ -660,7 +660,7 @@ void main(void)
 
         void main(void) {
             gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
-            vUV = uv;
+            vUV = uv.xy;
         }
         )";
         this->fragmentShaderStr = R"(#version 140
@@ -751,8 +751,7 @@ void main(void)
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceDebugUV() {
         this->vertexShaderStr = R"(#version 140
 in vec3 position;
-in vec3 normal;
-in vec2 uv;
+in vec4 uv;
 out vec2 vUV;
 
 uniform mat4 g_model;
@@ -761,7 +760,7 @@ uniform mat4 g_projection;
 
 void main(void) {
     gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
-    vUV = uv;
+    vUV = uv.xy;
 }
 )";
         this->fragmentShaderStr = R"(#version 140
@@ -780,7 +779,6 @@ void main(void)
         this->vertexShaderStr = R"(#version 140
 in vec3 position;
 in vec3 normal;
-in vec2 uv;
 out vec3 vNormal;
 
 uniform mat4 g_model;
