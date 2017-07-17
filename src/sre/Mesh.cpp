@@ -7,19 +7,19 @@
 #include "sre/impl/GL.hpp"
 #include <glm/gtc/constants.hpp>
 #include <iostream>
+#include <glm/gtx/string_cast.hpp>
 #include "sre/Renderer.hpp"
 #include "sre/Shader.hpp"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 namespace sre {
-    Mesh::Mesh(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<uint16_t> &indices, MeshTopology meshTopology)
+    Mesh::Mesh(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology)
     {
         if (! Renderer::instance ){
             throw std::runtime_error("Cannot instantiate sre::Mesh before sre::Renderer is created.");
         }
         glGenBuffers(1, &vertexBufferId);
-        glGenBuffers(1, &elementBufferId);
         update(attributesFloat, attributesVec2, attributesVec3,attributesVec4,attributesIVec4, indices, meshTopology);
     }
 
@@ -36,10 +36,11 @@ namespace sre {
         }
 #endif
         glDeleteBuffers(1, &vertexBufferId);
-        glDeleteBuffers(1, &elementBufferId);
+        glDeleteBuffers(elementBufferId.size(), elementBufferId.data());
+
     }
 
-    void Mesh::bind(Shader* shader){
+    void Mesh::bind(Shader* shader, int indexSet){
 #ifndef EMSCRIPTEN
         auto res = shaderToVertexArrayObject.find(shader->shaderProgramId);
         if (res != shaderToVertexArrayObject.end()){
@@ -58,19 +59,19 @@ namespace sre {
         if (indices.empty()){
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         } else {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferId);
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferId[indexSet]);
         }
     }
 
-    MeshTopology Mesh::getMeshTopology() {
-        return meshTopology;
+    MeshTopology Mesh::getMeshTopology(int indexSet) {
+        return meshTopology[indexSet];
     }
 
     int Mesh::getVertexCount() {
         return vertexCount;
     }
 
-    void Mesh::update(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<uint16_t> &indices, MeshTopology meshTopology) {
+    void Mesh::update(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology) {
         this->meshTopology = meshTopology;
 
         vertexCount = 0;
@@ -168,16 +169,36 @@ namespace sre {
         glBufferData(GL_ARRAY_BUFFER, sizeof(float)*interleavedData.size(), interleavedData.data(), GL_STATIC_DRAW);
 
         if (!indices.empty()){
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferId);
-            GLsizeiptr indicesSize = indices.size()*sizeof(uint16_t);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices.data(), GL_STATIC_DRAW);
+            for (int i=0;i<indices.size();i++){
+                unsigned int eBufferId;
+                if (i >= elementBufferId.size()){
+                    glGenBuffers(1, &eBufferId);
+                    elementBufferId.push_back(eBufferId);
+                } else {
+                    eBufferId = elementBufferId[i];
+                }
+                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eBufferId);
+                GLsizeiptr indicesSize = indices[i].size()*sizeof(uint16_t);
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices[i].data(), GL_STATIC_DRAW);
+            }
         }
+
         this->indices = std::move(indices);
         this->attributesFloat = std::move(attributesFloat);
         this->attributesVec2  = std::move(attributesVec2);
         this->attributesVec3  = std::move(attributesVec3);
         this->attributesVec4  = std::move(attributesVec4);
         this->attributesIVec4 = std::move(attributesIVec4);
+
+        boundsMinMax[0] = glm::vec3{std::numeric_limits<float>::max()};
+        boundsMinMax[1] = glm::vec3{-std::numeric_limits<float>::max()};
+        auto pos = this->attributesVec3.find("position");
+        if (pos != this->attributesVec3.end()){
+            for (auto v : pos->second){
+                boundsMinMax[0] = glm::min(boundsMinMax[0], v);
+                boundsMinMax[1] = glm::max(boundsMinMax[1], v);
+            }
+        }
     }
 
     void Mesh::setVertexAttributePointers(Shader* shader) {
@@ -248,8 +269,8 @@ namespace sre {
         return res;
     }
 
-    std::vector<uint16_t> Mesh::getIndices() {
-        return indices;
+    std::vector<uint16_t> Mesh::getIndices(int indexSet) {
+        return indices.at(indexSet);
     }
 
     Mesh::MeshBuilder Mesh::update() {
@@ -313,6 +334,10 @@ namespace sre {
         return res;
     }
 
+    int Mesh::getIndexSets() {
+        return indices.size();
+    }
+
     Mesh::MeshBuilder &Mesh::MeshBuilder::withPositions(const std::vector<glm::vec3> &vertexPositions) {
         withAttribute("position", vertexPositions);
         return *this;
@@ -339,12 +364,23 @@ namespace sre {
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withMeshTopology(MeshTopology meshTopology) {
-        this->meshTopology = meshTopology;
+        if (this->meshTopology.size()==0){
+            this->meshTopology.push_back({});
+        }
+        this->meshTopology[0] = meshTopology;
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withIndices(const std::vector<uint16_t> &indices) {
-        this->indices = indices;
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withIndices(const std::vector<uint16_t> &indices,MeshTopology meshTopology, int indexSet) {
+        while (indexSet >= this->indices.size()){
+            this->indices.push_back({});
+        }
+        while (indexSet >= this->meshTopology.size()){
+            this->meshTopology.push_back({});
+        }
+
+        this->indices[indexSet] = indices;
+        this->meshTopology[indexSet] = meshTopology;
         return *this;
     }
 

@@ -97,7 +97,7 @@ public:
         ImGui::SliderInt("Grid size",&gridSize,1,BOX_GRID_DIM);
     }
 private:
-    int gridSize = BOX_GRID_DIM;
+    int gridSize = BOX_GRID_DIM/2;
     float eyeRadius = 30;
     float eyeRotation = 0;
     glm::vec3 eyePosition = {0, eyeRadius, 0};

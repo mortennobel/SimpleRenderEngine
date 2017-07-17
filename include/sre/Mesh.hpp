@@ -25,6 +25,8 @@ namespace sre {
      *
      * The number and types of vertex attributes cannot be changed after the mesh has been created. The number of
      * vertices is allow to change.
+     *
+     * Note that each mesh can have multiple index sets associated with it which allows for using multiple materials for rendering.
      */
     class DllExport Mesh : public std::enable_shared_from_this<Mesh> {
     public:
@@ -41,7 +43,8 @@ namespace sre {
             MeshBuilder& withColors(const std::vector<glm::vec4> &colors);                      // Set vertex attribute "colors" of type vec4
             MeshBuilder& withParticleSizes(const std::vector<float> &particleSize);             // Set vertex attribute "particleSize" of type float
             MeshBuilder& withMeshTopology(MeshTopology meshTopology);                           // Defines the meshTopology (default is Triangles)
-            MeshBuilder& withIndices(const std::vector<uint16_t> &indices);                     // Defines the indices (if no indices defined then the vertices are rendered sequeantial)
+            MeshBuilder& withIndices(const std::vector<uint16_t> &indices, MeshTopology meshTopology = MeshTopology::Triangles, int indexSet=0);
+                                                                                                // Defines the indices (if no indices defined then the vertices are rendered sequeantial)
             // custom data layout
             MeshBuilder& withAttribute(std::string name, const std::vector<float> &values);       // Set a named vertex attribute of float
             MeshBuilder& withAttribute(std::string name, const std::vector<glm::vec2> &values);   // Set a named vertex attribute of vec2
@@ -57,8 +60,8 @@ namespace sre {
             std::map<std::string,std::vector<glm::vec3>> attributesVec3;
             std::map<std::string,std::vector<glm::vec4>> attributesVec4;
             std::map<std::string,std::vector<glm::i32vec4>> attributesIVec4;
-            MeshTopology meshTopology = MeshTopology::Triangles;
-            std::vector<uint16_t> indices;
+            std::vector<MeshTopology> meshTopology = {MeshTopology::Triangles};
+            std::vector<std::vector<uint16_t>> indices;
             Mesh *updateMesh = nullptr;
             friend class Mesh;
         };
@@ -67,8 +70,8 @@ namespace sre {
         static MeshBuilder create();                                // Create Mesh using the builder pattern. (Must end with build()).
         MeshBuilder update();                                       // Update the mesh using the builder pattern. (Must end with build()).
 
+
         int getVertexCount();                                       // Number of vertices in mesh
-        MeshTopology getMeshTopology();                             // Mesh topology used
 
         std::vector<glm::vec3> getPositions();                      // Get position vertex attribute
         std::vector<glm::vec3> getNormals();                        // Get normal vertex attribute
@@ -76,14 +79,16 @@ namespace sre {
         std::vector<glm::vec4> getColors();                         // Get color vertex attribute
         std::vector<float> getParticleSizes();                      // Get particle size vertex attribute
 
+        int getIndexSets();                                         // Return the number of index sets
+        MeshTopology getMeshTopology(int indexSet=0);               // Mesh topology used
+        std::vector<uint16_t> getIndices(int indexSet=0);           // Indices used in the mesh (empty array means vertices rendered sequential)
+
         template<typename T>
         inline T get(std::string attributeName);                    // Get the vertex attribute of a given type. Type must be float,glm::vec2,glm::vec3,glm::vec4,glm::i32vec4
 
         std::pair<int,int> getType(const std::string& name);        // return element type, element count
 
         std::vector<std::string> getNames();                        // Names of the vertex attributes
-
-        std::vector<uint16_t> getIndices();                         // Indices used in the mesh (empty array means vertices rendered sequential)
 
         std::array<glm::vec3,2> getBoundsMinMax();                  // get the local axis aligned bounding box (AABB)
 
@@ -96,16 +101,16 @@ namespace sre {
             int attributeType;
         };
 
-        Mesh       (std::map<std::string,std::vector<float>>& attributesFloat, std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string, std::vector<glm::vec3>>& attributesVec3, std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::i32vec4>>& attributesIVec4, const std::vector<uint16_t> &indices, MeshTopology meshTopology);
-        void update(std::map<std::string,std::vector<float>>& attributesFloat, std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string, std::vector<glm::vec3>>& attributesVec3, std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::i32vec4>>& attributesIVec4, const std::vector<uint16_t> &indices, MeshTopology meshTopology);
+        Mesh       (std::map<std::string,std::vector<float>>& attributesFloat, std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string, std::vector<glm::vec3>>& attributesVec3, std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::i32vec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology);
+        void update(std::map<std::string,std::vector<float>>& attributesFloat, std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string, std::vector<glm::vec3>>& attributesVec3, std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::i32vec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology);
 
         int totalBytesPerVertex = 0;
 
         void setVertexAttributePointers(Shader* shader);
-        MeshTopology meshTopology;
+        std::vector<MeshTopology> meshTopology;
         unsigned int vertexBufferId;
         std::map<unsigned int,unsigned int> shaderToVertexArrayObject;
-        unsigned int elementBufferId;
+        std::vector<unsigned int> elementBufferId;
         int vertexCount;
 
         std::map<std::string,Attribute> attributeByName;
@@ -115,11 +120,11 @@ namespace sre {
         std::map<std::string,std::vector<glm::vec4>> attributesVec4;
         std::map<std::string,std::vector<glm::i32vec4>> attributesIVec4;
 
-        std::vector<uint16_t> indices;
+        std::vector<std::vector<uint16_t>> indices;
 
         std::array<glm::vec3,2> boundsMinMax;
 
-        void bind(Shader* shader);
+        void bind(Shader* shader, int indexSet);
 
         friend class RenderPass;
     };

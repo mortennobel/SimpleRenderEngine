@@ -138,18 +138,19 @@ namespace sre {
         if (material != lastBoundMaterial){
             renderStats->stateChangesMaterial++;
             lastBoundMaterial = material;
+            lastBoundMesh = nullptr; // force mesh to rebind
             material->bind();
         }
         if (mesh != lastBoundMesh){
             renderStats->stateChangesMesh++;
             lastBoundMesh = mesh;
-            mesh->bind(shader);
+            mesh->bind(shader,0);
         }
 
-        int indexCount = (int) mesh->getIndices().size();
-        if (indexCount == 0){
+        if (mesh->getIndexSets() == 0){
             glDrawArrays((GLenum) mesh->getMeshTopology(), 0, mesh->getVertexCount());
         } else {
+            GLsizei indexCount = (GLsizei) mesh->getIndices(0).size();
             glDrawElements((GLenum) mesh->getMeshTopology(), indexCount, GL_UNSIGNED_SHORT, 0);
         }
     }
@@ -240,5 +241,44 @@ namespace sre {
         }
 
         return res;
+    }
+
+    void RenderPass::draw(std::shared_ptr<Mesh> &meshPtr, glm::mat4 modelTransform,
+                          std::vector<std::shared_ptr<Material>> &materials) {
+        assert(instance);
+        if (materials.size() == 1){
+            draw(meshPtr, modelTransform, materials[0]);
+            return;
+        }
+        assert(meshPtr->indices.size() == materials.size());
+
+        // todo optimize (mesh vbo only need to be bound once)
+        for (int i=0;i<materials.size();i++){
+            auto material_ptr = materials[i];
+            Mesh* mesh = meshPtr.get();
+            auto material = material_ptr.get();
+            auto shader = material->getShader().get();
+            assert(mesh  != nullptr);
+            renderStats->drawCalls++;
+            setupShader(modelTransform, shader);
+            if (material != lastBoundMaterial){
+                renderStats->stateChangesMaterial++;
+                lastBoundMaterial = material;
+                lastBoundMesh = nullptr; // force mesh to rebind
+                material->bind();
+            }
+            if (mesh != lastBoundMesh){
+                renderStats->stateChangesMesh++;
+                lastBoundMesh = mesh;
+                mesh->bind(shader,i);
+            }
+
+            GLsizei indexCount = (int) mesh->getIndices(i).size();
+            glDrawElements((GLenum) mesh->getMeshTopology(i), indexCount, GL_UNSIGNED_SHORT, 0);
+        }
+    }
+
+    void RenderPass::finishGPUCommandBuffer() {
+        glFinish();
     }
 }

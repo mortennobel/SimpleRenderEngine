@@ -78,14 +78,20 @@ namespace sre {
                                                                     // Draws worldspace lines.
                                                                     // Note that this member function is not expected to perform as efficient as draw()
 
-
         void draw(std::shared_ptr<Mesh>& mesh, glm::mat4 modelTransform, std::shared_ptr<Material>& material);
                                                                     // Draws a mesh using the given transform and material.
-                                                                    // The  modelTransform defines the modelToWorld transformation
+                                                                    // The modelTransform defines the modelToWorld transformation
+
+        void draw(std::shared_ptr<Mesh>& mesh, glm::mat4 modelTransform, std::vector<std::shared_ptr<Material>>& materials);
+                                                                    // Draws a mesh using the given transform and materials.
+                                                                    // The modelTransform defines the modelToWorld transformation
+                                                                    // The number of materials must match the size of index sets in the model
 
         std::vector<glm::vec4> readPixels(unsigned int x, unsigned int y, unsigned int width = 1, unsigned int height = 1);
                                                                     // Reads pixel(s) from the current framebuffer
                                                                     // The defined rectable must be within the size of the current framebuffer
+
+        void finishGPUCommandBuffer();                      // GPU command buffer (must be called when profiling GPU time - should not be called when not profiling)
     private:
         static void finish();
 

@@ -47,13 +47,11 @@ namespace sre {
         static constexpr int maxSceneLights = 4;            // Maximum of scene lights
         static constexpr int sre_version_major = 0;
         static constexpr int sre_version_minor = 9;
-        static constexpr int sre_version_point = 0;
+        static constexpr int sre_version_point = 1;
 
         glm::ivec2 getWindowSize();                         // Return the current size of the window
 
         void swapWindow();                                  // Update window with OpenGL rendering by swapping buffers
-
-        void finishGPUCommandBuffer();                      // GPU command buffer (must be called when profiling GPU time - should not be called when not profiling)
 
         const RenderStats& getRenderStats();                // Return stats of the last rendered frame
                                                             // RenderStats only includes data maintained by sre (imgui calls are not included)

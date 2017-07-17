@@ -100,10 +100,6 @@ namespace sre {
 #endif
     }
 
-    void Renderer::finishGPUCommandBuffer() {
-        glFinish();
-    }
-
     const RenderStats &Renderer::getRenderStats() {
         return renderStatsLast;
     }

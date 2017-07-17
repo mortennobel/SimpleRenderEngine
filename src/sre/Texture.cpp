@@ -176,12 +176,14 @@ namespace sre {
         return *this;
     }
 
-    Texture::TextureBuilder &Texture::TextureBuilder::withFile(const char *filename) {
-        auto fileData = readAllBytes(filename);
+    Texture::TextureBuilder &Texture::TextureBuilder::withFile(std::string filename) {
+        auto fileData = readAllBytes(filename.c_str());
         GLenum format;
         int bytesPerPixel;
         fileData = loadFileFromMemory(fileData.data(), (int) fileData.size(), format, width, height,bytesPerPixel);
+        std::cout << "File data "<<filename<<" "<<fileData.size()<<std::endl;
         this->target = GL_TEXTURE_2D;
+
         GLint mipmapLevel = 0;
 #ifdef EMSCRIPTEN
         GLint internalFormat = (bytesPerPixel==4?GL_RGBA:GL_RGB);
@@ -189,6 +191,13 @@ namespace sre {
         GLint internalFormat = bytesPerPixel==4?GL_SRGB_ALPHA:GL_SRGB;
 #endif
         GLint border = 0;
+
+        if (!isPowerOfTwo(width) || !isPowerOfTwo(height)){
+            std::cout << "Texture "<< filename<<" is not power of two (was "<< width<<"x"<<height<<"). filter sampling and mipmapping disabled "<<std::endl;
+            filterSampling = false;
+            generateMipmaps = false;
+        }
+
         GLenum type = GL_UNSIGNED_BYTE;
         checkGLError();
         glBindTexture(target, textureId);
@@ -198,8 +207,8 @@ namespace sre {
         return *this;
     }
 
-    Texture::TextureBuilder &Texture::TextureBuilder::withFileCubemap(const char *filename, TextureCubemapSide side){
-        auto fileData = readAllBytes(filename);
+    Texture::TextureBuilder &Texture::TextureBuilder::withFileCubemap(std::string filename, TextureCubemapSide side){
+        auto fileData = readAllBytes(filename.c_str());
         GLenum format;
         int bytesPerPixel;
         fileData = loadFileFromMemory(fileData.data(), (int) fileData.size(), format, width, height,bytesPerPixel, false);

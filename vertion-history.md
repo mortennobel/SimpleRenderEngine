@@ -1,5 +1,6 @@
 ## Version history
 
+ * 0.9.1 Multiple materials per draw call and multiple index-sets. ModelImporter (Obj). 
  * 0.9.0 Framebuffer objects. RenderPass::readPixels(). Simplified Camera projection. RenderPass::create() (More consistent use of builder pattern)
  * 0.8.0 Resource memory management using shared_ptr. Materials created by Shader.createMaterial().
  * 0.7.1 sRGB. Improve MSVC improvement. Improve builder pattern.

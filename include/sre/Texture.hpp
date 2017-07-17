@@ -41,8 +41,8 @@ public:
         TextureBuilder& withGenerateMipmaps(bool enable);
         TextureBuilder& withFilterSampling(bool enable);                                    // if true texture sampling is filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
         TextureBuilder& withWrappedTextureCoordinates(bool enable);
-        TextureBuilder& withFileCubemap(const char *filename, TextureCubemapSide side);     // Must define a cubemap for each side
-        TextureBuilder& withFile(const char *filename);                                     // Currently only PNG files supported
+        TextureBuilder& withFileCubemap(std::string filename, TextureCubemapSide side);     // Must define a cubemap for each side
+        TextureBuilder& withFile(std::string filename);                                     // Currently only PNG files supported
         TextureBuilder& withRGBData(const char* data, int width, int height);               // data may be null (for a uninitialized texture)
         TextureBuilder& withRGBAData(const char* data, int width, int height);              // data may be null (for a uninitialized texture)
         TextureBuilder& withWhiteData(int width=2, int height=2);

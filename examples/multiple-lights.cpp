@@ -123,7 +123,6 @@ class MultipleLightsExample {
             ImGui::ColorEdit3("Color", &(color.x));
             ImGui::TreePop();
         }
-
     }
 
     void drawCross(RenderPass& rp, glm::vec3 p, float size = 0.3f){
