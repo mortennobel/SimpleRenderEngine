@@ -420,7 +420,7 @@ namespace sre {
     }
 
     Uniform Shader::getUniformType(const std::string &name) {
-		for (auto i = uniforms.begin(); i != uniforms.end(); i++) {
+		for (auto i = uniforms.cbegin(); i != uniforms.cend(); i++) {
 			if (i->name.compare(name) == 0)
 				return *i;
 		}
@@ -650,9 +650,10 @@ void main(void)
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceUnlitSprite() {
         this->vertexShaderStr = R"(#version 140
         in vec3 position;
-        in vec3 normal;
         in vec4 uv;
+        in vec4 color;
         out vec2 vUV;
+        out vec4 vColor;
 
         uniform mat4 g_model;
         uniform mat4 g_view;
@@ -661,18 +662,19 @@ void main(void)
         void main(void) {
             gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
             vUV = uv.xy;
+            vColor = color;
         }
         )";
         this->fragmentShaderStr = R"(#version 140
         out vec4 fragColor;
         in vec2 vUV;
+        in vec4 vColor;
 
-        uniform vec4 color;
         uniform sampler2D tex;
 
         void main(void)
         {
-            fragColor = color * texture(tex, vUV);
+            fragColor = vColor * texture(tex, vUV);
         }
         )";
         return *this;

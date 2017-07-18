@@ -281,4 +281,13 @@ namespace sre {
     void RenderPass::finishGPUCommandBuffer() {
         glFinish();
     }
+
+    void RenderPass::draw(std::shared_ptr<SpriteBatch>& spriteBatch, glm::mat4 modelTransform) {
+        if (spriteBatch == nullptr) return;
+
+        for (int i=0;i<spriteBatch->materials.size();i++){
+            draw(spriteBatch->spriteMeshes[i], modelTransform, spriteBatch->materials[i]);
+        }
+    }
+
 }

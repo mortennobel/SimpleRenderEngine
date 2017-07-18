@@ -22,7 +22,7 @@ namespace sre {
 
     void WorldLights::removeLight(int index){
         assert(index < lights.size());
-        lights.erase(lights.begin()+index);
+        lights.erase(lights.cbegin()+index);
     }
 
     Light* WorldLights::getLight(int index){

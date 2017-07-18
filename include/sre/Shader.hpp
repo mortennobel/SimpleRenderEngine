@@ -60,8 +60,8 @@ namespace sre {
      *      - tex (shared_ptr<Texture>) (default white texture)
      * - Shader::getUnlitSprite()
      *    - Similar to getUnlit() but with no depth write
+     *    - color (vec4) (vertex attribute)
      *    - Parameters:
-     *      - color (vec4) (default white)
      *      - tex (shared_ptr<Texture>) (default white texture)
      * - Shader::getStandardParticles()
      *    - Similar to getUnlitSprite() but with no depth write

@@ -25,7 +25,7 @@ namespace sre{
      * - wrap texture coordinates: if enabled the texture is repeated when sampling out the 0.0 .. 1.0 values
      * - filter sampling: if enabled the texture sampling will use interpolation to find the colors between pixel centers
      */
-class DllExport Texture {
+class DllExport Texture : public std::enable_shared_from_this<Texture> {
 public:
     enum class TextureCubemapSide{
         PositiveX,

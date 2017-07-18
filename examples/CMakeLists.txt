@@ -13,6 +13,7 @@ add_executable(SRE-Picking picking.cpp)
 add_executable(SRE-RenderToTexture render-to-texture.cpp)
 add_executable(SRE-ObjViewer obj-viewer.cpp)
 add_executable(SRE-Hello-Engine-Raw hello-engine-raw.cpp)
+add_executable(SRE-Sprite sprite-example.cpp)
 
 target_link_libraries(SRE-Spinning-Cube ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Multiple-Lights ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
@@ -28,6 +29,7 @@ target_link_libraries(SRE-Picking ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIB
 target_link_libraries(SRE-RenderToTexture ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-ObjViewer ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Hello-Engine-Raw ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
+target_link_libraries(SRE-Sprite ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 
 file(COPY ../examples/data DESTINATION Debug)
 file(COPY ../examples/data DESTINATION Release)

@@ -25,6 +25,7 @@ namespace {
 #else
             '/';
 #endif
+
     const char kNonPathSeparator =
 #ifndef _WIN32
             '\\';
@@ -388,7 +389,7 @@ sre::ModelImporter::importObj(std::string path, std::string filename, std::vecto
 
     std::vector<ObjInterleavedIndex> indices;
     ObjInterleavedIndex * currentIndex = &indices.back();
-    auto materialChange = materialChanges.begin();
+    auto materialChange = materialChanges.cbegin();
     bool includeTextureCoordinates = textureCoords.size()>0;
     bool includeNormals = normals.size()>0;
     ObjVertexHashTable usedVertices{42,ObjVertexHash{}, ObjVertexEqual{}};

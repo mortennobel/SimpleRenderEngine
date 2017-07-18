@@ -10,6 +10,7 @@
 #include <string>
 
 #include "sre/impl/Export.hpp"
+#include "SpriteBatch.hpp"
 
 namespace sre {
     class Renderer;
@@ -87,6 +88,8 @@ namespace sre {
                                                                     // The modelTransform defines the modelToWorld transformation
                                                                     // The number of materials must match the size of index sets in the model
 
+        void draw(std::shared_ptr<SpriteBatch>& spriteBatch, glm::mat4 modelTransform = glm::mat4(1));
+
         std::vector<glm::vec4> readPixels(unsigned int x, unsigned int y, unsigned int width = 1, unsigned int height = 1);
                                                                     // Reads pixel(s) from the current framebuffer
                                                                     // The defined rectable must be within the size of the current framebuffer
@@ -118,4 +121,6 @@ namespace sre {
 
         friend class Renderer;
     };
+
+
 }

@@ -61,7 +61,7 @@ namespace sre {
                 return glm::ortho<float>	(-sizeX, sizeX, -projectionValue.orthographic.orthographicSize, projectionValue.orthographic.orthographicSize, projectionValue.orthographic.nearPlane, projectionValue.orthographic.farPlane);
             }
             case ProjectionType::OrthographicWindow:
-                return glm::ortho<float>	(0, 0, viewportSize.x, viewportSize.y, 1.0f,-1.0f);
+                return glm::ortho<float>	(0, viewportSize.x, 0, viewportSize.y, 1.0f,-1.0f);
             case ProjectionType::Perspective:
                 return glm::perspectiveFov<float>(projectionValue.perspective.fieldOfViewY,
                                                   viewportSize.x,
