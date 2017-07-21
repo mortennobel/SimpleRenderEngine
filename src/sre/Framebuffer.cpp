@@ -19,7 +19,7 @@ namespace sre{
     }
 
     Framebuffer::~Framebuffer() {
-        if (renderBufferDepth){
+        if (renderBufferDepth != 0){
             glDeleteRenderbuffers(1, &renderBufferDepth);
         }
         glDeleteFramebuffers(1,&frameBufferObjectId);

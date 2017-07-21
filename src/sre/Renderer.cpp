@@ -14,16 +14,8 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #include "sre/Log.hpp"
 
 #include "sre/Renderer.hpp"
-#include <cassert>
-#include "sre/Shader.hpp"
-
-#include "sre/Mesh.hpp"
 
 #include "sre/impl/GL.hpp"
-#include <iostream>
-#include <algorithm>
-#include <string>
-#include <sre/imgui_sre.hpp>
 
 namespace sre {
     Renderer* Renderer::instance = nullptr;

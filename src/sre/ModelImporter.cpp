@@ -43,9 +43,12 @@ namespace {
         {
             std::string contents;
             in.seekg(0, std::ios::end);
-            contents.resize(in.tellg());
-            in.seekg(0, std::ios::beg);
-            in.read(&contents[0], contents.size());
+            auto size = in.tellg();
+            if (size>0){
+                contents.resize((string::size_type)size);
+                in.seekg(0, std::ios::beg);
+                in.read(&contents[0], contents.size());
+            }
             in.close();
             return contents;
         }
@@ -60,7 +63,7 @@ namespace {
         return path;
     }
 
-    std::string replaceAll( string &s, string search, string replace ) {
+    std::string replaceAll( string &s, const string& search, const string& replace ) {
         for( size_t pos = 0; ; pos += replace.length() ) {
             // Locate the substring to replace
             pos = s.find( search, pos );
@@ -84,7 +87,7 @@ namespace {
         vec4 res{0,0,0,1};
         for (int i=0;i<4;i++){
             if (i+1 < tokens.size()){
-                res[i] = atof(tokens[i+1].c_str());
+                res[i] = (float)atof(tokens[i+1].c_str());
             }
         }
         return res;
@@ -94,7 +97,7 @@ namespace {
         vec3 res{0,0,0};
         for (int i=0;i<3;i++){
             if (i+1 < tokens.size()){
-                res[i] = atof(tokens[i+1].c_str());
+                res[i] = (float)atof(tokens[i+1].c_str());
             }
         }
         return res;
@@ -212,9 +215,9 @@ namespace {
             vector<string> tokens;
             while (likeTokensizer.good()) {
                 likeTokensizer.getline(buffer2, bufferSize, ' ');
-                tokens.push_back(buffer2);
+                tokens.emplace_back(buffer2);
             }
-            if (tokens.size()==0){
+            if (tokens.empty()){
                 continue;
             }
             if (tokens[0] == "newmtl"){
@@ -222,7 +225,7 @@ namespace {
                 ObjMaterial material{replaceAll(tokens[1],"\r",""),zero,zero,zero,50,1};
                 materials.push_back(material);
             } else {
-                if (materials.size()==0){
+                if (materials.empty()){
                     continue;
                 }
                 ObjMaterial & currentMat = materials.back();
@@ -287,7 +290,7 @@ namespace {
         std::vector<uint16_t> vertexIndices;
     };
 
-    shared_ptr<sre::Material> createMaterial(std::string materialName, const std::vector<ObjMaterial>& matVector, std::string path) {
+    shared_ptr<sre::Material> createMaterial(const std::string& materialName, const std::vector<ObjMaterial>& matVector, std::string path) {
         const ObjMaterial* foundMat = nullptr;
         for (auto & v : matVector){
             if (v.name == materialName){
@@ -320,9 +323,7 @@ std::shared_ptr<sre::Mesh>
 sre::ModelImporter::importObj(std::string path, std::string filename, std::vector<std::shared_ptr<Material>>& outModelMaterials) {
     path = fixPathEnd(path);
     string file = getFileContents(path+filename);
-    std::function<std::string (std::string)>  materialLoader = [&](string filename){
-        return getFileContents(path+filename);
-    };
+
     std::vector<glm::vec3> vertexPositions;
     std::vector<glm::vec4> textureCoords;
     std::vector<glm::vec3> normals;
@@ -349,9 +350,9 @@ sre::ModelImporter::importObj(std::string path, std::string filename, std::vecto
                 }
 
             }
-            tokens.push_back(buffer2);
+            tokens.emplace_back(buffer2);
         }
-        if (tokens.size()==0){
+        if (tokens.empty()){
             continue;
         }
         int currentIndex = static_cast<int>(faces.size()) + 1;
@@ -392,8 +393,8 @@ sre::ModelImporter::importObj(std::string path, std::string filename, std::vecto
     std::vector<ObjInterleavedIndex> indices;
     ObjInterleavedIndex * currentIndex = &indices.back();
     auto materialChange = materialChanges.cbegin();
-    bool includeTextureCoordinates = textureCoords.size()>0;
-    bool includeNormals = normals.size()>0;
+    bool includeTextureCoordinates = !textureCoords.empty();
+    bool includeNormals = !normals.empty();
     ObjVertexHashTable usedVertices{42,ObjVertexHash{}, ObjVertexEqual{}};
     std::vector<glm::vec3> finalPositions;
     std::vector<glm::vec4> finalTextureCoordinates;
@@ -445,7 +446,7 @@ sre::ModelImporter::importObj(std::string path, std::string filename, std::vecto
                     }
                     vertexCount++;
                 }
-                currentIndex->vertexIndices.push_back(vertexIndex);
+                currentIndex->vertexIndices.emplace_back(vertexIndex);
             }
         }
     }

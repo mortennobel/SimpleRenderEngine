@@ -37,7 +37,7 @@ namespace sre {
         }
 #endif
         glDeleteBuffers(1, &vertexBufferId);
-        glDeleteBuffers(elementBufferId.size(), elementBufferId.data());
+        glDeleteBuffers((GLsizei)elementBufferId.size(), elementBufferId.data());
 
     }
 
@@ -365,8 +365,8 @@ namespace sre {
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withMeshTopology(MeshTopology meshTopology) {
-        if (this->meshTopology.size()==0){
-            this->meshTopology.push_back({});
+        if (this->meshTopology.empty()){
+            this->meshTopology.emplace_back();
         }
         this->meshTopology[0] = meshTopology;
         return *this;
@@ -374,10 +374,10 @@ namespace sre {
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withIndices(const std::vector<uint16_t> &indices,MeshTopology meshTopology, int indexSet) {
         while (indexSet >= this->indices.size()){
-            this->indices.push_back({});
+            this->indices.emplace_back();
         }
         while (indexSet >= this->meshTopology.size()){
-            this->meshTopology.push_back({});
+            this->meshTopology.emplace_back();
         }
 
         this->indices[indexSet] = indices;
@@ -394,11 +394,12 @@ namespace sre {
             updateMesh->update(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology);
             renderStats.meshBytes += updateMesh->getDataSize();
             return updateMesh->shared_from_this();
-        } else {
-            auto res = new Mesh(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology);
-            renderStats.meshCount++;
-            return std::shared_ptr<Mesh>(res);
         }
+
+        auto res = new Mesh(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology);
+        renderStats.meshCount++;
+        return std::shared_ptr<Mesh>(res);
+
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withSphere(int stacks, int slices, float radius) {
