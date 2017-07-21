@@ -4,6 +4,7 @@
 
 #include "sre/Log.hpp"
 #include <iostream>
+#include <cstdarg>
 
 namespace sre{
     constexpr int maxErrorSize = 255;

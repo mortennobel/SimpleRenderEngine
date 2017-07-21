@@ -12,6 +12,7 @@
 
 #include "sre/impl/CPPShim.hpp"
 #include <string>
+#include <memory>
 #include <vector>
 #include <map>
 

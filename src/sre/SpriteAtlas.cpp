@@ -3,6 +3,7 @@
 //
 
 #include "sre/SpriteAtlas.hpp"
+#include "sre/Sprite.hpp"
 #include "sre/Texture.hpp"
 #include "sre/Log.hpp"
 #include "picojson.h"
@@ -17,21 +18,22 @@
 
 using namespace std;
 
-sre::SpriteAtlas::SpriteAtlas(std::map<std::string, Sprite>&& sprites, std::shared_ptr<Texture> texture) {
+namespace sre{
+SpriteAtlas::SpriteAtlas(std::map<std::string, Sprite>&& sprites, std::shared_ptr<Texture> texture) {
     for (auto & s : sprites){
         this->sprites.insert({s.first,s.second});
     }
     this->texture = texture;
 }
 
-std::shared_ptr<sre::SpriteAtlas> sre::SpriteAtlas::create(std::string jsonFile, std::string imageFile) {
+std::shared_ptr<SpriteAtlas> SpriteAtlas::create(std::string jsonFile, std::string imageFile) {
     picojson::value v;
     std::ifstream t(jsonFile);
     t >> v;
     std::string err = picojson::get_last_error();
     if (err != ""){
         cerr << err << endl;
-        return {};
+        return std::shared_ptr<SpriteAtlas>(nullptr);
     }
     std::map<std::string, Sprite> sprites;
     picojson::array list = v.get("frames").get<picojson::array>();
@@ -52,10 +54,10 @@ std::shared_ptr<sre::SpriteAtlas> sre::SpriteAtlas::create(std::string jsonFile,
         Sprite sprite({x,y},{w,h},{px,py},texture.get());
         sprites.emplace(std::pair<std::string, Sprite>(name, std::move(sprite)));
     }
-    return std::shared_ptr<sre::SpriteAtlas>(new sre::SpriteAtlas(std::move(sprites), texture));
+    return std::shared_ptr<SpriteAtlas>(new SpriteAtlas(std::move(sprites), texture));
 }
 
-std::vector<std::string> sre::SpriteAtlas::getNames() {
+std::vector<std::string> SpriteAtlas::getNames() {
     std::vector<std::string> res;
     for (auto & e : sprites){
         res.push_back(e.first);
@@ -63,11 +65,12 @@ std::vector<std::string> sre::SpriteAtlas::getNames() {
     return res;
 }
 
-sre::Sprite sre::SpriteAtlas::get(std::string name) {
+Sprite SpriteAtlas::get(std::string name) {
     if (sprites.find(name) == sprites.end()){
         LOG_WARNING("Cannot find sprite %s in spriteatlas",name.c_str());
         return {};
     }
-    sre::Sprite val = sprites[name];
+    Sprite val = sprites[name];
     return val;
+}
 }

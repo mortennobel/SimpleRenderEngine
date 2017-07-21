@@ -8,6 +8,7 @@
 #include <cstring>
 #include <sstream>
 #include <cerrno>
+#include <cctype>
 #include <unordered_map>
 #include "sre/Mesh.hpp"
 #include "sre/Log.hpp"
@@ -343,7 +344,7 @@ sre::ModelImporter::importObj(std::string path, std::string filename, std::vecto
         while (likeTokensizer.good()) {
             likeTokensizer.getline(buffer2, bufferSize, ' ');
             for (int i=0;i<bufferSize;i++){
-                if (std::isspace(buffer2[i])){
+                if (isspace(buffer2[i])){
                     buffer2[i] = '\0';
                 }
 

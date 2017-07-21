@@ -10,7 +10,8 @@ namespace sre {
     /**
      * Contains information about a Light source
      */
-    struct DllExport Light {
+	class DllExport Light {
+	public:
         class DllExport LightBuilder {
         public:
             ~LightBuilder();

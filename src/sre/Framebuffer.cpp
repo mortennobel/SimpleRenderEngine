@@ -37,7 +37,7 @@ namespace sre{
         using namespace std;
         GLenum frameBufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (frameBufferStatus != GL_FRAMEBUFFER_COMPLETE) {
-            char array[20];
+            char array[50];
             const char* errorMsg = nullptr;
             switch (frameBufferStatus) {
                 case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
@@ -72,7 +72,7 @@ namespace sre{
                     break;
 #endif
                 default:
-                    sprintf(array, "Unknown error code: %i",frameBufferStatus);
+                    sprintf_s(array,sizeof(array), "Unknown error code: %i",frameBufferStatus);
                     errorMsg = array;
                     break;
             }
