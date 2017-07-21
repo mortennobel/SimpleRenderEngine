@@ -4,7 +4,9 @@
 #include "sre/Material.hpp"
 #include "sre/impl/GL.hpp"
 #include <glm/gtc/type_ptr.hpp>
-#include <sre/Renderer.hpp>
+#include "sre/Renderer.hpp"
+#include "sre/Log.hpp"
+
 
 namespace sre{
 
@@ -80,7 +82,7 @@ namespace sre{
                 }
                 break;
                 default:
-                    std::cerr<<"Unsupported type"<<std::endl;
+                    LOG_ERROR("Unsupported uniform type: %i. Only Vec4, Texture, TextureCube and Float is supported.", (int)u.type);
                     break;
             }
         }

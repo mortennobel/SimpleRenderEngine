@@ -4,6 +4,7 @@
 
 #include "sre/SpriteAtlas.hpp"
 #include "sre/Texture.hpp"
+#include "sre/Log.hpp"
 #include "picojson.h"
 
 #include <fstream>
@@ -64,15 +65,9 @@ std::vector<std::string> sre::SpriteAtlas::getNames() {
 
 sre::Sprite sre::SpriteAtlas::get(std::string name) {
     if (sprites.find(name) == sprites.end()){
-        for (auto & s : sprites){
-            cout << s.first<< " "<<(name == s.first)<<endl;
-        }
-        cout << "Not found "<<name<<" "<<sprites.size()<<endl;
+        LOG_WARNING("Cannot find sprite %s in spriteatlas",name.c_str());
+        return {};
     }
     sre::Sprite val = sprites[name];
-    sre::Sprite& val2 = sprites[name];
-    if (val.spriteSize.x==0){
-        cout << "Val "<<glm::to_string(val.spriteSize)<<endl;
-    }
     return val;
 }

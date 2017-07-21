@@ -5,6 +5,7 @@
 #include <chrono>
 #include <iostream>
 #include <sre/imgui_sre.hpp>
+#include <sre/Log.hpp>
 #include "sre/SDLRenderer.hpp"
 #define SDL_MAIN_HANDLED
 
@@ -23,47 +24,49 @@ void GLAPIENTRY openglCallbackFunction(GLenum source,
 	const GLchar* message,
 	const void* userParam) {
 	using namespace std;
-
-	cout << "---------------------opengl-callback-start------------" << endl;
-	cout << "message: " << message << endl;
-	cout << "type: ";
+	const char* typeStr;
 	switch (type) {
 	case GL_DEBUG_TYPE_ERROR:
-		cout << "ERROR";
+		typeStr = "ERROR";
 		break;
 	case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR:
-		cout << "DEPRECATED_BEHAVIOR";
+		typeStr = "DEPRECATED_BEHAVIOR";
 		break;
 	case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR:
-		cout << "UNDEFINED_BEHAVIOR";
+		typeStr = "UNDEFINED_BEHAVIOR";
 		break;
 	case GL_DEBUG_TYPE_PORTABILITY:
-		cout << "PORTABILITY";
+		typeStr = "PORTABILITY";
 		break;
 	case GL_DEBUG_TYPE_PERFORMANCE:
-		cout << "PERFORMANCE";
+		typeStr = "PERFORMANCE";
 		break;
 	case GL_DEBUG_TYPE_OTHER:
-		cout << "OTHER";
+	default:
+		typeStr = "OTHER";
 		break;
 		}
-	cout << endl;
-
-	cout << "id: " << id << endl;
-	cout << "severity: ";
+	const char* severityStr;
 	switch (severity) {
 	case GL_DEBUG_SEVERITY_LOW:
-		cout << "LOW";
+		severityStr = "LOW";
 		break;
 	case GL_DEBUG_SEVERITY_MEDIUM:
-		cout << "MEDIUM";
+		severityStr = "MEDIUM";
 		break;
 	case GL_DEBUG_SEVERITY_HIGH:
-		cout << "HIGH";
+		severityStr = "HIGH";
 		break;
 	}
-	cout << endl;
-	cout << "---------------------opengl-callback-end--------------" << endl;
+    LOG_ERROR("---------------------opengl-callback-start------------\n"
+              "message: %s\n"
+              "type: %s\n"
+              "id: %i\n"
+              "severity: %s\n"
+              "---------------------opengl-callback-end--------------"
+              ,message,typeStr, id ,severityStr
+    );
+
 		}
 #endif
 
@@ -195,6 +198,12 @@ namespace sre{
 
 #ifdef SRE_DEBUG_CONTEXT
 			if (glDebugMessageCallback) {
+			GLenum err = glewInit();
+		if (GLEW_OK != err)
+		{
+			/* Problem: glewInit failed, something is seriously wrong. */
+			LOG_INFO("Register OpenGL debug callback ");
+
 				std::cout << "Register OpenGL debug callback " << std::endl;
 				glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
 				glDebugMessageCallback(openglCallbackFunction, nullptr);
@@ -207,7 +216,7 @@ namespace sre{
 					true);
 			}
 			else
-				std::cout << "glDebugMessageCallback not available" << std::endl;
+			    LOG_INFO("glDebugMessageCallback not available");
 #endif
 #ifndef EMSCRIPTEN
             glEnable(GL_FRAMEBUFFER_SRGB);
@@ -217,7 +226,7 @@ namespace sre{
 
     void SDLRenderer::startEventLoop() {
         if (!window){
-            throw std::runtime_error("SDLRenderer::init() not called");
+            LOG_INFO("SDLRenderer::init() not called");
         }
 
         running = true;

@@ -10,6 +10,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include "sre/Renderer.hpp"
 #include "sre/Shader.hpp"
+#include "sre/Log.hpp"
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -17,7 +18,7 @@ namespace sre {
     Mesh::Mesh(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology)
     {
         if (! Renderer::instance ){
-            throw std::runtime_error("Cannot instantiate sre::Mesh before sre::Renderer is created.");
+            LOG_FATAL("Cannot instantiate sre::Mesh before sre::Renderer is created.");
         }
         glGenBuffers(1, &vertexBufferId);
         update(attributesFloat, attributesVec2, attributesVec3,attributesVec4,attributesIVec4, indices, meshTopology);
@@ -590,7 +591,7 @@ namespace sre {
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withAttribute(std::string name, const std::vector<float> &values) {
         if (updateMesh != nullptr && attributesFloat.find(name) == attributesFloat.end()){
-            std::cout << "Cannot change mesh structure. "<<name<<" did not exist in original mesh."<< std::endl;
+            LOG_ERROR("Cannot change mesh structure. %s dis not exist in the original mesh as a float.",name.c_str());
         } else {
             attributesFloat[name] = values;
         }
@@ -599,7 +600,7 @@ namespace sre {
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withAttribute(std::string name, const std::vector<glm::vec2> &values) {
         if (updateMesh != nullptr && attributesVec2.find(name) == attributesVec2.end()){
-            std::cout << "Cannot change mesh structure. "<<name<<" did not exist in original mesh."<< std::endl;
+            LOG_ERROR("Cannot change mesh structure. %s dis not exist in the original mesh as a vec2.",name.c_str());
         } else {
             attributesVec2[name] = values;
         }
@@ -608,7 +609,7 @@ namespace sre {
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withAttribute(std::string name, const std::vector<glm::vec3> &values) {
         if (updateMesh != nullptr && attributesVec3.find(name) == attributesVec3.end()){
-            std::cout << "Cannot change mesh structure. "<<name<<" did not exist in original mesh."<< std::endl;
+            LOG_ERROR("Cannot change mesh structure. %s dis not exist in the original mesh as a vec3.",name.c_str());
         } else {
             attributesVec3[name] = values;
         }
@@ -617,7 +618,7 @@ namespace sre {
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withAttribute(std::string name, const std::vector<glm::vec4> &values) {
         if (updateMesh != nullptr && attributesVec4.find(name) == attributesVec4.end()){
-            std::cout << "Cannot change mesh structure. "<<name<<" did not exist in original mesh."<< std::endl;
+            LOG_ERROR("Cannot change mesh structure. %s dis not exist in the original mesh as a vec4.",name.c_str());
         } else {
             attributesVec4[name] = values;
         }
@@ -626,7 +627,7 @@ namespace sre {
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withAttribute(std::string name, const std::vector<glm::ivec4> &values) {
         if (updateMesh != nullptr && attributesIVec4.find(name) == attributesIVec4.end()){
-            std::cout << "Cannot change mesh structure. "<<name<<" did not exist in original mesh."<< std::endl;
+            LOG_ERROR("Cannot change mesh structure. %s dis not exist in the original mesh as a ivec4.",name.c_str());
         } else {
             attributesIVec4[name] = values;
         }

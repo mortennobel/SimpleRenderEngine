@@ -16,6 +16,8 @@
 #define GL_SRGB 0x8C40
 #endif
 
+#include "sre/Log.hpp"
+
 // anonymous (file local) namespace
 namespace {
 	static std::vector<char> readAllBytes(char const* filename)
@@ -24,7 +26,7 @@ namespace {
 		ifstream ifs(filename, std::ios::binary | std::ios::ate);
 		ifstream::pos_type pos = ifs.tellg();
 		if (pos<0) {
-			std::cerr << "Cannot read " << filename << std::endl;
+            LOG_ERROR("Cannot read texture from ",filename);
 			return std::vector<char>();
 		}
 		std::vector<char>  result((size_t)pos);
@@ -52,7 +54,7 @@ namespace {
                 return GL_RGB;
             }
             else {
-                SDL_SetError("Unknown image format. Only PNG is supported.");
+                LOG_ERROR("Unknown image format. Only PNG is supported.");
                 return 0;
             }
         }
@@ -61,7 +63,7 @@ namespace {
     int invert_image(int width, int height, void *image_pixels) {
         auto temp_row = std::unique_ptr<char>(new char[width]);
         if (temp_row.get() == nullptr) {
-            SDL_SetError("Not enough memory for image inversion");
+            LOG_ERROR("Not enough memory for image inversion");
             return -1;
         }
         //if height is odd, don't need to swap middle row
@@ -97,11 +99,10 @@ namespace {
         static bool initialized = false;
         if (!initialized) {
             initialized = true;
-            int flags = IMG_INIT_PNG | IMG_INIT_JPG;
+            int flags = IMG_INIT_PNG;
             int initted = IMG_Init(flags);
             if ((initted & flags) != flags) {
-                std::cerr << "IMG_Init: Failed to init required jpg and png support!" << std::endl;
-                std::cerr << "IMG_Init: " << IMG_GetError() << std::endl;
+                LOG_ERROR("IMG_Init: Failed to init required png support!\nIMG_Init() returned %s",IMG_GetError());
                 // handle error
             }
         }
@@ -110,7 +111,7 @@ namespace {
         SDL_RWops *source = SDL_RWFromConstMem(data, dataSize);
         SDL_Surface *res_texture = IMG_Load_RW(source, 1);
         if (res_texture == NULL) {
-            std::cerr << "IMG_Load: " << SDL_GetError() << std::endl;
+            LOG_ERROR("Cannot load texture. IMG_Load_RW returned %s",IMG_GetError());
             return {};
         }
         const bool alpha = SDL_ISPIXELFORMAT_ALPHA(res_texture->format->format);
@@ -142,7 +143,7 @@ namespace sre {
 	Texture::Texture(unsigned int textureId, int width, int height, uint32_t target)
 		: width{ width }, height{ height }, target{ target}, textureId{textureId} {
         if (! Renderer::instance ){
-            throw std::runtime_error("Cannot instantiate sre::Texture before sre::Renderer is created.");
+            LOG_FATAL("Cannot instantiate sre::Texture before sre::Renderer is created.");
         }
 		// update stats
 		RenderStats& renderStats = Renderer::instance->renderStats;
@@ -181,7 +182,6 @@ namespace sre {
         GLenum format;
         int bytesPerPixel;
         fileData = loadFileFromMemory(fileData.data(), (int) fileData.size(), format, width, height,bytesPerPixel);
-        std::cout << "File data "<<filename<<" "<<fileData.size()<<std::endl;
         this->target = GL_TEXTURE_2D;
 
         GLint mipmapLevel = 0;
@@ -193,7 +193,7 @@ namespace sre {
         GLint border = 0;
 
         if (!isPowerOfTwo(width) || !isPowerOfTwo(height)){
-            std::cout << "Texture "<< filename<<" is not power of two (was "<< width<<"x"<<height<<"). filter sampling and mipmapping disabled "<<std::endl;
+            LOG_WARNING("Texture %s is not power of two (was %i x %i ). filter sampling and mipmapping disabled ",filename.c_str(), width, height);
             filterSampling = false;
             generateMipmaps = false;
         }
@@ -262,10 +262,10 @@ namespace sre {
 
     std::shared_ptr<Texture> Texture::TextureBuilder::build() {
         if (this->target == 0){
-            throw std::runtime_error("Texture contain no data");
+            LOG_FATAL("Texture contain no data");
         }
         if (textureId == 0){
-            throw std::runtime_error("Texture is already build");
+            LOG_FATAL("Texture is already build");
         }
         Texture* res = new Texture(textureId, width, height, target);
         res->generateMipmap = this->generateMipmaps;
@@ -404,7 +404,7 @@ namespace sre {
 
     void Texture::invokeGenerateMipmap() {
         if ((!isPowerOfTwo((unsigned int)width) || !isPowerOfTwo((unsigned int)height))) {
-            std::cerr << "Ignore mipmaps for textures not power of two" << std::endl;
+            LOG_WARNING("Ignore mipmaps for textures not power of two");
         } else {
             this->generateMipmap = true;
             glGenerateMipmap(target);

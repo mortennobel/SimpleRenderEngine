@@ -1,5 +1,6 @@
 ## Version history
 
+ * 0.9.3 Log. 
  * 0.9.2 Sprite rendering. 
  * 0.9.1 Multiple materials per draw call and multiple index-sets. ModelImporter (Obj). 
  * 0.9.0 Framebuffer objects. RenderPass::readPixels(). Simplified Camera projection. RenderPass::create() (More consistent use of builder pattern)

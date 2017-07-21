@@ -6,6 +6,7 @@
 
 #include "sre/impl/Export.hpp"
 #include "sre/Framebuffer.hpp"
+#include "sre/Shader.hpp"
 
 namespace sre{
 
@@ -97,4 +98,6 @@ private:
     friend class RenderPass;
     friend class sre::Framebuffer::FrameBufferBuilder;
 };
+
+
 }

@@ -33,6 +33,8 @@ namespace sre {
         Invalid
     };
 
+    const char* c_str(UniformType u);
+
     struct DllExport Uniform {
 		std::string name;
         int id;

@@ -6,6 +6,8 @@
 #include "sre/Texture.hpp"
 #include "sre/impl/GL.hpp"
 
+#include "sre/Log.hpp"
+
 namespace sre{
     Framebuffer::FrameBufferBuilder & Framebuffer::FrameBufferBuilder::withTexture(std::shared_ptr<Texture> texture) {
         this->size = {texture->getWidth(), texture->getHeight()};
@@ -35,42 +37,46 @@ namespace sre{
         using namespace std;
         GLenum frameBufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);
         if (frameBufferStatus != GL_FRAMEBUFFER_COMPLETE) {
+            char array[20];
+            const char* errorMsg = nullptr;
             switch (frameBufferStatus) {
                 case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-                    cerr << ("GL_FRAMEBUFFER_UNDEFINED");
+                    errorMsg = "GL_FRAMEBUFFER_UNDEFINED";
                     break;
 #ifdef GL_ES_VERSION_2_0
                 case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
-                    cerr << ("GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS");
+                    errorMsg = "GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS";
                     break;
 #endif
                 case GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT:
-                    cerr << ("GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT");
+                    errorMsg = "GL_FRAMEBUFFER_INCOMPLETE_MISSING_ATTACHMENT";
                     break;
                 case GL_FRAMEBUFFER_UNSUPPORTED:
-                    cerr << ("FRAMEBUFFER_UNSUPPORTED");
+                    errorMsg = "FRAMEBUFFER_UNSUPPORTED";
                     break;
 #ifndef GL_ES_VERSION_2_0
                 case GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER:
-                    cerr << ("GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER");
+                    errorMsg = "GL_FRAMEBUFFER_INCOMPLETE_DRAW_BUFFER";
                     break;
                 case GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER:
-                    cerr << ("GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER");
+                    errorMsg = "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER";
                     break;
                 case GL_FRAMEBUFFER_UNDEFINED:
-                    cerr << ("FRAMEBUFFER_INCOMPLETE_ATTACHMENT");
+                    errorMsg = "FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
                     break;
                 case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
-                    cerr << ("GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE");
+                    errorMsg = "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE";
                     break;
                 case GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS:
-                    cerr << ("GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS");
+                    errorMsg = "GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS";
                     break;
 #endif
                 default:
-                    cerr << string("Invalid framebuffer ") + std::to_string(frameBufferStatus);
+                    sprintf(array, "Unknown error code: %i",frameBufferStatus);
+                    errorMsg = array;
                     break;
             }
+            LOG_ERROR("Invalid framebuffer: %s", errorMsg);
         }
     }
 

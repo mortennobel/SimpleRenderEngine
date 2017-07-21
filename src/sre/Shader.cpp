@@ -14,6 +14,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include <sre/Log.hpp>
 #include "sre/Renderer.hpp"
 #include "sre/Texture.hpp"
 
@@ -55,7 +56,7 @@ namespace sre {
                     typeStr = std::string("Unknown error type: ") + std::to_string(type);
                     break;
             }
-            std::cerr << (std::string{errorLog.data()} + "\n" + typeStr + " error\n") << std::endl;
+            LOG_ERROR("Shader compile error in %s: %s",typeStr.c_str() ,errorLog.data());
         }
 
         bool compileShader(std::string& source, GLenum type, GLuint& shader){
@@ -89,11 +90,33 @@ namespace sre {
                 glGetProgramiv(mShaderProgram, GL_INFO_LOG_LENGTH, &logSize);
                 std::vector<char> errorLog((size_t) logSize);
                 glGetProgramInfoLog(mShaderProgram, logSize, NULL, errorLog.data() );
-
-                std::cerr << (errorLog.data()) << std::endl;
+                LOG_ERROR("Shader linker error: %s",errorLog.data());
                 return false;
             }
             return true;
+        }
+    }
+
+    const char *c_str(UniformType u) {
+        switch (u){
+            case UniformType::Int:
+                return "int";
+            case UniformType::Float:
+                return "float";
+            case UniformType::Mat3:
+                return "mat3";
+            case UniformType::Mat4:
+                return "mat4";
+            case UniformType::Vec3:
+                return "vec3";
+            case UniformType::Vec4:
+                return "vec4";
+            case UniformType::Texture:
+                return "texture";
+            case UniformType::TextureCube:
+                return "textureCube";
+            case UniformType::Invalid:
+                return "invalid";
         }
     }
 
@@ -138,7 +161,7 @@ namespace sre {
         }
 
         for (auto val : textureType){
-            regex regExpSearchShim4 { string{"texture\\s*\\(\\s*"}+val.first+"\\s*," };
+            regex regExpSearchShim4 { string{R"(texture\s*\(\s*)"}+val.first+"\\s*," };
             source = regex_replace(source, regExpSearchShim4, string{"texture"}+val.second+"("+val.first+",");
         }
         return source;
@@ -197,7 +220,7 @@ namespace sre {
                     break;
 
                 default:
-                std::cerr << "Unsupported shader type "<<type<<" name "<<name<<std::endl;
+                LOG_ERROR("Unsupported shader type %s name %s",type,name);
             }
             // remove [0] if exists
             char *bracketIndex = strchr(name, '[');
@@ -218,56 +241,56 @@ namespace sre {
                     if (uniformType == UniformType::Mat4){
                         uniformLocationModel = location;
                     } else {
-                        std::cerr << "Invalid g_model uniform type. Expected mat4.";
+                        LOG_ERROR("Invalid g_model uniform type. Expected mat4 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_view")==0){
                     if (uniformType == UniformType::Mat4){
                         uniformLocationView = location;
                     } else {
-                        std::cerr << "Invalid g_view uniform type. Expected mat4.";
+                        LOG_ERROR("Invalid g_view uniform type. Expected mat4 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_projection")==0){
                     if (uniformType == UniformType::Mat4){
                         uniformLocationProjection = location;
                     } else {
-                        std::cerr << "Invalid g_projection uniform type. Expected mat4.";
+                        LOG_ERROR("Invalid g_projection uniform type. Expected mat4 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_normal")==0){
                     if (uniformType == UniformType::Mat3){
                         uniformLocationNormal = location;
                     } else {
-                        std::cerr << "Invalid g_normal uniform type. Expected mat3.";
+                        LOG_ERROR("Invalid g_normal uniform type. Expected mat3 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_viewport")==0){
                     if (uniformType == UniformType::Vec4){
                         uniformLocationViewport = location;
                     } else {
-                        std::cerr << "Invalid g_normal uniform type. Expected vec4.";
+                        LOG_ERROR("Invalid g_normal uniform type. Expected vec4 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_ambientLight")==0){
                     if (uniformType == UniformType::Vec3){
                         uniformLocationAmbientLight = location;
                     } else {
-                        std::cerr << "Invalid g_ambientLight uniform type. Expected vec3."<<(int)uniformType;
+                        LOG_ERROR("Invalid g_ambientLight uniform type. Expected vec3 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_lightPosType")==0){
                     if (uniformType == UniformType::Vec4 && size == 4){
                         uniformLocationLightPosType = location;
                     } else {
-                        std::cerr << "Invalid g_lightPosType uniform type. Expected vec4[4].";
+                        LOG_ERROR("Invalid g_lightPosType uniform type. Expected vec4[4] - was %s[%i].",c_str(uniformType),size);
                     }
                 }
                 if (strcmp(name, "g_lightColorRange")==0){
                     if (uniformType == UniformType::Vec4 && size == 4){
                         uniformLocationLightColorRange = location;
                     } else {
-                        std::cerr << "Invalid g_lightPosType uniform type. Expected vec4[4].";
+                        LOG_ERROR("Invalid g_lightPosType uniform type. Expected vec4[4] - was %s[%i].",c_str(uniformType),size);
                     }
                 }
             }
@@ -298,7 +321,7 @@ namespace sre {
 
     Shader::Shader() {
         if (! Renderer::instance ){
-            throw std::runtime_error("Cannot instantiate sre::Shader before sre::Renderer is created.");
+            LOG_FATAL("Cannot instantiate sre::Shader before sre::Renderer is created.");
         }
         shaderProgramId = glCreateProgram();
         Renderer::instance->renderStats.shaderCount++;
@@ -371,7 +394,7 @@ namespace sre {
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE);
                 break;
             default:
-                std::cout << "Err";
+                LOG_ERROR("Invalid blend value - was %i",(int)blend);
                 break;
         }
     }
@@ -821,7 +844,7 @@ void main(void)
     }
 
     std::shared_ptr<Shader> Shader::ShaderBuilder::build() {
-        Shader* res = new Shader();
+        auto res = new Shader();
         if (!res->build(vertexShaderStr, fragmentShaderStr)){
             delete res;
             return std::shared_ptr<Shader>();

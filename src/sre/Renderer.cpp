@@ -11,6 +11,8 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
 #endif
 
+#include "sre/Log.hpp"
+
 #include "sre/Renderer.hpp"
 #include <cassert>
 #include "sre/Shader.hpp"
@@ -30,7 +32,7 @@ namespace sre {
     :window{window}
     {
         if (instance != nullptr){
-            std::cerr << "Multiple versions of Renderer initialized. Only a single instance is supported." << std::endl;
+            LOG_ERROR("Multiple versions of Renderer initialized. Only a single instance is supported.");
         }
         // initialize ImGUI
         ImGui_SRE_Init(window);
@@ -45,15 +47,20 @@ namespace sre {
 		if (GLEW_OK != err)
 		{
 			/* Problem: glewInit failed, something is seriously wrong. */
-			fprintf(stderr, "Error: %s\n", glewGetErrorString(err));
+			LOG_FATAL("Error initializing OpenGL using GLEW: %s",glewGetErrorString(err));
 		}
 #elif defined __LINUX__
-		glewInit();
+        GLenum err = glewInit();
+		if (GLEW_OK != err)
+		{
+			/* Problem: glewInit failed, something is seriously wrong. */
+			LOG_FATAL("Error initializing OpenGL using GLEW: %s",glewGetErrorString(err));
+		}
 #endif
 
 		std::string version = (char*)glGetString(GL_VERSION);
-        std::cout << "OpenGL version "<<glGetString(GL_VERSION) << std::endl;
-        std::cout << "sre version "<<sre_version_major<<"."<<sre_version_minor <<"."<<sre_version_point << std::endl;
+        LOG_INFO("OpenGL version %s",glGetString(GL_VERSION) );
+        LOG_INFO("sre version %i.%i.%i",sre_version_major,sre_version_minor ,sre_version_point  );
 
         // setup opengl context
         glEnable(GL_DEPTH_TEST);

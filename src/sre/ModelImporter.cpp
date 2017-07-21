@@ -9,7 +9,8 @@
 #include <sstream>
 #include <cerrno>
 #include <unordered_map>
-#include <sre/Mesh.hpp>
+#include "sre/Mesh.hpp"
+#include "sre/Log.hpp"
 #include <unordered_map>
 #include <glm/gtx/string_cast.hpp>
 #include "glm/glm.hpp"
@@ -293,7 +294,7 @@ namespace {
             }
         }
         if (foundMat == nullptr){
-            std::cout << "Could not find material "<<materialName<<std::endl;
+            LOG_WARNING("Could not find material ",materialName.c_str());
             foundMat = matVector.data();
         }
         auto shader = sre::Shader::getStandard();

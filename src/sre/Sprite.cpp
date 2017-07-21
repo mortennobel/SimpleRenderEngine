@@ -6,6 +6,7 @@
 #include <glm/gtx/transform.hpp>
 #include "sre/Sprite.hpp"
 #include "sre/Texture.hpp"
+#include "sre/Log.hpp"
 
 
 sre::Sprite::Sprite(glm::ivec2 spritePos, glm::ivec2 spriteSize, glm::vec2 spriteAnchor, Texture* texture)
@@ -37,11 +38,11 @@ void sre::Sprite::setScale(const glm::vec2 &scale) {
     Sprite::scale = scale;
     if (scale.x < 0){
         Sprite::scale.x = 0;
-        std::cout << "Sprite.scale must be larger or equal to 0"<<std::endl;
+        LOG_WARNING("Sprite.scale.x must be larger or equal to 0");
     }
     if (scale.y < 0){
         Sprite::scale.y = 0;
-        std::cout << "Sprite.scale must be larger or equal to 0"<<std::endl;
+        LOG_WARNING("Sprite.scale.y must be larger or equal to 0");
     }
 }
 

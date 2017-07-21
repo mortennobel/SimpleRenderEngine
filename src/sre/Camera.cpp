@@ -10,7 +10,8 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <sre/Camera.hpp>
 #include <glm/gtc/type_ptr.hpp>
-
+#include <glm/gtx/string_cast.hpp>
+#include "sre/Log.hpp"
 
 namespace sre {
     Camera::Camera()
@@ -19,9 +20,6 @@ namespace sre {
         projectionValue.orthographic.orthographicSize = 1;
         projectionValue.orthographic.nearPlane = -1;
         projectionValue.orthographic.farPlane = 1;
-        if (! Renderer::instance ){
-            throw std::runtime_error("Cannot instantiate sre::Camera before sre::Renderer is created.");
-        }
     }
 
     void Camera::setPerspectiveProjection(float fieldOfViewY, float nearPlane, float farPlane) {
@@ -43,6 +41,11 @@ namespace sre {
     }
 
     void Camera::lookAt(glm::vec3 eye, glm::vec3 at, glm::vec3 up) {
+        if (glm::length(eye-at)<std::numeric_limits<float>::epsilon()){
+            auto eyeStr = glm::to_string(eye);
+            auto atStr = glm::to_string(at);
+            LOG_WARNING("Camera::lookAt() invalid parameters. eye (%s) must be different from at (%s)",eyeStr.c_str(),atStr.c_str());
+        }
         setViewTransform(glm::lookAt<float>(eye, at, up));
     }
 
