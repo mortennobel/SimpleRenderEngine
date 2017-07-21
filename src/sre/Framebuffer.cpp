@@ -72,7 +72,7 @@ namespace sre{
                     break;
 #endif
                 default:
-                    sprintf_s(array,sizeof(array), "Unknown error code: %i",frameBufferStatus);
+                    snprintf(array,sizeof(array), "Unknown error code: %i",frameBufferStatus);
                     errorMsg = array;
                     break;
             }
