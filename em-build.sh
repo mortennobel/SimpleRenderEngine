@@ -3,7 +3,7 @@
 EMSDK=/Users/mnob/programming/cpp/emsdk_portable
 source ${EMSDK}/emsdk_env.sh
 
-for FILENAME in sprite-example obj-viewer render-to-texture picking hello-engine gui spheres particle-sprite particle-test spinning-cube-tex multiple-lights spinning-sphere-cubemap spinning-cube benchmark64k
+for FILENAME in sprite-example obj-viewer render-to-texture picking hello-engine gui spheres particle-sprite particle-test spinning-primitives-tex multiple-lights spinning-sphere-cubemap spinning-cube benchmark64k
 do
 echo $FILENAME
 emcc -Iinclude src/imgui/imgui.cpp \
