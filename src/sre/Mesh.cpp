@@ -17,18 +17,21 @@
 namespace sre {
     Mesh::Mesh(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology)
     {
-        if (! Renderer::instance ){
+        if ( Renderer::instance == nullptr){
             LOG_FATAL("Cannot instantiate sre::Mesh before sre::Renderer is created.");
         }
         glGenBuffers(1, &vertexBufferId);
         update(attributesFloat, attributesVec2, attributesVec3,attributesVec4,attributesIVec4, indices, meshTopology);
+        Renderer::instance->meshes.emplace_back(this);
     }
 
     Mesh::~Mesh(){
-        if (Renderer::instance){
-            RenderStats& renderStats = Renderer::instance->renderStats;
+        auto r = Renderer::instance;
+        if (r != nullptr){
+            RenderStats& renderStats = r->renderStats;
             renderStats.meshBytes -= getDataSize();
             renderStats.meshCount--;
+            r->meshes.erase(std::remove(r->meshes.begin(), r->meshes.end(), this));
         }
 
 #ifndef EMSCRIPTEN
@@ -77,6 +80,7 @@ namespace sre {
 
         vertexCount = 0;
         totalBytesPerVertex = 0;
+        dataSize = 0;
         std::vector<int> offset;
 
 #ifndef EMSCRIPTEN
@@ -181,6 +185,7 @@ namespace sre {
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eBufferId);
                 GLsizeiptr indicesSize = indices[i].size()*sizeof(uint16_t);
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices[i].data(), GL_STATIC_DRAW);
+                dataSize += indicesSize;
             }
         }
 
@@ -200,6 +205,7 @@ namespace sre {
                 boundsMinMax[1] = glm::max(boundsMinMax[1], v);
             }
         }
+        dataSize = totalBytesPerVertex*vertexCount;
     }
 
     void Mesh::setVertexAttributePointers(Shader* shader) {
@@ -312,7 +318,7 @@ namespace sre {
     }
 
     int Mesh::getDataSize() {
-        return totalBytesPerVertex;
+        return dataSize;
     }
 
     std::array<glm::vec3,2> Mesh::getBoundsMinMax() {
@@ -398,6 +404,8 @@ namespace sre {
 
         auto res = new Mesh(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology);
         renderStats.meshCount++;
+        renderStats.meshBytes += res->getDataSize();
+
         return std::shared_ptr<Mesh>(res);
 
     }

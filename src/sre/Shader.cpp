@@ -325,12 +325,18 @@ namespace sre {
         }
         shaderProgramId = glCreateProgram();
         Renderer::instance->renderStats.shaderCount++;
+
+        Renderer::instance->shaders.emplace_back(this);
     }
 
     Shader::~Shader() {
-        if (Renderer::instance){
+        auto r = Renderer::instance;
+        if (r){
+            r->renderStats.shaderCount--;
+
+            r->shaders.erase(std::remove(r->shaders.begin(), r->shaders.end(), this));
+
             glDeleteShader(shaderProgramId);
-            Renderer::instance->renderStats.shaderCount--;
         }
     }
 

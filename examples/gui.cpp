@@ -34,29 +34,34 @@ public:
         material = Shader::getStandard()->createMaterial();
         material->setSpecularity(20);
 
-        // connect update callback
-        r.frameUpdate = [&](float deltaTime){
-            update(deltaTime);
-        };
         // connect render callback
         r.frameRender = [&](){
             frameRender();
+        };
+        r.mouseEvent = [&](SDL_Event& e){
+            if (e.type == SDL_MOUSEMOTION){
+                rotation.x += glm::radians((float)e.motion.xrel);
+                rotation.y += glm::radians((float)e.motion.yrel);
+            }
         };
         // start render loop
         r.startEventLoop();
     }
 
-    void update(float deltaTime){
-        timeF += deltaTime * f;
-    }
 
     void frameRender(){
+        bool showMouseCursor = r.isMouseCursorVisible();
         RenderPass rp = RenderPass::create()
                 .withCamera(*camera)
                 .withWorldLights(&worldLights)
                 .withClearColor(true,{clear_color.x,clear_color.y,clear_color.z,1.0f})
+                .withGUI(showMouseCursor)
                 .build();
-        rp.draw(mesh, glm::eulerAngleY(timeF), material);
+        rp.draw(mesh, glm::eulerAngleY(rotation.x) * glm::eulerAngleX(rotation.y), material);
+
+        if (!showMouseCursor){
+            return;
+        }
 
         bool open = true;
 
@@ -74,18 +79,33 @@ public:
             std::cout << "Clicked"<<std::endl;
         }
         ImGui::End();
+#ifndef EMSCRIPTEN
+        bool fullscreen = r.isFullscreen();
+        if (ImGui::Checkbox("Fullscreen",&fullscreen)){
+            r.setFullscreen(fullscreen);
+        }
+        if (ImGui::Checkbox("Mouse cursor",&showMouseCursor)){
+            r.setMouseCursorVisible(showMouseCursor);
+        }
+        bool showMouseLocked = r.isMouseCursorLocked();
+        if (ImGui::Checkbox("Mouse locked",&showMouseLocked)){
+            r.setMouseCursorLocked(showMouseLocked);
+        }
+
+#endif
 
         // 1. Show a simple window
         // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
         {
 
             ImGui::Text("Hello, world!");
-            ImGui::SliderFloat("rotationSpeed", &f, 0.0f, 1.0f);
             ImGui::ColorEdit3("clearScreen color", (float*)&clear_color);
 
             ImGui::Checkbox("Another Window", &show_another_window);
 
             ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+
+
         }
 
         ImGui::ShowMetricsWindow();
@@ -96,13 +116,15 @@ public:
             ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
             ImGui::Begin("Another Window", &show_another_window);
             ImGui::Text("Hello");
+
+
             ImGui::End();
         }
+
     }
 private:
     SDLRenderer r;
-    float f = 1.0f;
-    float timeF = 0.0f;
+    glm::vec2 rotation;
     bool show_another_window = false;
     ImVec4 clear_color = ImColor(114, 144, 154);
     std::shared_ptr<Mesh> mesh;

@@ -112,7 +112,7 @@ namespace sre {
             ImGui_SRE_NewFrame(Renderer::instance->window);
         }
 
-        auto windowSize = static_cast<glm::vec2>(Renderer::instance->getWindowSize());
+        auto windowSize = static_cast<glm::vec2>(Renderer::instance->getDrawableSize());
         if (framebuffer){
             windowSize = framebuffer->size;
         }

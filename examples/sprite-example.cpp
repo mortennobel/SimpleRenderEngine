@@ -89,6 +89,7 @@ public:
             renderPass.draw(world, glm::translate(glm::vec3(-500+sin(d)*500,0,0)));
             d+=0.016;
         } else {
+            world.reset();
             static const char** namesPtr = new const char*[names.size()];
             for (int i=0;i<names.size();i++){
                 namesPtr[i] = names[i].c_str();

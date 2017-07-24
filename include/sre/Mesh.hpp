@@ -112,7 +112,7 @@ namespace sre {
         std::map<unsigned int,unsigned int> shaderToVertexArrayObject;
         std::vector<unsigned int> elementBufferId;
         int vertexCount;
-
+        int dataSize;
         std::map<std::string,Attribute> attributeByName;
         std::map<std::string,std::vector<float>> attributesFloat;
         std::map<std::string,std::vector<glm::vec2>> attributesVec2;

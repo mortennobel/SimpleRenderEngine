@@ -69,12 +69,6 @@ namespace sre {
 		}
 
         // reset render stats
-        renderStats.frame = 0;
-        renderStats.meshCount = 0;
-        renderStats.meshBytes = 0;
-        renderStats.textureCount = 0;
-        renderStats.textureBytes = 0;
-        renderStats.drawCalls = 0;
         renderStatsLast = renderStats;
     }
 
@@ -106,6 +100,12 @@ namespace sre {
     glm::ivec2 Renderer::getWindowSize() {
         glm::ivec2 win;
         SDL_GetWindowSize(window,&win.r,&win.g);
+        return win;
+    }
+
+    glm::ivec2 Renderer::getDrawableSize() {
+        glm::ivec2 win;
+        SDL_GL_GetDrawableSize(window,&win.r,&win.g);
         return win;
     }
 }

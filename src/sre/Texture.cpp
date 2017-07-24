@@ -149,17 +149,23 @@ namespace sre {
 		RenderStats& renderStats = Renderer::instance->renderStats;
 		renderStats.textureCount++;
 		renderStats.textureBytes += getDataSize();
+
+        Renderer::instance->textures.emplace_back(this);
 	}
 
 	Texture::~Texture() {
-        if (Renderer::instance){
+        auto r = Renderer::instance;
+        if (r != nullptr){
             // update stats
-            RenderStats& renderStats = Renderer::instance->renderStats;
+            RenderStats& renderStats = r->renderStats;
             renderStats.textureCount--;
             renderStats.textureBytes -= getDataSize();
 
+            r->textures.erase(std::remove(r->textures.begin(), r->textures.end(), this));
+
             glDeleteTextures(1, &textureId);
         }
+
     }
 
     Texture::TextureBuilder &Texture::TextureBuilder::withGenerateMipmaps(bool enable) {

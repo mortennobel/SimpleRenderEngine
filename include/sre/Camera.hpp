@@ -102,4 +102,5 @@ namespace sre {
         friend class RenderPass;
 
     };
+
 }

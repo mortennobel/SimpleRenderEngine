@@ -190,7 +190,7 @@ namespace sre{
 #ifdef SRE_DEBUG_CONTEXT
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
-        	window = SDL_CreateWindow(windowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight,SDL_WINDOW_OPENGL);
+        	window = SDL_CreateWindow(windowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight,SDL_WINDOW_ALLOW_HIGHDPI|SDL_WINDOW_OPENGL);
 #endif
 
             r = new Renderer(window);
@@ -272,5 +272,41 @@ namespace sre{
 
     SDL_Window *SDLRenderer::getSDLWindow() {
         return window;
+    }
+
+    void SDLRenderer::setFullscreen(bool enabled) {
+#ifndef EMSCRIPTEN
+        if (isFullscreen() != enabled){
+            Uint32 flags = (SDL_GetWindowFlags(window) ^ SDL_WINDOW_FULLSCREEN_DESKTOP);
+            if (SDL_SetWindowFullscreen(window, flags) < 0) // NOTE: this takes FLAGS as the second param, NOT true/false!
+            {
+                std::cout << "Toggling fullscreen mode failed: " << SDL_GetError() << std::endl;
+                return;
+            }
+        }
+#endif
+    }
+
+    bool SDLRenderer::isFullscreen() {
+        return ((SDL_GetWindowFlags(window)&(SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0);
+    }
+
+    void SDLRenderer::setMouseCursorVisible(bool enabled) {
+        SDL_ShowCursor(enabled?SDL_ENABLE:SDL_DISABLE);
+    }
+
+    bool SDLRenderer::isMouseCursorVisible() {
+        return SDL_ShowCursor(SDL_QUERY)==SDL_ENABLE;
+    }
+
+    bool SDLRenderer::setMouseCursorLocked(bool enabled) {
+        if (enabled){
+            setMouseCursorVisible(false);
+        }
+        return SDL_SetRelativeMouseMode(enabled?SDL_TRUE:SDL_FALSE) == 0;
+    }
+
+    bool SDLRenderer::isMouseCursorLocked() {
+        return SDL_GetRelativeMouseMode() == SDL_TRUE;
     }
 }

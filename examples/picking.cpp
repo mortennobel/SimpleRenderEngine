@@ -16,6 +16,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <sre/SDLRenderer.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 using namespace sre;
 
@@ -33,6 +34,10 @@ public:
             mat[i]->setColor(color);
         }
 
+        auto re = Renderer::instance;
+        std::cout << glm::to_string(re->getWindowSize())<<std::endl;
+        std::cout << glm::to_string(re->getDrawableSize())<<std::endl;
+
         mesh[0] = Mesh::create()
                 .withQuad()
                 .build();
@@ -49,9 +54,15 @@ public:
 
         r.mouseEvent = [&](SDL_Event& e){
             if (e.type == SDL_MOUSEMOTION){
-                mouseX = e.motion.x;
                 auto r = Renderer::instance;
-                mouseY = r->getWindowSize().y - e.motion.y;
+                glm::vec2 pos{e.motion.x, r->getWindowSize().y - e.motion.y};
+
+                // convert to pixel coordinates
+                pos /= r->getWindowSize();
+                pos *= r->getDrawableSize();
+
+                mouseX = static_cast<int>(pos.x);
+                mouseY = static_cast<int>(pos.y);
             }
         };
         r.startEventLoop();

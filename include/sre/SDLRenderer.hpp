@@ -52,6 +52,15 @@ public:
     void setWindowTitle(std::string title);
     void setWindowSize(glm::ivec2 size);
 
+    void setFullscreen(bool enabled = true);                    // Toggle fullscreen mode (default mode is windowed). Not supported in Emscripten
+    bool isFullscreen();                                        //
+
+    void setMouseCursorVisible(bool enabled = true);            // Show/hide mouse cursor. Not supported in Emscripten
+    bool isMouseCursorVisible();                                // GUI should not be rendered when mouse cursor is not visible (this would force the mouse cursor to appear again)
+
+    bool setMouseCursorLocked(bool enabled = true);             // Lock the mouse cursor, such that mouse cursor motion is detected, (while position remains fixed). Not supported in Emscripten
+    bool isMouseCursorLocked();                                 // Locking the mouse cursor automatically hides the mouse cursor
+
     void startEventLoop();                                      // Start the event loop. Note that this member function in usually blocking (until the `stopEventLoop()` has been
                                                                 // called). Using Emscripten the event loop is not blocking (but internally using a callback function), which means
                                                                 // that when using Emscripten avoid allocating objects on the stack (see examples for a workaround).

@@ -1,5 +1,6 @@
 ## Version history
 
+ * 0.9.4 High DPI, Fullscreen mode, mouse cursor visibility and mouse lock. 
  * 0.9.3 Log. 
  * 0.9.2 Sprite rendering. 
  * 0.9.1 Multiple materials per draw call and multiple index-sets. ModelImporter (Obj). 
