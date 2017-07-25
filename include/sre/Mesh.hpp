@@ -9,6 +9,7 @@
 
 #include "sre/impl/Export.hpp"
 #include "Shader.hpp"
+#include "RenderStats.hpp"
 
 namespace sre {
     // forward declaration
@@ -51,6 +52,10 @@ namespace sre {
             MeshBuilder& withAttribute(std::string name, const std::vector<glm::vec3> &values);   // Set a named vertex attribute of vec3
             MeshBuilder& withAttribute(std::string name, const std::vector<glm::vec4> &values);   // Set a named vertex attribute of vec4
             MeshBuilder& withAttribute(std::string name, const std::vector<glm::i32vec4> &values);// Set a named vertex attribute of i32vec4
+
+            // other
+            MeshBuilder& withName(const std::string& name);                                       // Defines the name of the mesh
+
             std::shared_ptr<Mesh> build();
         private:
             MeshBuilder() = default;
@@ -63,6 +68,7 @@ namespace sre {
             std::vector<MeshTopology> meshTopology = {MeshTopology::Triangles};
             std::vector<std::vector<uint16_t>> indices;
             Mesh *updateMesh = nullptr;
+            std::string name;
             friend class Mesh;
         };
         ~Mesh();
@@ -81,16 +87,19 @@ namespace sre {
 
         int getIndexSets();                                         // Return the number of index sets
         MeshTopology getMeshTopology(int indexSet=0);               // Mesh topology used
-        std::vector<uint16_t> getIndices(int indexSet=0);           // Indices used in the mesh (empty array means vertices rendered sequential)
+        const std::vector<uint16_t>& getIndices(int indexSet=0);    // Indices used in the mesh
+        int getIndicesSize(int indexSet=0);                         // Return the size of the index set
 
         template<typename T>
         inline T get(std::string attributeName);                    // Get the vertex attribute of a given type. Type must be float,glm::vec2,glm::vec3,glm::vec4,glm::i32vec4
 
         std::pair<int,int> getType(const std::string& name);        // return element type, element count
 
-        std::vector<std::string> getNames();                        // Names of the vertex attributes
+        std::vector<std::string> getAttributeNames();               // Names of the vertex attributes
 
         std::array<glm::vec3,2> getBoundsMinMax();                  // get the local axis aligned bounding box (AABB)
+
+        const std::string& getName();                               // Return the mesh name
 
         int getDataSize();                                          // get size of the mesh in bytes on GPU
     private:
@@ -101,8 +110,8 @@ namespace sre {
             int attributeType;
         };
 
-        Mesh       (std::map<std::string,std::vector<float>>& attributesFloat, std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string, std::vector<glm::vec3>>& attributesVec3, std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::i32vec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology);
-        void update(std::map<std::string,std::vector<float>>& attributesFloat, std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string, std::vector<glm::vec3>>& attributesVec3, std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::i32vec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology);
+        Mesh       (std::map<std::string,std::vector<float>>& attributesFloat, std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string, std::vector<glm::vec3>>& attributesVec3, std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::i32vec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology,std::string name,RenderStats& renderStats);
+        void update(std::map<std::string,std::vector<float>>& attributesFloat, std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string, std::vector<glm::vec3>>& attributesVec3, std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::i32vec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology,std::string name,RenderStats& renderStats);
 
         int totalBytesPerVertex = 0;
 
@@ -113,6 +122,7 @@ namespace sre {
         std::vector<unsigned int> elementBufferId;
         int vertexCount;
         int dataSize;
+        std::string name;
         std::map<std::string,Attribute> attributeByName;
         std::map<std::string,std::vector<float>> attributesFloat;
         std::map<std::string,std::vector<glm::vec2>> attributesVec2;

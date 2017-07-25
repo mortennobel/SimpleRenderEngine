@@ -14,6 +14,8 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #include "sre/Log.hpp"
 
 #include "sre/Renderer.hpp"
+#include "sre/Framebuffer.hpp"
+#include "sre/Texture.hpp"
 
 #include "sre/impl/GL.hpp"
 
@@ -84,6 +86,10 @@ namespace sre {
 
         renderStatsLast = renderStats;
         renderStats.frame++;
+        renderStats.meshBytesAllocated=0;
+        renderStats.meshBytesDeallocated=0;
+        renderStats.textureBytesAllocated=0;
+        renderStats.textureBytesDeallocated=0;
         renderStats.drawCalls=0;
         renderStats.stateChangesShader = 0;
         renderStats.stateChangesMesh = 0;

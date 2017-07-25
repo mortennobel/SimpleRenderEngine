@@ -1,5 +1,6 @@
 ## Version history
 
+ * 0.9.5 Profiling 
  * 0.9.4 High DPI, Fullscreen mode, mouse cursor visibility and mouse lock. 
  * 0.9.3 Log. 
  * 0.9.2 Sprite rendering. 

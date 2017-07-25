@@ -422,7 +422,10 @@ namespace sre {
             return unlit;
         }
 
-        unlit = create().withSourceUnlit().build();
+        unlit = create()
+                .withSourceUnlit()
+                .withName("Unlit")
+                .build();
         return unlit;
     }
 
@@ -435,16 +438,19 @@ namespace sre {
                 .withSourceUnlitSprite()
                 .withBlend(BlendType::AlphaBlending)
                 .withDepthTest(false)
+                .withName("Unlit Sprite")
                 .build();
         return unlitSprite;
     }
-
 
     std::shared_ptr<Shader> Shader::getStandard() {
         if (standard != nullptr){
             return standard;
         }
-        standard = create().withSourceStandard().build();
+        standard = create()
+                .withSourceStandard()
+                .withName("Standard")
+                .build();
         return standard;
     }
 
@@ -469,6 +475,7 @@ namespace sre {
                 .withSourceStandardParticles()
                 .withBlend(BlendType::AdditiveBlending)
                 .withDepthWrite(false)
+                .withName("Standard Particles")
                 .build();
         return standardParticles;
     }
@@ -541,6 +548,15 @@ namespace sre {
 
     std::shared_ptr<Material> Shader::createMaterial() {
         return std::shared_ptr<Material>(new Material(shared_from_this()));
+    }
+
+    const std::string& Shader::getName() {
+        return name;
+    }
+
+    std::pair<int, int> Shader::getAttibuteType(const std::string &name) {
+        auto res = attributes[name];
+        return {res.type, res.arraySize};
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSource(const std::string& vertexShader, const std::string& fragmentShader) {
@@ -850,6 +866,9 @@ void main(void)
     }
 
     std::shared_ptr<Shader> Shader::ShaderBuilder::build() {
+        if (name.length()==0){
+            name = "Unnamed shader";
+        }
         auto res = new Shader();
         if (!res->build(vertexShaderStr, fragmentShaderStr)){
             delete res;
@@ -858,6 +877,12 @@ void main(void)
         res->depthTest = this->depthTest;
         res->depthWrite = this->depthWrite;
         res->blend = this->blend;
+        res->name = this->name;
         return std::shared_ptr<Shader>(res);
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withName(const std::string& name) {
+        this->name = name;
+        return *this;
     }
 }

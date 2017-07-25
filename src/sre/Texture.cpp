@@ -140,15 +140,17 @@ namespace sre {
     std::shared_ptr<Texture> whiteCubemapTexture;
     std::shared_ptr<Texture> sphereTexture;
 
-	Texture::Texture(unsigned int textureId, int width, int height, uint32_t target)
-		: width{ width }, height{ height }, target{ target}, textureId{textureId} {
+	Texture::Texture(unsigned int textureId, int width, int height, uint32_t target, std::string name)
+    	: width{ width }, height{ height }, target{ target}, textureId{textureId},name{name} {
         if (! Renderer::instance ){
             LOG_FATAL("Cannot instantiate sre::Texture before sre::Renderer is created.");
         }
 		// update stats
 		RenderStats& renderStats = Renderer::instance->renderStats;
 		renderStats.textureCount++;
-		renderStats.textureBytes += getDataSize();
+        auto datasize = getDataSize();
+		renderStats.textureBytes += datasize;
+		renderStats.textureBytesAllocated += datasize;
 
         Renderer::instance->textures.emplace_back(this);
 	}
@@ -159,7 +161,9 @@ namespace sre {
             // update stats
             RenderStats& renderStats = r->renderStats;
             renderStats.textureCount--;
-            renderStats.textureBytes -= getDataSize();
+            auto datasize = getDataSize();
+            renderStats.textureBytes -= datasize;
+            renderStats.textureBytesDeallocated += datasize;
 
             r->textures.erase(std::remove(r->textures.begin(), r->textures.end(), this));
 
@@ -184,6 +188,9 @@ namespace sre {
     }
 
     Texture::TextureBuilder &Texture::TextureBuilder::withFile(std::string filename) {
+        if (name.length()==0){
+            name = filename;
+        }
         auto fileData = readAllBytes(filename.c_str());
         GLenum format;
         int bytesPerPixel;
@@ -273,7 +280,10 @@ namespace sre {
         if (textureId == 0){
             LOG_FATAL("Texture is already build");
         }
-        Texture* res = new Texture(textureId, width, height, target);
+        if (name.length() == 0){
+            name = "Unnamed Texture";
+        }
+        Texture * res = new Texture(textureId, width, height, target, name);
         res->generateMipmap = this->generateMipmaps;
         if (this->generateMipmaps){
             res->invokeGenerateMipmap();
@@ -327,6 +337,11 @@ namespace sre {
         if (textureId != 0){
             glDeleteTextures(1, &textureId);
         }
+    }
+
+    Texture::TextureBuilder &Texture::TextureBuilder::withName(const std::string& name) {
+        this->name = name;
+        return *this;
     }
 
     // returns true if texture sampling should be filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
@@ -443,4 +458,10 @@ namespace sre {
                 .build();
         return whiteCubemapTexture;
     }
+
+
+    const std::string &Texture::getName() {
+        return name;
+    }
+
 }

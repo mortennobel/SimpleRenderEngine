@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <vector>
+#include <string>
 #include <map>
 
 #include "sre/impl/Export.hpp"
@@ -48,12 +49,14 @@ public:
         TextureBuilder& withRGBAData(const char* data, int width, int height);              // data may be null (for a uninitialized texture)
         TextureBuilder& withWhiteData(int width=2, int height=2);
         TextureBuilder& withWhiteCubemapData(int width=2, int height=2);
+        TextureBuilder& withName(const std::string& name);
         std::shared_ptr<Texture> build();
     private:
         TextureBuilder();
         TextureBuilder(const TextureBuilder&) = default;
         int width = -1;
         int height = -1;
+        std::string name;
         bool generateMipmaps = false;
         bool filterSampling = true;                                                         // true = linear/trilinear sampling, false = point sampling
         bool wrapTextureCoordinates = true;
@@ -80,15 +83,18 @@ public:
     bool isWrapTextureCoordinates();                                                        // returns false if texture coordinates are clamped otherwise wrapped
     bool isCubemap();                                                                       // is cubemap texture
 
+    const std::string& getName();                                                           // name of the string
+
     int getDataSize();                                                                      // get size of the texture in bytes on GPU
 private:
-    Texture(unsigned int textureId, int width, int height, uint32_t target);
+    Texture(unsigned int textureId, int width, int height, uint32_t target, std::string string);
     void updateTextureSampler(bool filterSampling, bool wrapTextureCoordinates);
     void invokeGenerateMipmap();
     int width;
     int height;
     uint32_t target;
     bool generateMipmap;
+    std::string name;
     bool filterSampling = true; // true = linear/trilinear sampling, false = point sampling
     bool wrapTextureCoordinates = true;
     unsigned int textureId;
@@ -96,6 +102,7 @@ private:
     friend class Material;
     friend class Framebuffer;
     friend class RenderPass;
+    friend class Profiler;
     friend class sre::Framebuffer::FrameBufferBuilder;
 };
 

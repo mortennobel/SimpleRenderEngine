@@ -18,10 +18,12 @@ namespace sre {
         class FrameBufferBuilder {
         public:
             FrameBufferBuilder& withTexture(std::shared_ptr<Texture> texture);
+            FrameBufferBuilder& withName(std::string name);
             std::shared_ptr<Framebuffer> build();
         private:
             std::vector<std::shared_ptr<Texture>> textures;
             glm::uvec2 size;
+            std::string name;
             FrameBufferBuilder() = default;
             FrameBufferBuilder(const FrameBufferBuilder&) = default;
             friend class Framebuffer;
@@ -33,11 +35,14 @@ namespace sre {
 
         static int getMaximumColorAttachments();
 
+        const std::string& getName();
+
     private:
-        Framebuffer();
+        Framebuffer(std::string name);
         std::vector<std::shared_ptr<Texture>> textures;
         unsigned int frameBufferObjectId;
         uint32_t renderBufferDepth = 0;
+        std::string name;
         glm::uvec2 size;
         friend class RenderPass;
     };

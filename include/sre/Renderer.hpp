@@ -17,6 +17,7 @@ namespace sre {
     class ParticleMesh;
 
     class Shader;
+    class Shader;
 
     /// Maintains shared states for rendering.
     /// An object of Renderer must be created once after the SDL_Window has been initialized.
@@ -49,7 +50,7 @@ namespace sre {
         static constexpr int maxSceneLights = 4;            // Maximum of scene lights
         static constexpr int sre_version_major = 0;
         static constexpr int sre_version_minor = 9;
-        static constexpr int sre_version_point = 4;
+        static constexpr int sre_version_point = 5;
 
         glm::ivec2 getWindowSize();                         // Return the current size of the window
 
@@ -70,6 +71,7 @@ namespace sre {
         RenderStats renderStatsLast;
         RenderStats renderStats;
 
+        std::vector<Framebuffer*> framebufferObjects;
         std::vector<Mesh*> meshes;
         std::vector<Shader*> shaders;
         std::vector<Texture*> textures;
@@ -79,7 +81,9 @@ namespace sre {
         friend class Shader;
         friend class Shader;
         friend class Texture;
+        friend class Framebuffer;
         friend class RenderPass;
+        friend class Profiler;
         friend class RenderPass::RenderPassBuilder;
     };
 }

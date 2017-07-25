@@ -90,6 +90,7 @@ namespace sre {
             ShaderBuilder& withDepthTest(bool enable);
             ShaderBuilder& withDepthWrite(bool enable);
             ShaderBuilder& withBlend(BlendType blendType);
+            ShaderBuilder& withName(const std::string& name);
             std::shared_ptr<Shader> build();
         private:
             ShaderBuilder() = default;
@@ -98,6 +99,7 @@ namespace sre {
             std::string fragmentShaderStr;
             bool depthTest = true;
             bool depthWrite = true;
+            std::string name;
             BlendType blend = BlendType::Disabled;
             friend class Shader;
         };
@@ -134,11 +136,15 @@ namespace sre {
 
         Uniform getUniformType(const std::string &name);
 
+        std::pair<int,int> getAttibuteType(const std::string & name); // Return type, size of the attribute
+
         bool isDepthTest();
 
         bool isDepthWrite();
 
         BlendType getBlend();
+
+        const std::string& getName();
 
         std::vector<std::string> getAttributeNames();
         std::vector<std::string> getUniformNames();
@@ -159,6 +165,7 @@ namespace sre {
         unsigned int shaderProgramId;
         bool depthTest = true;
         bool depthWrite = true;
+        std::string name;
         BlendType blend = BlendType::Disabled;
 
         std::vector<Uniform> uniforms;

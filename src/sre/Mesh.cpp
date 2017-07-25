@@ -15,13 +15,13 @@
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 namespace sre {
-    Mesh::Mesh(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology)
+    Mesh::Mesh(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology, std::string name,RenderStats& renderStats)
     {
         if ( Renderer::instance == nullptr){
             LOG_FATAL("Cannot instantiate sre::Mesh before sre::Renderer is created.");
         }
         glGenBuffers(1, &vertexBufferId);
-        update(attributesFloat, attributesVec2, attributesVec3,attributesVec4,attributesIVec4, indices, meshTopology);
+        update(attributesFloat, attributesVec2, attributesVec3,attributesVec4,attributesIVec4, indices, meshTopology,name,renderStats);
         Renderer::instance->meshes.emplace_back(this);
     }
 
@@ -29,7 +29,9 @@ namespace sre {
         auto r = Renderer::instance;
         if (r != nullptr){
             RenderStats& renderStats = r->renderStats;
-            renderStats.meshBytes -= getDataSize();
+            auto datasize = getDataSize();
+            renderStats.meshBytes -= datasize;
+            renderStats.meshBytesDeallocated += datasize;
             renderStats.meshCount--;
             r->meshes.erase(std::remove(r->meshes.begin(), r->meshes.end(), this));
         }
@@ -75,8 +77,9 @@ namespace sre {
         return vertexCount;
     }
 
-    void Mesh::update(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology) {
+    void Mesh::update(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology,std::string name,RenderStats& renderStats) {
         this->meshTopology = meshTopology;
+        this->name = name;
 
         vertexCount = 0;
         totalBytesPerVertex = 0;
@@ -206,6 +209,9 @@ namespace sre {
             }
         }
         dataSize = totalBytesPerVertex*vertexCount;
+
+        renderStats.meshBytes += dataSize;
+        renderStats.meshBytesAllocated += dataSize;
     }
 
     void Mesh::setVertexAttributePointers(Shader* shader) {
@@ -276,7 +282,7 @@ namespace sre {
         return res;
     }
 
-    std::vector<uint16_t> Mesh::getIndices(int indexSet) {
+    const std::vector<uint16_t>& Mesh::getIndices(int indexSet) {
         return indices.at(indexSet);
     }
 
@@ -333,7 +339,7 @@ namespace sre {
         return {-1,-1};
     }
 
-    std::vector<std::string> Mesh::getNames() {
+    std::vector<std::string> Mesh::getAttributeNames() {
         std::vector<std::string> res;
         for (auto & u : attributeByName){
             res.push_back(u.first);
@@ -343,6 +349,14 @@ namespace sre {
 
     int Mesh::getIndexSets() {
         return indices.size();
+    }
+
+    const std::string& Mesh::getName() {
+        return name;
+    }
+
+    int Mesh::getIndicesSize(int indexSet) {
+        return indices.at(indexSet).size();
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withPositions(const std::vector<glm::vec3> &vertexPositions) {
@@ -395,16 +409,20 @@ namespace sre {
         // update stats
         RenderStats& renderStats = Renderer::instance->renderStats;
 
+        if (name.length()==0){
+            name = "Unnamed Mesh";
+        }
+
         if (updateMesh != nullptr){
             renderStats.meshBytes -= updateMesh->getDataSize();
-            updateMesh->update(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology);
-            renderStats.meshBytes += updateMesh->getDataSize();
+            updateMesh->update(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology,name,renderStats);
+
+
             return updateMesh->shared_from_this();
         }
 
-        auto res = new Mesh(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology);
+        auto res = new Mesh(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology,name,renderStats);
         renderStats.meshCount++;
-        renderStats.meshBytes += res->getDataSize();
 
         return std::shared_ptr<Mesh>(res);
 
@@ -640,6 +658,11 @@ namespace sre {
         } else {
             attributesIVec4[name] = values;
         }
+        return *this;
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withName(const std::string& name) {
+        this->name = name;
         return *this;
     }
 }

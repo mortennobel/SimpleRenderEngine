@@ -104,7 +104,7 @@ namespace sre {
             glClearStencil(builder.clearStencilValue);
             clear |= GL_STENCIL_BUFFER_BIT;
         }
-        if (clear){
+        if (clear != 0u){
             glClear(clear);
         }
 
@@ -150,7 +150,7 @@ namespace sre {
         if (mesh->getIndexSets() == 0){
             glDrawArrays((GLenum) mesh->getMeshTopology(), 0, mesh->getVertexCount());
         } else {
-            GLsizei indexCount = (GLsizei) mesh->getIndices(0).size();
+            GLsizei indexCount = (GLsizei) mesh->getIndicesSize(0);
             glDrawElements((GLenum) mesh->getMeshTopology(), indexCount, GL_UNSIGNED_SHORT, 0);
         }
     }
@@ -168,20 +168,20 @@ namespace sre {
             renderStats->stateChangesShader++;
             lastBoundShader = shader;
             shader->bind();
-            if (shader->uniformLocationModel != -1){
+            if (shader->uniformLocationModel != -1) {
                 glUniformMatrix4fv(shader->uniformLocationModel, 1, GL_FALSE, glm::value_ptr(modelTransform));
             }
-            if (shader->uniformLocationView != -1){
+            if (shader->uniformLocationView != -1) {
                 glUniformMatrix4fv(shader->uniformLocationView, 1, GL_FALSE, glm::value_ptr(camera.viewTransform));
             }
-            if (shader->uniformLocationProjection != -1){
+            if (shader->uniformLocationProjection != -1) {
                 glUniformMatrix4fv(shader->uniformLocationProjection, 1, GL_FALSE, glm::value_ptr(projection));
             }
-            if (shader->uniformLocationNormal != -1){
+            if (shader->uniformLocationNormal != -1) {
                 auto normalMatrix = transpose(inverse(((glm::mat3)camera.getViewTransform()) * ((glm::mat3)modelTransform)));
                 glUniformMatrix3fv(shader->uniformLocationNormal, 1, GL_FALSE, glm::value_ptr(normalMatrix));
             }
-            if (shader->uniformLocationViewport != -1){
+            if (shader->uniformLocationViewport != -1) {
                 glm::vec4 viewport((float)viewportSize.x,(float)viewportSize.y,(float)viewportOffset.x,(float)viewportOffset.y);
                 glUniform4fv(shader->uniformLocationViewport, 1, glm::value_ptr(viewport));
             }
@@ -273,7 +273,7 @@ namespace sre {
                 mesh->bind(shader,i);
             }
 
-            GLsizei indexCount = (int) mesh->getIndices(i).size();
+            GLsizei indexCount = mesh->getIndicesSize(i);
             glDrawElements((GLenum) mesh->getMeshTopology(i), indexCount, GL_UNSIGNED_SHORT, 0);
         }
     }
@@ -289,5 +289,4 @@ namespace sre {
             draw(spriteBatch->spriteMeshes[i], modelTransform, spriteBatch->materials[i]);
         }
     }
-
 }

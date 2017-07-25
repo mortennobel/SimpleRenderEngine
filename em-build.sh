@@ -24,6 +24,7 @@ emcc -Iinclude src/imgui/imgui.cpp \
                src/sre/Sprite.cpp \
                src/sre/SpriteBatch.cpp \
                src/sre/SpriteAtlas.cpp \
+               src/sre/Profiler.cpp \
                src/sre/Log.cpp \
                examples/$FILENAME.cpp \
                -O2 -std=c++14 -s TOTAL_MEMORY=33554432 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' --preload-file examples/data -s USE_SDL=2 -o html/$FILENAME.html

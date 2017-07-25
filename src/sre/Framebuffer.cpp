@@ -15,7 +15,14 @@ namespace sre{
         return *this;
     }
 
-    Framebuffer::Framebuffer() {
+    Framebuffer::FrameBufferBuilder &Framebuffer::FrameBufferBuilder::withName(std::string name) {
+        this->name = name;
+        return *this;
+    }
+
+    Framebuffer::Framebuffer(std::string name)
+    :name(name)
+    {
     }
 
     Framebuffer::~Framebuffer() {
@@ -31,6 +38,10 @@ namespace sre{
 
     int Framebuffer::getMaximumColorAttachments() {
         return 1;
+    }
+
+    const std::string& Framebuffer::getName() {
+        return name;
     }
 
     void checkStatus() {
@@ -81,7 +92,10 @@ namespace sre{
     }
 
     std::shared_ptr<Framebuffer> Framebuffer::FrameBufferBuilder::build() {
-        auto framebuffer = new Framebuffer();
+        if (name.length()==0){
+            name = "Framebuffer";
+        }
+        auto framebuffer = new Framebuffer(name);
         framebuffer->size = size;
         glGenRenderbuffers(1,&framebuffer->renderBufferDepth); // Create a renderbuffer object
 
@@ -117,6 +131,7 @@ namespace sre{
         framebuffer->textures = textures;
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 
         return std::shared_ptr<Framebuffer>(framebuffer);
     }
