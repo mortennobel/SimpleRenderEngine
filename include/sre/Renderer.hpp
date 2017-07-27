@@ -82,6 +82,7 @@ namespace sre {
         std::vector<Mesh*> meshes;
         std::vector<Shader*> shaders;
         std::vector<Texture*> textures;
+        std::vector<SpriteAtlas*> spriteAtlases;
 
         friend class Mesh;
         friend class Mesh::MeshBuilder;
@@ -91,6 +92,7 @@ namespace sre {
         friend class Framebuffer;
         friend class RenderPass;
         friend class Profiler;
+        friend class SpriteAtlas;
         friend class RenderPass::RenderPassBuilder;
     };
 }

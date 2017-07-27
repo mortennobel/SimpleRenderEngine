@@ -66,6 +66,7 @@ private:
     Texture* texture;
     friend class SpriteAtlas;
     friend class SpriteBatch;
+    friend class Profiler;
 };
 
 }

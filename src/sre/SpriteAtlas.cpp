@@ -6,6 +6,7 @@
  */
 
 #include "sre/SpriteAtlas.hpp"
+#include "sre/Renderer.hpp"
 #include "sre/Sprite.hpp"
 #include "sre/Texture.hpp"
 #include "sre/Log.hpp"
@@ -22,11 +23,14 @@
 using namespace std;
 
 namespace sre{
-SpriteAtlas::SpriteAtlas(std::map<std::string, Sprite>&& sprites, std::shared_ptr<Texture> texture) {
+SpriteAtlas::SpriteAtlas(std::map<std::string, Sprite>&& sprites, std::shared_ptr<Texture> texture, std::string atlasName)
+        :atlasName{atlasName}
+{
     for (auto & s : sprites){
         this->sprites.insert({s.first,s.second});
     }
     this->texture = texture;
+    sre::Renderer::instance->spriteAtlases.push_back(this);
 }
 
 std::shared_ptr<SpriteAtlas> SpriteAtlas::create(std::string jsonFile, std::string imageFile) {
@@ -57,7 +61,7 @@ std::shared_ptr<SpriteAtlas> SpriteAtlas::create(std::string jsonFile, std::stri
         Sprite sprite({x,y},{w,h},{px,py},texture.get());
         sprites.emplace(std::pair<std::string, Sprite>(name, std::move(sprite)));
     }
-    return std::shared_ptr<SpriteAtlas>(new SpriteAtlas(std::move(sprites), texture));
+    return std::shared_ptr<SpriteAtlas>(new SpriteAtlas(std::move(sprites), texture, jsonFile));
 }
 
 std::vector<std::string> SpriteAtlas::getNames() {
@@ -65,7 +69,7 @@ std::vector<std::string> SpriteAtlas::getNames() {
     for (auto & e : sprites){
         res.push_back(e.first);
     }
-    return res;
+    return std::move(res);
 }
 
 Sprite SpriteAtlas::get(std::string name) {
@@ -73,7 +77,30 @@ Sprite SpriteAtlas::get(std::string name) {
         LOG_WARNING("Cannot find sprite %s in spriteatlas",name.c_str());
         return {};
     }
-    Sprite val = sprites[name];
-    return val;
+    return sprites[name];
 }
+
+    std::shared_ptr<SpriteAtlas> SpriteAtlas::createSingleSprite(std::shared_ptr<Texture> texture, std::string name, glm::vec2 pivot, glm::ivec2 pos, glm::ivec2 size ) {
+
+        std::map<std::string, Sprite> sprites;
+        if (size == glm::ivec2{0,0}){
+            size.x = texture->getWidth();
+            size.y = texture->getHeight();
+        }
+        Sprite sprite(pos,size,pivot,texture.get());
+        sprites.emplace(std::pair<std::string, Sprite>(name, std::move(sprite)));
+
+        return std::shared_ptr<SpriteAtlas>(new SpriteAtlas(std::move(sprites), texture, name+"_atlas"));
+    }
+
+    SpriteAtlas::~SpriteAtlas() {
+        auto r = Renderer::instance;
+        if (r){
+            r->spriteAtlases.erase(std::remove(r->spriteAtlases.begin(), r->spriteAtlases.end(), this));
+        }
+    }
+
+    std::string SpriteAtlas::getAtlasName() {
+        return atlasName;
+    }
 }

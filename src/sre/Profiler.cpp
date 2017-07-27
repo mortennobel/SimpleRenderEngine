@@ -11,6 +11,8 @@
 #include "sre/SDLRenderer.hpp"
 #include "sre/impl/GL.hpp"
 #include "sre/Texture.hpp"
+#include "sre/SpriteAtlas.hpp"
+#include "sre/Sprite.hpp"
 #include "imgui_internal.h"
 
 using Clock = std::chrono::high_resolution_clock;
@@ -76,7 +78,7 @@ namespace sre{
             ImGui::LabelText("Wrap tex-coords","%s",tex->isWrapTextureCoordinates()?"true":"false");
             ImGui::LabelText("Data size","%f MB",tex->getDataSize()/(1000*1000.0f));
             if (!tex->isCubemap()){
-                ImGui::Image(reinterpret_cast<ImTextureID>(tex->textureId), ImVec2(100, 100));
+                ImGui::Image(reinterpret_cast<ImTextureID>(tex->textureId), ImVec2(100, 100),{0,1},{1,0},{1,1,1,1},{0,0,0,1});
             }
 
             ImGui::TreePop();
@@ -325,12 +327,18 @@ namespace sre{
                 ImGui::LabelText("","No meshes");
             }
         }
-        if (ImGui::CollapsingHeader("Framebuffer objects")){
-            for (auto fbo : r->framebufferObjects){
-                showFramebufferObject(fbo);
+        if (!r->spriteAtlases.empty()){
+            if (ImGui::CollapsingHeader("Sprite atlases")){
+                for (auto atlas : r->spriteAtlases){
+                    showSpriteAtlas(atlas);
+                }
             }
-            if (r->framebufferObjects.empty()){
-                ImGui::LabelText("","No framebuffer objects");
+        }
+        if (!r->framebufferObjects.empty()) {
+            if (ImGui::CollapsingHeader("Framebuffer objects")) {
+                for (auto fbo : r->framebufferObjects) {
+                    showFramebufferObject(fbo);
+                }
             }
         }
         ImGui::End();
@@ -344,5 +352,39 @@ namespace sre{
         stats[frameCount%frames] = Renderer::instance->getRenderStats();
         milliseconds[frameCount%frames] = deltaTime;
         frameCount++;
+    }
+
+    void Profiler::showSpriteAtlas(SpriteAtlas *pAtlas) {
+        std::string s = pAtlas->getAtlasName()+"##"+std::to_string((u_int64_t)pAtlas);
+        if (ImGui::TreeNode(s.c_str())){
+            std::stringstream ss;
+            for (auto& str : pAtlas->getNames()){
+                ss<< str<<'\0';
+            }
+            ss<< '\0';
+            auto ss_str = ss.str();
+            static std::map<SpriteAtlas *,int> spriteAtlasSelection;
+            auto elem = spriteAtlasSelection.find(pAtlas);
+            if (elem == spriteAtlasSelection.end()){
+                spriteAtlasSelection.insert({pAtlas, -1});
+                elem = spriteAtlasSelection.find(pAtlas);
+            }
+            int* index = &elem->second;
+            ImGui::Combo("Sprite names", index, ss_str.c_str());
+
+            if (*index != -1){
+                auto name = pAtlas->getNames()[*index];
+                Sprite sprite = pAtlas->get(name);
+                ImGui::LabelText("Sprite anchor","%.2fx%.2f",sprite.getSpriteAnchor().x,sprite.getSpriteAnchor().y);
+                ImGui::LabelText("Sprite size","%ix%i",sprite.getSpriteSize().x,sprite.getSpriteSize().y);
+                ImGui::LabelText("Sprite pos","%ix%i",sprite.getSpritePos().x,sprite.getSpritePos().y);
+                auto tex = sprite.texture;
+                auto uv0 = ImVec2((sprite.getSpritePos().x)/(float)tex->getWidth(), (sprite.getSpritePos().y+sprite.getSpriteSize().y)/(float)tex->getHeight());
+                auto uv1 = ImVec2((sprite.getSpritePos().x+sprite.getSpriteSize().x)/(float)tex->getWidth(),(sprite.getSpritePos().y)/(float)tex->getHeight());
+                ImGui::Image(reinterpret_cast<ImTextureID>(tex->textureId), ImVec2(100.0f/sprite.getSpriteSize().y*(float)sprite.getSpriteSize().x, 100),uv0, uv1,{1,1,1,1},{0,0,0,1});
+            }
+
+            ImGui::TreePop();
+        }
     }
 }

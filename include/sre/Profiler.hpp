@@ -12,9 +12,11 @@
 #include "sre/RenderStats.hpp"
 
 namespace sre {
-
+    // forward declarations
     class Texture;
+    class SpriteAtlas;
     class SDLRenderer;
+
 class Profiler {
 public:
     explicit Profiler(int frames = 300,SDLRenderer* sdlRenderer = nullptr);
@@ -33,6 +35,8 @@ private:
     SDLRenderer* sdlRenderer;
 
     void showTexture(Texture *tex);
+
+    void showSpriteAtlas(SpriteAtlas *pAtlas);
 };
 
 }

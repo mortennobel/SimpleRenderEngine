@@ -32,13 +32,16 @@
 #include <sre/ModelImporter.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <sre/SpriteAtlas.hpp>
+#include <sre/Profiler.hpp>
 
 
 using namespace sre;
 
 class SpriteExample {
 public:
-    SpriteExample(){
+    SpriteExample()
+    :r{},profiler(300,&r)
+    {
         r.init();
 
         atlas = SpriteAtlas::create("examples/data/PlanetCute.json","examples/data/PlanetCute.png");
@@ -47,7 +50,9 @@ public:
         camera->setWindowCoordinates();
 
         r.frameRender = [&](){
+            profiler.update();
             render();
+            profiler.gui();
         };
 
         r.startEventLoop();
@@ -140,6 +145,7 @@ private:
     std::shared_ptr<SpriteAtlas> atlas;
     SDLRenderer r;
     Camera *camera;
+    Profiler profiler;
     std::shared_ptr<SpriteBatch> world;
 };
 
