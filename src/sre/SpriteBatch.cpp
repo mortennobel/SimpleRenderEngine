@@ -93,4 +93,5 @@ namespace sre{
     std::shared_ptr<SpriteBatch> SpriteBatch::SpriteBatchBuilder::build() {
         return std::shared_ptr<SpriteBatch>{new SpriteBatch(shader, std::move(sprites))};
     }
+
 }

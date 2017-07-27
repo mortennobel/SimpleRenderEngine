@@ -21,6 +21,8 @@ public:
     public:
         SpriteBatchBuilder& withShader(std::shared_ptr<Shader> shader);
         SpriteBatchBuilder& addSprite(const Sprite& sprite);
+        template< class InputIt >
+        SpriteBatchBuilder& addSprites(InputIt first, InputIt last);
         std::shared_ptr<SpriteBatch> build();
     private:
         SpriteBatchBuilder();
@@ -37,5 +39,11 @@ private:
     std::vector<std::shared_ptr<Mesh>> spriteMeshes;
     friend class RenderPass;
 };
+
+    template<class InputIt>
+    SpriteBatch::SpriteBatchBuilder &SpriteBatch::SpriteBatchBuilder::addSprites(InputIt first, InputIt last) {
+        sprites.insert(sprites.end(), first, last);
+        return *this;
+    }
 
 }
