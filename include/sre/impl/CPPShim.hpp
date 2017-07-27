@@ -1,7 +1,11 @@
+/*
+ *  SimpleRenderEngine
+ *
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  License: MIT
+ */
+
 #pragma once
-
-/// Simple header which wraps C++14 features to MSVC
-
 
 #if _MSC_VER
 #define DEPRECATED(X) __declspec(deprecated(X))

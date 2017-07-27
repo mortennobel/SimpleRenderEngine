@@ -1,6 +1,9 @@
-//
-// Created by Morten Nobel-Jørgensen on 30/06/2017.
-//
+/*
+ *  SimpleRenderEngine
+ *
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  License: MIT
+ */
 
 #pragma once
 

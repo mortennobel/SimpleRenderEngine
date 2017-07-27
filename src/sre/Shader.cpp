@@ -1,6 +1,9 @@
-//
-// Created by morten on 31/07/16.
-//
+/*
+ *  SimpleRenderEngine
+ *
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  License: MIT
+ */
 
 #include "sre/Shader.hpp"
 #include "sre/Material.hpp"
@@ -403,6 +406,20 @@ namespace sre {
                 LOG_ERROR("Invalid blend value - was %i",(int)blend);
                 break;
         }
+        if (offset.x == 0 && offset.y==0){
+            glDisable(GL_POLYGON_OFFSET_FILL);
+#ifndef EMSCRIPTEN
+            glDisable(GL_POLYGON_OFFSET_LINE);
+            glDisable(GL_POLYGON_OFFSET_POINT);
+#endif
+        } else {
+            glEnable(GL_POLYGON_OFFSET_FILL);
+#ifndef EMSCRIPTEN
+            glEnable(GL_POLYGON_OFFSET_LINE);
+            glEnable(GL_POLYGON_OFFSET_POINT);
+#endif
+            glPolygonOffset(offset.x, offset.y);
+        }
     }
 
     bool Shader::isDepthTest() {
@@ -557,6 +574,10 @@ namespace sre {
     std::pair<int, int> Shader::getAttibuteType(const std::string &name) {
         auto res = attributes[name];
         return {res.type, res.arraySize};
+    }
+
+    glm::vec2 Shader::getOffset() {
+        return offset;
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSource(const std::string& vertexShader, const std::string& fragmentShader) {
@@ -878,11 +899,17 @@ void main(void)
         res->depthWrite = this->depthWrite;
         res->blend = this->blend;
         res->name = this->name;
+        res->offset = this->offset;
         return std::shared_ptr<Shader>(res);
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withName(const std::string& name) {
         this->name = name;
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withOffset(float factor, float units) {
+        this->offset = {factor, units};
         return *this;
     }
 }

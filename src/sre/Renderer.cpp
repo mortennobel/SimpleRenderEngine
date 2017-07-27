@@ -1,6 +1,9 @@
-//
-// Created by morten on 31/07/16.
-//
+/*
+ *  SimpleRenderEngine
+ *
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  License: MIT
+ */
 
 #if defined(_WIN32) // force high performance graphics card see https://github.com/grimfang4/sdl-gpu/issues/17
 #include <windows.h> // <---- for the DWORD

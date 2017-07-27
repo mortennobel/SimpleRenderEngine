@@ -1,6 +1,10 @@
-//
-// Created by Morten Nobel-Jørgensen on 15/06/2017.
-//
+/*
+ *  SimpleRenderEngine
+ *
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  License: MIT
+ */
+
 #include "sre/Material.hpp"
 #include "sre/impl/GL.hpp"
 #include <glm/gtc/type_ptr.hpp>

@@ -1,6 +1,9 @@
-//
-// Created by Morten Nobel-Jørgensen on 24/07/2017.
-//
+/*
+ *  SimpleRenderEngine
+ *
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  License: MIT
+ */
 
 #include <iostream>
 #include "sre/Profiler.hpp"
@@ -155,6 +158,7 @@ namespace sre{
             ImGui::LabelText("Blending","%s",s.c_str());
             ImGui::LabelText("Depth test","%s",shader->isDepthTest()?"true":"false");
             ImGui::LabelText("Depth write","%s",shader->isDepthWrite()?"true":"false");
+            ImGui::LabelText("Offset","factor: %.1f units: %.1f",shader->getOffset().x,shader->getOffset().y);
 
             ImGui::TreePop();
         }

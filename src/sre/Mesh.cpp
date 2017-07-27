@@ -1,6 +1,9 @@
-//
-// Created by morten on 31/07/16.
-//
+/*
+ *  SimpleRenderEngine
+ *
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  License: MIT
+ */
 
 #include "sre/Mesh.hpp"
 
@@ -583,13 +586,13 @@ namespace sre {
         return *this;
     }
 
-    Mesh::MeshBuilder &Mesh::MeshBuilder::withQuad() {
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withQuad(float size) {
 
         std::vector<glm::vec3> vertices({
-                                                glm::vec3{ 1,-1, 0},
-                                                glm::vec3{ 1, 1, 0},
-                                                glm::vec3{-1,-1, 0},
-                                                glm::vec3{-1, 1, 0}
+                                                glm::vec3{ size,-size, 0},
+                                                glm::vec3{ size, size, 0},
+                                                glm::vec3{-size,-size, 0},
+                                                glm::vec3{-size, size, 0}
                                         });
         std::vector<glm::vec3> normals({
                                                glm::vec3{0, 0, 1},

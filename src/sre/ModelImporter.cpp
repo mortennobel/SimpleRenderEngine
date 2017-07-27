@@ -1,6 +1,9 @@
-//
-// Created by Morten Nobel-Jørgensen on 17/07/2017.
-//
+/*
+ *  SimpleRenderEngine
+ *
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  License: MIT
+ */
 
 #include "sre/ModelImporter.hpp"
 #include <fstream>

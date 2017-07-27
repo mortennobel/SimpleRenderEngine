@@ -1,6 +1,9 @@
-//
-// Created by morten on 31/07/16.
-//
+/*
+ *  SimpleRenderEngine
+ *
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  License: MIT
+ */
 
 #include "sre/Light.hpp"
 

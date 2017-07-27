@@ -1,3 +1,10 @@
+/*
+ *  SimpleRenderEngine
+ *
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  License: MIT
+ */
+
 #include "sre/Texture.hpp"
 
 #include "sre/impl/GL.hpp"

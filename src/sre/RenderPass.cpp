@@ -1,6 +1,9 @@
-//
-// Created by Morten Nobel-Jørgensen on 08/06/2017.
-//
+/*
+ *  SimpleRenderEngine
+ *
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  License: MIT
+ */
 
 #include "sre/RenderPass.hpp"
 #include "sre/Mesh.hpp"

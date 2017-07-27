@@ -1,6 +1,9 @@
-//
-// Created by morten on 31/07/16.
-//
+/*
+ *  SimpleRenderEngine
+ *
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  License: MIT
+ */
 
 #pragma once
 #include "glm/glm.hpp"
@@ -87,6 +90,7 @@ namespace sre {
             ShaderBuilder& withSourceStandardParticles();
             ShaderBuilder& withSourceDebugUV();
             ShaderBuilder& withSourceDebugNormals();
+            ShaderBuilder& withOffset(float factor,float units);  // set the scale and units used to calculate depth values (note for WebGL1.0/OpenGL ES 2.0 only affects polygon fill)
             ShaderBuilder& withDepthTest(bool enable);
             ShaderBuilder& withDepthWrite(bool enable);
             ShaderBuilder& withBlend(BlendType blendType);
@@ -99,6 +103,7 @@ namespace sre {
             std::string fragmentShaderStr;
             bool depthTest = true;
             bool depthWrite = true;
+            glm::vec2 offset = {0,0};
             std::string name;
             BlendType blend = BlendType::Disabled;
             friend class Shader;
@@ -144,6 +149,8 @@ namespace sre {
 
         BlendType getBlend();
 
+        glm::vec2 getOffset();
+
         const std::string& getName();
 
         std::vector<std::string> getAttributeNames();
@@ -167,6 +174,7 @@ namespace sre {
         bool depthWrite = true;
         std::string name;
         BlendType blend = BlendType::Disabled;
+        glm::vec2 offset = glm::vec2(0,0);
 
         std::vector<Uniform> uniforms;
 

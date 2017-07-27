@@ -1,5 +1,11 @@
-#pragma once
+/*
+ *  SimpleRenderEngine
+ *
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  License: MIT
+ */
 
+#pragma once
 
 #include "sre/impl/Export.hpp"
 

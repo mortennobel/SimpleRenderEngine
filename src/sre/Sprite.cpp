@@ -1,6 +1,9 @@
-//
-// Created by Morten Nobel-Jørgensen on 17/07/2017.
-//
+/*
+ *  SimpleRenderEngine
+ *
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  License: MIT
+ */
 
 #include <iostream>
 #include <glm/gtx/transform.hpp>

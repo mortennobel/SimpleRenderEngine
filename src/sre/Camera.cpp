@@ -1,6 +1,9 @@
-//
-// Created by morten on 01/08/16.
-//
+/*
+ *  SimpleRenderEngine
+ *
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  License: MIT
+ */
 
 #include "sre/Camera.hpp"
 
