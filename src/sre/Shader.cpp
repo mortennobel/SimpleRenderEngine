@@ -119,6 +119,7 @@ namespace sre {
             case UniformType::TextureCube:
                 return "textureCube";
             case UniformType::Invalid:
+            default:
                 return "invalid";
         }
     }
