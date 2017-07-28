@@ -69,7 +69,7 @@ namespace sre{
     }
 
     void Profiler::showTexture(Texture* tex){
-        std::string s = tex->getName()+"##"+std::to_string((u_int64_t)tex);
+        std::string s = tex->getName()+"##"+std::to_string((int64_t)tex);
         if (ImGui::TreeNode(s.c_str())){
 
             ImGui::LabelText("Size","%ix%i",tex->getWidth(),tex->getHeight());
@@ -87,7 +87,7 @@ namespace sre{
 
 
     void showMesh(Mesh* mesh){
-        std::string s = mesh->getName()+"##"+std::to_string((u_int64_t)mesh);
+        std::string s = mesh->getName()+"##"+std::to_string((int64_t)mesh);
         if (ImGui::TreeNode(s.c_str())){
             ImGui::LabelText("Vertex count", "%i", mesh->getVertexCount());
             ImGui::LabelText("Mesh size", "%.2f MB", mesh->getDataSize()/(1000*1000.0f));
@@ -121,7 +121,7 @@ namespace sre{
     std::string glUniformToString(UniformType type);
 
     void showShader(Shader* shader){
-        std::string s = shader->getName()+"##"+std::to_string((u_int64_t)shader);
+        std::string s = shader->getName()+"##"+std::to_string((int64_t)shader);
         if (ImGui::TreeNode(s.c_str())){
             if (ImGui::TreeNode("Attributes")) {
                 auto attributeNames = shader->getAttributeNames();
@@ -192,7 +192,7 @@ namespace sre{
 }
 
     void showFramebufferObject(Framebuffer* fbo){
-        std::string s = fbo->getName()+"##"+std::to_string((u_int64_t)fbo);
+        std::string s = fbo->getName()+"##"+std::to_string((int64_t)fbo);
         if (ImGui::TreeNode(s.c_str())){
             ImGui::TreePop();
         }
@@ -355,7 +355,7 @@ namespace sre{
     }
 
     void Profiler::showSpriteAtlas(SpriteAtlas *pAtlas) {
-        std::string s = pAtlas->getAtlasName()+"##"+std::to_string((u_int64_t)pAtlas);
+        std::string s = pAtlas->getAtlasName()+"##"+std::to_string((int64_t)pAtlas);
         if (ImGui::TreeNode(s.c_str())){
             std::stringstream ss;
             for (auto& str : pAtlas->getNames()){
