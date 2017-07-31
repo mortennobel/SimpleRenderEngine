@@ -1,5 +1,6 @@
 ## Version history
 
+ * 0.9.7 Add Mesh preview and Shader preview in profiler
  * 0.9.6 Offset in shaders for calculating depth values
  * 0.9.5 Profiling 
  * 0.9.4 High DPI, Fullscreen mode, mouse cursor visibility and mouse lock. 

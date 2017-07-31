@@ -19,8 +19,8 @@
 #include <imgui_internal.h>
 #include <glm/gtc/type_precision.hpp>
 namespace sre {
-    bool RenderPass::instance = false;
-    bool RenderPass::lastGui = false;
+    RenderPass* RenderPass::instance = nullptr;
+
     std::shared_ptr<Framebuffer> RenderPass::lastFramebuffer;
 
     RenderPass::RenderPassBuilder RenderPass::create() {
@@ -76,57 +76,20 @@ namespace sre {
     }
 
     RenderPass::RenderPassBuilder & RenderPass::RenderPassBuilder::withFramebuffer(std::shared_ptr<Framebuffer> framebuffer) {
-        this->framebuffer = framebuffer;
+        this->framebuffer = std::move(framebuffer);
         return *this;
     }
 
     RenderPass::~RenderPass(){
-
+        if (instance == this){
+            finish();
+        }
     }
 
     RenderPass::RenderPass(RenderPass::RenderPassBuilder& builder)
-        :camera(builder.camera), worldLights(builder.worldLights),renderStats(builder.renderStats), framebuffer(builder.framebuffer)
+        :builder(builder), lastPass(instance)
     {
-        if (instance){
-            finish();
-        }
-
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer!=nullptr?framebuffer->frameBufferObjectId:0);
-
-        GLbitfield clear = 0;
-        if (builder.clearColor) {
-            glClearColor(builder.clearColorValue.r, builder.clearColorValue.g, builder.clearColorValue.b, builder.clearColorValue.a);
-            clear |= GL_COLOR_BUFFER_BIT;
-        }
-        if (builder.clearDepth) {
-            glClearDepthf(builder.clearDepthValue);
-            glDepthMask(GL_TRUE);
-            clear |= GL_DEPTH_BUFFER_BIT;
-        }
-        if (builder.clearStencil) {
-            glClearStencil(builder.clearStencilValue);
-            clear |= GL_STENCIL_BUFFER_BIT;
-        }
-        if (clear != 0u){
-            glClear(clear);
-        }
-
-        if (builder.gui){
-            ImGui_SRE_NewFrame(Renderer::instance->window);
-        }
-
-        auto windowSize = static_cast<glm::vec2>(Renderer::instance->getDrawableSize());
-        if (framebuffer){
-            windowSize = framebuffer->size;
-        }
-        viewportOffset = static_cast<glm::uvec2>(camera.viewportOffset * windowSize);
-        viewportSize = static_cast<glm::uvec2>(windowSize * camera.viewportSize);
-
-        projection = camera.getProjectionTransform(windowSize);
-        glViewport(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
-        glScissor(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
-        instance = true;
-        lastGui = builder.gui;
+        bind(true);
     }
 
     void RenderPass::draw(std::shared_ptr<Mesh>& meshPtr, glm::mat4 modelTransform, std::shared_ptr<Material>& material_ptr) {
@@ -136,18 +99,19 @@ namespace sre {
         auto material = material_ptr.get();
         auto shader = material->getShader().get();
         assert(mesh  != nullptr);
-        renderStats->drawCalls++;
+        builder.renderStats->drawCalls++;
         setupShader(modelTransform, shader);
         if (material != lastBoundMaterial){
-            renderStats->stateChangesMaterial++;
+            builder.renderStats->stateChangesMaterial++;
             lastBoundMaterial = material;
             lastBoundMesh = nullptr; // force mesh to rebind
             material->bind();
         }
         if (mesh != lastBoundMesh){
-            renderStats->stateChangesMesh++;
+            builder.renderStats->stateChangesMesh++;
             lastBoundMesh = mesh;
-            mesh->bind(shader,0);
+            mesh->bind(shader);
+            mesh->bindIndexSet(0);
         }
 
         if (mesh->getIndexSets() == 0){
@@ -164,31 +128,31 @@ namespace sre {
                 glUniformMatrix4fv(shader->uniformLocationModel, 1, GL_FALSE, glm::value_ptr(modelTransform));
             }
             if (shader->uniformLocationNormal != -1){
-                auto normalMatrix = transpose(inverse((glm::mat3)(camera.getViewTransform() * modelTransform)));
+                auto normalMatrix = transpose(inverse((glm::mat3)(builder.camera.getViewTransform() * modelTransform)));
                 glUniformMatrix4fv(shader->uniformLocationNormal, 1, GL_FALSE, glm::value_ptr(normalMatrix));
             }
         } else {
-            renderStats->stateChangesShader++;
+            builder.renderStats->stateChangesShader++;
             lastBoundShader = shader;
             shader->bind();
             if (shader->uniformLocationModel != -1) {
                 glUniformMatrix4fv(shader->uniformLocationModel, 1, GL_FALSE, glm::value_ptr(modelTransform));
             }
             if (shader->uniformLocationView != -1) {
-                glUniformMatrix4fv(shader->uniformLocationView, 1, GL_FALSE, glm::value_ptr(camera.viewTransform));
+                glUniformMatrix4fv(shader->uniformLocationView, 1, GL_FALSE, glm::value_ptr(builder.camera.viewTransform));
             }
             if (shader->uniformLocationProjection != -1) {
                 glUniformMatrix4fv(shader->uniformLocationProjection, 1, GL_FALSE, glm::value_ptr(projection));
             }
             if (shader->uniformLocationNormal != -1) {
-                auto normalMatrix = transpose(inverse(((glm::mat3)camera.getViewTransform()) * ((glm::mat3)modelTransform)));
+                auto normalMatrix = transpose(inverse(((glm::mat3)builder.camera.getViewTransform()) * ((glm::mat3)modelTransform)));
                 glUniformMatrix3fv(shader->uniformLocationNormal, 1, GL_FALSE, glm::value_ptr(normalMatrix));
             }
             if (shader->uniformLocationViewport != -1) {
                 glm::vec4 viewport((float)viewportSize.x,(float)viewportSize.y,(float)viewportOffset.x,(float)viewportOffset.y);
                 glUniform4fv(shader->uniformLocationViewport, 1, glm::value_ptr(viewport));
             }
-            shader->setLights(worldLights, camera.getViewTransform());
+            shader->setLights(builder.worldLights, builder.camera.getViewTransform());
         }
     }
 
@@ -211,9 +175,8 @@ namespace sre {
         draw(mesh, glm::mat4(1), material);
     }
 
-    void RenderPass::finish() {
-        assert(instance);
-        if (lastGui){
+    void RenderPass::finishInstance(){
+        if (builder.gui) {
             ImGui::Render();
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -227,9 +190,18 @@ namespace sre {
                 }
             }
         }
-        lastFramebuffer.reset();
-        instance = false;
-        lastGui = false;
+    }
+
+    void RenderPass::finish() {
+        if (instance != nullptr){
+            instance->finishInstance();
+            if (instance->lastPass){
+                instance = instance->lastPass;
+                instance->bind(false);
+            } else {
+                instance = nullptr;
+            }
+        }
     }
 
     std::vector<glm::vec4> RenderPass::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
@@ -262,19 +234,20 @@ namespace sre {
             auto material = material_ptr.get();
             auto shader = material->getShader().get();
             assert(mesh  != nullptr);
-            renderStats->drawCalls++;
+            builder.renderStats->drawCalls++;
             setupShader(modelTransform, shader);
-            if (material != lastBoundMaterial){
-                renderStats->stateChangesMaterial++;
+            if (material != lastBoundMaterial) {
+                builder.renderStats->stateChangesMaterial++;
                 lastBoundMaterial = material;
                 lastBoundMesh = nullptr; // force mesh to rebind
                 material->bind();
             }
-            if (mesh != lastBoundMesh){
-                renderStats->stateChangesMesh++;
+            if (mesh != lastBoundMesh) {
+                builder.renderStats->stateChangesMesh++;
                 lastBoundMesh = mesh;
-                mesh->bind(shader,i);
+                mesh->bind(shader);
             }
+            mesh->bindIndexSet(i);
 
             GLsizei indexCount = mesh->getIndicesSize(i);
             glDrawElements((GLenum) mesh->getMeshTopology(i), indexCount, GL_UNSIGNED_SHORT, 0);
@@ -288,8 +261,52 @@ namespace sre {
     void RenderPass::draw(std::shared_ptr<SpriteBatch>& spriteBatch, glm::mat4 modelTransform) {
         if (spriteBatch == nullptr) return;
 
-        for (int i=0;i<spriteBatch->materials.size();i++){
+        for (int i=0;i<spriteBatch->materials.size();i++) {
             draw(spriteBatch->spriteMeshes[i], modelTransform, spriteBatch->materials[i]);
         }
+    }
+
+    void RenderPass::bind(bool newFrame) {
+        instance = this;
+        glBindFramebuffer(GL_FRAMEBUFFER, builder.framebuffer!=nullptr?builder.framebuffer->frameBufferObjectId:0);
+        if (builder.framebuffer!=nullptr){
+            builder.framebuffer->bind();
+        } else {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
+        if (newFrame) {
+            GLbitfield clear = 0;
+            if (builder.clearColor) {
+                glClearColor(builder.clearColorValue.r, builder.clearColorValue.g, builder.clearColorValue.b, builder.clearColorValue.a);
+                clear |= GL_COLOR_BUFFER_BIT;
+            }
+            if (builder.clearDepth) {
+                glClearDepthf(builder.clearDepthValue);
+                glDepthMask(GL_TRUE);
+                clear |= GL_DEPTH_BUFFER_BIT;
+            }
+            if (builder.clearStencil) {
+                glClearStencil(builder.clearStencilValue);
+                clear |= GL_STENCIL_BUFFER_BIT;
+            }
+            if (clear != 0u) {
+                glClear(clear);
+            }
+
+            if (builder.gui) {
+                ImGui_SRE_NewFrame(Renderer::instance->window);
+            }
+        }
+
+        auto windowSize = static_cast<glm::vec2>(Renderer::instance->getDrawableSize());
+        if (builder.framebuffer){
+            windowSize = builder.framebuffer->size;
+        }
+        viewportOffset = static_cast<glm::uvec2>(builder.camera.viewportOffset * windowSize);
+        viewportSize = static_cast<glm::uvec2>(windowSize * builder.camera.viewportSize);
+
+        projection = builder.camera.getProjectionTransform(windowSize);
+        glViewport(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
+        glScissor(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
     }
 }

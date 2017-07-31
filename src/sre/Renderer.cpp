@@ -83,7 +83,7 @@ namespace sre {
     }
 
     void Renderer::swapWindow() {
-        if (RenderPass::instance){
+        if (RenderPass::instance != nullptr){
             RenderPass::finish();
         }
 

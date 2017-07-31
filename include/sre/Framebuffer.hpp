@@ -38,9 +38,13 @@ namespace sre {
 
         static int getMaximumColorAttachments();
 
+        void setTexture(std::shared_ptr<Texture> tex, int index = 0);
+
         const std::string& getName();
 
     private:
+        void bind();
+        bool dirty = true;
         Framebuffer(std::string name);
         std::vector<std::shared_ptr<Texture>> textures;
         unsigned int frameBufferObjectId;

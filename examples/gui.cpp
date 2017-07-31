@@ -33,6 +33,7 @@ public:
                                       .withColor({1,0,0})
                                       .withRange(50)
                                       .build());
+
         material = Shader::getStandard()->createMaterial();
         material->setSpecularity(20);
 

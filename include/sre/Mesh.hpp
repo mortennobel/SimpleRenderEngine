@@ -141,7 +141,8 @@ namespace sre {
 
         std::array<glm::vec3,2> boundsMinMax;
 
-        void bind(Shader* shader, int indexSet);
+        void bind(Shader* shader);
+        void bindIndexSet(int indexSet);
 
         friend class RenderPass;
     };

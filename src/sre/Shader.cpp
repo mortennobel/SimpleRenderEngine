@@ -371,6 +371,7 @@ namespace sre {
                 // transform to eye space
                 lightPosType[i] = viewTransform * lightPosType[i];
                 lightColorRange[i] = glm::vec4(light->color, light->range);
+
             }
             if (uniformLocationLightPosType != -1) {
                 glUniform4fv(uniformLocationLightPosType, 4, glm::value_ptr(lightPosType[0]));
@@ -626,7 +627,6 @@ uniform float specularity;
 vec3 computeLight(){
     vec3 lightColor = vec3(0.0,0.0,0.0);
     vec3 normal = normalize(vNormal);
-
     for (int i=0;i<4;i++){
         bool isDirectional = g_lightPosType[i].w == 0.0;
         bool isPoint       = g_lightPosType[i].w == 1.0;

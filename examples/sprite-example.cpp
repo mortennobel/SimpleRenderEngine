@@ -40,7 +40,7 @@ using namespace sre;
 class SpriteExample {
 public:
     SpriteExample()
-    :r{},profiler(300,&r)
+    :r{}
     {
         r.init();
 
@@ -50,9 +50,8 @@ public:
         camera->setWindowCoordinates();
 
         r.frameRender = [&](){
-            profiler.update();
             render();
-            profiler.gui();
+
         };
 
         r.startEventLoop();
@@ -63,6 +62,7 @@ public:
                 .withCamera(*camera)
                 .withClearColor(true, {.3, .3, 1, 1})
                 .build();
+
 
         auto names = atlas->getNames();
         static bool demoWorld = false;
@@ -145,7 +145,6 @@ private:
     std::shared_ptr<SpriteAtlas> atlas;
     SDLRenderer r;
     Camera *camera;
-    Profiler profiler;
     std::shared_ptr<SpriteBatch> world;
 };
 

@@ -47,6 +47,23 @@ namespace sre{
         return name;
     }
 
+    void Framebuffer::setTexture(std::shared_ptr<Texture> tex, int index) {
+        textures[index] = tex;
+        dirty = true;
+    }
+
+    void Framebuffer::bind() {
+        glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObjectId);
+        if (dirty){
+            for (int i=0;i<textures.size();i++){
+                for (unsigned i=0;i<textures.size();i++){
+                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, textures[i]->textureId, 0);
+                }
+            }
+            dirty = false;
+        }
+    }
+
     void checkStatus() {
         using namespace std;
         GLenum frameBufferStatus = glCheckFramebufferStatus(GL_FRAMEBUFFER);

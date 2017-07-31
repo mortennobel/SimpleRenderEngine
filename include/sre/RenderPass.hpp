@@ -100,8 +100,11 @@ namespace sre {
         void finishGPUCommandBuffer();                      // GPU command buffer (must be called when profiling GPU time - should not be called when not profiling)
     private:
         static void finish();
-
+        void finishInstance();
+        RenderPass::RenderPassBuilder builder;
         RenderPass(RenderPass::RenderPassBuilder& builder);
+
+        void bind(bool newFrame);
 
         void setupShader(const glm::mat4 &modelTransform, Shader *shader);
 
@@ -109,17 +112,14 @@ namespace sre {
         Material* lastBoundMaterial = nullptr;
         Mesh* lastBoundMesh = nullptr;
 
-        Camera camera;
-        WorldLights* worldLights;
-        RenderStats* renderStats;
-        std::shared_ptr<Framebuffer> framebuffer;
+        RenderPass* lastPass = nullptr;
+
         glm::mat4 projection;
         glm::uvec2 viewportOffset;
         glm::uvec2 viewportSize;
 
 
-        static bool instance;
-        static bool lastGui;
+        static RenderPass* instance;
         static std::shared_ptr<Framebuffer> lastFramebuffer;
 
         friend class Renderer;

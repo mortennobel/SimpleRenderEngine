@@ -49,10 +49,10 @@ namespace sre {
 
     }
 
-    void Mesh::bind(Shader* shader, int indexSet){
+    void Mesh::bind(Shader* shader) {
 #ifndef EMSCRIPTEN
         auto res = shaderToVertexArrayObject.find(shader->shaderProgramId);
-        if (res != shaderToVertexArrayObject.end()){
+        if (res != shaderToVertexArrayObject.end()) {
             GLuint vao = res->second;
             glBindVertexArray(vao);
         } else {
@@ -65,6 +65,8 @@ namespace sre {
 #else
         setVertexAttributePointers(shader);
 #endif
+    }
+    void Mesh::bindIndexSet(int indexSet){
         if (indices.empty()){
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
         } else {

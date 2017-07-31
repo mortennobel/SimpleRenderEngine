@@ -6,12 +6,15 @@
  */
 
 #include <iostream>
+#include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/transform.hpp>
 #include "sre/Profiler.hpp"
 #include "sre/Renderer.hpp"
 #include "sre/SDLRenderer.hpp"
 #include "sre/impl/GL.hpp"
 #include "sre/Texture.hpp"
 #include "sre/SpriteAtlas.hpp"
+#include "sre/Framebuffer.hpp"
 #include "sre/Sprite.hpp"
 #include "imgui_internal.h"
 
@@ -78,7 +81,7 @@ namespace sre{
             ImGui::LabelText("Wrap tex-coords","%s",tex->isWrapTextureCoordinates()?"true":"false");
             ImGui::LabelText("Data size","%f MB",tex->getDataSize()/(1000*1000.0f));
             if (!tex->isCubemap()){
-                ImGui::Image(reinterpret_cast<ImTextureID>(tex->textureId), ImVec2(100, 100),{0,1},{1,0},{1,1,1,1},{0,0,0,1});
+                ImGui::Image(reinterpret_cast<ImTextureID>(tex->textureId), ImVec2(previewSize, previewSize),{0,1},{1,0},{1,1,1,1},{0,0,0,1});
             }
 
             ImGui::TreePop();
@@ -86,7 +89,7 @@ namespace sre{
     }
 
 
-    void showMesh(Mesh* mesh){
+    void Profiler::showMesh(Mesh* mesh){
         std::string s = mesh->getName()+"##"+std::to_string((int64_t)mesh);
         if (ImGui::TreeNode(s.c_str())){
             ImGui::LabelText("Vertex count", "%i", mesh->getVertexCount());
@@ -113,6 +116,42 @@ namespace sre{
                 }
                 ImGui::TreePop();
             }
+            initFramebuffer();
+
+            Camera camera;
+            camera.setPerspectiveProjection(60,0.1,10);
+            camera.lookAt({0,0,4},{0,0,0},{0,1,0});
+            auto offscreenTexture = getTmpTexture();
+            framebuffer->setTexture(offscreenTexture);
+
+            auto renderToTexturePass = RenderPass::create()
+                 .withCamera(camera)
+                 .withWorldLights(&worldLights)
+                 .withFramebuffer(framebuffer)
+                 .withClearColor(true, {0, 0, 0, 1})
+                 .withGUI(false)
+                 .build();
+            static auto litMat = Shader::getStandard()->createMaterial();
+            static auto unlitMat = Shader::getUnlit()->createMaterial();
+
+            bool hasNormals = mesh->getNormals().size()>0;
+            auto mat = hasNormals ? litMat : unlitMat;
+            auto sharedPtrMesh = mesh->shared_from_this();
+            float rotationSpeed = 0.001f;
+
+            auto bounds = mesh->getBoundsMinMax();
+            auto center = (bounds[1] + bounds[0])*0.5f;
+            auto offset = -center;
+            auto scale = bounds[1]-bounds[0];
+            float maxS = std::max({scale.x,scale.y,scale.z});
+
+            std::vector<std::shared_ptr<Material>> mats;
+            for (int m = 0;m<std::max(1,sharedPtrMesh->getIndexSets());m++){
+                mats.push_back(mat);
+            }
+            renderToTexturePass.draw(sharedPtrMesh, glm::eulerAngleY(time*rotationSpeed)*glm::scale(glm::vec3{2.0f/maxS,2.0f/maxS,2.0f/maxS})*glm::translate(offset), mats);
+
+            ImGui::Image(reinterpret_cast<ImTextureID>(offscreenTexture->textureId), ImVec2(previewSize, previewSize),{0,1},{1,0},{1,1,1,1},{0,0,0,1});
             ImGui::TreePop();
         }
     }
@@ -120,7 +159,7 @@ namespace sre{
 
     std::string glUniformToString(UniformType type);
 
-    void showShader(Shader* shader){
+    void Profiler::showShader(Shader* shader){
         std::string s = shader->getName()+"##"+std::to_string((int64_t)shader);
         if (ImGui::TreeNode(s.c_str())){
             if (ImGui::TreeNode("Attributes")) {
@@ -162,6 +201,29 @@ namespace sre{
             ImGui::LabelText("Depth write","%s",shader->isDepthWrite()?"true":"false");
             ImGui::LabelText("Offset","factor: %.1f units: %.1f",shader->getOffset().x,shader->getOffset().y);
 
+            initFramebuffer();
+
+            auto mat = shader->createMaterial();
+
+            static auto mesh = Mesh::create().withSphere().build();
+
+            Camera camera;
+            camera.setPerspectiveProjection(60,0.1,10);
+            camera.lookAt({0,0,4},{0,0,0},{0,1,0});
+            auto offscreenTexture = getTmpTexture();
+            framebuffer->setTexture(offscreenTexture);
+            auto renderToTexturePass = RenderPass::create()
+                    .withCamera(camera)
+                    .withWorldLights(&worldLights)
+                    .withFramebuffer(framebuffer)
+                    .withClearColor(true, {0, 0, 0, 1})
+                    .withGUI(false)
+                    .build();
+            float rotationSpeed = 0.001f;
+
+            renderToTexturePass.draw(mesh, glm::eulerAngleY(time*rotationSpeed), mat);
+
+            ImGui::Image(reinterpret_cast<ImTextureID>(offscreenTexture->textureId), ImVec2(previewSize, previewSize),{0,1},{1,0},{1,1,1,1},{0,0,0,1});
             ImGui::TreePop();
         }
     }
@@ -198,11 +260,12 @@ namespace sre{
         }
     }
 
-    void Profiler::gui() {
+    void Profiler::gui(bool useWindow) {
         Renderer* r = Renderer::instance;
-        static bool open = true;
-        ImGui::Begin("SRE Renderer",&open);
-
+        if (useWindow){
+            static bool open = true;
+            ImGui::Begin("SRE Renderer",&open);
+        }
 
         if (ImGui::CollapsingHeader("Renderer")){
             if (sdlRenderer != nullptr){
@@ -341,12 +404,16 @@ namespace sre{
                 }
             }
         }
-        ImGui::End();
+        if (useWindow) {
+            ImGui::End();
+        }
     }
 
     void Profiler::update() {
+        usedTextures = 0;
         auto tick = Clock::now();
         float deltaTime = std::chrono::duration_cast<Milliseconds>(tick - lastTick).count();
+        time += deltaTime;
         lastTick = tick;
 
         stats[frameCount%frames] = Renderer::instance->getRenderStats();
@@ -381,10 +448,34 @@ namespace sre{
                 auto tex = sprite.texture;
                 auto uv0 = ImVec2((sprite.getSpritePos().x)/(float)tex->getWidth(), (sprite.getSpritePos().y+sprite.getSpriteSize().y)/(float)tex->getHeight());
                 auto uv1 = ImVec2((sprite.getSpritePos().x+sprite.getSpriteSize().x)/(float)tex->getWidth(),(sprite.getSpritePos().y)/(float)tex->getHeight());
-                ImGui::Image(reinterpret_cast<ImTextureID>(tex->textureId), ImVec2(100.0f/sprite.getSpriteSize().y*(float)sprite.getSpriteSize().x, 100),uv0, uv1,{1,1,1,1},{0,0,0,1});
+                ImGui::Image(reinterpret_cast<ImTextureID>(tex->textureId), ImVec2(previewSize/sprite.getSpriteSize().y*(float)sprite.getSpriteSize().x, previewSize),uv0, uv1,{1,1,1,1},{0,0,0,1});
             }
 
             ImGui::TreePop();
         }
+    }
+
+    void Profiler::initFramebuffer() {
+        if (framebuffer == nullptr){
+
+            framebuffer = Framebuffer::create().withTexture(getTmpTexture()).build();
+
+            worldLights.setAmbientLight({0.2,0.2,0.2});
+            auto light = Light::create().withPointLight({0,0,4}).build();
+            worldLights.addLight(light);
+        }
+    }
+
+    std::shared_ptr<Texture> Profiler::getTmpTexture() {
+
+        if (usedTextures < offscreenTextures.size()){
+            int index = usedTextures;
+            usedTextures++;
+            return offscreenTextures[index];
+        }
+        auto offscreenTex = Texture::create().withRGBData(nullptr, 1024,1024).build();
+        offscreenTextures.push_back(offscreenTex);
+        usedTextures++;
+        return offscreenTex;
     }
 }
