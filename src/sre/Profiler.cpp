@@ -459,7 +459,7 @@ namespace sre{
         if (framebuffer == nullptr){
 
             framebuffer = Framebuffer::create().withTexture(getTmpTexture()).build();
-
+            usedTextures = 0; // reset usedTextures count to avoid an extra texture to be created
             worldLights.setAmbientLight({0.2,0.2,0.2});
             auto light = Light::create().withPointLight({0,0,4}).build();
             worldLights.addLight(light);
@@ -467,13 +467,12 @@ namespace sre{
     }
 
     std::shared_ptr<Texture> Profiler::getTmpTexture() {
-
         if (usedTextures < offscreenTextures.size()){
             int index = usedTextures;
             usedTextures++;
             return offscreenTextures[index];
         }
-        auto offscreenTex = Texture::create().withRGBData(nullptr, 1024,1024).build();
+        auto offscreenTex = Texture::create().withRGBData(nullptr, 256,256).build();
         offscreenTextures.push_back(offscreenTex);
         usedTextures++;
         return offscreenTex;
