@@ -11,6 +11,7 @@
 #include <glm/gtc/constants.hpp>
 #include <iostream>
 #include <glm/gtx/string_cast.hpp>
+#include <iomanip>
 #include "sre/Renderer.hpp"
 #include "sre/Shader.hpp"
 #include "sre/Log.hpp"
@@ -437,6 +438,12 @@ namespace sre {
         using namespace glm;
         using namespace std;
 
+        if (name.length() == 0){
+            std::stringstream ss;
+            ss <<"SRE Sphere "<< stacks<<"-"<<slices<<"-"<<std::setprecision( 2 ) <<radius;
+            name = ss.str();
+        }
+
         size_t vertexCount = (size_t) ((stacks + 1) * (slices+1));
         vector<vec3> vertices{vertexCount};
         vector<vec3> normals{vertexCount};
@@ -498,9 +505,94 @@ namespace sre {
         return *this;
     }
 
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withTorus(int segmentsC, int segmentsA, float radiusC, float radiusA) {
+        using namespace glm;
+        using namespace std;
+
+        //  losely based on http://mathworld.wolfram.com/Torus.html
+        if (name.length() == 0){
+            std::stringstream ss;
+            ss <<"SRE Torus "<< segmentsC<<"-"<<segmentsA<<"-"<<std::setprecision( 2 ) <<radiusC<<"-"<<radiusA;
+            name = ss.str();
+        }
+
+        size_t vertexCount = (size_t) ((segmentsC + 1) * (segmentsA+1));
+        vector<vec3> vertices{vertexCount};
+        vector<vec3> normals{vertexCount};
+        vector<vec4> uvs{vertexCount};
+
+        int index = 0;
+
+        // create vertices
+        for (unsigned short j = 0; j <= segmentsC; j++) {
+            for (int i = 0; i <= segmentsA; i++) {
+
+                //vec3 normal = (vec3)normalize(normalD);
+                //normals[index] = normal;
+                float u = glm::two_pi<float>() * j/(float)segmentsC;
+                float v = glm::two_pi<float>() * i/(float)segmentsA;
+                glm::vec3 pos {
+                        (radiusC+radiusA*cos(v))*cos(u),
+                        (radiusC+radiusA*cos(v))*sin(u),
+                        radiusA*sin(v)
+                };
+                glm::vec3 posOuter {
+                        (radiusC+(radiusA*2)*cos(v))*cos(u),
+                        (radiusC+(radiusA*2)*cos(v))*sin(u),
+                        (radiusA*2)*sin(v)
+                };
+                uvs[index] = vec4{1 - j /(float) segmentsC, i /(float) segmentsA,0,0};
+                vertices[index] = pos;
+                normals[index] = glm::normalize(posOuter - pos);
+                index++;
+            }
+        }
+        vector<vec3> finalPosition;
+        vector<vec3> finalNormals;
+        vector<vec4> finalUVs;
+        // create indices
+        for (int j = 0; j < segmentsC; j++) {
+            for (int i = 0; i <= segmentsA; i++) {
+                glm::u8vec2 offset [] = {
+                        // first triangle
+                        glm::u8vec2{i,j},
+                        glm::u8vec2{(i+1)%(segmentsA+1),j+1},
+                        glm::u8vec2{(i+1)%(segmentsA+1),j},
+
+                        // second triangle
+                        glm::u8vec2{i,j},
+                        glm::u8vec2{i,j+1},
+                        glm::u8vec2{(i+1)%(segmentsA+1),j+1},
+
+                };
+                for (auto o : offset){
+                    index = o[1] * (segmentsA+1)  + o[0];
+                    finalPosition.push_back(vertices[index]);
+                    finalNormals.push_back(normals[index]);
+                    finalUVs.push_back(uvs[index]);
+                }
+
+            }
+        }
+
+        withPositions(finalPosition);
+        withNormals(finalNormals);
+        withUVs(finalUVs);
+        withMeshTopology(MeshTopology::Triangles);
+
+        return *this;
+    }
+
     Mesh::MeshBuilder &Mesh::MeshBuilder::withCube(float length) {
         using namespace glm;
         using namespace std;
+
+        if (name.length() == 0){
+            std::stringstream ss;
+            ss <<"SRE Sphere "<<std::setprecision( 2 ) <<length;
+            name = ss.str();
+        }
+
 
         //    v5----- v4
         //   /|      /|
@@ -589,6 +681,11 @@ namespace sre {
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withQuad(float size) {
+        if (name.length() == 0){
+            std::stringstream ss;
+            ss <<"SRE Quad "<<std::setprecision( 2 ) <<size;
+            name = ss.str();
+        }
 
         std::vector<glm::vec3> vertices({
                                                 glm::vec3{ size,-size, 0},

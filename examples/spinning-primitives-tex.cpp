@@ -37,6 +37,9 @@ public:
         mesh[2] = Mesh::create()
                 .withCube()
                 .build();
+        mesh[3] = Mesh::create()
+                .withTorus()
+                .build();
 
 
         r.frameRender = [&](){
@@ -55,9 +58,7 @@ public:
         int index = 0;
         for (int x=0;x<2;x++){
             for (int y=0;y<2;y++){
-                if (index<3){
-                    renderPass.draw(mesh[index], glm::translate(glm::vec3(-1.5+x*3,-1.5+y*3,0))*glm::eulerAngleY(glm::radians( i * speed)), mat);
-                }
+                renderPass.draw(mesh[index], glm::translate(glm::vec3(-1.5+x*3,-1.5+y*3,0))*glm::eulerAngleY(glm::radians( i * speed)), mat);
                 index++;
             }
         }
@@ -67,7 +68,7 @@ private:
     SDLRenderer r;
     Camera* camera;
     std::shared_ptr<Material> mat;
-    std::shared_ptr<Mesh> mesh[3];
+    std::shared_ptr<Mesh> mesh[4];
     int i=0;
 };
 

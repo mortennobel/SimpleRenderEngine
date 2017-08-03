@@ -44,6 +44,8 @@ namespace sre {
             MeshBuilder& withSphere(int stacks = 16, int slices = 32, float radius = 1);        // Creates a sphere mesh including UV coordinates, positions and normals
             MeshBuilder& withCube(float length = 1);                                            // Creates a cube including UV coordinates, positions and normals
             MeshBuilder& withQuad(float size=1);                                                // Creates a quad z,y = [-size;size] and z=0, UV=[0;1], normals=(0,0,1)
+            MeshBuilder& withTorus(int segmentsC = 24, int segmentsA = 24, float radiusC = 1, float radiusA = .25);
+                                                                                                // Creates a torus in xy plane. C is in the outer (large) circle, A is the sweeping circle.
             // raw data
             MeshBuilder& withPositions(const std::vector<glm::vec3> &vertexPositions);          // Set vertex attribute "position" of type vec3
             MeshBuilder& withNormals(const std::vector<glm::vec3> &normals);                    // Set vertex attribute "normal" of type vec3
@@ -82,7 +84,6 @@ namespace sre {
 
         static MeshBuilder create();                                // Create Mesh using the builder pattern. (Must end with build()).
         MeshBuilder update();                                       // Update the mesh using the builder pattern. (Must end with build()).
-
 
         int getVertexCount();                                       // Number of vertices in mesh
 

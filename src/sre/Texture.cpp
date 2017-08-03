@@ -399,6 +399,7 @@ namespace sre {
 		whiteTexture = create()
                 .withWhiteData()
 				.withFilterSampling(false)
+				.withName("SRE Default White")
                 .build();
         return whiteTexture;
 	}
@@ -422,6 +423,7 @@ namespace sre {
 		sphereTexture = create()
                 .withRGBAData(data.data(),size,size)
                 .withGenerateMipmaps(true)
+                .withName("SRE Default Sphere")
                 .build();
 		return sphereTexture;
 	}
@@ -462,6 +464,7 @@ namespace sre {
         whiteCubemapTexture = create()
                 .withWhiteCubemapData()
                 .withFilterSampling(false)
+                .withName("SRE Default Cubemap")
                 .build();
         return whiteCubemapTexture;
     }

@@ -51,7 +51,6 @@ namespace sre{
                 case GL_FLOAT_MAT3:
                     typeStr = "mat3";
                     break;
-
 #ifndef EMSCRIPTEN
                 case GL_INT_VEC4:
                     typeStr = "ivec4";
@@ -457,8 +456,7 @@ namespace sre{
 
     void Profiler::initFramebuffer() {
         if (framebuffer == nullptr){
-
-            framebuffer = Framebuffer::create().withTexture(getTmpTexture()).build();
+            framebuffer = Framebuffer::create().withTexture(getTmpTexture()).withName("SRE Profiler Framebufferobject").build();
             usedTextures = 0; // reset usedTextures count to avoid an extra texture to be created
             worldLights.setAmbientLight({0.2,0.2,0.2});
             auto light = Light::create().withPointLight({0,0,4}).build();
@@ -472,7 +470,7 @@ namespace sre{
             usedTextures++;
             return offscreenTextures[index];
         }
-        auto offscreenTex = Texture::create().withRGBData(nullptr, 256,256).build();
+        auto offscreenTex = Texture::create().withRGBData(nullptr, 256,256).withName(std::string("SRE Profiler Tex #")+std::to_string(offscreenTextures.size())).build();
         offscreenTextures.push_back(offscreenTex);
         usedTextures++;
         return offscreenTex;
