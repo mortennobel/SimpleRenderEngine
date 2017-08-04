@@ -30,9 +30,9 @@ class ParticlesExample {
 public:
     ParticlesExample(){
         r.init();
-        camera = new Camera();
-        camera->lookAt({0,0,3},{0,0,0},{0,1,0});
-        camera->setPerspectiveProjection(60,0.1,100);
+
+        camera.lookAt({0,0,3},{0,0,0},{0,1,0});
+        camera.setPerspectiveProjection(60,0.1,100);
         defaultMat  = Shader::getStandard()->createMaterial();
         particleMat = Shader::getStandardParticles()->createMaterial();
         defaultMat->setSpecularity(20.0f);
@@ -59,16 +59,16 @@ public:
 
     void update(float deltaTime){
         if (ortho){
-            camera->setOrthographicProjection(2,-2,100);
+            camera.setOrthographicProjection(2,-2,100);
         } else {
-            camera->setPerspectiveProjection(60,0.1,100);
+            camera.setPerspectiveProjection(60,0.1,100);
         }
         i += deltaTime;
     }
 
     void render(){
         auto rp = RenderPass::create()
-                .withCamera(*camera)
+                .withCamera(camera)
                 .withWorldLights(worldLights)
                 .withClearColor(true,{0,0,0.3,1})
                 .build();
@@ -118,7 +118,7 @@ private:
     std::shared_ptr<Mesh> mesh;
     std::shared_ptr<Material> defaultMat;
     std::shared_ptr<Material> particleMat;
-    Camera* camera;
+    Camera camera;
     WorldLights* worldLights;
     float i=0;
     bool ortho = false;

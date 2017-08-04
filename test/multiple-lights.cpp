@@ -25,9 +25,9 @@ class MultipleLightsExample {
     public:
     MultipleLightsExample (){
         r.init();
-        camera = new Camera();
-        camera->lookAt(eye,at, up);
-        camera->setPerspectiveProjection(60,0.1f,100);
+
+        camera.lookAt(eye,at, up);
+        camera.setPerspectiveProjection(60,0.1f,100);
 
         mesh = Mesh::create().withSphere().build();
 
@@ -55,7 +55,7 @@ class MultipleLightsExample {
     }
     void render() {
         auto renderPass = RenderPass::create()
-                .withCamera(*camera)
+                .withCamera(camera)
                 .withWorldLights(&worldLights)
                 .withClearColor(true, {1,0,0,1})
                 .build();
@@ -82,7 +82,7 @@ class MultipleLightsExample {
             };
         }
 
-        camera->lookAt(eye,at, up);
+        camera.lookAt(eye,at, up);
         if (animatedLight){
             worldLights.getLight(0)->position = {
                     sin(time)*1.5f,
@@ -146,7 +146,7 @@ class MultipleLightsExample {
     glm::vec3 eye{0,0,5};
     glm::vec3 at{0,0,0};
     glm::vec3 up{0,1,0};
-    Camera* camera;
+    Camera camera;
 
     std::shared_ptr<Material> mat;
     float specularity = 20;

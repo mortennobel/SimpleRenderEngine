@@ -21,9 +21,9 @@ public:
     :r{},profiler{300,&r}
     {
         r.init();
-        camera = new Camera();
-        camera->lookAt({0,0,3},{0,0,0},{0,1,0});
-        camera->setPerspectiveProjection(60,0.1,100);
+
+        camera.lookAt({0,0,3},{0,0,0},{0,1,0});
+        camera.setPerspectiveProjection(60,0.1,100);
 
         mesh = Mesh::create()
                 .withCube()
@@ -55,7 +55,7 @@ public:
     void frameRender(){
         bool showMouseCursor = r.isMouseCursorVisible();
         RenderPass rp = RenderPass::create()
-                .withCamera(*camera)
+                .withCamera(camera)
                 .withWorldLights(&worldLights)
                 .withClearColor(true,{clear_color.x,clear_color.y,clear_color.z,1.0f})
                 .withGUI(showMouseCursor)
@@ -134,7 +134,7 @@ private:
     ImVec4 clear_color = ImColor(114, 144, 154);
     std::shared_ptr<Mesh> mesh;
     std::shared_ptr<Material> material;
-    Camera* camera;
+    Camera camera;
     WorldLights worldLights;
 };
 

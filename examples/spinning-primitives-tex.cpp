@@ -23,11 +23,11 @@ class SpinningPrimitivesTexExample {
 public:
     SpinningPrimitivesTexExample(){
         r.init();
-        camera = new Camera();
-        camera->lookAt({0,0,6},{0,0,0},{0,1,0});
-        camera->setPerspectiveProjection(60,0.1,100);
-        mat = Shader::getUnlit()->createMaterial();
-        mat->setTexture(Texture::create().withFile("examples/data/test.png").withGenerateMipmaps(true).build());
+
+        camera.lookAt({0,0,6},{0,0,0},{0,1,0});
+        camera.setPerspectiveProjection(60,0.1,100);
+        material = Shader::getUnlit()->createMaterial();
+        material->setTexture(Texture::create().withFile("examples/data/test.png").withGenerateMipmaps(true).build());
         mesh[0] = Mesh::create()
                 .withQuad()
                 .build();
@@ -50,7 +50,7 @@ public:
 
     void render(){
         auto renderPass = RenderPass::create()
-                .withCamera(*camera)
+                .withCamera(camera)
                 .withClearColor(true,{1, 0, 0, 1})
                 .build();
 
@@ -58,7 +58,9 @@ public:
         int index = 0;
         for (int x=0;x<2;x++){
             for (int y=0;y<2;y++){
-                renderPass.draw(mesh[index], glm::translate(glm::vec3(-1.5+x*3,-1.5+y*3,0))*glm::eulerAngleY(glm::radians( i * speed)), mat);
+                glm::mat4 modelTransform = glm::translate(glm::vec3(-1.5+x*3,-1.5+y*3,0)) *
+                                           glm::eulerAngleY(glm::radians( i * speed));
+                renderPass.draw(mesh[index], modelTransform, material);
                 index++;
             }
         }
@@ -66,8 +68,8 @@ public:
     }
 private:
     SDLRenderer r;
-    Camera* camera;
-    std::shared_ptr<Material> mat;
+    Camera camera;
+    std::shared_ptr<Material> material;
     std::shared_ptr<Mesh> mesh[4];
     int i=0;
 };

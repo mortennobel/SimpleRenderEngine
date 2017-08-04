@@ -28,14 +28,15 @@
 
 using namespace sre;
 
-class SpinningCubeExample {
+class PolygonOffsetExample {
 public:
-    SpinningCubeExample(){
+    PolygonOffsetExample(){
         r.init();
 
-        camera = new Camera();
-        camera->lookAt({0,0,3},{0,0,0},{0,1,0});
-
+        
+        camera.lookAt({0,0,3},{0,0,0},{0,1,0});
+        camera.setPerspectiveProjection(60,0.001,10000000);
+        
         material = Shader::create().withSourceStandard().build()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
         material->setSpecularity(20.0f);
@@ -60,11 +61,11 @@ public:
     }
 
     void render(){
-        camera->setPerspectiveProjection(60,0.001,10000000);
+        
         glm::mat4 rot = glm::eulerAngleY(glm::radians((float)i))*glm::eulerAngleX(glm::radians((float)sin((float)i*0.01f)*30.8f));
-        camera->lookAt((glm::vec3)(rot*glm::vec4(0,0,3,1)), {0,0,0}, {0,1,0});
+        camera.lookAt((glm::vec3)(rot*glm::vec4(0,0,3,1)), {0,0,0}, {0,1,0});
         auto renderPass = RenderPass::create()
-                .withCamera(*camera)
+                .withCamera(camera)
                 .withWorldLights(&worldLights)
                 .withClearColor(true, {1, 0, 0, 1})
                 .build();
@@ -84,7 +85,7 @@ public:
     }
 private:
     SDLRenderer r;
-    Camera *camera;
+    Camera camera;
     WorldLights worldLights;
     std::shared_ptr<Mesh> mesh;
     std::shared_ptr<Mesh> mesh2;
@@ -97,6 +98,6 @@ private:
 };
 
 int main() {
-    new SpinningCubeExample();
+    new PolygonOffsetExample();
     return 0;
 }

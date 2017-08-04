@@ -33,8 +33,8 @@ public:
     SpinningCubeExample(){
         r.init();
 
-        camera = new Camera();
-        camera->lookAt({0,0,3},{0,0,0},{0,1,0});
+        camera.lookAt({0,0,3},{0,0,0},{0,1,0});
+        camera.setPerspectiveProjection(60,0.1,100);
 
         material = Shader::getStandard()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
@@ -55,9 +55,8 @@ public:
     }
 
     void render(){
-        camera->setPerspectiveProjection(60,0.1,100);
         auto renderPass = RenderPass::create()
-                .withCamera(*camera)
+                .withCamera(camera)
                 .withWorldLights(&worldLights)
                 .withClearColor(true, {1, 0, 0, 1})
                 .build();
@@ -66,7 +65,7 @@ public:
     }
 private:
     SDLRenderer r;
-    Camera *camera;
+    Camera camera;
     WorldLights worldLights;
     std::shared_ptr<Mesh> mesh;
     std::shared_ptr<Material> material;

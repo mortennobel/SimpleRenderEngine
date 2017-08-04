@@ -26,9 +26,8 @@ public:
     SpinningSphereCubemapExample(){
         r.init();
 
-        camera = new Camera();
-        camera->lookAt(eye,at, up);
-        camera->setPerspectiveProjection(60,0.1f,100);
+        camera.lookAt(eye,at, up);
+        camera.setPerspectiveProjection(60,0.1f,100);
         const char* vertexShaderStr = R"(#version 140
 in vec3 position;
 in vec3 normal;
@@ -59,12 +58,12 @@ void main(void)
         auto shader = Shader::create().withSource(vertexShaderStr, fragmentShaderStr).build();
         material = shader->createMaterial();
         tex = Texture::create()
-                .withFileCubemap("examples/data/cube-posx.png", Texture::TextureCubemapSide::PositiveX)
-                .withFileCubemap("examples/data/cube-negx.png", Texture::TextureCubemapSide::NegativeX)
-                .withFileCubemap("examples/data/cube-posy.png", Texture::TextureCubemapSide::PositiveY)
-                .withFileCubemap("examples/data/cube-negy.png", Texture::TextureCubemapSide::NegativeY)
-                .withFileCubemap("examples/data/cube-posz.png", Texture::TextureCubemapSide::PositiveZ)
-                .withFileCubemap("examples/data/cube-negz.png", Texture::TextureCubemapSide::NegativeZ)
+                .withFileCubemap("test/data/cube-posx.png", Texture::TextureCubemapSide::PositiveX)
+                .withFileCubemap("test/data/cube-negx.png", Texture::TextureCubemapSide::NegativeX)
+                .withFileCubemap("test/data/cube-posy.png", Texture::TextureCubemapSide::PositiveY)
+                .withFileCubemap("test/data/cube-negy.png", Texture::TextureCubemapSide::NegativeY)
+                .withFileCubemap("test/data/cube-posz.png", Texture::TextureCubemapSide::PositiveZ)
+                .withFileCubemap("test/data/cube-negz.png", Texture::TextureCubemapSide::NegativeZ)
                 .build();
 
         material->setTexture(tex);
@@ -78,7 +77,7 @@ void main(void)
 
     void render(){
         auto rp = RenderPass::create()
-                .withCamera(*camera)
+                .withCamera(camera)
                 .withClearColor(true,{1,0,0,1})
                 .build();
 
@@ -93,7 +92,7 @@ void main(void)
                     cos(time*-0.2)*5.0f,
             };
         }
-        camera->lookAt(eye,at, up);
+        camera.lookAt(eye,at, up);
 
     }
 
@@ -114,7 +113,7 @@ void main(void)
     }
 private:
     SDLRenderer r;
-    Camera* camera;
+    Camera camera;
     std::shared_ptr<Material> material;
     std::shared_ptr<Texture> tex;
     std::shared_ptr<Mesh> mesh;

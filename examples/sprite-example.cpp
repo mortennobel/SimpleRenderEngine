@@ -46,8 +46,7 @@ public:
 
         atlas = SpriteAtlas::create("examples/data/PlanetCute.json","examples/data/PlanetCute.png");
 
-        camera = new Camera();
-        camera->setWindowCoordinates();
+        camera.setWindowCoordinates();
 
         r.frameRender = [&](){
             render();
@@ -59,7 +58,7 @@ public:
 
     void render(){
         auto renderPass = RenderPass::create()
-                .withCamera(*camera)
+                .withCamera(camera)
                 .withClearColor(true, {.3, .3, 1, 1})
                 .build();
 
@@ -144,7 +143,7 @@ public:
 private:
     std::shared_ptr<SpriteAtlas> atlas;
     SDLRenderer r;
-    Camera *camera;
+    Camera camera;
     std::shared_ptr<SpriteBatch> world;
 };
 

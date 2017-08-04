@@ -44,8 +44,8 @@ public:
             }
         };
 
-        camera = new Camera();
-        camera->lookAt({0,0,3},{0,0,0},{0,1,0});
+        camera.lookAt({0,0,3},{0,0,0},{0,1,0});
+        camera.setPerspectiveProjection(60,0.1,farPlane);
 
         auto material = Shader::getStandard()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
@@ -83,28 +83,47 @@ public:
         offset = -center;
         farPlane =  glm::length(bounds[1] - bounds[0]);
 
-        camera->lookAt({0,0,farPlane/2},{0,0,0},{0,1,0});
+        camera.lookAt({0,0,farPlane/2},{0,0,0},{0,1,0});
+        camera.setPerspectiveProjection(60,0.1,farPlane);
     }
 
-    void render(){
-        camera->setPerspectiveProjection(60,0.1,farPlane);
+    void render(){        
         auto renderPass = RenderPass::create()
-                .withCamera(*camera)
+                .withCamera(camera)
                 .withWorldLights(&worldLights)
                 .withClearColor(true, {0, 0, 0, 1})
                 .build();
 
         renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), materials);
+
+        // align text
+        drawTopText(
 #ifdef EMSCRIPTEN
-        ImGui::LabelText("Drop obj not supported in Emscripten","");
+        "Drop obj not supported in Emscripten"
 #else
-        ImGui::LabelText("Drop obj file here","");
+        "Drop obj file here"
 #endif
+        );
+
         i++;
+    }
+
+    void drawTopText(std::string txt){
+        auto size = Renderer::instance->getWindowSize();
+        ImVec2 imSize(size.x, 50.0f);
+        ImVec2 imPos(0, 0);
+        ImGui::SetNextWindowSize(imSize);                                   // imgui window size should have same width as SDL window size
+        ImGui::SetNextWindowPos(imPos);
+        ImGui::Begin("",nullptr,ImGuiWindowFlags_NoInputs|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoTitleBar);
+                                                                            // create window without title
+        auto txtSize = ImGui::CalcTextSize(txt.c_str());                    // center text
+        ImGui::SetCursorPosX((imSize.x-txtSize.x)/2);
+        ImGui::TextWrapped(txt.c_str());
+        ImGui::End();
     }
 private:
     SDLRenderer r;
-    Camera *camera;
+    Camera camera;
     WorldLights worldLights;
     std::shared_ptr<Mesh> mesh;
     std::vector<std::shared_ptr<Material>> materials;

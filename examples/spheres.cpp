@@ -15,14 +15,13 @@ class SpheresExample{
 public:
     SpheresExample(){
         r.init();
-        camera = new Camera();
-        camera->lookAt({0,0,3},{0,0,0},{0,1,0});
-        camera->setPerspectiveProjection(60,0.1f,100);
+
+        camera.lookAt({0,0,3},{0,0,0},{0,1,0});
+        camera.setPerspectiveProjection(60,0.1f,100);
 
         mesh = Mesh::create()
                 .withSphere()
                 .build();
-
 
         worldLights.addLight(Light::create()
                                      .withDirectionalLight(glm::normalize(glm::vec3(1,1,1)))
@@ -51,7 +50,7 @@ public:
 
     void render(){
         auto rp = RenderPass::create()
-                .withCamera(*camera)
+                .withCamera(camera)
                 .withWorldLights(&worldLights)
                 .withClearColor(true,{1,0,0,1})
                 .build();
@@ -63,7 +62,7 @@ public:
 private:
     float time;
     SDLRenderer r;
-    Camera* camera;
+    Camera camera;
     std::shared_ptr<Mesh> mesh;
     WorldLights worldLights;
     std::shared_ptr<Material> mat1;

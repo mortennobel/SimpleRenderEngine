@@ -27,11 +27,11 @@ class ParticleSpriteExample{
 public:
     ParticleSpriteExample(){
         r.init();
-        camera = new Camera();
-        camera->lookAt({0,0,3},{0,0,0},{0,1,0});
-        camera->setPerspectiveProjection(60,0.1,100);
+
+        camera.lookAt({0,0,3},{0,0,0},{0,1,0});
+        camera.setPerspectiveProjection(60,0.1,100);
         material = Shader::getStandardParticles()->createMaterial();
-        material->setTexture(Texture::create().withFile("examples/data/t_explosionsheet.png").build());
+        material->setTexture(Texture::create().withFile("test/data/t_explosionsheet.png").build());
 
         particleMesh = createParticles();
         r.frameUpdate = [&](float deltaTime){
@@ -46,9 +46,9 @@ public:
     void update(float deltaTime){
         timeF += deltaTime;
         if (ortho) {
-            camera->setOrthographicProjection(4,0,100);
+            camera.setOrthographicProjection(4,0,100);
         } else {
-            camera->setPerspectiveProjection(60,0.1,10);
+            camera.setPerspectiveProjection(60,0.1,10);
         }
         updateParticles(particleMesh, spriteUV, uvSize, uvRotation, size);
     }
@@ -56,7 +56,7 @@ public:
     void render(){
 
         auto rp = RenderPass::create()
-                .withCamera(*camera)
+                .withCamera(camera)
                 .withClearColor(true,{1,0,0.0,1})
                 .build();
 
@@ -134,7 +134,7 @@ private:
     float timeF = 0;
     std::shared_ptr<Mesh> particleMesh;
     std::shared_ptr<Material> material;
-    Camera* camera;
+    Camera camera;
 };
 
 int main() {
