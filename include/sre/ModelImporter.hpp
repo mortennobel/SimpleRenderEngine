@@ -15,6 +15,11 @@ namespace sre{
 
 class Mesh;
 
+/**
+ * Wavefront OBJ file importer.
+ * Both the geometry and materials are loaded (including textures).
+ * Only triangular meshes with a vertex count under 65.536 vertices are supported. 
+ */
 class ModelImporter {
 public:
     static std::shared_ptr<Mesh> importObj(std::string path, std::string filename, std::vector<std::shared_ptr<Material>>& outModelMaterials);

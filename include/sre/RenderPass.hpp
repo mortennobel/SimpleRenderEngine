@@ -78,26 +78,29 @@ namespace sre {
         virtual ~RenderPass();
 
 
-        void drawLines(const std::vector<glm::vec3> &verts, glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f}, MeshTopology meshTopology = MeshTopology::Lines);
-                                                                    // Draws worldspace lines.
-                                                                    // Note that this member function is not expected to perform as efficient as draw()
+        void drawLines(const std::vector<glm::vec3> &verts,             // Draws worldspace lines.
+                       glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f},      // Note that this member function is not expected
+                       MeshTopology meshTopology = MeshTopology::Lines);// to perform as efficient as draw()
 
-        void draw(std::shared_ptr<Mesh>& mesh, glm::mat4 modelTransform, std::shared_ptr<Material>& material);
-                                                                    // Draws a mesh using the given transform and material.
-                                                                    // The modelTransform defines the modelToWorld transformation
+        void draw(std::shared_ptr<Mesh>& mesh,                          // Draws a mesh using the given transform and material.
+                  glm::mat4 modelTransform,                             // The modelTransform defines the modelToWorld
+                  std::shared_ptr<Material>& material);                 // transformation.
 
-        void draw(std::shared_ptr<Mesh>& mesh, glm::mat4 modelTransform, std::vector<std::shared_ptr<Material>>& materials);
-                                                                    // Draws a mesh using the given transform and materials.
-                                                                    // The modelTransform defines the modelToWorld transformation
-                                                                    // The number of materials must match the size of index sets in the model
+        void draw(std::shared_ptr<Mesh>& mesh,                          // Draws a mesh using the given transform and materials.
+                  glm::mat4 modelTransform,                             // The modelTransform defines the modelToWorld transformation
+                  std::vector<std::shared_ptr<Material>>& materials);   // The number of materials must match the size of index sets in the model
 
-        void draw(std::shared_ptr<SpriteBatch>& spriteBatch, glm::mat4 modelTransform = glm::mat4(1));
+        void draw(std::shared_ptr<SpriteBatch>& spriteBatch,            // Draws a spriteBatch using modelTransform
+                  glm::mat4 modelTransform = glm::mat4(1));             // using a model-to-world transformation
 
-        std::vector<glm::vec4> readPixels(unsigned int x, unsigned int y, unsigned int width = 1, unsigned int height = 1);
-                                                                    // Reads pixel(s) from the current framebuffer
-                                                                    // The defined rectable must be within the size of the current framebuffer
+        std::vector<glm::vec4> readPixels(unsigned int x,               // Reads pixel(s) from the current framebuffer
+                                          unsigned int y,               // The defined rectable must be within the size of the current framebuffer
+                                          unsigned int width = 1,
+                                          unsigned int height = 1);
 
-        void finishGPUCommandBuffer();                      // GPU command buffer (must be called when profiling GPU time - should not be called when not profiling)
+        void finishGPUCommandBuffer();                                  // GPU command buffer (must be called when
+                                                                        // profiling GPU time - should not be called
+                                                                        // when not profiling)
     private:
         static void finish();
         void finishInstance();

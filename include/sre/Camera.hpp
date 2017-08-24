@@ -21,13 +21,12 @@ namespace sre {
      * projection (without any perspective).
      *
      * The camera also includes information about the viewport, which defines which part of the window is used for
-     * rendering (default settings is the full window)
+     * rendering (default settings is the full window (0,0) to (1,1))
      *
      * The default camera is positioned at (0,0,0) and looking down the negative z-axis. Everything inside the volume
      * between -1 to 1 is viewed.
      *
-     * Note that if the window size is resized the camera must explicit be updated using `setViewport`,
-     * `setPerspectiveProjection`/`setWindowCoordinates`
+     * The coordinate system used is right-handed with y-pointing upwards.
      */
     class DllExport Camera {
     public:

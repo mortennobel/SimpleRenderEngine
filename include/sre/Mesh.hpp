@@ -24,7 +24,7 @@ namespace sre {
 
     /**
      * Represents a Mesh object.
-     * A mesh is composed of a list of named vertex attribute lists
+     * A mesh is composed of a list of named vertex attributes
      * - positions (vec3)
      * - normals (vec3)
      * - uvs (aka. texture coordinates) (vec4)

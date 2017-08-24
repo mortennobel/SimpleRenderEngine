@@ -42,4 +42,8 @@ namespace sre {
     void WorldLights::setAmbientLight(const glm::vec3& ambientLight){
         this->ambientLight = ambientLight;
     }
+
+    glm::vec3 WorldLights::getAmbientLight() {
+        return ambientLight;
+    }
 }

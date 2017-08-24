@@ -83,7 +83,8 @@ namespace sre {
 
         class DllExport ShaderBuilder {
         public:
-            ShaderBuilder& withSource(const std::string& vertexShaderGLSL, const std::string& fragmentShaderGLSL);
+            ShaderBuilder& withSource(const std::string& vertexShaderGLSL,
+                                      const std::string& fragmentShaderGLSL);
             ShaderBuilder& withSourceStandard();
             ShaderBuilder& withSourceUnlit();
             ShaderBuilder& withSourceUnlitSprite();

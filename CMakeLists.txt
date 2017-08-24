@@ -32,7 +32,6 @@ ENDIF (APPLE)
 
 find_package(SDL2_IMAGE REQUIRED)
 include_directories(${SDL2_IMAGE_INCLUDE_DIRS})
-include_directories(include)
 
 add_subdirectory(src)
 add_subdirectory(examples)

@@ -22,6 +22,11 @@ namespace sre {
     class Texture;
     class RenderPass;
 
+    /**
+     * Material encapsulates a shader and its states. Example using the standard shader (computing the color of the
+     * surface using lights in the scene) a material would contain a color (glm::vec4), a texture (sre::Texture) and
+     * specularity (float). The specularity determines that shininess of the material.
+     */
     class DllExport Material {
     public:
         ~Material();

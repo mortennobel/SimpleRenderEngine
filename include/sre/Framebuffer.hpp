@@ -16,6 +16,14 @@ namespace sre {
     class RenderPass;
     class Texture;
 
+    /**
+     * A framebuffer object allows rendering into textures instead of the screen.
+     *
+     * A framebuffer is created with a destination texture. It is important that this texture is not used in
+     * materials when rendering to the framebuffer (reading and writing to a texture at the same time is not supported).
+     *
+     * To use a framebuffer, pass it to RenderPassBuilder when a renderpass is being created.
+     */
     class Framebuffer {
     public:
         class FrameBufferBuilder {

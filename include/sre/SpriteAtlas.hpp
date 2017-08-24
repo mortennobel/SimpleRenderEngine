@@ -20,10 +20,15 @@ namespace sre{
 class SpriteAtlas {
 public:
     ~SpriteAtlas();
-    static std::shared_ptr<SpriteAtlas> create(std::string jsonFile, std::string imageFile);
-                                                            // Create sprite atlas based on JSON file
-    static std::shared_ptr<SpriteAtlas> createSingleSprite(std::shared_ptr<Texture> texture, std::string name = "sprite", glm::vec2 pivot = {0.5f,0.5f}, glm::ivec2 pos = {0,0},glm::ivec2 size = {0,0} );
-                                                            // Create sprite atlas (with single sprite) using texture
+    static std::shared_ptr<SpriteAtlas> create(std::string jsonFile,  // Create sprite atlas based on JSON file
+                                               std::string imageFile);
+
+    static std::shared_ptr<SpriteAtlas> createSingleSprite(std::shared_ptr<Texture> texture, // Create sprite atlas
+                                                           std::string name = "sprite",      // (with single sprite)
+                                                           glm::vec2 pivot = {0.5f,0.5f},    // using texture
+                                                           glm::ivec2 pos = {0,0},
+                                                           glm::ivec2 size = {0,0} );
+
     Sprite get(std::string name);                           // Return a copy of a Sprite object.
 
     std::vector<std::string> getNames();                    // Returns a list of sprite names in the SpriteAtlas container
