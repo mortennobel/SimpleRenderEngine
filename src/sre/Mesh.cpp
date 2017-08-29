@@ -589,7 +589,7 @@ namespace sre {
 
         if (name.length() == 0){
             std::stringstream ss;
-            ss <<"SRE Sphere "<<std::setprecision( 2 ) <<length;
+            ss <<"SRE Cube "<<std::setprecision( 2 ) <<length;
             name = ss.str();
         }
 

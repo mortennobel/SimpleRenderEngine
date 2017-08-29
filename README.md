@@ -44,3 +44,4 @@ https://mortennobel.github.io/SimpleRenderEngine/
  * https://www.libsdl.org/projects/SDL_image/ Simple Direct Layer Image 2.x
  * http://glm.g-truc.net/ OpenGL Mathematics
  * https://www.opengl.org/registry/ OpenGL Registry
+ * https://github.com/ocornut/imgui ImGui 1.51
