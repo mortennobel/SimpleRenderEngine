@@ -48,9 +48,13 @@ public:
     std::function<void(SDL_Event& e)> touchEvent;               // Callback of `SDL_FINGERDOWN`, `SDL_FINGERUP`, `SDL_FINGERMOTION`.
     std::function<void(SDL_Event& e)> otherEvent;               // Invoked if unhandled SDL event
 
-    void init(uint32_t sdlInitFlag = SDL_INIT_EVERYTHING);      // Create the window and the graphics context (instantiates the sre::Renderer). Note that most
-                                                                // other sre classes requires the graphics content to be created before they can be used (e.g. a Shader cannot be
-                                                                // created before `init()`).
+    void init(uint32_t sdlInitFlag = SDL_INIT_EVERYTHING,       // Create the window and the graphics context (instantiates the sre::Renderer). Note that most
+              uint32_t sdlWindowFlags=SDL_WINDOW_ALLOW_HIGHDPI  // other sre classes requires the graphics content to be created before they can be used (e.g. a Shader cannot be
+                                        | SDL_WINDOW_OPENGL     // created before `init()`).
+                                        | SDL_WINDOW_RESIZABLE);
+
+
+
 
     void setWindowTitle(std::string title);
     void setWindowSize(glm::ivec2 size);

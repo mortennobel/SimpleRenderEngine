@@ -176,7 +176,7 @@ namespace sre{
         r->swapWindow();
     }
 
-    void SDLRenderer::init(uint32_t sdlInitFlag) {
+    void SDLRenderer::init(uint32_t sdlInitFlag,uint32_t sdlWindowFlags) {
         if (running){
             return;
         }
@@ -193,7 +193,7 @@ namespace sre{
 #ifdef SRE_DEBUG_CONTEXT
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 #endif
-        	window = SDL_CreateWindow(windowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight,SDL_WINDOW_ALLOW_HIGHDPI|SDL_WINDOW_OPENGL|SDL_WINDOW_RESIZABLE);
+        	window = SDL_CreateWindow(windowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight,sdlWindowFlags);
 #endif
 
             r = new Renderer(window);

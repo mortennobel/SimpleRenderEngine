@@ -4,17 +4,10 @@
 
 #include "sre/Texture.hpp"
 #include "sre/Renderer.hpp"
-#include "sre/Camera.hpp"
-#include "sre/Mesh.hpp"
 #include "sre/Material.hpp"
-#include "sre/Shader.hpp"
-#define SDL_MAIN_HANDLED
-#include "SDL.h"
 
-#include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <sre/SDLRenderer.hpp>
 #include <glm/gtx/string_cast.hpp>
 
@@ -97,10 +90,8 @@ public:
         ImGui::SetNextWindowSize(imSize);                                   // imgui window size should have same width as SDL window size
         ImGui::SetNextWindowPos(imPos);
         ImGui::Begin("",nullptr,ImGuiWindowFlags_NoInputs|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoTitleBar);
-                                                                            // create window without title
 
-        ImVec4 v4 {color.x, color.y, color.z, color.w};                     // render color using imgui
-        ImGui::ValueColor("Selected color",v4);
+        ImGui::ColorEdit4("Selected color",&color.x,ImGuiColorEditFlags_NoInputs);
         ImGui::TextWrapped("Mouse pos %i %i",mouseX, mouseY);
         ImGui::End();
     }

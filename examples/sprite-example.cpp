@@ -8,28 +8,14 @@
 
 #include "sre/Texture.hpp"
 #include "sre/Renderer.hpp"
-#include "sre/Camera.hpp"
-#include "sre/Mesh.hpp"
 #include "sre/Material.hpp"
-#include "sre/Shader.hpp"
 #include "sre/SDLRenderer.hpp"
-#define SDL_MAIN_HANDLED
-#include "SDL.h"
 
-#include <glm/glm.hpp>
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
-#ifdef EMSCRIPTEN
-#include "emscripten.h"
-#endif
-#include <glm/glm.hpp>
 
 #include <glm/gtx/transform.hpp>
-#include <glm/gtx/euler_angles.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <sre/ModelImporter.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <sre/SpriteAtlas.hpp>
 #include <sre/Profiler.hpp>
@@ -109,7 +95,7 @@ public:
             static float rotation = 0;
             static glm::bvec2 flip = {false,false};
 
-            ImGui::ColorEdit4("Color", &color.x,true);
+            ImGui::ColorEdit4("Color", &color.x,ImGuiColorEditFlags_RGB|ImGuiColorEditFlags_Float);
             ImGui::DragFloat2("Pos", &position.x,1);
             ImGui::DragFloat("Rotation", &rotation,1);
             ImGui::DragFloat2("Scale", &scale.x,0.1);

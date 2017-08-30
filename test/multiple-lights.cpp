@@ -8,8 +8,6 @@
 #include "sre/Material.hpp"
 #include "sre/Mesh.hpp"
 #include "sre/Shader.hpp"
-#define SDL_MAIN_HANDLED
-#include "SDL.h"
 #include <imgui.h>
 #include "sre/imgui_sre.hpp"
 
