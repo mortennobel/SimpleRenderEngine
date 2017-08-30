@@ -20,7 +20,7 @@ public:
         camera.lookAt({0,0,6},{0,0,0},{0,1,0});
         camera.setPerspectiveProjection(60,0.1,100);
         material = Shader::getUnlit()->createMaterial();
-        material->setTexture(Texture::create().withFile("examples/data/test.png").withGenerateMipmaps(true).build());
+        material->setTexture(Texture::create().withFile("examples_data/test.png").withGenerateMipmaps(true).build());
         mesh[0] = Mesh::create()
                 .withQuad()
                 .build();

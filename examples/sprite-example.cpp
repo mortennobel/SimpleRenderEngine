@@ -30,7 +30,7 @@ public:
     {
         r.init();
 
-        atlas = SpriteAtlas::create("examples/data/PlanetCute.json","examples/data/PlanetCute.png");
+        atlas = SpriteAtlas::create("examples_data/PlanetCute.json","examples_data/PlanetCute.png");
 
         camera.setWindowCoordinates();
 

@@ -25,7 +25,7 @@ public:
         camera->setPerspectiveProjection(90,0.1,100);
 
         material = Shader::getUnlit()->createMaterial();
-        material->setTexture(Texture::create().withFile("examples/data/test.png").withGenerateMipmaps(true).build());
+        material->setTexture(Texture::create().withFile("examples_data/test.png").withGenerateMipmaps(true).build());
 
         mesh = Mesh::create().withCube(0.25f).build();
 

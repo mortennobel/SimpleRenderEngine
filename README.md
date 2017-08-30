@@ -34,9 +34,7 @@ Example usage can be found in the examples folder
 
 ## Documentation
 
-API documentation is defined in header files and a getting started guide can be found at:
- 
-https://mortennobel.github.io/SimpleRenderEngine/
+API documentation is defined in header files.
  
 ## Other resources
  

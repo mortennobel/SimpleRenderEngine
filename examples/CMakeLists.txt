@@ -23,8 +23,8 @@ target_link_libraries(SRE-ObjViewer ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_L
 target_link_libraries(SRE-Hello-Engine-Raw ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Sprite ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 
-file(COPY ../examples/data DESTINATION Debug)
-file(COPY ../examples/data DESTINATION Release)
+file(COPY ../examples_data DESTINATION Debug)
+file(COPY ../examples_data DESTINATION Release)
 
 IF (WIN32)
     SET(SDL2_dll "" CACHE STRING "Where the SDL2.dll can be found")
