@@ -47,6 +47,7 @@ namespace sre {
 			LOG_FATAL("Error initializing OpenGL using GLEW: %s",glewGetErrorString(err));
 		}
 #elif defined __LINUX__
+        glewExperimental = GL_TRUE;
         GLenum err = glewInit();
 		if (GLEW_OK != err)
 		{
