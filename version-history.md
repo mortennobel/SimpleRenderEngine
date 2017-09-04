@@ -1,5 +1,6 @@
 ## Version history
 
+ * 0.9.10 Improved Linux support
  * 0.9.9 Minor Bugfixes
  * 0.9.8 Update ImGUI and GLM
  * 0.9.7 Add Mesh preview and Shader preview in profiler

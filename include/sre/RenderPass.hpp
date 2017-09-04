@@ -105,7 +105,7 @@ namespace sre {
         static void finish();
         void finishInstance();
         RenderPass::RenderPassBuilder builder;
-        RenderPass(RenderPass::RenderPassBuilder& builder);
+        explicit RenderPass(RenderPass::RenderPassBuilder& builder);
 
         void bind(bool newFrame);
 

@@ -56,12 +56,12 @@ void main(void)
         auto shader = Shader::create().withSource(vertexShaderStr, fragmentShaderStr).build();
         material = shader->createMaterial();
         tex = Texture::create()
-                .withFileCubemap("test/data/cube-posx.png", Texture::TextureCubemapSide::PositiveX)
-                .withFileCubemap("test/data/cube-negx.png", Texture::TextureCubemapSide::NegativeX)
-                .withFileCubemap("test/data/cube-posy.png", Texture::TextureCubemapSide::PositiveY)
-                .withFileCubemap("test/data/cube-negy.png", Texture::TextureCubemapSide::NegativeY)
-                .withFileCubemap("test/data/cube-posz.png", Texture::TextureCubemapSide::PositiveZ)
-                .withFileCubemap("test/data/cube-negz.png", Texture::TextureCubemapSide::NegativeZ)
+                .withFileCubemap("test_data/cube-posx.png", Texture::TextureCubemapSide::PositiveX)
+                .withFileCubemap("test_data/cube-negx.png", Texture::TextureCubemapSide::NegativeX)
+                .withFileCubemap("test_data/cube-posy.png", Texture::TextureCubemapSide::PositiveY)
+                .withFileCubemap("test_data/cube-negy.png", Texture::TextureCubemapSide::NegativeY)
+                .withFileCubemap("test_data/cube-posz.png", Texture::TextureCubemapSide::PositiveZ)
+                .withFileCubemap("test_data/cube-negz.png", Texture::TextureCubemapSide::NegativeZ)
                 .build();
 
         material->setTexture(tex);

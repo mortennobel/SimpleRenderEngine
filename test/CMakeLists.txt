@@ -12,8 +12,8 @@ target_link_libraries(SRE-Test-PolygonOffset ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL
 target_link_libraries(SRE-Test-Multiple-Lights ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Test-Particle-Sprite ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 
-file(COPY ../test/data DESTINATION Debug)
-file(COPY ../test/data DESTINATION Release)
+file(COPY ../test_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
+file(COPY ../test_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
 
 IF (WIN32)
     SET(SDL2_dll "" CACHE STRING "Where the SDL2.dll can be found")

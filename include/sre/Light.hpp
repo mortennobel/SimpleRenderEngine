@@ -53,7 +53,5 @@ namespace sre {
 
         float range;                        // The range of a point light (due to attenuation)
                                             // Range == 0 means no attenuation
-    private:
-
     };
 }

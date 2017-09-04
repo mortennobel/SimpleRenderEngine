@@ -53,7 +53,7 @@ namespace sre {
     private:
         void bind();
         bool dirty = true;
-        Framebuffer(std::string name);
+        explicit Framebuffer(std::string name);
         std::vector<std::shared_ptr<Texture>> textures;
         unsigned int frameBufferObjectId;
         uint32_t renderBufferDepth = 0;

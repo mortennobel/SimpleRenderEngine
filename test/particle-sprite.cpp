@@ -29,7 +29,7 @@ public:
         camera.lookAt({0,0,3},{0,0,0},{0,1,0});
         camera.setPerspectiveProjection(60,0.1,100);
         material = Shader::getStandardParticles()->createMaterial();
-        material->setTexture(Texture::create().withFile("test/data/t_explosionsheet.png").build());
+        material->setTexture(Texture::create().withFile("test_data/t_explosionsheet.png").build());
 
         particleMesh = createParticles();
         r.frameUpdate = [&](float deltaTime){

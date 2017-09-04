@@ -61,7 +61,7 @@ namespace sre {
     private:
         void bind();
 
-        Material(std::shared_ptr<sre::Shader> shader);
+        explicit Material(std::shared_ptr<sre::Shader> shader);
         std::string name;
         std::shared_ptr<sre::Shader> shader;
 
