@@ -6,6 +6,7 @@
  */
 
 #include "sre/ModelImporter.hpp"
+#include <algorithm>
 #include <fstream>
 #include <string>
 #include <cstring>

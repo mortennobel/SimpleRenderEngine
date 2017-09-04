@@ -9,6 +9,7 @@
 
 #include "sre/impl/GL.hpp"
 
+#include <algorithm>
 #include <SDL_surface.h>
 
 #include <SDL_image.h>

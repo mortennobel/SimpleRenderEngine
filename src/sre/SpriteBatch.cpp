@@ -6,6 +6,7 @@
  */
 
 #include "sre/SpriteBatch.hpp"
+#include  <algorithm>
 #include "sre/Texture.hpp"
 #include "sre/Material.hpp"
 

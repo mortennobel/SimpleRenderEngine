@@ -4,11 +4,12 @@
  *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
  *  License: MIT
  */
-
+#include "sre/Profiler.hpp"
+#include <algorithm>
 #include <iostream>
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/transform.hpp>
-#include "sre/Profiler.hpp"
+
 #include "sre/Renderer.hpp"
 #include "sre/SDLRenderer.hpp"
 #include "sre/impl/GL.hpp"

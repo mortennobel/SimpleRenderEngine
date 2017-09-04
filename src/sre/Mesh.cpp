@@ -7,6 +7,7 @@
 
 #include "sre/Mesh.hpp"
 
+#include <algorithm>
 #include "sre/impl/GL.hpp"
 #include <glm/gtc/constants.hpp>
 #include <iostream>
