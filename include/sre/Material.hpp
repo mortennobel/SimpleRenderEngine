@@ -1,5 +1,5 @@
 /*
- *  SimpleRenderEngine
+ *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
  *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
  *  License: MIT

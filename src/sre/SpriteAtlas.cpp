@@ -1,5 +1,5 @@
 /*
- *  SimpleRenderEngine
+ *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
  *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
  *  License: MIT
@@ -22,7 +22,7 @@
 
 using namespace std;
 
-namespace sre{
+namespace sre {
 SpriteAtlas::SpriteAtlas(std::map<std::string, Sprite>&& sprites, std::shared_ptr<Texture> texture, std::string atlasName)
         :atlasName{atlasName}
 {
@@ -36,7 +36,12 @@ SpriteAtlas::SpriteAtlas(std::map<std::string, Sprite>&& sprites, std::shared_pt
 std::shared_ptr<SpriteAtlas> SpriteAtlas::create(std::string jsonFile, std::string imageFile) {
     picojson::value v;
     std::ifstream t(jsonFile);
-    t >> v;
+    if (!t){
+        cerr << "SpriteAtlas json not found "<<jsonFile<< endl;
+        return std::shared_ptr<SpriteAtlas>(nullptr);
+    } else {
+        t >> v;
+    }
     std::string err = picojson::get_last_error();
     if (err != ""){
         cerr << err << endl;
@@ -44,7 +49,6 @@ std::shared_ptr<SpriteAtlas> SpriteAtlas::create(std::string jsonFile, std::stri
     }
     std::map<std::string, Sprite> sprites;
     picojson::array list = v.get("frames").get<picojson::array>();
-    picojson::value meta = v.get("meta");
     auto texture = Texture::create().withFile(imageFile).build();
     for (picojson::value& spriteElement : list){
         string name = spriteElement.get("filename").get<string>();
