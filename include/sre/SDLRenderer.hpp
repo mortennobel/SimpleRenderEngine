@@ -7,6 +7,10 @@
 
 #pragma once
 
+#ifdef _SDL_H
+#error SDL should not be included before SDLRenderer
+#endif
+
 #define SDL_MAIN_HANDLED
 
 #include "SDL.h"
