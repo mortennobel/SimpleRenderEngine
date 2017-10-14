@@ -64,6 +64,8 @@ public:
     std::vector<std::string> getNames();                    // Returns a list of sprite names in the SpriteAtlas container
 
     std::string getAtlasName();
+
+    std::shared_ptr<Texture> getTexture();                  // Return sprite texture
 private:
     SpriteAtlas(std::map<std::string, Sprite>&& sprites, std::shared_ptr<Texture> texture, std::string atlasName);
     std::string atlasName;

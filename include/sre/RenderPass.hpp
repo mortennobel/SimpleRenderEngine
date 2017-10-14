@@ -75,6 +75,9 @@ namespace sre {
 
         static RenderPassBuilder create();   // Create a RenderPass
 
+        RenderPass(const RenderPass&) = delete;
+        RenderPass(RenderPass&& rp);
+        RenderPass& operator=(RenderPass&& other);
         virtual ~RenderPass();
 
 
@@ -91,6 +94,9 @@ namespace sre {
                   std::vector<std::shared_ptr<Material>>& materials);   // The number of materials must match the size of index sets in the model
 
         void draw(std::shared_ptr<SpriteBatch>& spriteBatch,            // Draws a spriteBatch using modelTransform
+                  glm::mat4 modelTransform = glm::mat4(1));             // using a model-to-world transformation
+
+        void draw(std::shared_ptr<SpriteBatch>&& spriteBatch,            // Draws a spriteBatch using modelTransform
                   glm::mat4 modelTransform = glm::mat4(1));             // using a model-to-world transformation
 
         std::vector<glm::vec4> readPixels(unsigned int x,               // Reads pixel(s) from the current framebuffer
@@ -114,8 +120,6 @@ namespace sre {
         Shader* lastBoundShader = nullptr;
         Material* lastBoundMaterial = nullptr;
         Mesh* lastBoundMesh = nullptr;
-
-        RenderPass* lastPass = nullptr;
 
         glm::mat4 projection;
         glm::uvec2 viewportOffset;

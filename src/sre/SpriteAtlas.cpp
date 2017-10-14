@@ -107,4 +107,9 @@ Sprite SpriteAtlas::get(std::string name) {
     std::string SpriteAtlas::getAtlasName() {
         return atlasName;
     }
+
+    std::shared_ptr<Texture> SpriteAtlas::getTexture(){
+        return texture;
+    }
 }
+

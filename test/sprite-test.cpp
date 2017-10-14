@@ -26,17 +26,15 @@ using namespace sre;
 class SpriteExample {
 public:
     SpriteExample()
-            :r{}
     {
         r.init();
 
-        atlas = SpriteAtlas::create("test_data/sprite_test.json","test_data/sprite_test.png");
-
         camera.setWindowCoordinates();
+
+        atlas = SpriteAtlas::create("test_data/sprite_test.json","test_data/sprite_test.png");
 
         r.frameRender = [&](){
             render();
-
         };
 
         r.startEventLoop();
@@ -48,8 +46,15 @@ public:
                 .withClearColor(true, {.3, .3, 1, 1})
                 .build();
 
+        auto spriteBatchBuilder = SpriteBatch::create();
+        auto sprite = atlas->get("lowerLeft.png");
+        sprite.setPosition({100,100});
 
-        auto names = atlas->getNames();
+        spriteBatchBuilder.addSprite(sprite);
+
+        renderPass.draw(spriteBatchBuilder.build());
+
+        /*auto names = atlas->getNames();
         static bool demoWorld = false;
         ImGui::Checkbox("RenderWorld", &demoWorld );
         if (demoWorld ){
@@ -125,6 +130,7 @@ public:
 
         float bytesToMB = 1.0f/(1024*1024);
         ImGui::Text("sre draw-calls %i meshes %i (%.2fMB) textures %i (%.2fMB) shaders %i", renderStats.drawCalls,renderStats.meshCount, renderStats.meshBytes*bytesToMB, renderStats.textureCount, renderStats.textureBytes*bytesToMB, renderStats.shaderCount);
+         */
     }
 private:
     std::shared_ptr<SpriteAtlas> atlas;

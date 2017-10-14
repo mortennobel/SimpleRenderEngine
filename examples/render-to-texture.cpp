@@ -41,6 +41,7 @@ public:
     }
 
     void render(){
+        
         auto renderToTexturePass = RenderPass::create()                 // Create a renderpass which writes to the texture using a framebuffer
                 .withCamera(camera)
                 .withWorldLights(&worldLights)

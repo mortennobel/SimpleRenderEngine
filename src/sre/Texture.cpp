@@ -213,9 +213,13 @@ namespace sre {
 #endif
         GLint border = 0;
 
-        if (!isPowerOfTwo(width) || !isPowerOfTwo(height)){
-            LOG_WARNING("Texture %s is not power of two (was %i x %i ). filter sampling and mipmapping disabled ",filename.c_str(), width, height);
+        bool isPOT = isPowerOfTwo(width) && isPowerOfTwo(height);
+        if (!isPOT && filterSampling){
+            LOG_WARNING("Texture %s is not power of two (was %i x %i ). filter sampling ",filename.c_str(), width, height);
             filterSampling = false;
+        }
+        if (!isPOT && generateMipmaps){
+            LOG_WARNING("Texture %s is not power of two (was %i x %i ). mipmapping disabled ",filename.c_str(), width, height);
             generateMipmaps = false;
         }
 
