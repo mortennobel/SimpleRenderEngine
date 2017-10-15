@@ -154,12 +154,12 @@ namespace sre {
 
     void RenderPass::setupShader(const glm::mat4 &modelTransform, Shader *shader)  {
         if (lastBoundShader == shader){
-            if (shader->uniformLocationModel != -1){
+			if (shader->uniformLocationModel != -1){
                 glUniformMatrix4fv(shader->uniformLocationModel, 1, GL_FALSE, glm::value_ptr(modelTransform));
             }
             if (shader->uniformLocationNormal != -1){
-                auto normalMatrix = transpose(inverse((glm::mat3)(builder.camera.getViewTransform() * modelTransform)));
-                glUniformMatrix4fv(shader->uniformLocationNormal, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+                auto normalMatrix = transpose(inverse(((glm::mat3)builder.camera.getViewTransform()) * ((glm::mat3)modelTransform)));
+				glUniformMatrix3fv(shader->uniformLocationNormal, 1, GL_FALSE, glm::value_ptr(normalMatrix));
             }
         } else {
             builder.renderStats->stateChangesShader++;
