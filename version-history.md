@@ -1,6 +1,5 @@
 ## Version history
 
- * 0.9.12 Fix sprite pivot point
  * 0.9.11 Improved sprite-atlas support + documentation
  * 0.9.10 Improved Linux support
  * 0.9.9 Minor Bugfixes
