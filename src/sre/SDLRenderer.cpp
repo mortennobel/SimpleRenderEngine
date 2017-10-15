@@ -60,6 +60,9 @@ void GLAPIENTRY openglCallbackFunction(GLenum source,
 	case GL_DEBUG_SEVERITY_HIGH:
 		severityStr = "HIGH";
 		break;
+	default:
+		severityStr = "Unknown";
+		break;
 	}
     LOG_ERROR("---------------------opengl-callback-start------------\n"
               "message: %s\n"
@@ -188,7 +191,7 @@ namespace sre{
             SDL_Init( sdlInitFlag  );
             SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 #ifdef SRE_DEBUG_CONTEXT
 			SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
@@ -201,25 +204,26 @@ namespace sre{
 
 #ifdef SRE_DEBUG_CONTEXT
 			if (glDebugMessageCallback) {
-			GLenum err = glewInit();
-		if (GLEW_OK != err)
-		{
-			/* Problem: glewInit failed, something is seriously wrong. */
-			LOG_INFO("Register OpenGL debug callback ");
+				//GLenum err = glewInit();
+				//if (GLEW_OK != err)
+				{
+					/* Problem: glewInit failed, something is seriously wrong. */
+					LOG_INFO("Register OpenGL debug callback ");
 
-				std::cout << "Register OpenGL debug callback " << std::endl;
-				glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-				glDebugMessageCallback(openglCallbackFunction, nullptr);
-				GLuint unusedIds = 0;
-				glDebugMessageControl(GL_DONT_CARE,
-					GL_DONT_CARE,
-					GL_DONT_CARE,
-					0,
-					&unusedIds,
-					true);
+					std::cout << "Register OpenGL debug callback " << std::endl;
+					glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+					glDebugMessageCallback(openglCallbackFunction, nullptr);
+					GLuint unusedIds = 0;
+					glDebugMessageControl(GL_DONT_CARE,
+						GL_DONT_CARE,
+						GL_DONT_CARE,
+						0,
+						&unusedIds,
+						true);
+				}
+				//else
+				//	LOG_INFO("glDebugMessageCallback not available");
 			}
-			else
-			    LOG_INFO("glDebugMessageCallback not available");
 #endif
 #ifndef EMSCRIPTEN
             glEnable(GL_FRAMEBUFFER_SRGB);
