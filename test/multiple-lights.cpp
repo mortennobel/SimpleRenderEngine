@@ -129,6 +129,7 @@ class MultipleLightsExample {
                       p-glm::vec3{0,0,size}, p+glm::vec3{0,0,size}
                      },{0,0,0,1});
     }
+
     void drawLight(RenderPass& rp, Light* l, float size){
         if (l->lightType == LightType::Point || l->lightType == LightType::Directional){
 

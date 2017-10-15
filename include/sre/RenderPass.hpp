@@ -119,7 +119,7 @@ namespace sre {
 
         Shader* lastBoundShader = nullptr;
         Material* lastBoundMaterial = nullptr;
-        Mesh* lastBoundMesh = nullptr;
+        int64_t lastBoundMeshId = -1;
 
         glm::mat4 projection;
         glm::uvec2 viewportOffset;

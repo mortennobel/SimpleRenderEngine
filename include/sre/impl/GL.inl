@@ -8,7 +8,7 @@
 #include <iostream>
 #include <sstream>
 
-void checkGLError() {
+void  checkGLError() {
     for(GLenum err; (err = glGetError()) != GL_NO_ERROR;)
     {
         //Process/log the error.

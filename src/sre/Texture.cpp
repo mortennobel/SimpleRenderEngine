@@ -224,11 +224,8 @@ namespace sre {
         }
 
         GLenum type = GL_UNSIGNED_BYTE;
-        checkGLError();
         glBindTexture(target, textureId);
-        checkGLError();
         glTexImage2D(target, mipmapLevel, internalFormat, width, height, border, format, type, fileData.data());
-        checkGLError();
         return *this;
     }
 

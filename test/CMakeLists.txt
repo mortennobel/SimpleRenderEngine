@@ -7,6 +7,7 @@ add_executable(SRE-Test-Multiple-Lights multiple-lights.cpp)
 add_executable(SRE-Test-Particle-Sprite particle-sprite.cpp)
 add_executable(SRE-Test-Sprite-Test sprite-test.cpp)
 add_executable(SRE-Test-MultiCam-Test multi-cameras.cpp)
+add_executable(SRE-Test-Static-Vertex-Attribute static_vertex_attribute.cpp)
 
 target_link_libraries(SRE-Test-Spinning-Sphere-Cubemap ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Test-Particle-Test ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
@@ -15,6 +16,7 @@ target_link_libraries(SRE-Test-Multiple-Lights ${EXTRA_LIBS} ${SDL2_LIBRARY} ${S
 target_link_libraries(SRE-Test-Particle-Sprite ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Test-Sprite-Test ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Test-MultiCam-Test ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
+target_link_libraries(SRE-Test-Static-Vertex-Attribute ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 
 file(COPY ../test_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
 file(COPY ../test_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)

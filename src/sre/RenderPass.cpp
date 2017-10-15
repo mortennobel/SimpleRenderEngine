@@ -94,7 +94,7 @@ namespace sre {
         builder = rp.builder;
         std::swap(lastBoundShader,rp.lastBoundShader);
         std::swap(lastBoundMaterial,rp.lastBoundMaterial);
-        std::swap(lastBoundMesh,rp.lastBoundMesh);
+        std::swap(lastBoundMeshId,rp.lastBoundMeshId);
         std::swap(projection,rp.projection);
         std::swap(viewportOffset,rp.viewportOffset);
         std::swap(viewportSize,rp.viewportSize);
@@ -107,7 +107,7 @@ namespace sre {
         builder = rp.builder;
         std::swap(lastBoundShader,rp.lastBoundShader);
         std::swap(lastBoundMaterial,rp.lastBoundMaterial);
-        std::swap(lastBoundMesh,rp.lastBoundMesh);
+        std::swap(lastBoundMeshId,rp.lastBoundMeshId);
         std::swap(projection,rp.projection);
         std::swap(viewportOffset,rp.viewportOffset);
         std::swap(viewportSize,rp.viewportSize);
@@ -134,12 +134,12 @@ namespace sre {
         if (material != lastBoundMaterial){
             builder.renderStats->stateChangesMaterial++;
             lastBoundMaterial = material;
-            lastBoundMesh = nullptr; // force mesh to rebind
+            lastBoundMeshId = -1;
             material->bind();
         }
-        if (mesh != lastBoundMesh){
+        if (mesh->meshId != lastBoundMeshId){
             builder.renderStats->stateChangesMesh++;
-            lastBoundMesh = mesh;
+            lastBoundMeshId = mesh->meshId;
             mesh->bind(shader);
             mesh->bindIndexSet(0);
         }
@@ -191,7 +191,7 @@ namespace sre {
 
         // Keep a shared mesh and material
         static auto material = Shader::getUnlit()->createMaterial();
-        static std::shared_ptr<Mesh> mesh = Mesh::create()
+        static auto mesh = Mesh::create()
                 .withPositions(verts)
                 .withMeshTopology(meshTopology)
                 .build();
@@ -219,6 +219,9 @@ namespace sre {
                 }
             }
         }
+#ifndef NDEBUG
+        checkGLError();
+#endif
     }
 
     void RenderPass::finish() {
@@ -264,12 +267,12 @@ namespace sre {
             if (material != lastBoundMaterial) {
                 builder.renderStats->stateChangesMaterial++;
                 lastBoundMaterial = material;
-                lastBoundMesh = nullptr; // force mesh to rebind
+                lastBoundMeshId = -1; // force mesh to rebind
                 material->bind();
             }
-            if (mesh != lastBoundMesh) {
+            if (mesh->meshId != lastBoundMeshId) {
                 builder.renderStats->stateChangesMesh++;
-                lastBoundMesh = mesh;
+                lastBoundMeshId = mesh->meshId;
                 mesh->bind(shader);
             }
             mesh->bindIndexSet(i);
@@ -318,12 +321,9 @@ namespace sre {
         }
         viewportOffset = static_cast<glm::uvec2>(builder.camera.viewportOffset * windowSize);
         viewportSize = static_cast<glm::uvec2>(windowSize * builder.camera.viewportSize);
-        checkGLError();
         glEnable(GL_SCISSOR_TEST);
         glScissor(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
-        checkGLError();
         glViewport(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
-        checkGLError();
         if (newFrame) {
             GLbitfield clear = 0;
             if (builder.clearColor) {
