@@ -20,7 +20,7 @@
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 namespace sre {
-    u_int16_t Mesh::meshIdCount = 0;
+    uint16_t Mesh::meshIdCount = 0;
 
     Mesh::Mesh(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology, std::string name,RenderStats& renderStats)
     {

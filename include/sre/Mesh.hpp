@@ -11,6 +11,7 @@
 #include <vector>
 #include <array>
 #include <string>
+#include <cstdint>
 #include <map>
 #include "sre/MeshTopology.hpp"
 
@@ -124,8 +125,8 @@ namespace sre {
         void update(std::map<std::string,std::vector<float>>& attributesFloat, std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string, std::vector<glm::vec3>>& attributesVec3, std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::i32vec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology,std::string name,RenderStats& renderStats);
 
         int totalBytesPerVertex = 0;
-        static u_int16_t meshIdCount;
-        u_int16_t meshId;
+        static uint16_t meshIdCount;
+        uint16_t meshId;
 
         void setVertexAttributePointers(Shader* shader);
         std::vector<MeshTopology> meshTopology;
