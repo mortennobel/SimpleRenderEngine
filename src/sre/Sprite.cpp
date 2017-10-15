@@ -110,8 +110,8 @@ sre::Sprite::Sprite(const Sprite &s)
 std::array<glm::vec2, 4> sre::Sprite::getCorners() {
     float x0 = 0 - spriteAnchor.x * spriteSize.x;
     float x1 = spriteSize.x - spriteAnchor.x * spriteSize.x;
-    float y0 = 0 - (1-spriteAnchor.y) * spriteSize.y;
-    float y1 = spriteSize.y - (1-spriteAnchor.y) * spriteSize.y;
+    float y0 = 0 - spriteAnchor.y * spriteSize.y;
+    float y1 = spriteSize.y - spriteAnchor.y * spriteSize.y;
 
     std::array<glm::vec2, 4> res;
     res[0] = {x1,y0};

@@ -1,5 +1,6 @@
 ## Version history
 
+
  * 0.9.13 Improve sprite rendering. Fix scissor test.
  * 0.9.12 Fix sprite pivot point
  * 0.9.11 Improved sprite-atlas support + documentation

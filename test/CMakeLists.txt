@@ -18,6 +18,7 @@ target_link_libraries(SRE-Test-Sprite-Test ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_
 target_link_libraries(SRE-Test-MultiCam-Test ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Test-Static-Vertex-Attribute ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 
+
 file(COPY ../test_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
 file(COPY ../test_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
 
