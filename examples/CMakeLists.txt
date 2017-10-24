@@ -10,6 +10,7 @@ add_executable(SRE-RenderToTexture render-to-texture.cpp)
 add_executable(SRE-ObjViewer obj-viewer.cpp)
 add_executable(SRE-Hello-Engine-Raw hello-engine-raw.cpp)
 add_executable(SRE-Sprite sprite-example.cpp)
+add_executable(SRE-CustomMeshLayout custom-mesh-layout.cpp)
 
 target_link_libraries(SRE-Spinning-Cube ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Spinning-Primitives-Tex ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
@@ -22,6 +23,7 @@ target_link_libraries(SRE-RenderToTexture ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_I
 target_link_libraries(SRE-ObjViewer ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Hello-Engine-Raw ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 target_link_libraries(SRE-Sprite ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
+target_link_libraries(SRE-CustomMeshLayout ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
 
 file(COPY ../examples_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
 file(COPY ../examples_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)

@@ -74,8 +74,9 @@ namespace sre {
                                                   float(viewportSize.y),
                                                   projectionValue.perspective.nearPlane,
                                                   projectionValue.perspective.farPlane);
+            default:
+                return glm::mat4(1);
         }
-        return glm::mat4(1);
     }
 
     void Camera::setViewTransform(const glm::mat4 &viewTransform) {

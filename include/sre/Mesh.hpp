@@ -115,8 +115,8 @@ namespace sre {
         struct Attribute {
             int offset;
             int elementCount;
-            int dataType;
-            int attributeType;
+            int dataType;      //
+            int attributeType; // GL_BYTE, GL_UNSIGNED_BYTE, GL_SHORT, GL_UNSIGNED_SHORT, GL_INT, GL_UNSIGNED_INT
             int enabledAttributes[10];
             int disabledAttributes[10];
         };

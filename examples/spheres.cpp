@@ -11,9 +11,9 @@
 
 using namespace sre;
 
-class SpheresExample{
+class CustomMeshLayoutExample{
 public:
-    SpheresExample(){
+    CustomMeshLayoutExample(){
         r.init();
 
         camera.lookAt({0,0,3},{0,0,0},{0,1,0});
@@ -76,7 +76,7 @@ private:
 };
 
 int main() {
-    new SpheresExample();
+    new CustomMeshLayoutExample();
 
     return 0;
 }

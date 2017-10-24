@@ -228,43 +228,53 @@ namespace sre {
     void Mesh::setVertexAttributePointers(Shader* shader) {
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
         int vertexAttribArray = 0;
-        for (auto attribute : shader->attributes) {
-            auto res = attributeByName.find(attribute.first);
-			
-            if (res != attributeByName.end() && attribute.second.type == res->second.attributeType && attribute.second.arraySize == 1) {
-				glEnableVertexAttribArray(attribute.second.position);
-                glVertexAttribPointer(attribute.second.position, res->second.elementCount, res->second.dataType, GL_FALSE, totalBytesPerVertex, BUFFER_OFFSET(res->second.offset));
+        for (auto shaderAttribute : shader->attributes) {
+            auto meshAttribute = attributeByName.find(shaderAttribute.first);
+
+            bool attributeFoundInMesh = meshAttribute != attributeByName.end();
+            // allows mesh attributes to be smaller than shader attributes. E.g. if mesh is Vec2 and shader is Vec4, then OpenGL automatically append (z = 0.0, w=1.0) to the attribute in the shader
+            // currently only supported from vec2 or vec3 (not float)
+            // todo - add support float - vecX
+            bool equalType = shaderAttribute.second.type == meshAttribute->second.attributeType ||
+                    (shaderAttribute.second.type >= GL_FLOAT_VEC2 && shaderAttribute.second.type <= GL_FLOAT_VEC4 && shaderAttribute.second.type>= meshAttribute->second.attributeType)
+#ifndef EMSCRIPTEN
+                    || (shaderAttribute.second.type >= GL_INT_VEC2 && shaderAttribute.second.type <= GL_INT_VEC4 && shaderAttribute.second.type>= meshAttribute->second.attributeType)
+#endif
+            ;
+            if (attributeFoundInMesh &&  equalType && shaderAttribute.second.arraySize == 1) {
+				glEnableVertexAttribArray(shaderAttribute.second.position);
+                glVertexAttribPointer(shaderAttribute.second.position, meshAttribute->second.elementCount, meshAttribute->second.dataType, GL_FALSE, totalBytesPerVertex, BUFFER_OFFSET(meshAttribute->second.offset));
                 vertexAttribArray++;
             } else {
-				assert(attribute.second.arraySize == 1 && "Constant vertex attributes not supported as arrays");
-				glDisableVertexAttribArray(attribute.second.position);
+				assert(shaderAttribute.second.arraySize == 1 && "Constant vertex attributes not supported as arrays");
+				glDisableVertexAttribArray(shaderAttribute.second.position);
 				static const float a[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-                switch (attribute.second.type) {
+                switch (shaderAttribute.second.type) {
 #ifndef EMSCRIPTEN
 				case GL_INT_VEC4:
-					glVertexAttribI4iv(attribute.second.position, (GLint*)a);
+					glVertexAttribI4iv(shaderAttribute.second.position, (GLint*)a);
 					break;
 				case GL_INT_VEC3:
-					glVertexAttribI3iv(attribute.second.position, (GLint*)a);
+					glVertexAttribI3iv(shaderAttribute.second.position, (GLint*)a);
 					break;
 				case GL_INT_VEC2:
-					glVertexAttribI2iv(attribute.second.position, (GLint*)a);
+					glVertexAttribI2iv(shaderAttribute.second.position, (GLint*)a);
 					break;
 				case GL_INT:
-					glVertexAttribI1iv(attribute.second.position, (GLint*)a);
+					glVertexAttribI1iv(shaderAttribute.second.position, (GLint*)a);
 					break;
 #endif
 				case GL_FLOAT_VEC4:
-					glVertexAttrib4fv(attribute.second.position, a);
+					glVertexAttrib4fv(shaderAttribute.second.position, a);
 					break;
 				case GL_FLOAT_VEC3:
-					glVertexAttrib3fv(attribute.second.position, a);
+					glVertexAttrib3fv(shaderAttribute.second.position, a);
 					break;
 				case GL_FLOAT_VEC2:
-					glVertexAttrib2fv(attribute.second.position, a);
+					glVertexAttrib2fv(shaderAttribute.second.position, a);
 					break;
 				case GL_FLOAT:
-					glVertexAttrib1fv(attribute.second.position, a);
+					glVertexAttrib1fv(shaderAttribute.second.position, a);
 					break;
                 default:
 					throw std::runtime_error("Unhandled attribute type");
