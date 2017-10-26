@@ -248,10 +248,14 @@ namespace sre{
             frame(deltaTime);
             auto tick = Clock::now();
             deltaTime = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
-            lastTick = tick;
-            if (deltaTime < timePerFrame){
+            // todo fix busy wait
+            // https://forum.lazarus.freepascal.org/index.php?topic=35689.0
+            while (deltaTime < timePerFrame){
                 SDL_Delay((Uint32) ((timePerFrame - deltaTime) / 1000));
+                tick = Clock::now();
+                deltaTime = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
             }
+            lastTick = tick;
         }
 #endif
     }

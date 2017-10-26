@@ -57,7 +57,7 @@ namespace sre {
         static constexpr int maxSceneLights = 4;            // Maximum of scene lights
         static constexpr int sre_version_major = 0;
         static constexpr int sre_version_minor = 9;
-        static constexpr int sre_version_point = 15;
+        static constexpr int sre_version_point = 16;
 
         glm::ivec2 getWindowSize();                         // Return the current size of the window
 

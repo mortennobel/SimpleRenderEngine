@@ -1,5 +1,6 @@
 ## Version history
 
+ * 0.9.16 Framerate issue on Windows 10
  * 0.9.15 Fix issue with mesh binding
  * 0.9.14 Improve custom mesh layout
  * 0.9.13 Improve sprite rendering. Fix scissor test.
