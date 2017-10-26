@@ -235,12 +235,12 @@ namespace sre {
             // allows mesh attributes to be smaller than shader attributes. E.g. if mesh is Vec2 and shader is Vec4, then OpenGL automatically append (z = 0.0, w=1.0) to the attribute in the shader
             // currently only supported from vec2 or vec3 (not float)
             // todo - add support float - vecX
-            bool equalType = shaderAttribute.second.type == meshAttribute->second.attributeType ||
+            bool equalType = attributeFoundInMesh && (shaderAttribute.second.type == meshAttribute->second.attributeType ||
                     (shaderAttribute.second.type >= GL_FLOAT_VEC2 && shaderAttribute.second.type <= GL_FLOAT_VEC4 && shaderAttribute.second.type>= meshAttribute->second.attributeType)
 #ifndef EMSCRIPTEN
                     || (shaderAttribute.second.type >= GL_INT_VEC2 && shaderAttribute.second.type <= GL_INT_VEC4 && shaderAttribute.second.type>= meshAttribute->second.attributeType)
 #endif
-            ;
+                                                     );
             if (attributeFoundInMesh &&  equalType && shaderAttribute.second.arraySize == 1) {
 				glEnableVertexAttribArray(shaderAttribute.second.position);
                 glVertexAttribPointer(shaderAttribute.second.position, meshAttribute->second.elementCount, meshAttribute->second.dataType, GL_FALSE, totalBytesPerVertex, BUFFER_OFFSET(meshAttribute->second.offset));
