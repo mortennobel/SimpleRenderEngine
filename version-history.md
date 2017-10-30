@@ -1,5 +1,6 @@
 ## Version history
 
+ * 0.9.17 Fix compile issue on Linux
  * 0.9.16 Framerate issue on Windows 10
  * 0.9.15 Fix issue with mesh binding
  * 0.9.14 Improve custom mesh layout
