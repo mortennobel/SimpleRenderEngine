@@ -11,6 +11,7 @@
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <sre/Profiler.hpp>
 
 
 using namespace sre;
@@ -58,10 +59,14 @@ public:
                 .withCamera(camera2)
                 .withWorldLights(&worldLights)
                 .withClearColor(true, {1, 1, 0, 1})
-                .withGUI(false)
+                .withGUI(true)
                 .build();
 
         renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), material);
+
+        // static Profiler prof;
+        // prof.update();
+        // prof.gui(true);
 
         i++;
     }

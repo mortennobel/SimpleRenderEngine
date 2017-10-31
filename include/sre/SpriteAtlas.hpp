@@ -50,8 +50,9 @@ namespace sre{
 class SpriteAtlas {
 public:
     ~SpriteAtlas();
-    static std::shared_ptr<SpriteAtlas> create(std::string jsonFile,  // Create sprite atlas based on JSON file
-                                               std::string imageFile);
+    static std::shared_ptr<SpriteAtlas> create(std::string jsonFile,    // Create sprite atlas based on JSON file
+                                               std::string imageFile,
+                                               bool flipAnchorY = true);
 
     static std::shared_ptr<SpriteAtlas> createSingleSprite(std::shared_ptr<Texture> texture, // Create sprite atlas
                                                            std::string name = "sprite",      // (with single sprite)

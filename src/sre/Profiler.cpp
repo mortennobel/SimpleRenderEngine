@@ -275,6 +275,7 @@ namespace sre{
             }
             ImGui::LabelText("Window size", "%ix%i",r->getWindowSize().x,r->getWindowSize().y);
             ImGui::LabelText("Drawable size", "%ix%i",r->getDrawableSize().x,r->getDrawableSize().y);
+            ImGui::LabelText("VSync", "%s", r->usesVSync()?"true":"false");
         }
 
         if (ImGui::CollapsingHeader("Performance")){

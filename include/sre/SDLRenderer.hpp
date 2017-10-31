@@ -55,7 +55,8 @@ public:
     void init(uint32_t sdlInitFlag = SDL_INIT_EVERYTHING,       // Create the window and the graphics context (instantiates the sre::Renderer). Note that most
               uint32_t sdlWindowFlags=SDL_WINDOW_ALLOW_HIGHDPI  // other sre classes requires the graphics content to be created before they can be used (e.g. a Shader cannot be
                                         | SDL_WINDOW_OPENGL     // created before `init()`).
-                                        | SDL_WINDOW_RESIZABLE);
+                                        | SDL_WINDOW_RESIZABLE,
+              bool vsync = true);
 
 
 

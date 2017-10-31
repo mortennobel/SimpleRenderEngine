@@ -84,14 +84,18 @@ namespace sre {
     RenderPass::RenderPass(RenderPass::RenderPassBuilder& builder)
         :builder(builder)
     {
+        lastInstance = RenderPass::instance;
+        RenderPass::instance = this;
         bind(true);
     }
 
-    RenderPass::RenderPass(RenderPass &&rp) {
+    RenderPass::RenderPass(RenderPass &&rp) noexcept {
+        assert(instance == &rp);
         if (instance == &rp){
             instance = this;
         }
         builder = rp.builder;
+        std::swap(lastInstance,rp.lastInstance);
         std::swap(lastBoundShader,rp.lastBoundShader);
         std::swap(lastBoundMaterial,rp.lastBoundMaterial);
         std::swap(lastBoundMeshId,rp.lastBoundMeshId);
@@ -100,7 +104,7 @@ namespace sre {
         std::swap(viewportSize,rp.viewportSize);
     }
 
-    RenderPass &RenderPass::operator=(RenderPass &&rp) {
+    RenderPass &RenderPass::operator=(RenderPass &&rp) noexcept {
         if (instance == &rp){
             instance = this;
         }
@@ -117,10 +121,12 @@ namespace sre {
     RenderPass::~RenderPass(){
         if (RenderPass::instance == this){
             RenderPass::finish();
-            RenderPass::instance = nullptr;
+            RenderPass::instance = lastInstance;
+            if (RenderPass::instance != nullptr){
+                RenderPass::instance->bind(false);
+            }
         }
     }
-
 
     void RenderPass::draw(std::shared_ptr<Mesh>& meshPtr, glm::mat4 modelTransform, std::shared_ptr<Material>& material_ptr) {
         assert(instance == this && "You can only invoke methods on the currently bound renderpass");
@@ -227,7 +233,6 @@ namespace sre {
     void RenderPass::finish() {
         if (instance != nullptr){
             instance->finishInstance();
-            instance = nullptr;
         }
     }
 
@@ -304,20 +309,20 @@ namespace sre {
         }
     }
 
+
+
     void RenderPass::bind(bool newFrame) {
-        if (RenderPass::instance != nullptr){
-            RenderPass::instance->finishInstance();
-        }
-        instance = this;
         if (builder.framebuffer!=nullptr){
             builder.framebuffer->bind();
         } else {
             glBindFramebuffer(GL_FRAMEBUFFER, 0);
         }
 
-        auto windowSize = static_cast<glm::vec2>(Renderer::instance->getDrawableSize());
+        glm::vec2 windowSize;
         if (builder.framebuffer){
             windowSize = builder.framebuffer->size;
+        } else {
+            windowSize = static_cast<glm::vec2>(Renderer::instance->getDrawableSize());
         }
         viewportOffset = static_cast<glm::uvec2>(builder.camera.viewportOffset * windowSize);
         viewportSize = static_cast<glm::uvec2>(windowSize * builder.camera.viewportSize);
@@ -346,9 +351,21 @@ namespace sre {
             if (builder.gui) {
                 ImGui_SRE_NewFrame(Renderer::instance->window);
             }
+
+            projection = builder.camera.getProjectionTransform(windowSize);
+        } else {
+            lastBoundShader = nullptr;
+            lastBoundMaterial = nullptr;
         }
+    }
 
-        projection = builder.camera.getProjectionTransform(windowSize);
-
+    bool RenderPass::containsInstance(RenderPass *rp) {
+        if (lastInstance == rp){
+            return true;
+        }
+        if (lastInstance){
+            return lastInstance->containsInstance(rp);
+        }
+        return false;
     }
 }

@@ -25,18 +25,24 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 namespace sre {
     Renderer* Renderer::instance = nullptr;
 
-    Renderer::Renderer(SDL_Window * window)
-    :window{window}
+    Renderer::Renderer(SDL_Window * window, bool vsync_)
+    :window{window},vsync(vsync_)
     {
         if (instance != nullptr){
             LOG_ERROR("Multiple versions of Renderer initialized. Only a single instance is supported.");
         }
+
         // initialize ImGUI
         ImGui_SRE_Init(window);
 
         instance = this;
 #ifndef EMSCRIPTEN
         glcontext = SDL_GL_CreateContext(window);
+        if (vsync){
+            vsync = SDL_GL_SetSwapInterval(1) == 0; // return 0 is success
+        }
+#else
+        vsync = true; // WebGL uses vsync like approach
 #endif
 #if defined(_WIN32)
 		glewExperimental = GL_TRUE;
@@ -117,5 +123,9 @@ namespace sre {
         glm::ivec2 win;
         SDL_GL_GetDrawableSize(window,&win.r,&win.g);
         return win;
+    }
+
+    bool Renderer::usesVSync() {
+        return vsync;
     }
 }
