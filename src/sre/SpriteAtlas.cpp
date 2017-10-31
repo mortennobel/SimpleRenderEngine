@@ -33,7 +33,7 @@ SpriteAtlas::SpriteAtlas(std::map<std::string, Sprite>&& sprites, std::shared_pt
     sre::Renderer::instance->spriteAtlases.push_back(this);
 }
 
-std::shared_ptr<SpriteAtlas> SpriteAtlas::create(std::string jsonFile, std::string imageFile) {
+std::shared_ptr<SpriteAtlas> SpriteAtlas::create(std::string jsonFile, std::string imageFile,bool flipAnchorY) {
     picojson::value v;
     std::ifstream t(jsonFile);
     if (!t){
@@ -62,6 +62,9 @@ std::shared_ptr<SpriteAtlas> SpriteAtlas::create(std::string jsonFile, std::stri
         y = texture->getHeight()-y-h;
         float px = (float)spriteElement.get("pivot").get("x").get<double>();
         float py = (float)spriteElement.get("pivot").get("y").get<double>();
+        if (flipAnchorY){
+            py = 1.0f - py;
+        }
         Sprite sprite({x,y},{w,h},{px,py},texture.get());
         sprites.emplace(std::pair<std::string, Sprite>(name, std::move(sprite)));
     }

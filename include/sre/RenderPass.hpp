@@ -57,7 +57,7 @@ namespace sre {
             std::shared_ptr<Framebuffer> framebuffer;
             WorldLights* worldLights = nullptr;
             Camera camera;
-            RenderStats* renderStats;
+            RenderStats* renderStats = nullptr;
 
             bool clearColor = true;
             glm::vec4 clearColorValue = {0,0,0,1};
@@ -68,7 +68,7 @@ namespace sre {
 
             bool gui = true;
 
-            RenderPassBuilder(RenderStats* renderStats);
+            explicit RenderPassBuilder(RenderStats* renderStats);
             friend class RenderPass;
             friend class Renderer;
         };
@@ -76,8 +76,8 @@ namespace sre {
         static RenderPassBuilder create();   // Create a RenderPass
 
         RenderPass(const RenderPass&) = delete;
-        RenderPass(RenderPass&& rp);
-        RenderPass& operator=(RenderPass&& other);
+        RenderPass(RenderPass&& rp) noexcept;
+        RenderPass& operator=(RenderPass&& other) noexcept;
         virtual ~RenderPass();
 
 
@@ -115,6 +115,8 @@ namespace sre {
 
         void bind(bool newFrame);
 
+        bool containsInstance(RenderPass*);
+
         void setupShader(const glm::mat4 &modelTransform, Shader *shader);
 
         Shader* lastBoundShader = nullptr;
@@ -124,8 +126,7 @@ namespace sre {
         glm::mat4 projection;
         glm::uvec2 viewportOffset;
         glm::uvec2 viewportSize;
-
-
+        RenderPass* lastInstance = nullptr;
         static RenderPass* instance;
         static std::shared_ptr<Framebuffer> lastFramebuffer;
 
