@@ -32,16 +32,17 @@ namespace sre {
             LOG_ERROR("Multiple versions of Renderer initialized. Only a single instance is supported.");
         }
 
-        if (vsync){
-            vsync = SDL_GL_SetSwapInterval(1) == 0; // return 0 is success
-        }
-
         // initialize ImGUI
         ImGui_SRE_Init(window);
 
         instance = this;
 #ifndef EMSCRIPTEN
         glcontext = SDL_GL_CreateContext(window);
+        if (vsync){
+            vsync = SDL_GL_SetSwapInterval(1) == 0; // return 0 is success
+        }
+#else
+        vsync = true; // WebGL uses vsync like approach
 #endif
 #if defined(_WIN32)
 		glewExperimental = GL_TRUE;
