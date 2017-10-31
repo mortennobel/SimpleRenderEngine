@@ -51,7 +51,7 @@ namespace sre {
     ///
     class DllExport Renderer {
     public:
-        explicit Renderer(SDL_Window *window);                       // SimpleRenderEngine constructor
+        Renderer(SDL_Window *window, bool vsync = true);    // SimpleRenderEngine constructor
                                                             // param window pointer to the SDL window (must be initialized using OpenGL)
         ~Renderer();
         static constexpr int maxSceneLights = 4;            // Maximum of scene lights
@@ -63,6 +63,8 @@ namespace sre {
 
         glm::ivec2 getDrawableSize();                       // Get the size of a window's underlying drawable in pixels (for use with glViewport). May be larger than window size in case of HighDPI.
 
+        bool usesVSync();                                   // Return true if vsync is enabled
+
         void swapWindow();                                  // Update window with OpenGL rendering by swapping buffers
 
         const RenderStats& getRenderStats();                // Return stats of the last rendered frame
@@ -73,6 +75,7 @@ namespace sre {
     private:
         SDL_Window *window;
         SDL_GLContext glcontext;
+        bool vsync;
         friend class Camera;
 
         RenderStats renderStatsLast;

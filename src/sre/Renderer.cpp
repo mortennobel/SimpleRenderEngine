@@ -25,12 +25,17 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 namespace sre {
     Renderer* Renderer::instance = nullptr;
 
-    Renderer::Renderer(SDL_Window * window)
-    :window{window}
+    Renderer::Renderer(SDL_Window * window, bool vsync_)
+    :window{window},vsync(vsync_)
     {
         if (instance != nullptr){
             LOG_ERROR("Multiple versions of Renderer initialized. Only a single instance is supported.");
         }
+
+        if (vsync){
+            vsync = SDL_GL_SetSwapInterval(1) == 0; // return 0 is success
+        }
+
         // initialize ImGUI
         ImGui_SRE_Init(window);
 
@@ -117,5 +122,9 @@ namespace sre {
         glm::ivec2 win;
         SDL_GL_GetDrawableSize(window,&win.r,&win.g);
         return win;
+    }
+
+    bool Renderer::usesVSync() {
+        return vsync;
     }
 }

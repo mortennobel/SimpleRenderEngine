@@ -179,7 +179,7 @@ namespace sre{
         r->swapWindow();
     }
 
-    void SDLRenderer::init(uint32_t sdlInitFlag,uint32_t sdlWindowFlags) {
+    void SDLRenderer::init(uint32_t sdlInitFlag,uint32_t sdlWindowFlags, bool vsync) {
         if (running){
             return;
         }
@@ -198,8 +198,7 @@ namespace sre{
 #endif
         	window = SDL_CreateWindow(windowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight,sdlWindowFlags);
 #endif
-
-            r = new Renderer(window);
+            r = new Renderer(window, vsync);
 
 
 #ifdef SRE_DEBUG_CONTEXT
@@ -245,15 +244,19 @@ namespace sre{
         auto lastTick = Clock::now();
         float deltaTime = 0;
         while (running){
-            frame(deltaTime);
             auto tick = Clock::now();
             deltaTime = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
-            // todo fix busy wait
-            // https://forum.lazarus.freepascal.org/index.php?topic=35689.0
-            while (deltaTime < timePerFrame){
-                SDL_Delay((Uint32) ((timePerFrame - deltaTime) / 1000));
-                tick = Clock::now();
-                deltaTime = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
+
+            frame(deltaTime);
+
+            if (!r->usesVSync()){
+                // todo fix busy wait
+                // https://forum.lazarus.freepascal.org/index.php?topic=35689.0
+                while (deltaTime < timePerFrame){
+                    SDL_Delay((Uint32) ((timePerFrame - deltaTime) / 1000));
+                    tick = Clock::now();
+                    deltaTime = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
+                }
             }
             lastTick = tick;
         }
