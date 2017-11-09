@@ -65,7 +65,6 @@ namespace {
 	{
 		if (SDL_ISPIXELFORMAT_ALPHA(format->format))
 		{
-			std::cout << "Pixelformat alpha true" << std::endl;
 			return true;
 		}
 		if (SDL_ISPIXELFORMAT_INDEXED(format->format))
@@ -76,7 +75,6 @@ namespace {
 			{
 				if (colors[i].a != 255)
 				{
-					std::cout << "Palette alpha true" << std::endl;
 					return true;
 				}
 			}
