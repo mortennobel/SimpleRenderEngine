@@ -137,7 +137,9 @@ namespace {
             LOG_ERROR("Cannot load texture. IMG_Load_RW returned %s",IMG_GetError());
             return {};
         }
-        const bool alpha = SDL_ISPIXELFORMAT_ALPHA(res_texture->format->format);
+        const bool alpha = SDL_ISPIXELFORMAT_ALPHA(res_texture->format->format) ||
+                           SDL_ISPIXELFORMAT_INDEXED(res_texture->format->format); // SDL_image 2.0 may not treat indexed format as alpha
+
         SDL_Surface *formattedSurf = SDL_ConvertSurfaceFormat(res_texture,
                                                               alpha ?SDL_PIXELFORMAT_RGBA32 : SDL_PIXELFORMAT_RGB24, 0);
         width = formattedSurf->w;

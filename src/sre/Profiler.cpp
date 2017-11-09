@@ -18,11 +18,12 @@
 #include "sre/Framebuffer.hpp"
 #include "sre/Sprite.hpp"
 #include "imgui_internal.h"
+#include <SDL_image.h>
 
 using Clock = std::chrono::high_resolution_clock;
 using Milliseconds = std::chrono::duration<float, std::chrono::milliseconds::period>;
 
-namespace sre{
+namespace sre {
     namespace{
         std::string appendSize(std::string s, int size) {
             if (size>1){
@@ -87,7 +88,6 @@ namespace sre{
             ImGui::TreePop();
         }
     }
-
 
     void Profiler::showMesh(Mesh* mesh){
         std::string s = mesh->getName()+"##"+std::to_string((int64_t)mesh);
@@ -155,7 +155,6 @@ namespace sre{
             ImGui::TreePop();
         }
     }
-
 
     std::string glUniformToString(UniformType type);
 
@@ -268,6 +267,8 @@ namespace sre{
         }
 
         if (ImGui::CollapsingHeader("Renderer")){
+
+            ImGui::LabelText("SRE Version", "%d.%d.%d",r->sre_version_major, r->sre_version_minor, r->sre_version_point);
             if (sdlRenderer != nullptr){
                 ImGui::LabelText("Fullscreen", "%s",sdlRenderer->isFullscreen()?"true":"false");
                 ImGui::LabelText("Mouse cursor locked", "%s",sdlRenderer->isMouseCursorLocked()?"true":"false");
@@ -276,6 +277,30 @@ namespace sre{
             ImGui::LabelText("Window size", "%ix%i",r->getWindowSize().x,r->getWindowSize().y);
             ImGui::LabelText("Drawable size", "%ix%i",r->getDrawableSize().x,r->getDrawableSize().y);
             ImGui::LabelText("VSync", "%s", r->usesVSync()?"true":"false");
+
+            char* version = (char*)glGetString(GL_VERSION);
+            ImGui::LabelText("OpenGL version",version);
+
+            char* vendor = (char*)glGetString(GL_VENDOR);
+            ImGui::LabelText("OpenGL vendor", vendor);
+
+            SDL_version compiled;
+            SDL_version linked;
+
+            SDL_VERSION(&compiled);
+            SDL_GetVersion(&linked);
+            ImGui::LabelText("SDL version compiled", "%d.%d.%d",compiled.major, compiled.minor, compiled.patch);
+            ImGui::LabelText("SDL version linked", "%d.%d.%d",linked.major, linked.minor, linked.patch);
+
+            linked = *IMG_Linked_Version();
+            SDL_IMAGE_VERSION(&compiled);
+            ImGui::LabelText("SDL_IMG version compiled","%d.%d.%d",
+                   compiled.major,
+                   compiled.minor,
+                   compiled.patch);
+            ImGui::LabelText("SDL version linked", "%d.%d.%d",
+                             linked.major, linked.minor, linked.patch);
+            ImGui::LabelText("IMGUI version", IMGUI_VERSION);
         }
 
         if (ImGui::CollapsingHeader("Performance")){
