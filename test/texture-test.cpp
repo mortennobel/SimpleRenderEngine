@@ -1,6 +1,7 @@
 //
 // Created by Morten Nobel-Jørgensen on 18/07/2017.
 //
+// Test based on http://www.schaik.com/pngsuite/pngsuite_bas_png.html
 
 #include <iostream>
 #include <vector>
@@ -10,7 +11,6 @@
 #include "sre/Renderer.hpp"
 #include "sre/Material.hpp"
 #include "sre/SDLRenderer.hpp"
-
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -23,18 +23,39 @@
 
 using namespace sre;
 
-class SpriteExample {
+class TextureTestExample {
 public:
-    SpriteExample()
+	TextureTestExample()
     {
         r.init();
 
-        camera.setWindowCoordinates();
+        camera.setOrthographicProjection(3,-2,2);
 
-        auto tex = Texture::create().withFile("test_data/platformer.png").build();
+		filenames = {
+			"basn0g01.png",
+			"basn0g02.png",
+			"basn0g04.png",
+			"basn0g08.png",
+			"basn0g16.png",
+			"basn2c08.png",
+			"basn2c16.png",
+			"basn3p01.png",
+			"basn3p02.png",
+			"basn3p04.png",
+			"basn4a08.png",
+			"basn6a08.png",
+			"basn6a16.png"
+		};
+        
+		for (const auto s : filenames)
+		{
+			std::cout << "Load " << s << std::endl;
+			textures.push_back(Texture::create().withFile(std::string("test_data/")+s).build());
+		}
 
-
-
+		mesh = Mesh::create().withCube().build();
+		material = Shader::create().withSourceUnlit().withBlend(BlendType::AlphaBlending).build()->createMaterial();
+		
         r.frameRender = [&](){
             render();
         };
@@ -48,59 +69,42 @@ public:
                 .withClearColor(true, {.3, .3, 1, 1})
                 .build();
 
-        auto names = atlas->getNames();
+		ImGui::ListBox("Texture", &selection, filenames.data(), filenames.size());
+		if (filenames[selection][5] == 'g')
+		{
+			ImGui::LabelText("png type","Grayscale");
+		}
+		if (filenames[selection][5] == 'c')
+		{
+			ImGui::LabelText("png type", "Color");
+		}
+		if (filenames[selection][5] == 'p')
+		{
+			ImGui::LabelText("png type", "Palette");
+		}
+		if (filenames[selection][5] == 'a')
+		{
+			ImGui::LabelText("png type", "Alpha");
+		}
 
-
-        static const char** namesPtr = new const char*[names.size()];
-        for (int i=0;i<names.size();i++){
-            namesPtr[i] = names[i].c_str();
-        }
-        static int selected = 0;
-
-        ImGui::Combo("Sprite", &selected,namesPtr,names.size());
-
-        auto sprite = atlas->get(names.at(selected));
-        static glm::vec4 color (1,1,1,1);
-        static glm::vec2 scale(1,1);
-        static glm::vec2 position(300,300);
-        static float rotation = 0;
-        static glm::bvec2 flip = {false,false};
-
-        ImGui::ColorEdit4("Color", &color.x,ImGuiColorEditFlags_RGB|ImGuiColorEditFlags_Float);
-        ImGui::DragFloat2("Pos", &position.x,1);
-        ImGui::DragFloat("Rotation", &rotation,1);
-        ImGui::DragFloat2("Scale", &scale.x,0.1);
-        ImGui::Checkbox("Flip x", &flip.x);
-        ImGui::Checkbox("Flip y", &flip.y);
-
-        sprite.setColor(color);
-        sprite.setScale(scale);
-        sprite.setPosition(position);
-        sprite.setRotation(rotation);
-        sprite.setFlip(flip);
-
-        auto sb = SpriteBatch::create()
-                .addSprite(sprite).build();
-        renderPass.draw(sb);
-
-        std::vector<glm::vec3> lines;
-        auto spriteCorners = sprite.getCorners();
-        for (int i=0;i<4;i++){
-            lines.push_back({spriteCorners[i],0});
-            lines.push_back({spriteCorners[(i+1)%4],0});
-        }
-        renderPass.drawLines(lines);
-
-
+		ImGui::LabelText("Size", "%d x %d", textures[selection]->getWidth(), textures[selection]->getHeight());
+		ImGui::LabelText("Transparent", "%s", textures[selection]->isTransparent()?"true":"false");
+		
+		material->setTexture(textures[selection]);
+		renderPass.draw(mesh, glm::mat4(1), material);
     }
-private:
-    std::shared_ptr<SpriteAtlas> atlas;
+private:    
+	std::vector<const char*> filenames;
+	std::vector<std::shared_ptr<sre::Texture>> textures;
     SDLRenderer r;
     Camera camera;
-    std::shared_ptr<SpriteBatch> world;
+	int selection = 0;
+
+	std::shared_ptr<sre::Mesh> mesh;
+	std::shared_ptr<sre::Material> material;
 };
 
 int main() {
-    new SpriteExample();
+    new TextureTestExample();
     return 0;
 }
