@@ -21,7 +21,7 @@ public:
     MultiCamExample(){
         r.init();
 
-        camera.lookAt({0,0,3},{0,0,0},{0,1,0});
+        camera.lookAt(eye,at,up);
         camera.setPerspectiveProjection(60,0.1,100);
 
         camera2.lookAt({0,0,3},{0,0,0},{0,1,0});
@@ -55,6 +55,7 @@ public:
                 .build();
 
         renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), material);
+
         renderPass = RenderPass::create()
                 .withCamera(camera2)
                 .withWorldLights(&worldLights)
@@ -64,6 +65,25 @@ public:
 
         renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), material);
 
+
+
+        static bool lookAt = true;
+        ImGui::Checkbox("LookAt",&lookAt);
+        if (lookAt){
+            ImGui::DragFloat3("eye",&eye.x);
+            ImGui::DragFloat3("at",&at.x);
+            ImGui::DragFloat3("up",&up.x);
+            camera.lookAt(eye, at, up);
+        } else {
+            ImGui::DragFloat3("position",&position.x);
+            ImGui::DragFloat3("rotation",&rotation.x);
+            camera.setPositionAndRotation(position, rotation);
+        }
+        auto pos = camera.getPosition();
+        auto rot = camera.getRotationEuler();
+        ImGui::LabelText("GetPos","%f %f %f", pos.x, pos.y, pos.z);
+        ImGui::LabelText("GetRot","%f %f %f", rot.x, rot.y, rot.z);
+
         // static Profiler prof;
         // prof.update();
         // prof.gui(true);
@@ -71,6 +91,12 @@ public:
         i++;
     }
 private:
+
+    glm::vec3 eye{0,0,3};
+    glm::vec3 at{0,0,0};
+    glm::vec3 up{0,1,0};
+    glm::vec3 position{0,0,3};
+    glm::vec3 rotation{0,0,0};
     SDLRenderer r;
     Camera camera;
     Camera camera2;

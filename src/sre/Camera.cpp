@@ -11,9 +11,12 @@
 
 #include "sre/Renderer.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
 #include <sre/Camera.hpp>
+#include <glm/gtx/matrix_decompose.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <glm/gtx/euler_angles.hpp>
 #include "sre/Log.hpp"
 
 namespace sre {
@@ -91,5 +94,42 @@ namespace sre {
     void Camera::setViewport(glm::vec2 offset, glm::vec2 size) {
         viewportOffset = offset;
         viewportSize = size;
+    }
+
+    void Camera::setPositionAndRotation(glm::vec3 position, glm::vec3 rotationEulersDegrees) {
+        auto rotationEulersRadians = glm::radians(rotationEulersDegrees);
+        auto viewTransform = glm::translate(position) * glm::eulerAngleXYZ(rotationEulersRadians.x, rotationEulersRadians.y, rotationEulersRadians.z);
+        setViewTransform(glm::inverse(viewTransform));
+    }
+
+    glm::vec3 Camera::getPosition() {
+        glm::vec3 scale;
+        glm::quat orientation;
+        glm::vec3 translation;
+        glm::vec3 skew;
+        glm::vec4 perspective;
+        glm::decompose	(glm::inverse(viewTransform),
+                scale,
+                orientation,
+                translation,
+                skew,
+                perspective);
+        return translation;
+    }
+
+    glm::vec3 Camera::getRotationEuler() {
+        glm::vec3 scale;
+        glm::quat orientation;
+        glm::vec3 translation;
+        glm::vec3 skew;
+        glm::vec4 perspective;
+        glm::decompose	(glm::inverse(viewTransform),
+                           scale,
+                           orientation,
+                           translation,
+                           skew,
+                           perspective);
+
+        return glm::degrees( -glm::eulerAngles(orientation));
     }
 }
