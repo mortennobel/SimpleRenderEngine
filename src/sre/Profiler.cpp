@@ -469,9 +469,9 @@ namespace sre {
             if (*index != -1){
                 auto name = pAtlas->getNames()[*index];
                 Sprite sprite = pAtlas->get(name);
-                ImGui::LabelText("Sprite anchor","%.2fx%.2f",sprite.getSpriteAnchor().x,sprite.getSpriteAnchor().y);
+                ImGui::LabelText("Sprite anchor","(%.2f,%.2f)",sprite.getSpriteAnchor().x,sprite.getSpriteAnchor().y);
                 ImGui::LabelText("Sprite size","%ix%i",sprite.getSpriteSize().x,sprite.getSpriteSize().y);
-                ImGui::LabelText("Sprite pos","%ix%i",sprite.getSpritePos().x,sprite.getSpritePos().y);
+                ImGui::LabelText("Sprite pos","(%i,%i)",sprite.getSpritePos().x,sprite.getSpritePos().y);
                 auto tex = sprite.texture;
                 auto uv0 = ImVec2((sprite.getSpritePos().x)/(float)tex->getWidth(), (sprite.getSpritePos().y+sprite.getSpriteSize().y)/(float)tex->getHeight());
                 auto uv1 = ImVec2((sprite.getSpritePos().x+sprite.getSpriteSize().x)/(float)tex->getWidth(),(sprite.getSpritePos().y)/(float)tex->getHeight());
