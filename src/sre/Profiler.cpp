@@ -205,7 +205,7 @@ namespace sre {
 
             auto mat = shader->createMaterial();
 
-            static auto mesh = Mesh::create().withSphere().build();
+            static auto mesh = Mesh::create().withSphere().withName("Preview Shader Mesh").build();
 
             Camera camera;
             camera.setPerspectiveProjection(60,0.1,10);
