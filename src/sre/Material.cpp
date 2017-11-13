@@ -12,7 +12,7 @@
 #include "sre/Log.hpp"
 
 
-namespace sre{
+namespace sre {
 
     Material::Material(std::shared_ptr<Shader> shader)
     :shader{nullptr}

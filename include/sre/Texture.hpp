@@ -90,6 +90,7 @@ public:
     bool isFilterSampling();                                                                // returns true if texture sampling is filtered when sampling (bi-linear or tri-linear sampling).
     bool isWrapTextureCoordinates();                                                        // returns false if texture coordinates are clamped otherwise wrapped
     bool isCubemap();                                                                       // is cubemap texture
+    bool isMipmapped();                                                                     // has texture mipmapped enabled
 	bool isTransparent();																	// Does texture has alpha channel
 
     const std::string& getName();                                                           // name of the string

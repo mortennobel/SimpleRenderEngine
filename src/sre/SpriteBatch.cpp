@@ -51,6 +51,10 @@ namespace sre{
         for (auto & s : sprites){
             if (lastTexture && lastTexture != s.texture){
                 pushCurrentMesh();
+                vertices.clear();
+                colors.clear();
+                uvs.clear();
+                indices.clear();
             }
             lastTexture = s.texture;
 

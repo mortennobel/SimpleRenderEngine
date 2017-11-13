@@ -27,11 +27,17 @@ class SpriteExample {
 public:
     SpriteExample()
     {
-        r.init();
+        r.init(SDL_INIT_EVERYTHING,SDL_WINDOW_OPENGL     // created before `init()`).
+               | SDL_WINDOW_RESIZABLE);
 
         camera.setWindowCoordinates();
 
+        // Create sprite atlas using default texture properties
         atlas = SpriteAtlas::create("test_data/sprite_test.json","test_data/sprite_test.png");
+
+        // create sprite atlas using point sampling and no mipmaps
+        auto tex = Texture::create().withFile("test_data/sprite_test.png").withFilterSampling(false).withGenerateMipmaps(false).build();
+        atlas2 = SpriteAtlas::create("test_data/sprite_test.json",tex);
 
         r.frameRender = [&](){
             render();
@@ -63,6 +69,7 @@ public:
         static glm::vec2 position(300,300);
         static float rotation = 0;
         static glm::bvec2 flip = {false,false};
+        static bool profilerEnabled = false;
 
         ImGui::ColorEdit4("Color", &color.x,ImGuiColorEditFlags_RGB|ImGuiColorEditFlags_Float);
         ImGui::DragFloat2("Pos", &position.x,1);
@@ -70,6 +77,7 @@ public:
         ImGui::DragFloat2("Scale", &scale.x,0.1);
         ImGui::Checkbox("Flip x", &flip.x);
         ImGui::Checkbox("Flip y", &flip.y);
+        ImGui::Checkbox("Profiler", &profilerEnabled);
 
         sprite.setColor(color);
         sprite.setScale(scale);
@@ -77,9 +85,19 @@ public:
         sprite.setRotation(rotation);
         sprite.setFlip(flip);
 
+        auto sprite2 = atlas2->get(names.at(selected));
+        sprite2.setColor(color);
+        sprite2.setScale(scale);
+        sprite2.setPosition(position+glm::vec2{-300, 0});
+        sprite2.setRotation(rotation);
+        sprite2.setFlip(flip);
+
         auto sb = SpriteBatch::create()
-                .addSprite(sprite).build();
+                .addSprite(sprite)
+                .addSprite(sprite2)
+                .build();
         renderPass.draw(sb);
+
 
         std::vector<glm::vec3> lines;
         auto spriteCorners = sprite.getCorners();
@@ -89,10 +107,16 @@ public:
         }
         renderPass.drawLines(lines);
 
+        static Profiler profiler;
+        profiler.update();
+        if (profilerEnabled){
+            profiler.gui();
+        }
 
     }
 private:
     std::shared_ptr<SpriteAtlas> atlas;
+    std::shared_ptr<SpriteAtlas> atlas2;
     SDLRenderer r;
     Camera camera;
     std::shared_ptr<SpriteBatch> world;

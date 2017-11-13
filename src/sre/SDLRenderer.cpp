@@ -244,19 +244,19 @@ namespace sre{
         auto lastTick = Clock::now();
         float deltaTime = 0;
         while (running){
-            auto tick = Clock::now();
-            deltaTime = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
 
             frame(deltaTime);
 
-            if (!r->usesVSync()){
-                // todo fix busy wait
-                // https://forum.lazarus.freepascal.org/index.php?topic=35689.0
-                while (deltaTime < timePerFrame){
-                    SDL_Delay((Uint32) ((timePerFrame - deltaTime) / 1000));
-                    tick = Clock::now();
-                    deltaTime = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
-                }
+            auto tick = Clock::now();
+            deltaTime = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
+
+            // warn potential busy wait (SDL_Delay may truncate small numbers)
+            // https://forum.lazarus.freepascal.org/index.php?topic=35689.0
+            while (deltaTime < timePerFrame){
+                Uint32 delayMs = static_cast<Uint32>((timePerFrame - deltaTime) / 1000);
+                SDL_Delay(delayMs);
+                tick = Clock::now();
+                deltaTime = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
             }
             lastTick = tick;
         }

@@ -23,7 +23,7 @@ namespace sre{
 
 
     Light Light::LightBuilder::build() {
-        Light res = *light;
+        Light res = *light; // copy content of light
         return res;
     }
 

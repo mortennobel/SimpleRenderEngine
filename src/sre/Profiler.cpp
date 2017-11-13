@@ -79,6 +79,7 @@ namespace sre {
             ImGui::LabelText("Size","%ix%i",tex->getWidth(),tex->getHeight());
             ImGui::LabelText("Cubemap","%s",tex->isCubemap()?"true":"false");
             ImGui::LabelText("Filtersampling","%s",tex->isFilterSampling()?"true":"false");
+            ImGui::LabelText("Mipmapping","%s",tex->isMipmapped()?"true":"false");
             ImGui::LabelText("Wrap tex-coords","%s",tex->isWrapTextureCoordinates()?"true":"false");
             ImGui::LabelText("Data size","%f MB",tex->getDataSize()/(1000*1000.0f));
             if (!tex->isCubemap()){

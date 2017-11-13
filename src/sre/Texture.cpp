@@ -521,4 +521,8 @@ namespace sre {
 	{
 		return transparent;
 	}
+
+    bool Texture::isMipmapped() {
+        return generateMipmap;
+    }
 }

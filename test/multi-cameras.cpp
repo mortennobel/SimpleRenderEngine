@@ -65,8 +65,6 @@ public:
 
         renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), material);
 
-
-
         static bool lookAt = true;
         ImGui::Checkbox("LookAt",&lookAt);
         if (lookAt){
@@ -91,7 +89,6 @@ public:
         i++;
     }
 private:
-
     glm::vec3 eye{0,0,3};
     glm::vec3 at{0,0,0};
     glm::vec3 up{0,1,0};
