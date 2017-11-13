@@ -18,11 +18,12 @@
 #include "sre/Framebuffer.hpp"
 #include "sre/Sprite.hpp"
 #include "imgui_internal.h"
+#include <SDL_image.h>
 
 using Clock = std::chrono::high_resolution_clock;
 using Milliseconds = std::chrono::duration<float, std::chrono::milliseconds::period>;
 
-namespace sre{
+namespace sre {
     namespace{
         std::string appendSize(std::string s, int size) {
             if (size>1){
@@ -78,6 +79,7 @@ namespace sre{
             ImGui::LabelText("Size","%ix%i",tex->getWidth(),tex->getHeight());
             ImGui::LabelText("Cubemap","%s",tex->isCubemap()?"true":"false");
             ImGui::LabelText("Filtersampling","%s",tex->isFilterSampling()?"true":"false");
+            ImGui::LabelText("Mipmapping","%s",tex->isMipmapped()?"true":"false");
             ImGui::LabelText("Wrap tex-coords","%s",tex->isWrapTextureCoordinates()?"true":"false");
             ImGui::LabelText("Data size","%f MB",tex->getDataSize()/(1000*1000.0f));
             if (!tex->isCubemap()){
@@ -87,7 +89,6 @@ namespace sre{
             ImGui::TreePop();
         }
     }
-
 
     void Profiler::showMesh(Mesh* mesh){
         std::string s = mesh->getName()+"##"+std::to_string((int64_t)mesh);
@@ -155,7 +156,6 @@ namespace sre{
             ImGui::TreePop();
         }
     }
-
 
     std::string glUniformToString(UniformType type);
 
@@ -268,6 +268,8 @@ namespace sre{
         }
 
         if (ImGui::CollapsingHeader("Renderer")){
+
+            ImGui::LabelText("SRE Version", "%d.%d.%d",r->sre_version_major, r->sre_version_minor, r->sre_version_point);
             if (sdlRenderer != nullptr){
                 ImGui::LabelText("Fullscreen", "%s",sdlRenderer->isFullscreen()?"true":"false");
                 ImGui::LabelText("Mouse cursor locked", "%s",sdlRenderer->isMouseCursorLocked()?"true":"false");
@@ -276,6 +278,30 @@ namespace sre{
             ImGui::LabelText("Window size", "%ix%i",r->getWindowSize().x,r->getWindowSize().y);
             ImGui::LabelText("Drawable size", "%ix%i",r->getDrawableSize().x,r->getDrawableSize().y);
             ImGui::LabelText("VSync", "%s", r->usesVSync()?"true":"false");
+
+            char* version = (char*)glGetString(GL_VERSION);
+            ImGui::LabelText("OpenGL version",version);
+
+            char* vendor = (char*)glGetString(GL_VENDOR);
+            ImGui::LabelText("OpenGL vendor", vendor);
+
+            SDL_version compiled;
+            SDL_version linked;
+
+            SDL_VERSION(&compiled);
+            SDL_GetVersion(&linked);
+            ImGui::LabelText("SDL version compiled", "%d.%d.%d",compiled.major, compiled.minor, compiled.patch);
+            ImGui::LabelText("SDL version linked", "%d.%d.%d",linked.major, linked.minor, linked.patch);
+
+            linked = *IMG_Linked_Version();
+            SDL_IMAGE_VERSION(&compiled);
+            ImGui::LabelText("SDL_IMG version compiled","%d.%d.%d",
+                   compiled.major,
+                   compiled.minor,
+                   compiled.patch);
+            ImGui::LabelText("SDL version linked", "%d.%d.%d",
+                             linked.major, linked.minor, linked.patch);
+            ImGui::LabelText("IMGUI version", IMGUI_VERSION);
         }
 
         if (ImGui::CollapsingHeader("Performance")){
@@ -443,9 +469,9 @@ namespace sre{
             if (*index != -1){
                 auto name = pAtlas->getNames()[*index];
                 Sprite sprite = pAtlas->get(name);
-                ImGui::LabelText("Sprite anchor","%.2fx%.2f",sprite.getSpriteAnchor().x,sprite.getSpriteAnchor().y);
+                ImGui::LabelText("Sprite anchor","(%.2f,%.2f)",sprite.getSpriteAnchor().x,sprite.getSpriteAnchor().y);
                 ImGui::LabelText("Sprite size","%ix%i",sprite.getSpriteSize().x,sprite.getSpriteSize().y);
-                ImGui::LabelText("Sprite pos","%ix%i",sprite.getSpritePos().x,sprite.getSpritePos().y);
+                ImGui::LabelText("Sprite pos","(%i,%i)",sprite.getSpritePos().x,sprite.getSpritePos().y);
                 auto tex = sprite.texture;
                 auto uv0 = ImVec2((sprite.getSpritePos().x)/(float)tex->getWidth(), (sprite.getSpritePos().y+sprite.getSpriteSize().y)/(float)tex->getHeight());
                 auto uv1 = ImVec2((sprite.getSpritePos().x+sprite.getSpriteSize().x)/(float)tex->getWidth(),(sprite.getSpritePos().y)/(float)tex->getHeight());

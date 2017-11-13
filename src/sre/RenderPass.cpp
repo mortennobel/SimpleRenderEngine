@@ -207,6 +207,11 @@ namespace sre {
 
         // update material
         material->setColor(color);
+
+        // force reload of last bound material and mesh
+        lastBoundMaterial = nullptr;
+        lastBoundMeshId = -1;
+
         draw(mesh, glm::mat4(1), material);
     }
 

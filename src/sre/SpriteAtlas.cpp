@@ -33,7 +33,7 @@ SpriteAtlas::SpriteAtlas(std::map<std::string, Sprite>&& sprites, std::shared_pt
     sre::Renderer::instance->spriteAtlases.push_back(this);
 }
 
-std::shared_ptr<SpriteAtlas> SpriteAtlas::create(std::string jsonFile, std::string imageFile,bool flipAnchorY) {
+std::shared_ptr<SpriteAtlas> SpriteAtlas::create(std::string jsonFile, std::shared_ptr<Texture> texture, bool flipAnchorY) {
     picojson::value v;
     std::ifstream t(jsonFile);
     if (!t){
@@ -49,7 +49,7 @@ std::shared_ptr<SpriteAtlas> SpriteAtlas::create(std::string jsonFile, std::stri
     }
     std::map<std::string, Sprite> sprites;
     picojson::array list = v.get("frames").get<picojson::array>();
-    auto texture = Texture::create().withFile(imageFile).build();
+
     for (picojson::value& spriteElement : list){
         string name = spriteElement.get("filename").get<string>();
         // "frame": {"x":154,"y":86,"w":92,"h":44},
@@ -69,6 +69,11 @@ std::shared_ptr<SpriteAtlas> SpriteAtlas::create(std::string jsonFile, std::stri
         sprites.emplace(std::pair<std::string, Sprite>(name, std::move(sprite)));
     }
     return std::shared_ptr<SpriteAtlas>(new SpriteAtlas(std::move(sprites), texture, jsonFile));
+}
+
+std::shared_ptr<SpriteAtlas> SpriteAtlas::create(std::string jsonFile, std::string imageFile,bool flipAnchorY) {
+    auto texture = Texture::create().withFile(imageFile).build();
+    return create(jsonFile, texture, flipAnchorY);
 }
 
 std::vector<std::string> SpriteAtlas::getNames() {
@@ -114,5 +119,7 @@ Sprite SpriteAtlas::get(std::string name) {
     std::shared_ptr<Texture> SpriteAtlas::getTexture(){
         return texture;
     }
+
+
 }
 

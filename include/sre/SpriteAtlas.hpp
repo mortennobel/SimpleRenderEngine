@@ -54,6 +54,10 @@ public:
                                                std::string imageFile,
                                                bool flipAnchorY = true);
 
+    static std::shared_ptr<SpriteAtlas> create(std::string jsonFile,    // Create sprite atlas based on JSON file and Texture
+                                               std::shared_ptr<Texture> texture,
+                                               bool flipAnchorY = true);
+
     static std::shared_ptr<SpriteAtlas> createSingleSprite(std::shared_ptr<Texture> texture, // Create sprite atlas
                                                            std::string name = "sprite",      // (with single sprite)
                                                            glm::vec2 pivot = {0.5f,0.5f},    // using texture

@@ -49,7 +49,7 @@ namespace {
 		ifstream ifs(filename, std::ios::binary | std::ios::ate);
 		ifstream::pos_type pos = ifs.tellg();
 		if (pos<0) {
-            LOG_ERROR("Cannot read texture from ",filename);
+            LOG_ERROR("Cannot read texture from %s",filename);
 			return std::vector<char>();
 		}
 		std::vector<char>  result((size_t)pos);
@@ -61,11 +61,32 @@ namespace {
 		return result;
 	}
 
+	bool isAlpha(SDL_PixelFormat *format)
+	{
+		if (SDL_ISPIXELFORMAT_ALPHA(format->format))
+		{
+			return true;
+		}
+		if (SDL_ISPIXELFORMAT_INDEXED(format->format))
+		{
+			int ncolors = format->palette->ncolors;
+			SDL_Color *colors = format->palette->colors;
+			for (int i=0;i<ncolors;i++)
+			{
+				if (colors[i].a != 255)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
     GLenum getFormat(SDL_Surface *image) {
         SDL_PixelFormat *format = image->format;
         auto pixelFormat = format->format;
 
-        const bool alpha = SDL_ISPIXELFORMAT_ALPHA(pixelFormat);
+        const bool alpha = isAlpha(format);
         if (alpha) {
             return GL_RGBA;
         }
@@ -117,7 +138,9 @@ namespace {
         return ((x != 0) && !(x & (x - 1)));
     }
 
-    std::vector<char> loadFileFromMemory(const char* data, int dataSize, GLenum& format, int& width, int& height, int& bytesPerPixel, bool invertY = true){
+	
+
+    std::vector<char> loadFileFromMemory(const char* data, int dataSize, GLenum& format, bool & alpha,int& width, int& height, int& bytesPerPixel, bool invertY = true){
 #ifndef EMSCRIPTEN
         static bool initialized = false;
         if (!initialized) {
@@ -137,7 +160,8 @@ namespace {
             LOG_ERROR("Cannot load texture. IMG_Load_RW returned %s",IMG_GetError());
             return {};
         }
-        const bool alpha = SDL_ISPIXELFORMAT_ALPHA(res_texture->format->format);
+		alpha = isAlpha(res_texture->format);
+
         SDL_Surface *formattedSurf = SDL_ConvertSurfaceFormat(res_texture,
                                                               alpha ?SDL_PIXELFORMAT_RGBA32 : SDL_PIXELFORMAT_RGB24, 0);
         width = formattedSurf->w;
@@ -217,9 +241,9 @@ namespace sre {
         auto fileData = readAllBytes(filename.c_str());
         GLenum format;
         int bytesPerPixel;
-        fileData = loadFileFromMemory(fileData.data(), (int) fileData.size(), format, width, height,bytesPerPixel);
+        fileData = loadFileFromMemory(fileData.data(), (int) fileData.size(), format, this->transparent, width, height,bytesPerPixel);
         this->target = GL_TEXTURE_2D;
-
+		 
         GLint mipmapLevel = 0;
 #ifdef EMSCRIPTEN
         GLint internalFormat = (bytesPerPixel==4?GL_RGBA:GL_RGB);
@@ -248,7 +272,7 @@ namespace sre {
         auto fileData = readAllBytes(filename.c_str());
         GLenum format;
         int bytesPerPixel;
-        fileData = loadFileFromMemory(fileData.data(), (int) fileData.size(), format, width, height,bytesPerPixel, false);
+        fileData = loadFileFromMemory(fileData.data(), (int) fileData.size(), format,this->transparent, width, height,bytesPerPixel, false);
         this->target = GL_TEXTURE_CUBE_MAP;
         GLint mipmapLevel = 0;
 
@@ -309,10 +333,12 @@ namespace sre {
         }
         Texture * res = new Texture(textureId, width, height, target, name);
         res->generateMipmap = this->generateMipmaps;
+		res->transparent = this->transparent;
         if (this->generateMipmaps){
             res->invokeGenerateMipmap();
         }
         res->updateTextureSampler(filterSampling, wrapTextureCoordinates);
+		
         textureId = 0;
         return std::shared_ptr<Texture>(res);
     }
@@ -491,4 +517,12 @@ namespace sre {
         return name;
     }
 
+	bool Texture::isTransparent()
+	{
+		return transparent;
+	}
+
+    bool Texture::isMipmapped() {
+        return generateMipmap;
+    }
 }

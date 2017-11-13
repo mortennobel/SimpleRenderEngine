@@ -64,6 +64,7 @@ public:
         int width = -1;
         int height = -1;
         std::string name;
+		bool transparent;
         bool generateMipmaps = false;
         bool filterSampling = true;                                                         // true = linear/trilinear sampling, false = point sampling
         bool wrapTextureCoordinates = true;
@@ -89,6 +90,8 @@ public:
     bool isFilterSampling();                                                                // returns true if texture sampling is filtered when sampling (bi-linear or tri-linear sampling).
     bool isWrapTextureCoordinates();                                                        // returns false if texture coordinates are clamped otherwise wrapped
     bool isCubemap();                                                                       // is cubemap texture
+    bool isMipmapped();                                                                     // has texture mipmapped enabled
+	bool isTransparent();																	// Does texture has alpha channel
 
     const std::string& getName();                                                           // name of the string
 
@@ -101,6 +104,7 @@ private:
     int height;
     uint32_t target;
     bool generateMipmap;
+	bool transparent;
     std::string name;
     bool filterSampling = true; // true = linear/trilinear sampling, false = point sampling
     bool wrapTextureCoordinates = true;
