@@ -11,9 +11,9 @@
 
 using namespace sre;
 
-class CustomMeshLayoutExample{
+class Spheres{
 public:
-    CustomMeshLayoutExample(){
+    Spheres(){
         r.init();
 
         camera.lookAt({0,0,3},{0,0,0},{0,1,0});
@@ -24,8 +24,8 @@ public:
                 .build();
 
         worldLights.addLight(Light::create()
-                                     .withDirectionalLight(glm::normalize(glm::vec3(1,1,1)))
-                                     .build());
+                 .withDirectionalLight(glm::normalize(glm::vec3(1,1,1)))
+                 .build());
 
         mat1 = Shader::getStandard()->createMaterial();
         mat1->setColor({1,1,1,1});
@@ -76,7 +76,7 @@ private:
 };
 
 int main() {
-    new CustomMeshLayoutExample();
+    new Spheres();
 
     return 0;
 }

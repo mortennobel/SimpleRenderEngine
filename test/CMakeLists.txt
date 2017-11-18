@@ -1,29 +1,11 @@
+# List of single-file tests
+SET(scr_files spinning-sphere-cubemap particle-test polygon-offset-example multiple-lights particle-sprite sprite-test multi-cameras static_vertex_attribute custom-mesh-layout-default-values imgui_demo texture-test screen-point-to-ray)
 
-
-add_executable(SRE-Test-Spinning-Sphere-Cubemap spinning-sphere-cubemap.cpp)
-add_executable(SRE-Test-Particle-Test particle-test.cpp)
-add_executable(SRE-Test-PolygonOffset polygon-offset-example.cpp)
-add_executable(SRE-Test-Multiple-Lights multiple-lights.cpp)
-add_executable(SRE-Test-Particle-Sprite particle-sprite.cpp)
-add_executable(SRE-Test-Sprite-Test sprite-test.cpp)
-add_executable(SRE-Test-MultiCam-Test multi-cameras.cpp)
-add_executable(SRE-Test-Static-Vertex-Attribute static_vertex_attribute.cpp)
-add_executable(SRE-Test-CustomMeshLayoutDefaultValues custom-mesh-layout-default-values.cpp)
-add_executable(SRE-Test-Imgui imgui_demo.cpp)
-add_executable(SRE-Test-Texture texture-test.cpp)
-
-target_link_libraries(SRE-Test-Spinning-Sphere-Cubemap ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
-target_link_libraries(SRE-Test-Particle-Test ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
-target_link_libraries(SRE-Test-PolygonOffset ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
-target_link_libraries(SRE-Test-Multiple-Lights ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
-target_link_libraries(SRE-Test-Particle-Sprite ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
-target_link_libraries(SRE-Test-Sprite-Test ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
-target_link_libraries(SRE-Test-MultiCam-Test ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
-target_link_libraries(SRE-Test-Static-Vertex-Attribute ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
-target_link_libraries(SRE-Test-CustomMeshLayoutDefaultValues ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
-target_link_libraries(SRE-Test-Imgui ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
-target_link_libraries(SRE-Test-Texture ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
-
+# Create custom build targets
+FOREACH(scr_file ${scr_files})
+    add_executable(SRE-Test-${scr_file} ${scr_file}.cpp)
+    target_link_libraries(SRE-Test-${scr_file} ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} SRE)
+ENDFOREACH()
 
 file(COPY ../test_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
 file(COPY ../test_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)

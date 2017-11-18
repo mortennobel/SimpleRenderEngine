@@ -7,6 +7,7 @@
 
 #pragma once
 
+#include <array>
 #include "glm/glm.hpp"
 
 #include "sre/impl/Export.hpp"
@@ -43,7 +44,12 @@ namespace sre {
         void setPositionAndRotation(glm::vec3 position, glm::vec3 rotationEulersDegrees);       // Set the camera view transform using worldspace position and rotation is degrees
 
         glm::vec3 getPosition();                                                                // Return the camera position (computed from the view transform)
-        glm::vec3 getRotationEuler();                                                           // Return the camera rotation (computed from the view transform)
+        glm::vec3 getRotationEuler();                                                           // Return the camera rotation (from looking down negative z-axis) (computed from the view transform)
+
+        std::array<glm::vec3,2> screenPointToRay(glm::vec2 position);                           // Returns a ray going from camera through a screen point.
+                                                                                                // Resulting ray (position, direction) is in world space, starting on the near plane of the camera and going through position's (x,y) pixel coordinates on the screen.
+                                                                                                // Screenspace is defined in pixels. The bottom-left of the screen is (0,0); the right-top is (pixelWidth,pixelHeight).
+                                                                                                // Remember to invert y-axis when using windows coordinates pos.y = Renderer::instance->getWindowSize().y - pos.y;
 
         void setPerspectiveProjection(float fieldOfViewY, float nearPlane, float farPlane);      // set the projectionTransform to perspective projection
                                                                                                  // fieldOfViewY field of view in degrees
