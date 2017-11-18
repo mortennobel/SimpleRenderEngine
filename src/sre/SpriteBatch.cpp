@@ -37,6 +37,7 @@ namespace sre{
 
         auto pushCurrentMesh = [&](){
             spriteMeshes.push_back(Mesh::create()
+                                           .withName(std::string("DynamicSpriteBatch")+std::to_string(spriteMeshes.size()))
                                            .withPositions(vertices)
                                            .withUVs(uvs)
                                            .withIndices(indices)

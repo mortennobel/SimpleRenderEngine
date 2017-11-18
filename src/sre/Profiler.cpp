@@ -24,7 +24,7 @@ using Clock = std::chrono::high_resolution_clock;
 using Milliseconds = std::chrono::duration<float, std::chrono::milliseconds::period>;
 
 namespace sre {
-    namespace{
+    namespace {
         std::string appendSize(std::string s, int size) {
             if (size>1){
                 s += "["+std::to_string(size)+"]";
@@ -205,7 +205,7 @@ namespace sre {
 
             auto mat = shader->createMaterial();
 
-            static auto mesh = Mesh::create().withSphere().build();
+            static auto mesh = Mesh::create().withSphere().withName("Preview Shader Mesh").build();
 
             Camera camera;
             camera.setPerspectiveProjection(60,0.1,10);
@@ -372,7 +372,7 @@ namespace sre {
                 avg = sum / std::min(frameCount, frames);
             }
             char res[128];
-            sprintf(res,"Avg: %4.1f\nMax: %4.1f",avg,max);
+            sprintf(res,"Avg: %4.1f MB\nMax: %4.1f MB\nCount: %i",avg,max, r->meshes.size());
 
             ImGui::PlotLines(res,data.data(),frames, 0, "Mesh MB", -1,max*1.2f,ImVec2(ImGui::CalcItemWidth(),150));
 
@@ -389,7 +389,7 @@ namespace sre {
             if (frameCount > 0){
                 avg = sum / std::min(frameCount, frames);
             }
-            sprintf(res,"Avg: %4.1f\nMax: %4.1f",avg,max);
+            sprintf(res,"Avg: %4.1f MB\nMax: %4.1f MB\nCount: %i",avg,max,r->textures.size());
 
             ImGui::PlotLines(res,data.data(),frames, 0, "Texture MB", -1,max*1.2f,ImVec2(ImGui::CalcItemWidth(),150));
         }

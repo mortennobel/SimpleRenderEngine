@@ -132,4 +132,24 @@ namespace sre {
 
         return glm::degrees( -glm::eulerAngles(orientation));
     }
+
+    std::array<glm::vec3, 2> Camera::screenPointToRay(glm::vec2 position) {
+        glm::vec2 viewportSize = (glm::vec2)Renderer::instance->getWindowSize() * this->viewportSize;
+
+        position = (position / viewportSize)*2.0f-glm::vec2(1.0f);
+
+
+        auto viewProjection = getProjectionTransform(viewportSize) * viewTransform;
+        auto invViewProjection = glm::inverse(viewProjection);
+
+        glm::vec4 originClipSpace{position,-1,1};
+        glm::vec4 destClipSpace{position,1,1};
+        glm::vec4 originClipSpaceWS = invViewProjection * originClipSpace;
+        glm::vec4 destClipSpaceWS   = invViewProjection * destClipSpace;
+        glm::vec3 originClipSpaceWS3 = glm::vec3(originClipSpaceWS)/originClipSpaceWS.w;
+        glm::vec3 destClipSpaceWS3   = glm::vec3(destClipSpaceWS)/destClipSpaceWS.w;
+
+        return {originClipSpaceWS3, glm::normalize(destClipSpaceWS3-originClipSpaceWS3)};
+
+    }
 }
