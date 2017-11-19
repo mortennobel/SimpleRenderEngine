@@ -115,7 +115,11 @@ public:
     }
 
     float rayToSphere(std::array<glm::vec3, 2> ray, glm::vec3 sphereCenter){
-        glm::vec3 closestPoint = dot(sphereCenter-ray[0], ray[1]) * ray[1] + ray[0];
+        float d = dot(sphereCenter-ray[0], ray[1]);
+        if (d < 0){
+            d = 0;
+        }
+        glm::vec3 closestPoint =  d* ray[1] + ray[0];
         return glm::distance(closestPoint, sphereCenter);
     }
 
