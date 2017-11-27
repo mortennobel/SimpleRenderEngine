@@ -51,7 +51,7 @@ namespace sre {
     ///
     class DllExport Renderer {
     public:
-        Renderer(SDL_Window *window, bool vsync = true);    // SimpleRenderEngine constructor
+        explicit Renderer(SDL_Window *window, bool vsync = true);    // SimpleRenderEngine constructor
                                                             // param window pointer to the SDL window (must be initialized using OpenGL)
         ~Renderer();
         static constexpr int maxSceneLights = 4;            // Maximum of scene lights

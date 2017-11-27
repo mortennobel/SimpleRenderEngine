@@ -8,6 +8,7 @@
 #include "sre/SDLRenderer.hpp"
 
 #include <glm/gtx/euler_angles.hpp>
+#include <glm/gtx/transform.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include <sre/ModelImporter.hpp>
@@ -39,11 +40,12 @@ public:
         materials.push_back(material);
 
         mesh = Mesh::create().withCube().build();
-        worldLights.setAmbientLight({0.5,0.5,0.5});
-        worldLights.addLight(Light::create().withPointLight({0, 3,0}).withColor({1,0,0}).withRange(20).build());
-        worldLights.addLight(Light::create().withPointLight({3, 0,0}).withColor({0,1,0}).withRange(20).build());
-        worldLights.addLight(Light::create().withPointLight({0,-3,0}).withColor({0,0,1}).withRange(20).build());
-        worldLights.addLight(Light::create().withPointLight({-3,0,0}).withColor({1,1,1}).withRange(20).build());
+        worldLights.addLight(Light::create().build());
+        worldLights.addLight(Light::create().build());
+        worldLights.addLight(Light::create().build());
+        worldLights.addLight(Light::create().build());
+
+        setLight(1);
 
         r.frameRender = [&](){
             render();
@@ -52,21 +54,73 @@ public:
         r.startEventLoop();
     }
 
+    void setLight(int config){
+        if (config == 0){
+            worldLights.setAmbientLight({0.05f,0.05f,0.05f});
+            worldLights.getLight(0)->lightType = LightType::Point;
+            worldLights.getLight(0)->color = {1,1,1};
+            worldLights.getLight(0)->position = {0,0,4};
+            worldLights.getLight(0)->range = 100;
+            worldLights.getLight(1)->lightType = LightType::Unused;
+            worldLights.getLight(2)->lightType = LightType::Unused;
+            worldLights.getLight(3)->lightType = LightType::Unused;
+        }
+        if (config == 1){
+            worldLights.setAmbientLight({0.05f,0.05f,0.05f});
+            worldLights.getLight(0)->lightType = LightType::Directional;
+            worldLights.getLight(0)->color = {1,1,1};
+            worldLights.getLight(0)->direction = {1,1,.2};
+            worldLights.getLight(1)->lightType = LightType::Directional;
+            worldLights.getLight(1)->color = {0,0,.3};
+            worldLights.getLight(1)->direction = {-1,-1,-.8};
+            worldLights.getLight(2)->lightType = LightType::Unused;
+            worldLights.getLight(3)->lightType = LightType::Unused;
+        }
+        if (config == 2){
+            worldLights.setAmbientLight({0.05f,0.05f,0.05f});
+            worldLights.getLight(0)->lightType = LightType::Directional;
+            worldLights.getLight(0)->color = {1,0,0};
+            worldLights.getLight(0)->direction = {1,0,0};
+            worldLights.getLight(1)->lightType = LightType::Directional;
+            worldLights.getLight(1)->color = {0,1,0};
+            worldLights.getLight(1)->direction = {-1,0,0};
+            worldLights.getLight(2)->lightType = LightType::Unused;
+            worldLights.getLight(3)->lightType = LightType::Unused;
+        }
+        if (config == 3){
+            worldLights.setAmbientLight({0.05f,0.05f,0.05f});
+            worldLights.getLight(0)->lightType = LightType::Point;
+            worldLights.getLight(0)->color = {1,0,0};
+            worldLights.getLight(0)->position = {0, 3,0};
+            worldLights.getLight(0)->range = 20;
+            worldLights.getLight(1)->lightType = LightType::Point;
+            worldLights.getLight(1)->color = {0,1,0};
+            worldLights.getLight(1)->position = {3, 0,0};
+            worldLights.getLight(1)->range = 20;
+            worldLights.getLight(2)->lightType = LightType::Point;
+            worldLights.getLight(2)->color = {0,-3,0};
+            worldLights.getLight(2)->position = {0,-3,0};
+            worldLights.getLight(2)->range = 20;
+            worldLights.getLight(3)->lightType = LightType::Point;
+            worldLights.getLight(3)->color = {1,1,1};
+            worldLights.getLight(3)->position = {-3,0,0};
+            worldLights.getLight(3)->range = 20;
+        }
+    }
+
     void loadObjFile(std::string file){
         auto pos = file.find_last_of(kPathSeparator)+1;
         auto path = file.substr(0,pos);
         auto filename = file.substr(pos);
-        std::cout<<path<<" "<< filename<<std::endl;
 
         materials.clear();
         mesh = ModelImporter::importObj(path, filename, materials);
-        for (auto m : materials){
-            std::cout <<m->getName()<<std::endl;
-        }
+
         std::cout<<materials.size()<< " "<<mesh->getIndexSets()<<std::endl;
         auto bounds = mesh->getBoundsMinMax();
         auto center = glm::mix(bounds[1] , bounds[0],0.5f);
         offset = -center;
+
         farPlane =  glm::length(bounds[1] - bounds[0]);
 
         camera.lookAt({0,0,farPlane/2},{0,0,0},{0,1,0});
@@ -80,7 +134,7 @@ public:
                 .withClearColor(true, {0, 0, 0, 1})
                 .build();
 
-        renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), materials);
+        renderPass.draw(mesh, glm::scale(glm::vec3(0.5f))*glm::eulerAngleY(glm::radians((float)i))*glm::translate(offset), materials);
 
         lightGUI();
 
@@ -119,25 +173,16 @@ public:
         ImGui::Begin("Lights", &lightOpen);
         if (ImGui::CollapsingHeader("Predefined configs")){
             if (ImGui::Button("Camera light")){
-                worldLights.setAmbientLight({0.05f,0.05f,0.05f});
-                worldLights.getLight(0)->lightType = LightType::Point;
-                worldLights.getLight(0)->color = {1,1,1};
-                worldLights.getLight(0)->position = {0,0,4};
-                worldLights.getLight(0)->range = 100;
-                worldLights.getLight(1)->lightType = LightType::Unused;
-                worldLights.getLight(2)->lightType = LightType::Unused;
-                worldLights.getLight(3)->lightType = LightType::Unused;
+                setLight(0);
             }
             if (ImGui::Button("Twin lights")){
-                worldLights.setAmbientLight({0.05f,0.05f,0.05f});
-                worldLights.getLight(0)->lightType = LightType::Directional;
-                worldLights.getLight(0)->color = {1,1,1};
-                worldLights.getLight(0)->direction = {1,1,.2};
-                worldLights.getLight(1)->lightType = LightType::Directional;
-                worldLights.getLight(1)->color = {0,0,.3};
-                worldLights.getLight(1)->direction = {-1,-1,-.8};
-                worldLights.getLight(2)->lightType = LightType::Unused;
-                worldLights.getLight(3)->lightType = LightType::Unused;
+                setLight(1);
+            }
+            if (ImGui::Button("Twin lights Left-Right")){
+                setLight(2);
+            }
+            if (ImGui::Button("Colorful")){
+                setLight(3);
             }
         }
 
