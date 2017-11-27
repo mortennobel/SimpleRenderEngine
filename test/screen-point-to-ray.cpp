@@ -9,6 +9,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <sre/SDLRenderer.hpp>
 #include <sre/impl/GL.hpp>
+#include <glm/gtc/random.hpp>
 
 using namespace sre;
 
@@ -53,6 +54,10 @@ public:
         mat2->setColor({1,0,0,1});
         mat2->setSpecularity(0);
 
+        matPlane = Shader::getStandard()->createMaterial();
+        matPlane->setColor({1,1,1,1});
+        matPlane->setSpecularity(0);
+
         r.mouseEvent = [&](SDL_Event event){
             if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button==SDL_BUTTON_RIGHT){
                 glm::vec2 pos = {event.button.x,event.button.y};
@@ -61,6 +66,15 @@ public:
                 raycastOrigin = res[0];
                 raycastDirection =res[1];
                 points = {{raycastOrigin, raycastOrigin+raycastDirection}};
+
+                float dist1 = rayToSphere(res, p1);
+                if (dist1<1){
+                    updateMaterial(mat1);
+                }
+                float dist2 = rayToSphere(res, p2);
+                if (dist2<1){
+                    updateMaterial(mat2);
+                }
             }
         };
 
@@ -71,6 +85,10 @@ public:
             render();
         };
         r.startEventLoop();
+    }
+
+    void updateMaterial(std::shared_ptr<Material>& mat){
+        mat->setColor(glm::vec4(glm::linearRand(0.0f, 1.0f),glm::linearRand(0.0f, 1.0f),glm::linearRand(0.0f, 1.0f), 1)	);
     }
 
     void cameraGUI(){
@@ -96,6 +114,15 @@ public:
         time += deltaTime;
     }
 
+    float rayToSphere(std::array<glm::vec3, 2> ray, glm::vec3 sphereCenter){
+        float d = dot(sphereCenter-ray[0], ray[1]);
+        if (d < 0){
+            d = 0;
+        }
+        glm::vec3 closestPoint =  d* ray[1] + ray[0];
+        return glm::distance(closestPoint, sphereCenter);
+    }
+
     void render(){
         auto rp = RenderPass::create()
                 .withCamera(camera)
@@ -111,7 +138,7 @@ public:
         checkGLError();
 
         ImGui::LabelText("Rightclick to shoot ray", "");
-        rp.draw(planeMesh, glm::translate(glm::vec3{0,-1.0f,0})*glm::scale(glm::vec3{1,.01f,1}), mat1);
+        rp.draw(planeMesh, glm::translate(glm::vec3{0,-1.0f,0})*glm::scale(glm::vec3{1,.01f,1}), matPlane);
 
         ImGui::LabelText("raycastOrigin", "%.1f,%.1f,%.1f", raycastOrigin.x,raycastOrigin.y,raycastOrigin.z);
         ImGui::LabelText("raycastDirection", "%.1f,%.1f,%.1f", raycastDirection.x,raycastDirection.y,raycastDirection.z);
@@ -140,6 +167,7 @@ private:
 
     std::shared_ptr<Material> mat1;
     std::shared_ptr<Material> mat2;
+    std::shared_ptr<Material> matPlane;
     glm::vec3 p1 =  {-1,0,0};
     glm::vec3 p2 =  {1,0,0};
     glm::mat4 pos1 = glm::translate(glm::mat4(1),p1);

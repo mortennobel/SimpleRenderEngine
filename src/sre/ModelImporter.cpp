@@ -25,6 +25,27 @@ using namespace glm;
 
 // anonymous namespace
 namespace {
+
+    // trim from start (in place)
+    static inline void ltrim(std::string &s) {
+        s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
+            return !std::isspace(ch);
+        }));
+    }
+
+// trim from end (in place)
+    static inline void rtrim(std::string &s) {
+        s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
+            return !std::isspace(ch);
+        }).base(), s.end());
+    }
+
+    // trim from both ends (in place)
+    static inline void trim(std::string &s) {
+        ltrim(s);
+        rtrim(s);
+    }
+
     const char kPathSeparator =
 #ifdef _WIN32
             '\\';
@@ -59,6 +80,16 @@ namespace {
         throw(errno);
     }
 
+    std::string concat(std::vector<std::string> v, int from){
+        std::string res = v[from];
+        for (int i=from+1;i<v.size();i++){
+            res += " ";
+            res += v[i];
+        }
+        trim(res);
+        return res;
+    }
+
     std::string fixPathEnd(std::string &path){
         char lastChar = path[path.length()-1];
         if (lastChar != kPathSeparator){
@@ -78,6 +109,7 @@ namespace {
         }
         return s;
     }
+
 
     std::string fixPath(std::string path){
         auto p = std::string(1,kPathSeparator);
@@ -226,7 +258,8 @@ namespace {
             }
             if (tokens[0] == "newmtl"){
                 vec3 zero{0,0,0};
-                ObjMaterial material{replaceAll(tokens[1],"\r",""),zero,zero,zero,50,1};
+                auto name = concat(tokens,1);
+                ObjMaterial material{replaceAll(name,"\r",""),zero,zero,zero,50,1};
                 materials.push_back(material);
             } else {
                 if (materials.empty()){
@@ -295,10 +328,17 @@ namespace {
     };
 
     shared_ptr<sre::Material> createMaterial(const std::string& materialName, const std::vector<ObjMaterial>& matVector, std::string path) {
+        if (matVector.empty()){
+            auto shader = sre::Shader::getStandard();
+            auto mat = shader->createMaterial();
+            return mat;
+        }
         const ObjMaterial* foundMat = nullptr;
         for (auto & v : matVector){
-            if (v.name == materialName){
+            if (v.name == materialName
+                || materialName.empty()){ // empty is used for default material
                 foundMat = &v;
+                break;
             }
         }
         if (foundMat == nullptr){
@@ -323,8 +363,7 @@ namespace {
 
 }
 
-std::shared_ptr<sre::Mesh>
-sre::ModelImporter::importObj(std::string path, std::string filename, std::vector<std::shared_ptr<Material>>& outModelMaterials) {
+std::shared_ptr<sre::Mesh> sre::ModelImporter::importObj(std::string path, std::string filename, std::vector<std::shared_ptr<Material>>& outModelMaterials) {
     path = fixPathEnd(path);
     string file = getFileContents(path+filename);
 
@@ -348,7 +387,8 @@ sre::ModelImporter::importObj(std::string path, std::string filename, std::vecto
         vector<string> tokens;
         while (likeTokensizer.good()) {
             likeTokensizer.getline(buffer2, bufferSize, ' ');
-            for (int i=0;i<bufferSize;i++){
+			int buffer2Length = strlen(buffer2);
+            for (int i=0;i<buffer2Length;i++){
                 if (isspace(buffer2[i])){
                     buffer2[i] = '\0';
                 }
@@ -377,7 +417,7 @@ sre::ModelImporter::importObj(std::string path, std::string filename, std::vecto
             string materialLib = getFileContents(fixPath(path+tokens[1]));
             parseMaterialLib(materialLib, materials);
         } else if (tokens[0] == "usemtl"){                              // use material
-            materialChanges.push_back({currentIndex, tokens[1]});
+            materialChanges.push_back({currentIndex, concat(tokens,1)});
         } else if (tokens[0] == "o"){                                   // named object
             namedObjects.push_back({currentIndex, tokens[1]});
         } else if (tokens[0] == "g"){                                   // polygon group
@@ -395,7 +435,7 @@ sre::ModelImporter::importObj(std::string path, std::string filename, std::vecto
     int faceCount = 0;
 
     std::vector<ObjInterleavedIndex> indices;
-    ObjInterleavedIndex * currentIndex = &indices.back();
+    ObjInterleavedIndex * currentIndex = nullptr;
     auto materialChange = materialChanges.cbegin();
     bool includeTextureCoordinates = !textureCoords.empty();
     bool includeNormals = !normals.empty();
@@ -403,10 +443,15 @@ sre::ModelImporter::importObj(std::string path, std::string filename, std::vecto
     std::vector<glm::vec3> finalPositions;
     std::vector<glm::vec4> finalTextureCoordinates;
     std::vector<glm::vec3> finalNormals;
+    bool firstFace = true;
     for (auto & face : faces){
         faceCount++;
-        if (materialChange != materialChanges.end()){
-            if (materialChange->faceIndex == faceCount){
+        if (materialChange != materialChanges.end() || firstFace){
+            if (firstFace && materialChange == materialChanges.end()){
+                indices.push_back({"", {}});
+                currentIndex = &indices.back();
+            }
+            else if (materialChange->faceIndex == faceCount){
                 bool foundMaterial = false;
                 for (auto & idx : indices) {
                     if (idx.materialName == materialChange->name){
@@ -421,6 +466,7 @@ sre::ModelImporter::importObj(std::string path, std::string filename, std::vecto
                 }
                 materialChange++;
             }
+            firstFace = false;
         }
 
         for (int i=2;i < face.size();i++){
