@@ -295,10 +295,17 @@ namespace {
     };
 
     shared_ptr<sre::Material> createMaterial(const std::string& materialName, const std::vector<ObjMaterial>& matVector, std::string path) {
+        if (matVector.empty()){
+            auto shader = sre::Shader::getStandard();
+            auto mat = shader->createMaterial();
+            return mat;
+        }
         const ObjMaterial* foundMat = nullptr;
         for (auto & v : matVector){
-            if (v.name == materialName){
+            if (v.name == materialName
+                || materialName.empty()){ // empty is used for default material
                 foundMat = &v;
+                break;
             }
         }
         if (foundMat == nullptr){
@@ -348,7 +355,8 @@ sre::ModelImporter::importObj(std::string path, std::string filename, std::vecto
         vector<string> tokens;
         while (likeTokensizer.good()) {
             likeTokensizer.getline(buffer2, bufferSize, ' ');
-            for (int i=0;i<bufferSize;i++){
+			int buffer2Length = strlen(buffer2);
+            for (int i=0;i<buffer2Length;i++){
                 if (isspace(buffer2[i])){
                     buffer2[i] = '\0';
                 }
@@ -395,7 +403,7 @@ sre::ModelImporter::importObj(std::string path, std::string filename, std::vecto
     int faceCount = 0;
 
     std::vector<ObjInterleavedIndex> indices;
-    ObjInterleavedIndex * currentIndex = &indices.back();
+    ObjInterleavedIndex * currentIndex = nullptr;
     auto materialChange = materialChanges.cbegin();
     bool includeTextureCoordinates = !textureCoords.empty();
     bool includeNormals = !normals.empty();
@@ -403,10 +411,15 @@ sre::ModelImporter::importObj(std::string path, std::string filename, std::vecto
     std::vector<glm::vec3> finalPositions;
     std::vector<glm::vec4> finalTextureCoordinates;
     std::vector<glm::vec3> finalNormals;
+    bool firstFace = true;
     for (auto & face : faces){
         faceCount++;
-        if (materialChange != materialChanges.end()){
-            if (materialChange->faceIndex == faceCount){
+        if (materialChange != materialChanges.end() || firstFace){
+            if (firstFace && materialChange == materialChanges.end()){
+                indices.push_back({"", {}});
+                currentIndex = &indices.back();
+            }
+            else if (materialChange->faceIndex == faceCount){
                 bool foundMaterial = false;
                 for (auto & idx : indices) {
                     if (idx.materialName == materialChange->name){
@@ -421,6 +434,7 @@ sre::ModelImporter::importObj(std::string path, std::string filename, std::vecto
                 }
                 materialChange++;
             }
+            firstFace = false;
         }
 
         for (int i=2;i < face.size();i++){

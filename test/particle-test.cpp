@@ -71,11 +71,11 @@ public:
                 .withClearColor(true,{0,0,0.3,1})
                 .build();
 
-        rp.draw(mesh, glm::eulerAngleY(-i)*glm::scale(glm::mat4(1),{0.3f,0.3f,0.3f}), defaultMat);
-        rp.draw(particleMesh, glm::eulerAngleY(i), particleMat);
+        auto scaleAndRotate = glm::eulerAngleY(-i)*glm::scale(glm::mat4(1),{0.3f,0.3f,0.3f});
+        rp.draw(mesh, scaleAndRotate, defaultMat);
+        auto rotate = glm::eulerAngleY(i);
+        rp.draw(particleMesh, rotate, particleMat);
 
-        // 1. Show a simple window
-        // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
         {
             ImGui::Text("Particle sprite");
             ImGui::Checkbox("Orthographic proj",&ortho);
@@ -96,7 +96,7 @@ public:
             positions.push_back(glm::linearRand(glm::vec3(-1,-1,-1),glm::vec3(1,1,1)));
             colors.push_back(glm::linearRand(glm::vec4(0,0,0,0),glm::vec4(1,1,1,1)));
             sizes.push_back(glm::linearRand(1.0f,20.0f));
-            uvs.push_back({0,0,1,1});
+            uvs.push_back({0,0,1,0});
         }
 
         auto particleMesh = Mesh::create ()
