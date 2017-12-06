@@ -14,12 +14,11 @@
 #include <sre/ModelImporter.hpp>
 #include <glm/gtx/string_cast.hpp>
 
-
 using namespace sre;
 
-class SpinningCubeExample {
+class ObjViewerExample {
 public:
-    SpinningCubeExample(){
+    ObjViewerExample(){
         r.init();
 
         SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
@@ -228,6 +227,6 @@ private:
 };
 
 int main() {
-    new SpinningCubeExample();
+    new ObjViewerExample();
     return 0;
 }
