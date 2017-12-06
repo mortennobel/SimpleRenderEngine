@@ -16,6 +16,7 @@ int main() {
     Renderer r{window};
     RenderPass rp = RenderPass::create().build();
     rp.drawLines({{0,0,0},{1,1,1}});
+    rp.finish();
     r.swapWindow();
     SDL_Delay(10000);
     SDL_DestroyWindow(window);

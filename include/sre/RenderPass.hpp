@@ -9,6 +9,7 @@
 
 #include "sre/Camera.hpp"
 #include "sre/Mesh.hpp"
+#include "sre/Material.hpp"
 #include "sre/WorldLights.hpp"
 #include <string>
 
@@ -91,12 +92,12 @@ namespace sre {
 
         void draw(std::shared_ptr<Mesh>& mesh,                          // Draws a mesh using the given transform and materials.
                   glm::mat4 modelTransform,                             // The modelTransform defines the modelToWorld transformation
-                  std::vector<std::shared_ptr<Material>>& materials);   // The number of materials must match the size of index sets in the model
+                  std::vector<std::shared_ptr<Material>> materials);    // The number of materials must match the size of index sets in the model
 
         void draw(std::shared_ptr<SpriteBatch>& spriteBatch,            // Draws a spriteBatch using modelTransform
                   glm::mat4 modelTransform = glm::mat4(1));             // using a model-to-world transformation
 
-        void draw(std::shared_ptr<SpriteBatch>&& spriteBatch,            // Draws a spriteBatch using modelTransform
+        void draw(std::shared_ptr<SpriteBatch>&& spriteBatch,           // Draws a spriteBatch using modelTransform
                   glm::mat4 modelTransform = glm::mat4(1));             // using a model-to-world transformation
 
         std::vector<glm::vec4> readPixels(unsigned int x,               // Reads pixel(s) from the current framebuffer
@@ -107,15 +108,23 @@ namespace sre {
         void finishGPUCommandBuffer();                                  // GPU command buffer (must be called when
                                                                         // profiling GPU time - should not be called
                                                                         // when not profiling)
+
+        void finish();
+        bool isFinished();
     private:
-        static void finish();
-        void finishInstance();
+        bool mIsFinished = false;
+        struct RenderQueueObj{
+            std::shared_ptr<Mesh> mesh;
+            glm::mat4 modelTransform;
+            std::vector<std::shared_ptr<Material>> materials;
+        };
+        std::vector<RenderQueueObj> renderQueue;
+
+        void drawInstance(RenderQueueObj& rqObj);                       // perform the actual rendering
+
+
         RenderPass::RenderPassBuilder builder;
         explicit RenderPass(RenderPass::RenderPassBuilder& builder);
-
-        void bind(bool newFrame);
-
-        bool containsInstance(RenderPass*);
 
         void setupShader(const glm::mat4 &modelTransform, Shader *shader);
 
@@ -126,9 +135,6 @@ namespace sre {
         glm::mat4 projection;
         glm::uvec2 viewportOffset;
         glm::uvec2 viewportSize;
-        RenderPass* lastInstance = nullptr;
-        static RenderPass* instance;
-        static std::shared_ptr<Framebuffer> lastFramebuffer;
 
         friend class Renderer;
     };

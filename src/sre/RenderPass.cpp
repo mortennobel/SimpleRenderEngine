@@ -20,10 +20,6 @@
 #include <imgui_internal.h>
 #include <glm/gtc/type_precision.hpp>
 namespace sre {
-    RenderPass* RenderPass::instance = nullptr;
-
-    std::shared_ptr<Framebuffer> RenderPass::lastFramebuffer;
-
     RenderPass::RenderPassBuilder RenderPass::create() {
         return RenderPass::RenderPassBuilder(&Renderer::instance->renderStats);
     }
@@ -84,18 +80,14 @@ namespace sre {
     RenderPass::RenderPass(RenderPass::RenderPassBuilder& builder)
         :builder(builder)
     {
-        lastInstance = RenderPass::instance;
-        RenderPass::instance = this;
-        bind(true);
+        if (builder.gui) {
+            ImGui_SRE_NewFrame(Renderer::instance->window);
+        }
     }
 
     RenderPass::RenderPass(RenderPass &&rp) noexcept {
-        assert(instance == &rp);
-        if (instance == &rp){
-            instance = this;
-        }
         builder = rp.builder;
-        std::swap(lastInstance,rp.lastInstance);
+        std::swap(mIsFinished,rp.mIsFinished);
         std::swap(lastBoundShader,rp.lastBoundShader);
         std::swap(lastBoundMaterial,rp.lastBoundMaterial);
         std::swap(lastBoundMeshId,rp.lastBoundMeshId);
@@ -105,10 +97,9 @@ namespace sre {
     }
 
     RenderPass &RenderPass::operator=(RenderPass &&rp) noexcept {
-        if (instance == &rp){
-            instance = this;
-        }
+        finish();
         builder = rp.builder;
+        std::swap(mIsFinished,rp.mIsFinished);
         std::swap(lastBoundShader,rp.lastBoundShader);
         std::swap(lastBoundMaterial,rp.lastBoundMaterial);
         std::swap(lastBoundMeshId,rp.lastBoundMeshId);
@@ -119,43 +110,12 @@ namespace sre {
     }
 
     RenderPass::~RenderPass(){
-        if (RenderPass::instance == this){
-            RenderPass::finish();
-            RenderPass::instance = lastInstance;
-            if (RenderPass::instance != nullptr){
-                RenderPass::instance->bind(false);
-            }
-        }
+        finish();
     }
 
     void RenderPass::draw(std::shared_ptr<Mesh>& meshPtr, glm::mat4 modelTransform, std::shared_ptr<Material>& material_ptr) {
-        assert(instance == this && "You can only invoke methods on the currently bound renderpass");
-
-        Mesh* mesh = meshPtr.get();
-        auto material = material_ptr.get();
-        auto shader = material->getShader().get();
-        assert(mesh  != nullptr);
-        builder.renderStats->drawCalls++;
-        setupShader(modelTransform, shader);
-        if (material != lastBoundMaterial){
-            builder.renderStats->stateChangesMaterial++;
-            lastBoundMaterial = material;
-            lastBoundMeshId = -1;
-            material->bind();
-        }
-        if (mesh->meshId != lastBoundMeshId){
-            builder.renderStats->stateChangesMesh++;
-            lastBoundMeshId = mesh->meshId;
-            mesh->bind(shader);
-            mesh->bindIndexSet(0);
-        }
-
-        if (mesh->getIndexSets() == 0){
-            glDrawArrays((GLenum) mesh->getMeshTopology(), 0, mesh->getVertexCount());
-        } else {
-            GLsizei indexCount = (GLsizei) mesh->getIndicesSize(0);
-            glDrawElements((GLenum) mesh->getMeshTopology(), indexCount, GL_UNSIGNED_SHORT, 0);
-        }
+        assert(!mIsFinished && "RenderPass is finished. Can no longer be modified.");
+        renderQueue.emplace_back(RenderQueueObj{meshPtr, modelTransform, {material_ptr}});
     }
 
     void RenderPass::setupShader(const glm::mat4 &modelTransform, Shader *shader)  {
@@ -193,130 +153,29 @@ namespace sre {
     }
 
     void RenderPass::drawLines(const std::vector<glm::vec3> &verts, glm::vec4 color, MeshTopology meshTopology) {
-        assert(instance == this && "You can only invoke methods on the currently bound renderpass");
+        assert(!mIsFinished && "RenderPass is finished. Can no longer be modified.");
 
         // Keep a shared mesh and material
-        static auto material = Shader::getUnlit()->createMaterial();
-        static auto mesh = Mesh::create()
+        auto material = Shader::getUnlit()->createMaterial();
+        auto mesh = Mesh::create()
                 .withPositions(verts)
                 .withMeshTopology(meshTopology)
                 .build();
 
-        // update shared mesh
-        mesh->update().withPositions(verts).build();
-
         // update material
         material->setColor(color);
 
-        // force reload of last bound material and mesh
-        lastBoundMaterial = nullptr;
-        lastBoundMeshId = -1;
-
-        draw(mesh, glm::mat4(1), material);
+        renderQueue.emplace_back(RenderQueueObj{
+                                         mesh,
+                                         glm::mat4(1),
+                                         {material}
+                                 });
     }
 
-    void RenderPass::finishInstance(){
-        if (builder.gui) {
-            ImGui::Render();
-        }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        auto framebuffer = lastFramebuffer.get();
-        if (framebuffer){
-            for(auto& tex : framebuffer->textures){
-                if (tex->generateMipmap){
-                    glBindTexture(tex->target,tex->textureId);
-                    glGenerateMipmap(tex->target);
-                    glBindTexture(tex->target,0);
-                }
-            }
-        }
-#ifndef NDEBUG
-        checkGLError();
-#endif
-    }
-
-    void RenderPass::finish() {
-        if (instance != nullptr){
-            instance->finishInstance();
-        }
-    }
-
-    std::vector<glm::vec4> RenderPass::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
-        assert(instance == this && "You can only invoke methods on the currently bound renderpass");
-        std::vector<glm::vec4> res(width * height);
-        std::vector<glm::u8vec4> resUnsigned(width * height);
-
-        glReadPixels(x,y,width, height, GL_RGBA,GL_UNSIGNED_BYTE,resUnsigned.data());
-        for (int i=0;i<resUnsigned.size();i++){
-            for (int j=0;j<4;j++){
-                res[i][j] = resUnsigned[i][j]/255.0f;
-            }
-        }
-
-        return res;
-    }
-
-    void RenderPass::draw(std::shared_ptr<Mesh> &meshPtr, glm::mat4 modelTransform,
-                          std::vector<std::shared_ptr<Material>> &materials) {
-        assert(instance == this && "You can only invoke methods on the currently bound renderpass");
-        if (materials.size() == 1){
-            draw(meshPtr, modelTransform, materials[0]);
+    void RenderPass::finish(){
+        if (mIsFinished){
             return;
         }
-        assert(meshPtr->indices.size() == materials.size());
-
-        // todo optimize (mesh vbo only need to be bound once)
-        for (int i=0;i<materials.size();i++){
-            auto material_ptr = materials[i];
-            Mesh* mesh = meshPtr.get();
-            auto material = material_ptr.get();
-            auto shader = material->getShader().get();
-            assert(mesh  != nullptr);
-            builder.renderStats->drawCalls++;
-            setupShader(modelTransform, shader);
-            if (material != lastBoundMaterial) {
-                builder.renderStats->stateChangesMaterial++;
-                lastBoundMaterial = material;
-                lastBoundMeshId = -1; // force mesh to rebind
-                material->bind();
-            }
-            if (mesh->meshId != lastBoundMeshId) {
-                builder.renderStats->stateChangesMesh++;
-                lastBoundMeshId = mesh->meshId;
-                mesh->bind(shader);
-            }
-            mesh->bindIndexSet(i);
-
-            GLsizei indexCount = mesh->getIndicesSize(i);
-            glDrawElements((GLenum) mesh->getMeshTopology(i), indexCount, GL_UNSIGNED_SHORT, 0);
-        }
-    }
-
-    void RenderPass::finishGPUCommandBuffer() {
-        glFinish();
-    }
-
-    void RenderPass::draw(std::shared_ptr<SpriteBatch>& spriteBatch, glm::mat4 modelTransform) {
-        assert(instance == this && "You can only invoke methods on the currently bound renderpass");
-        if (spriteBatch == nullptr) return;
-
-        for (int i=0;i<spriteBatch->materials.size();i++) {
-            draw(spriteBatch->spriteMeshes[i], modelTransform, spriteBatch->materials[i]);
-        }
-    }
-
-    void RenderPass::draw(std::shared_ptr<SpriteBatch>&& spriteBatch, glm::mat4 modelTransform) {
-        assert(instance == this && "You can only invoke methods on the currently bound renderpass");
-        if (spriteBatch == nullptr) return;
-
-        for (int i=0;i<spriteBatch->materials.size();i++) {
-            draw(spriteBatch->spriteMeshes[i], modelTransform, spriteBatch->materials[i]);
-        }
-    }
-
-
-
-    void RenderPass::bind(bool newFrame) {
         if (builder.framebuffer!=nullptr){
             builder.framebuffer->bind();
         } else {
@@ -334,43 +193,136 @@ namespace sre {
         glEnable(GL_SCISSOR_TEST);
         glScissor(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
         glViewport(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
-        if (newFrame) {
-            GLbitfield clear = 0;
-            if (builder.clearColor) {
-                glClearColor(builder.clearColorValue.r, builder.clearColorValue.g, builder.clearColorValue.b, builder.clearColorValue.a);
-                clear |= GL_COLOR_BUFFER_BIT;
-            }
-            if (builder.clearDepth) {
-                glClearDepthf(builder.clearDepthValue);
-                glDepthMask(GL_TRUE);
-                clear |= GL_DEPTH_BUFFER_BIT;
-            }
-            if (builder.clearStencil) {
-                glClearStencil(builder.clearStencilValue);
-                clear |= GL_STENCIL_BUFFER_BIT;
-            }
-            if (clear != 0u) {
-                glClear(clear);
-            }
 
-            if (builder.gui) {
-                ImGui_SRE_NewFrame(Renderer::instance->window);
-            }
+        GLbitfield clear = 0;
+        if (builder.clearColor) {
+            glClearColor(builder.clearColorValue.r, builder.clearColorValue.g, builder.clearColorValue.b, builder.clearColorValue.a);
+            clear |= GL_COLOR_BUFFER_BIT;
+        }
+        if (builder.clearDepth) {
+            glClearDepthf(builder.clearDepthValue);
+            glDepthMask(GL_TRUE);
+            clear |= GL_DEPTH_BUFFER_BIT;
+        }
+        if (builder.clearStencil) {
+            glClearStencil(builder.clearStencilValue);
+            clear |= GL_STENCIL_BUFFER_BIT;
+        }
+        if (clear != 0u) {
+            glClear(clear);
+        }
 
-            projection = builder.camera.getProjectionTransform(windowSize);
-        } else {
-            lastBoundShader = nullptr;
-            lastBoundMaterial = nullptr;
+
+
+        projection = builder.camera.getProjectionTransform(windowSize);
+
+        for (auto & rqObj : renderQueue){
+            drawInstance(rqObj);
+        }
+
+        if (builder.gui) {
+            ImGui::Render();
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        if (builder.framebuffer != nullptr){
+            for(auto& tex : builder.framebuffer->textures){
+                if (tex->generateMipmap){
+                    glBindTexture(tex->target,tex->textureId);
+                    glGenerateMipmap(tex->target);
+                    glBindTexture(tex->target,0);
+                }
+            }
+        }
+        mIsFinished = true;
+#ifndef NDEBUG
+        checkGLError();
+#endif
+    }
+
+    std::vector<glm::vec4> RenderPass::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+        finish();
+        if (builder.framebuffer!=nullptr){
+            builder.framebuffer->bind();
+        }
+        std::vector<glm::vec4> res(width * height);
+        std::vector<glm::u8vec4> resUnsigned(width * height);
+
+        glReadPixels(x,y,width, height, GL_RGBA,GL_UNSIGNED_BYTE,resUnsigned.data());
+        for (int i=0;i<resUnsigned.size();i++){
+            for (int j=0;j<4;j++){
+                res[i][j] = resUnsigned[i][j]/255.0f;
+            }
+        }
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+        return res;
+    }
+
+    void RenderPass::draw(std::shared_ptr<Mesh> &meshPtr, glm::mat4 modelTransform,
+                          std::vector<std::shared_ptr<Material>> materials) {
+        assert(!mIsFinished && "RenderPass is finished. Can no longer be modified.");
+        assert(meshPtr->indices.size() == 0 || meshPtr->indices.size() == materials.size());
+        renderQueue.emplace_back(RenderQueueObj{meshPtr, modelTransform, materials});
+    }
+
+    void RenderPass::drawInstance(RenderQueueObj& rqObj) {
+
+
+
+        // todo optimize (mesh vbo only need to be bound once)
+        for (int i=0;i<rqObj.materials.size();i++){
+            auto material_ptr = rqObj.materials[i];
+            Mesh* mesh = rqObj.mesh.get();
+            auto material = material_ptr.get();
+            auto shader = material->getShader().get();
+            assert(mesh  != nullptr);
+            builder.renderStats->drawCalls++;
+            setupShader(rqObj.modelTransform, shader);
+            if (material != lastBoundMaterial) {
+                builder.renderStats->stateChangesMaterial++;
+                lastBoundMaterial = material;
+                lastBoundMeshId = -1; // force mesh to rebind
+                material->bind();
+            }
+            if (mesh->meshId != lastBoundMeshId) {
+                builder.renderStats->stateChangesMesh++;
+                lastBoundMeshId = mesh->meshId;
+                mesh->bind(shader);
+            }
+            if (mesh->getIndexSets() == 0){
+                glDrawArrays((GLenum) mesh->getMeshTopology(), 0, mesh->getVertexCount());
+            } else {
+                mesh->bindIndexSet(i);
+
+                GLsizei indexCount = mesh->getIndicesSize(i);
+                glDrawElements((GLenum) mesh->getMeshTopology(i), indexCount, GL_UNSIGNED_SHORT, nullptr);
+            }
         }
     }
 
-    bool RenderPass::containsInstance(RenderPass *rp) {
-        if (lastInstance == rp){
-            return true;
+    void RenderPass::finishGPUCommandBuffer() {
+        glFinish();
+    }
+
+    void RenderPass::draw(std::shared_ptr<SpriteBatch>& spriteBatch, glm::mat4 modelTransform) {
+        assert(!mIsFinished && "RenderPass is finished. Can no longer be modified.");
+        if (spriteBatch == nullptr) return;
+
+        for (int i=0;i<spriteBatch->materials.size();i++) {
+            renderQueue.emplace_back(RenderQueueObj{spriteBatch->spriteMeshes[i], modelTransform, {spriteBatch->materials[i]}});
         }
-        if (lastInstance){
-            return lastInstance->containsInstance(rp);
+    }
+
+    void RenderPass::draw(std::shared_ptr<SpriteBatch>&& spriteBatch, glm::mat4 modelTransform) {
+        assert(!mIsFinished && "RenderPass is finished. Can no longer be modified.");
+        if (spriteBatch == nullptr) return;
+
+        for (int i=0;i<spriteBatch->materials.size();i++) {
+            renderQueue.emplace_back(RenderQueueObj{spriteBatch->spriteMeshes[i], modelTransform, {spriteBatch->materials[i]}});
         }
-        return false;
+    }
+
+    bool RenderPass::isFinished() {
+        return mIsFinished;
     }
 }
