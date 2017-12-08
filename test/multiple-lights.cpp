@@ -29,11 +29,9 @@ class MultipleLightsExample {
 
         mesh = Mesh::create().withSphere().build();
 
-        worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build());
-        worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build());
-        worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build());
-        worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build());
-
+        for (int i=0;i<Renderer::maxSceneLights;i++){
+            worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build());
+        }
         mat = Shader::getStandard()->createMaterial();
         r.frameUpdate = [&](float deltaTime){
             update(deltaTime);
@@ -61,14 +59,6 @@ class MultipleLightsExample {
         drawCross(renderPass,{-2,-2,-2});
         renderPass.draw(mesh, glm::eulerAngleY(time), mat);
 
-
-        std::string labels[] = {
-                "Light 1",
-                "Light 2",
-                "Light 3",
-                "Light 4"
-        };
-
         ImGui::DragFloat3("Camera",&eye.x);
         ImGui::Checkbox("AnimatedLight",&animatedLight);
         ImGui::Checkbox("AnimatedCamera",&animatedCamera);
@@ -94,12 +84,14 @@ class MultipleLightsExample {
             ImGui::DragFloat("DebugLightSize", &debugLightSize,0.1f,0,3);
         }
         // Show Label (with invisible window)
-        for (int i=0;i<4;i++){
+        for (int i=0;i<Renderer::maxSceneLights;i++){
             auto l = worldLights.getLight(i);
             if (debugLight){
                 drawLight(renderPass,l,debugLightSize);
             }
-            if (ImGui::TreeNode(labels[i].c_str())){
+            std::string lightLabel = "Light ";
+            lightLabel += std::to_string(i+1);
+            if (ImGui::TreeNode(lightLabel.c_str())){
                 auto lightType = (int)l->lightType;
                 ImGui::RadioButton("Point", &lightType, 0); ImGui::SameLine();
                 ImGui::RadioButton("Directional", &lightType, 1); ImGui::SameLine();
