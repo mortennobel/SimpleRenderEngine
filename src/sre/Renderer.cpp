@@ -37,9 +37,6 @@ namespace sre {
         ImGui_SRE_Init(window);
 		instance = this;
 
-#ifdef SRE_OPENVR
-		vr = new VR();
-#endif
         
 #ifndef EMSCRIPTEN
         glcontext = SDL_GL_CreateContext(window);
@@ -70,6 +67,11 @@ namespace sre {
 		std::string version = (char*)glGetString(GL_VERSION);
         LOG_INFO("OpenGL version %s",glGetString(GL_VERSION) );
         LOG_INFO("sre version %i.%i.%i",sre_version_major,sre_version_minor ,sre_version_point  );
+
+
+#ifdef SRE_OPENVR
+		vr = new VR();
+#endif
 
         // setup opengl context
         glEnable(GL_DEPTH_TEST);
@@ -130,5 +132,10 @@ namespace sre {
 
     bool Renderer::usesVSync() {
         return vsync;
+    }
+
+	VR* Renderer::getVR()
+    {
+		return vr;
     }
 }

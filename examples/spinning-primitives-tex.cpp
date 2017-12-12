@@ -4,6 +4,7 @@
 
 #include "sre/Texture.hpp"
 #include "sre/Renderer.hpp"
+#include "sre/VR.hpp"
 #include "sre/Material.hpp"
 
 #include <glm/gtx/transform.hpp>
@@ -38,6 +39,10 @@ public:
         r.frameRender = [&](){
             render();
         };
+		Renderer::instance->getVR()->renderVR = [&](RenderPass& renderPass, bool left)
+		{
+			render(renderPass);
+		};
         r.startEventLoop();
     }
 
@@ -47,17 +52,23 @@ public:
                 .withClearColor(true,{1, 0, 0, 1})
                 .build();
 
-        const float speed = .5f;
-        int index = 0;
-        for (int x=0;x<2;x++){
-            for (int y=0;y<2;y++){
-                glm::mat4 modelTransform = glm::translate(glm::vec3(-1.5+x*3,-1.5+y*3,0)) *
-                                           glm::eulerAngleY(glm::radians( i * speed));
-                renderPass.draw(mesh[index], modelTransform, material);
-                index++;
-            }
-        }
+        
+		render(renderPass);
         i++;
+    }
+
+	void render(RenderPass& renderPass)
+    {
+		const float speed = .5f;
+		int index = 0;
+		for (int x = 0; x<2; x++) {
+			for (int y = 0; y<2; y++) {
+				glm::mat4 modelTransform = glm::translate(glm::vec3(-1.5 + x * 3, -1.5 + y * 3, 0)) *
+					glm::eulerAngleY(glm::radians(i * speed));
+				renderPass.draw(mesh[index], modelTransform, material);
+				index++;
+			}
+		}
     }
 private:
     SDLRenderer r;
