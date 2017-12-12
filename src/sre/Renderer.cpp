@@ -15,6 +15,7 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #endif
 
 #include "sre/Log.hpp"
+#include "sre/VR.hpp"
 
 #include "sre/Renderer.hpp"
 #include "sre/Framebuffer.hpp"
@@ -34,8 +35,12 @@ namespace sre {
 
         // initialize ImGUI
         ImGui_SRE_Init(window);
+		instance = this;
 
-        instance = this;
+#ifdef SRE_OPENVR
+		vr = new VR();
+#endif
+        
 #ifndef EMSCRIPTEN
         glcontext = SDL_GL_CreateContext(window);
         if (vsync){
@@ -85,6 +90,7 @@ namespace sre {
     }
 
     Renderer::~Renderer() {
+		delete vr;
         SDL_GL_DeleteContext(glcontext);
         instance = nullptr;
     }

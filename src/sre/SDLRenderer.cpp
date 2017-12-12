@@ -200,7 +200,6 @@ namespace sre{
 #endif
             r = new Renderer(window, vsync);
 
-
 #ifdef SRE_DEBUG_CONTEXT
 			if (glDebugMessageCallback) {
 				//GLenum err = glewInit();
