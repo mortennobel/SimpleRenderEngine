@@ -7,6 +7,8 @@
 
 #include "sre/SpriteBatch.hpp"
 #include  <algorithm>
+#include <sre/Sprite.hpp>
+#include <sre/Log.hpp>
 #include "sre/Texture.hpp"
 #include "sre/Material.hpp"
 
@@ -18,17 +20,13 @@ namespace sre{
         return {};
     }
 
-    SpriteBatch::SpriteBatch(std::shared_ptr<Shader> shader, std::vector<Sprite>&& sprites)
+    SpriteBatch::SpriteBatch(std::shared_ptr<Shader> shader, std::vector<Sprite>& sprites)
     {
         std::sort(sprites.begin(), sprites.end(), [](const Sprite & a,const Sprite & b){
-            if (a.orderInBatch < b.orderInBatch){
-                return true;
-            }
-            if (a.texture < b.texture){
-                return true;
-            }
-            return false;
+            return a.order.globalOrder < b.order.globalOrder;
         });
+        auto& s0 = sprites[0];
+        auto& s1 = sprites[1];
         std::vector<glm::vec3> vertices;
         std::vector<glm::vec4> colors;
         std::vector<glm::vec4> uvs;
@@ -87,17 +85,23 @@ namespace sre{
     }
 
     SpriteBatch::SpriteBatchBuilder &SpriteBatch::SpriteBatchBuilder::withShader(std::shared_ptr<Shader> shader) {
-        this->shader = shader;
+        this->shader = std::move(shader);
         return *this;
     }
 
-    SpriteBatch::SpriteBatchBuilder &SpriteBatch::SpriteBatchBuilder::addSprite(const Sprite &sprite) {
-        sprites.push_back(sprite);
+    SpriteBatch::SpriteBatchBuilder &SpriteBatch::SpriteBatchBuilder::addSprite(Sprite sprite) {
+        size_t size = sprites.size();
+        if (size +1 >= std::numeric_limits<uint16_t>::max()){
+            LOG_ERROR("More than %i sprites in a batch ",std::numeric_limits<uint16_t>::max());
+            return *this;
+        }
+        sprite.order.details.drawOrder = static_cast<uint16_t>(size);
+        sprites.push_back(std::move(sprite));
         return *this;
     }
 
     std::shared_ptr<SpriteBatch> SpriteBatch::SpriteBatchBuilder::build() {
-        return std::shared_ptr<SpriteBatch>{new SpriteBatch(shader, std::move(sprites))};
+        return std::shared_ptr<SpriteBatch>{new SpriteBatch(shader, sprites)};
     }
 
 }

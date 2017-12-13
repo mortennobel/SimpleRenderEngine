@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <glm/gtx/transform.hpp>
+#include <sre/Sprite.hpp>
 #include "sre/Sprite.hpp"
 #include "sre/Texture.hpp"
 #include "sre/Log.hpp"
@@ -15,6 +16,8 @@
 sre::Sprite::Sprite(glm::ivec2 spritePos, glm::ivec2 spriteSize, glm::vec2 spriteAnchor, Texture* texture)
 :spritePos(spritePos),spriteSize(spriteSize),spriteAnchor(spriteAnchor),texture(texture)
 {
+    order.globalOrder = 0;
+    order.details.texture = (uint32_t)texture->textureId;
 }
 
 float sre::Sprite::getRotation() const {
@@ -57,12 +60,12 @@ void sre::Sprite::setFlip(const glm::bvec2 &flip) {
     Sprite::flip = flip;
 }
 
-int sre::Sprite::getOrderInBatch() const {
-    return orderInBatch;
+uint16_t sre::Sprite::getOrderInBatch() const {
+    return order.details.orderInBatch;
 }
 
-void sre::Sprite::setOrderInBatch(int orderInBatch) {
-    Sprite::orderInBatch = orderInBatch;
+void sre::Sprite::setOrderInBatch(uint16_t orderInBatch) {
+    order.details.orderInBatch = orderInBatch;
 }
 
 const glm::vec4 &sre::Sprite::getColor() const {
@@ -98,13 +101,13 @@ sre::Sprite::Sprite(const Sprite &s)
          position(s.position),
          scale(s.scale),
          flip(s.flip),
-         orderInBatch(s.orderInBatch),
          color(s.color),
          spritePos(s.spritePos),
          spriteSize(s.spriteSize),
          spriteAnchor(s.spriteAnchor),
          texture(s.texture)
 {
+    this->order.globalOrder = s.order.globalOrder;
 }
 
 std::array<glm::vec2, 4> sre::Sprite::getCorners() {
