@@ -1,6 +1,8 @@
 #include "sre/VR.hpp"
 #include "sre/Log.hpp"
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/matrix_transform.inl>
+#include <glm/gtx/string_cast.inl>
 
 #ifdef SRE_OPENVR
 
@@ -57,6 +59,10 @@ namespace sre
 		rightTex = Texture::create().withRGBData(nullptr, targetSizeW, targetSizeH).withGenerateMipmaps(false).withFilterSampling(false).build();
 
 		rightFB = Framebuffer::create().withTexture(rightTex).build();
+
+		setupCameras();
+		mat4eyePosLeft = getHMDMatrixPoseEye(vr::Eye_Left);
+		mat4eyePosRight = getHMDMatrixPoseEye(vr::Eye_Right);
 	}
 
 	void VR::render()
@@ -110,6 +116,78 @@ namespace sre
 		if (m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid)
 		{
 			m_mat4HMDPose = glm::inverse(m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd]);
+			left.setViewTransform(mat4eyePosLeft * m_mat4HMDPose * baseViewTransform);
+			right.setViewTransform(mat4eyePosRight * m_mat4HMDPose * baseViewTransform);
 		}
+	}
+
+	void  VR::lookAt(glm::vec3 eye, glm::vec3 at, glm::vec3 up)
+	{
+		baseViewTransform = glm::lookAt(eye, at, up);
+	}
+
+	void  VR::setViewTransform(const glm::mat4 &viewTransform)
+	{
+		baseViewTransform = viewTransform;
+	}
+
+	void  VR::setNearFarPlanes(float nearPlane, float farPlane)
+	{
+		this->nearPlane = nearPlane;
+		this->farPlane = farPlane;
+		setupCameras();
+	}
+	
+	void VR::setupCameras()
+	{
+#ifdef SRE_OPENVR
+		const auto mat4ProjectionLeft = getHMDMatrixProjectionEye(vr::Eye_Left);
+		const auto mat4ProjectionRight = getHMDMatrixProjectionEye(vr::Eye_Right);
+		left.setProjectionTransform(mat4ProjectionLeft);
+		right.setProjectionTransform(mat4ProjectionRight);
+		
+#endif
+	}
+#ifdef SRE_OPENVR
+	glm::mat4 VR::getHMDMatrixProjectionEye(vr::Hmd_Eye nEye)
+	{
+		if (!vrSystem)
+			return glm::mat4(1);
+
+		vr::HmdMatrix44_t mat = vrSystem->GetProjectionMatrix(nEye, nearPlane, farPlane);
+
+		return glm::mat4(
+			mat.m[0][0], mat.m[1][0], mat.m[2][0], mat.m[3][0],
+			mat.m[0][1], mat.m[1][1], mat.m[2][1], mat.m[3][1],
+			mat.m[0][2], mat.m[1][2], mat.m[2][2], mat.m[3][2],
+			mat.m[0][3], mat.m[1][3], mat.m[2][3], mat.m[3][3]
+		);
+	}
+
+	glm::mat4 VR::getHMDMatrixPoseEye(vr::Hmd_Eye nEye)
+	{
+		if (!vrSystem)
+			return glm::mat4(1);
+
+		vr::HmdMatrix34_t matEyeRight = vrSystem->GetEyeToHeadTransform(nEye);
+		glm::mat4 matrixObj(
+			matEyeRight.m[0][0], matEyeRight.m[1][0], matEyeRight.m[2][0], 0.0,
+			matEyeRight.m[0][1], matEyeRight.m[1][1], matEyeRight.m[2][1], 0.0,
+			matEyeRight.m[0][2], matEyeRight.m[1][2], matEyeRight.m[2][2], 0.0,
+			matEyeRight.m[0][3], matEyeRight.m[1][3], matEyeRight.m[2][3], 1.0f
+		);
+
+		return glm::inverse( matrixObj );
+	}
+#endif
+
+	void VR::debugGUI()
+	{
+#ifdef SRE_OPENVR
+		//auto s = glm::to_string(getHMDMatrixPoseEye(vr::Hmd_Eye::Eye_Left)[0]);
+		//ImGui::LabelText("PoseEyeL", s.c_str());
+#else
+		ImGui::LabelText("", "VR not enabled");
+#endif			
 	}
 }
