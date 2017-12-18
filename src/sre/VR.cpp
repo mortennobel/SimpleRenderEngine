@@ -30,6 +30,7 @@ namespace sre
 		LOG_INFO("VR::renderVR not implemented");
 	})
 	{
+#ifdef SRE_OPENVR
 		vr::HmdError peError = vr::VRInitError_None;
 		vrSystem = vr::VR_Init(&peError, vr::VRApplication_Scene);
 		if (peError != vr::VRInitError_None)
@@ -64,10 +65,12 @@ namespace sre
 		setupCameras();
 		mat4eyePosLeft = getHMDMatrixPoseEye(vr::Eye_Left);
 		mat4eyePosRight = getHMDMatrixPoseEye(vr::Eye_Right);
+#endif
 	}
 
 	void VR::render()
 	{
+#ifdef SRE_OPENVR
 		updateHMDMatrixPose();
 		{
 			auto rpLeft = RenderPass::create().withCamera(left).withFramebuffer(leftFB).withGUI(false).withName("VR_Left").build();
@@ -81,11 +84,12 @@ namespace sre
 		}
 		vr::Texture_t rightEyeTexture = { (void*)(uintptr_t)rightTex->textureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
 		vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
-
+#endif
 	}
 
 	void VR::updateHMDMatrixPose()
 	{
+#ifdef SRE_OPENVR
 		vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
 		
 		m_iValidPoseCount = 0;
@@ -117,9 +121,10 @@ namespace sre
 		if (m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid)
 		{
 			m_mat4HMDPose = m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd];
-			left.setViewTransform(glm::inverse(baseViewTransform* m_mat4HMDPose *mat4eyePosLeft));
-			right.setViewTransform(glm::inverse(baseViewTransform * m_mat4HMDPose *mat4eyePosRight));
+			left.setViewTransform(glm::inverse(mat4eyePosLeft*m_mat4HMDPose)*baseViewTransform);
+			right.setViewTransform(glm::inverse(mat4eyePosRight*m_mat4HMDPose)*baseViewTransform);
 		}
+#endif
 	}
 
 	void  VR::lookAt(glm::vec3 eye, glm::vec3 at, glm::vec3 up)
@@ -146,15 +151,11 @@ namespace sre
 		const auto mat4ProjectionRight = getHMDMatrixProjectionEye(vr::Eye_Right);
 		left.setProjectionTransform(mat4ProjectionLeft);
 		right.setProjectionTransform(mat4ProjectionRight);
-		
 #endif
 	}
 #ifdef SRE_OPENVR
 	glm::mat4 VR::getHMDMatrixProjectionEye(vr::Hmd_Eye nEye)
 	{
-		if (!vrSystem)
-			return glm::mat4(1);
-
 		vr::HmdMatrix44_t mat = vrSystem->GetProjectionMatrix(nEye, nearPlane, farPlane);
 
 		return glm::mat4(
@@ -167,9 +168,6 @@ namespace sre
 
 	glm::mat4 VR::getHMDMatrixPoseEye(vr::Hmd_Eye nEye)
 	{
-		if (!vrSystem)
-			return glm::mat4(1);
-
 		vr::HmdMatrix34_t matEyeRight = vrSystem->GetEyeToHeadTransform(nEye);
 		glm::mat4 matrixObj(
 			matEyeRight.m[0][0], matEyeRight.m[1][0], matEyeRight.m[2][0], 0.0,
@@ -178,7 +176,7 @@ namespace sre
 			matEyeRight.m[0][3], matEyeRight.m[1][3], matEyeRight.m[2][3], 1.0f
 		);
 
-		return glm::inverse( matrixObj );
+		return  matrixObj;
 	}
 #endif
 
@@ -190,7 +188,6 @@ namespace sre
 		ImGui::InputFloat4("", glm::value_ptr(m[1]));
 		ImGui::InputFloat4("", glm::value_ptr(m[2]));
 		ImGui::InputFloat4("", glm::value_ptr(m[3]));
-
 	}
 
 	void VR::debugGUI()
