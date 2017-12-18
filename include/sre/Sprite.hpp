@@ -33,8 +33,8 @@ public:
     const glm::bvec2 &getFlip() const;          // flip (in x or y direction)
     void setFlip(const glm::bvec2 &flip);
 
-    int getOrderInBatch() const;                // render order
-    void setOrderInBatch(int orderInBatch);
+    uint16_t getOrderInBatch() const;                // render order
+    void setOrderInBatch(uint16_t orderInBatch);
 
     const glm::vec4 &getColor() const;          // sprite color (and transparency) multiplied with texture color
     void setColor(const glm::vec4 &color);
@@ -50,14 +50,20 @@ public:
     std::array<glm::vec2,4> getUVs();
 
 private:
-
     Sprite(glm::ivec2 spritePos, glm::ivec2 spriteSize,glm::vec2  spriteAnchor, Texture* texture);
 
     float rotation    = 0;
     glm::vec2 position= {0.0f,0.0f};
     glm::vec2 scale   = {1.0f,1.0f};
     glm::bvec2 flip   = {false, false};
-    int orderInBatch  = 0;
+    union {
+        uint64_t globalOrder;
+        struct {
+            uint16_t drawOrder;    // lowest priority
+            uint32_t texture;
+            uint16_t orderInBatch; // highest priority
+        } __attribute__((__packed__)) details;
+    }  order;
     glm::vec4 color   = {1.0f,1.0f,1.0f,1.0f};
 
     glm::ivec2 spritePos;

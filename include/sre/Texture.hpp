@@ -115,7 +115,8 @@ private:
     friend class RenderPass;
     friend class Profiler;
     friend class sre::Framebuffer::FrameBufferBuilder;
-	friend class VR;
+    friend class VR;
+    friend class Sprite;
 };
 
 
