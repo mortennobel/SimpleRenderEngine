@@ -17,6 +17,8 @@
 #include "RenderStats.hpp"
 #include "Mesh.hpp"
 
+
+
 namespace sre {
 
     // forward declaration
@@ -25,6 +27,7 @@ namespace sre {
 
     class Shader;
     class Shader;
+	class VR;
 
     /// Maintains shared states for rendering.
     /// An object of Renderer must be created once after the SDL_Window has been initialized.
@@ -73,6 +76,7 @@ namespace sre {
 
         static Renderer* instance;                          // Singleton reference to the engine after initialization.
 
+		VR* getVR();										// Get pointer to VR (if any)
     private:
         SDL_Window *window;
         SDL_GLContext glcontext;
@@ -88,6 +92,8 @@ namespace sre {
         std::vector<Texture*> textures;
         std::vector<SpriteAtlas*> spriteAtlases;
 
+		VR* vr = nullptr;
+
         friend class Mesh;
         friend class Mesh::MeshBuilder;
         friend class Shader;
@@ -97,6 +103,7 @@ namespace sre {
         friend class RenderPass;
         friend class Profiler;
         friend class SpriteAtlas;
+		friend class VR;
         friend class RenderPass::RenderPassBuilder;
     };
 }

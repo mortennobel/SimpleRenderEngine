@@ -82,7 +82,6 @@ public:
     SDL_Window *getSDLWindow();                                 // Get a pointer to SDL_Window
 private:
     void frame(float deltaTimeSec);
-
     Renderer* r;
     SDLRenderer(const SDLRenderer&) = delete;
     std::string windowTitle;
