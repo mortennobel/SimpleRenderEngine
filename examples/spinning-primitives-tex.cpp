@@ -62,12 +62,14 @@ public:
     {
 		const float speed = .5f;
 		int index = 0;
-		for (int x = 0; x<2; x++) {
-			for (int y = 0; y<2; y++) {
-				glm::mat4 modelTransform = glm::translate(glm::vec3(-1.5 + x * 3, -1.5 + y * 3, 0)) *
-					glm::eulerAngleY(glm::radians(i * speed));
-				renderPass.draw(mesh[index], modelTransform, material);
-				index++;
+		for (int x = -10; x<=10; x=x+3) {
+			for (int y = -10; y<=10; y=y+3) {
+				for (int z = -10; z <= 10; z=z+3) {
+					glm::mat4 modelTransform = glm::translate(glm::vec3(-1.5 + x * 3, -1.5 + y * 3, z)) *
+						glm::eulerAngleY(glm::radians(i * speed));
+					renderPass.draw(mesh[index%3], modelTransform, material);
+					index++;
+				}
 			}
 		}
     }

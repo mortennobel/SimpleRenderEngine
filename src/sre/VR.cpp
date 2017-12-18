@@ -1,8 +1,9 @@
 #include "sre/VR.hpp"
 #include "sre/Log.hpp"
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtc/matrix_transform.inl>
-#include <glm/gtx/string_cast.inl>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #ifdef SRE_OPENVR
 
@@ -96,7 +97,7 @@ namespace sre
 				m_iValidPoseCount++;
 				float *f = &(m_rTrackedDevicePose[nDevice].mDeviceToAbsoluteTracking.m[0][0]);
 				glm::mat3x4 m = glm::make_mat3x4(f);
-				m_rmat4DevicePose[nDevice] = (glm::mat4)m;
+				m_rmat4DevicePose[nDevice] = glm::transpose((glm::mat4)m);
 				if (m_rDevClassChar[nDevice] == 0)
 				{
 					switch (vrSystem->GetTrackedDeviceClass(nDevice))
@@ -115,9 +116,9 @@ namespace sre
 
 		if (m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid)
 		{
-			m_mat4HMDPose = glm::inverse(m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd]);
-			left.setViewTransform(mat4eyePosLeft * m_mat4HMDPose * baseViewTransform);
-			right.setViewTransform(mat4eyePosRight * m_mat4HMDPose * baseViewTransform);
+			m_mat4HMDPose = m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd];
+			left.setViewTransform(glm::inverse(baseViewTransform* m_mat4HMDPose *mat4eyePosLeft));
+			right.setViewTransform(glm::inverse(baseViewTransform * m_mat4HMDPose *mat4eyePosRight));
 		}
 	}
 
@@ -181,11 +182,25 @@ namespace sre
 	}
 #endif
 
+	void LabelMat4(std::string s, glm::mat4 m)
+	{
+		m = glm::transpose(m);
+		
+		ImGui::InputFloat4(s.c_str(), glm::value_ptr( m[0]));
+		ImGui::InputFloat4("", glm::value_ptr(m[1]));
+		ImGui::InputFloat4("", glm::value_ptr(m[2]));
+		ImGui::InputFloat4("", glm::value_ptr(m[3]));
+
+	}
+
 	void VR::debugGUI()
 	{
 #ifdef SRE_OPENVR
-		//auto s = glm::to_string(getHMDMatrixPoseEye(vr::Hmd_Eye::Eye_Left)[0]);
-		//ImGui::LabelText("PoseEyeL", s.c_str());
+		LabelMat4("PoseEyeL", getHMDMatrixPoseEye(vr::Hmd_Eye::Eye_Left));
+		LabelMat4("PoseEyeR", getHMDMatrixPoseEye(vr::Hmd_Eye::Eye_Right));
+		LabelMat4("ProjEyeL", getHMDMatrixProjectionEye(vr::Hmd_Eye::Eye_Left));
+		LabelMat4("ProjEyeR", getHMDMatrixProjectionEye(vr::Hmd_Eye::Eye_Right));
+		LabelMat4("HDMPose ", m_mat4HMDPose);
 #else
 		ImGui::LabelText("", "VR not enabled");
 #endif			
