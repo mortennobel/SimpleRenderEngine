@@ -1,6 +1,7 @@
 ## Version history
 
- * 0.9.21 Improved .obj importer. 
+ * 0.9.22 OpenVR support (experimental). Queue draw calls (to better support simultaneous renderpasses). Make max scenelight count depends on Renderer::maxSceneLights. Optimize and clarify sprite batch order.
+ * 0.9.21 Improved .obj importer.
  * 0.9.20 Add Camera.screenPointToRay().
  * 0.9.19 Improve sprite rendering (multiple sprite atlases supported within a sprite batch). Enforce framerate with Vsync. Improve png support. Fix color issue with multiple draw lines.
  * 0.9.18 Add VSync support (default behavior). Update ImGUI to 0.52 and fix Profiler preview. Flip sprite anchor point on SpriteAtlasImport (TexturePacker compatible).

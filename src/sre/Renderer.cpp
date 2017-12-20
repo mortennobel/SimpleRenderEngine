@@ -15,6 +15,7 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #endif
 
 #include "sre/Log.hpp"
+#include "sre/VR.hpp"
 
 #include "sre/Renderer.hpp"
 #include "sre/Framebuffer.hpp"
@@ -34,8 +35,9 @@ namespace sre {
 
         // initialize ImGUI
         ImGui_SRE_Init(window);
+		instance = this;
 
-        instance = this;
+        
 #ifndef EMSCRIPTEN
         glcontext = SDL_GL_CreateContext(window);
         if (vsync){
@@ -66,6 +68,11 @@ namespace sre {
         LOG_INFO("OpenGL version %s",glGetString(GL_VERSION) );
         LOG_INFO("sre version %i.%i.%i",sre_version_major,sre_version_minor ,sre_version_point  );
 
+
+#ifdef SRE_OPENVR
+		vr = new VR();
+#endif
+
         // setup opengl context
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_CULL_FACE);
@@ -85,14 +92,12 @@ namespace sre {
     }
 
     Renderer::~Renderer() {
+		delete vr;
         SDL_GL_DeleteContext(glcontext);
         instance = nullptr;
     }
 
     void Renderer::swapWindow() {
-        if (RenderPass::instance != nullptr){
-            RenderPass::finish();
-        }
 
         renderStatsLast = renderStats;
         renderStats.frame++;
@@ -127,5 +132,10 @@ namespace sre {
 
     bool Renderer::usesVSync() {
         return vsync;
+    }
+
+	VR* Renderer::getVR()
+    {
+		return vr;
     }
 }

@@ -9,6 +9,7 @@
 #include <iostream>
 #include <sre/imgui_sre.hpp>
 #include <sre/Log.hpp>
+#include <sre/VR.hpp>
 #include "sre/SDLRenderer.hpp"
 #define SDL_MAIN_HANDLED
 
@@ -200,7 +201,6 @@ namespace sre{
 #endif
             r = new Renderer(window, vsync);
 
-
 #ifdef SRE_DEBUG_CONTEXT
 			if (glDebugMessageCallback) {
 				//GLenum err = glewInit();
@@ -243,8 +243,12 @@ namespace sre{
         using FpSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
         auto lastTick = Clock::now();
         float deltaTime = 0;
+		VR* vr = r->getVR();
         while (running){
-
+			if (vr)
+			{
+				vr->render();
+			}
             frame(deltaTime);
 
             auto tick = Clock::now();

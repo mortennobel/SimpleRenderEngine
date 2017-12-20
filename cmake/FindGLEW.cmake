@@ -106,6 +106,7 @@ if (${CMAKE_HOST_UNIX})
             /usr/lib64
             /usr/lib
             /usr/local/lib64
+            /usr/lib/x86_64-linux-gnu
             /usr/local/lib
             /sw/lib
             /opt/local/lib
