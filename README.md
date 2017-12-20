@@ -5,7 +5,7 @@ programming in 2D or 3D without a deep knowledge about the low-level graphics AP
 OpenGL, DirectX and Vulkan.
  
 SimpleRenderEngine currently depends on Simple Direct Layer 2.x (SDL2), SDL2-image, OpenGL Mathematics (GLM), and OpenGL 
-3.1 (or higher), imgui and runs on both Windows, macOS and Linux.
+3.3 (or higher), imgui and runs on both Windows, macOS and Linux.
  
 sre provides:
  * Virtual camera (perspective and orthographic)
@@ -30,7 +30,10 @@ To keep sre as simple and flexible as possible the following features are not a 
 
 ## Examples
  
-Example usage can be found in the examples folder
+Example usage can be found in the examples folder.
+
+More examples/projects can be found on https://github.com/mortennobel/SimpleRenderEngineProject which also contains
+all/most dependencies for Windows and macOS.
 
 ## Documentation
 
@@ -42,4 +45,4 @@ API documentation is defined in header files.
  * https://www.libsdl.org/projects/SDL_image/ Simple Direct Layer Image 2.x
  * http://glm.g-truc.net/ OpenGL Mathematics
  * https://www.opengl.org/registry/ OpenGL Registry
- * https://github.com/ocornut/imgui ImGui 1.51
+ * https://github.com/ocornut/imgui ImGui 1.52
