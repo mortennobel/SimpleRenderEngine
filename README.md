@@ -5,7 +5,7 @@ programming in 2D or 3D without a deep knowledge about the low-level graphics AP
 OpenGL, DirectX and Vulkan.
  
 SimpleRenderEngine currently depends on Simple Direct Layer 2.x (SDL2), SDL2-image, OpenGL Mathematics (GLM), and OpenGL 
-3.3 (or higher), imgui and runs on both Windows, macOS and Linux.
+3.3 (or higher), Dear ImGui and runs on both Windows, macOS and Linux.
  
 sre provides:
  * Virtual camera (perspective and orthographic)
@@ -18,8 +18,9 @@ sre provides:
  * Forward rendering
  * Full C++14 support
  * Support for 2D or 3D rendering
- * GUI rendering (using dear ImGui)
+ * GUI rendering (using Dear ImGui)
  * Emscripten support (allows cross compiling to HTML 5 + WebGL)
+ * VR support
 
 To keep sre as simple and flexible as possible the following features are not a part of sre:
  * Scenegraphs
