@@ -17,6 +17,7 @@
 #include <vector>
 #include <map>
 #include <sstream>
+#include <utility>
 #include <sre/Log.hpp>
 #include "sre/Renderer.hpp"
 #include "sre/Texture.hpp"
@@ -508,16 +509,41 @@ namespace sre {
         return Shader::ShaderBuilder();
     }
 
-    bool Shader::build(const std::string& vertexShader, const std::string& fragmentShader) {
-        std::vector<std::string> shaderSrc{vertexShader, fragmentShader};
-        std::vector<GLenum> shaderTypes{GL_VERTEX_SHADER, GL_FRAGMENT_SHADER};
-        for (int i=0;i<2;i++) {
-            GLuint s;
-            bool res = compileShader(shaderSrc[i],shaderTypes[i], s);
-            if (!res){
-                return false;
+    bool Shader::build(std::map<ShaderType,std::string> shaderSources) {
+        for (ShaderType i=ShaderType::Vertex;i<ShaderType::NumberOfShaderTypes;i = (ShaderType )((int)i+1)) {
+            auto shaderSourcesIter = shaderSources.find(i);
+            if (shaderSourcesIter!=shaderSources.end()){
+                GLuint s;
+                GLenum shader;
+                switch (i){
+                    case ShaderType::Vertex:
+                        shader = GL_VERTEX_SHADER;
+                        break;
+                    case ShaderType::Fragment:
+                        shader = GL_FRAGMENT_SHADER;
+                        break;
+#ifndef EMSCRIPTEN
+                    case ShaderType::Geometry:
+                        shader = GL_GEOMETRY_SHADER;
+                        break;
+                    case ShaderType::TessellationEvaluation:
+                        shader = GL_TESS_EVALUATION_SHADER ;
+                        break;
+                    case ShaderType::TessellationControl:
+                        shader = GL_TESS_CONTROL_SHADER;
+                        break;
+#endif
+                    default:
+                        LOG_ERROR("Invalid shader type. Was %d",(int)i);
+                        break;
+                }
+
+                bool res = compileShader(shaderSourcesIter->second, shader, s);
+                if (!res){
+                    return false;
+                }
+                glAttachShader(shaderProgramId,  s);
             }
-            glAttachShader(shaderProgramId,  s);
         }
 
         bool linked = linkProgram(shaderProgramId);
@@ -588,14 +614,15 @@ namespace sre {
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSource(const std::string& vertexShader, const std::string& fragmentShader) {
-        this->vertexShaderStr = vertexShader;
-        this->fragmentShaderStr = fragmentShader;
+        withSourceString(vertexShader, ShaderType::Vertex);
+        withSourceString(fragmentShader, ShaderType::Fragment);
 
         return *this;
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceStandard() {
-        this->vertexShaderStr = R"(#version 140
+
+        auto vertexShaderStr = R"(#version 140
 in vec3 position;
 in vec3 normal;
 in vec4 uv;
@@ -616,7 +643,7 @@ void main(void) {
     vEyePos = eyePos.xyz;
 }
 )";
-        this->fragmentShaderStr = R"(#version 140
+        auto fragmentShaderStr = R"(#version 140
 out vec4 fragColor;
 in vec3 vNormal;
 in vec2 vUV;
@@ -686,11 +713,13 @@ void main(void)
     fragColor = c * vec4(l, 1.0);
 }
 )";
+        withSourceString(vertexShaderStr, ShaderType::Vertex);
+        withSourceString(fragmentShaderStr, ShaderType::Fragment);
         return *this;
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceUnlit() {
-        this->vertexShaderStr = R"(#version 140
+        auto vertexShaderStr = R"(#version 140
 in vec3 position;
 in vec3 normal;
 in vec4 uv;
@@ -705,7 +734,7 @@ void main(void) {
     vUV = uv.xy;
 }
 )";
-        this->fragmentShaderStr = R"(#version 140
+        auto fragmentShaderStr = R"(#version 140
 out vec4 fragColor;
 in vec2 vUV;
 
@@ -717,11 +746,14 @@ void main(void)
     fragColor = color * texture(tex, vUV);
 }
 )";
+        withSourceString(vertexShaderStr, ShaderType::Vertex);
+        withSourceString(fragmentShaderStr, ShaderType::Fragment);
+
         return *this;
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceUnlitSprite() {
-        this->vertexShaderStr = R"(#version 140
+        auto vertexShaderStr = R"(#version 140
         in vec3 position;
         in vec4 uv;
         in vec4 color;
@@ -738,7 +770,7 @@ void main(void)
             vColor = color;
         }
         )";
-        this->fragmentShaderStr = R"(#version 140
+        auto fragmentShaderStr = R"(#version 140
         out vec4 fragColor;
         in vec2 vUV;
         in vec4 vColor;
@@ -750,6 +782,10 @@ void main(void)
             fragColor = vColor * texture(tex, vUV);
         }
         )";
+
+        withSourceString(vertexShaderStr, ShaderType::Vertex);
+        withSourceString(fragmentShaderStr, ShaderType::Fragment);
+
         return *this;
     }
 
@@ -757,7 +793,7 @@ void main(void)
     // for perspective projection, the size of particles are defined in screenspace size at the distance of 1.0 on a viewport of height 600.
     // for orthographic projection, the size of particles are defined in screenspace size on a viewport of height 600.
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceStandardParticles() {
-        this->vertexShaderStr = R"(#version 140
+        auto vertexShaderStr = R"(#version 140
 in vec3 position;
 in float particleSize;
 in vec4 uv;
@@ -800,7 +836,7 @@ void main(void) {
     uvSize = uv.xyz;
 }
 )";
-        this->fragmentShaderStr = R"(#version 140
+        auto fragmentShaderStr = R"(#version 140
 out vec4 fragColor;
 in mat3 vUVMat;
 in vec3 uvSize;
@@ -825,11 +861,14 @@ void main(void)
     fragColor = c;
 }
 )";
+        withSourceString(vertexShaderStr, ShaderType::Vertex);
+        withSourceString(fragmentShaderStr, ShaderType::Fragment);
+
         return *this;
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceDebugUV() {
-        this->vertexShaderStr = R"(#version 140
+        auto vertexShaderStr = R"(#version 140
 in vec3 position;
 in vec4 uv;
 out vec2 vUV;
@@ -843,7 +882,7 @@ void main(void) {
     vUV = uv.xy;
 }
 )";
-        this->fragmentShaderStr = R"(#version 140
+        auto fragmentShaderStr = R"(#version 140
 in vec2 vUV;
 out vec4 fragColor;
 
@@ -852,11 +891,14 @@ void main(void)
     fragColor = vec4(vUV,0.0,1.0);
 }
 )";
+        withSourceString(vertexShaderStr, ShaderType::Vertex);
+        withSourceString(fragmentShaderStr, ShaderType::Fragment);
+
         return *this;
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceDebugNormals() {
-        this->vertexShaderStr = R"(#version 140
+        auto vertexShaderStr = R"(#version 140
 in vec3 position;
 in vec3 normal;
 out vec3 vNormal;
@@ -871,7 +913,7 @@ void main(void) {
     vNormal = g_normal * normal;
 }
 )";
-        this->fragmentShaderStr = R"(#version 140
+        auto fragmentShaderStr = R"(#version 140
 out vec4 fragColor;
 in vec3 vNormal;
 
@@ -880,6 +922,9 @@ void main(void)
     fragColor = vec4(vNormal*0.5+0.5,1.0);
 }
 )";
+        withSourceString(vertexShaderStr, ShaderType::Vertex);
+        withSourceString(fragmentShaderStr, ShaderType::Fragment);
+
         return *this;
     }
 
@@ -899,14 +944,16 @@ void main(void)
     }
 
     std::shared_ptr<Shader> Shader::ShaderBuilder::build() {
-        this->vertexShaderStr = std::regex_replace(this->vertexShaderStr, std::regex("SCENE_LIGHTS"), std::to_string(Renderer::maxSceneLights));
-        this->fragmentShaderStr = std::regex_replace(this->fragmentShaderStr, std::regex("SCENE_LIGHTS"), std::to_string(Renderer::maxSceneLights));
+        for (auto& e : shaderSources){
+            e.second = std::regex_replace(e.second, std::regex("SCENE_LIGHTS"), std::to_string(Renderer::maxSceneLights));
+        }
 
         if (name.length()==0){
             name = "Unnamed shader";
         }
         auto res = new Shader();
-        if (!res->build(vertexShaderStr, fragmentShaderStr)){
+        bool compileSuccess = res->build(shaderSources);
+        if (!compileSuccess){
             delete res;
             return std::shared_ptr<Shader>();
         }
@@ -925,6 +972,15 @@ void main(void)
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withOffset(float factor, float units) {
         this->offset = {factor, units};
+        return *this;
+    }
+
+    Shader::ShaderBuilder & Shader::ShaderBuilder::withSourceString(const std::string &shaderSource, ShaderType shaderSources) {
+        this->shaderSources[shaderSources] = shaderSource;
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceFile(const std::string &shaderFile, ShaderType shaderType) {
         return *this;
     }
 }

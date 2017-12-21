@@ -79,8 +79,10 @@ public:
                 index++;
             }
         }
+        drawTopTextAndColor(pixelValue);
+        renderPass.finish();
         auto pixelValues = renderPass.readPixels(mouseX, mouseY);           // read pixel values from defualt framebuffer (before gui is rendered)
-        drawTopTextAndColor(pixelValues[0]);
+        pixelValue = pixelValues[0];
     }
 
     void drawTopTextAndColor(glm::vec4 color){
@@ -100,6 +102,7 @@ private:
     Camera camera;
     std::shared_ptr<Material> mat[4];
     std::shared_ptr<Mesh> mesh[4];
+    glm::vec4 pixelValue;
     int i=0;
     int mouseX;
     int mouseY;
