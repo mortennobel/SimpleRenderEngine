@@ -25,8 +25,6 @@
 namespace sre {
     // anonymous (file local) namespace
     namespace {
-
-
         std::shared_ptr<Shader> standard;
         std::shared_ptr<Shader> unlit;
         std::shared_ptr<Shader> unlitSprite;
@@ -125,6 +123,62 @@ namespace sre {
             default:
                 return "invalid";
         }
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withDepthTest(bool enable) {
+        this->depthTest = enable;
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withDepthWrite(bool enable) {
+        this->depthWrite = enable;
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withBlend(BlendType blendType) {
+        this->blend = blendType;
+        return *this;
+    }
+
+    std::shared_ptr<Shader> Shader::ShaderBuilder::build() {
+        for (auto& e : shaderSources){
+            e.second = std::regex_replace(e.second, std::regex("SCENE_LIGHTS"), std::to_string(Renderer::maxSceneLights));
+        }
+
+        if (name.length()==0){
+            name = "Unnamed shader";
+        }
+        auto res = new Shader();
+        bool compileSuccess = res->build(shaderSources);
+        if (!compileSuccess){
+            delete res;
+            return std::shared_ptr<Shader>();
+        }
+        res->depthTest = this->depthTest;
+        res->depthWrite = this->depthWrite;
+        res->blend = this->blend;
+        res->name = this->name;
+        res->offset = this->offset;
+        return std::shared_ptr<Shader>(res);
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withName(const std::string& name) {
+        this->name = name;
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withOffset(float factor, float units) {
+        this->offset = {factor, units};
+        return *this;
+    }
+
+    Shader::ShaderBuilder & Shader::ShaderBuilder::withSourceString(const std::string &shaderSource, ShaderType shaderSources) {
+        this->shaderSources[shaderSources] = shaderSource;
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceFile(const std::string &shaderFile, ShaderType shaderType) {
+        return *this;
     }
 
     std::string Shader::translateToGLSLES(std::string source, bool vertexShader) {
@@ -671,7 +725,7 @@ vec3 computeLight(){
             vec3 lightVector = g_lightPosType[i].xyz - vEyePos;
             float lightVectorLength = length(lightVector);
             float lightRange = g_lightColorRange[i].w;
-            lightDirection = lightVector / lightVectorLength;
+            lightDirection = lightVector / lightVectorLength; // compute normalized lightDirection (using length)
             if (lightRange <= 0.0){
                 att = 1.0;
             } else if (lightVectorLength >= lightRange){
@@ -925,62 +979,6 @@ void main(void)
         withSourceString(vertexShaderStr, ShaderType::Vertex);
         withSourceString(fragmentShaderStr, ShaderType::Fragment);
 
-        return *this;
-    }
-
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withDepthTest(bool enable) {
-        this->depthTest = enable;
-        return *this;
-    }
-
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withDepthWrite(bool enable) {
-        this->depthWrite = enable;
-        return *this;
-    }
-
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withBlend(BlendType blendType) {
-        this->blend = blendType;
-        return *this;
-    }
-
-    std::shared_ptr<Shader> Shader::ShaderBuilder::build() {
-        for (auto& e : shaderSources){
-            e.second = std::regex_replace(e.second, std::regex("SCENE_LIGHTS"), std::to_string(Renderer::maxSceneLights));
-        }
-
-        if (name.length()==0){
-            name = "Unnamed shader";
-        }
-        auto res = new Shader();
-        bool compileSuccess = res->build(shaderSources);
-        if (!compileSuccess){
-            delete res;
-            return std::shared_ptr<Shader>();
-        }
-        res->depthTest = this->depthTest;
-        res->depthWrite = this->depthWrite;
-        res->blend = this->blend;
-        res->name = this->name;
-        res->offset = this->offset;
-        return std::shared_ptr<Shader>(res);
-    }
-
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withName(const std::string& name) {
-        this->name = name;
-        return *this;
-    }
-
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withOffset(float factor, float units) {
-        this->offset = {factor, units};
-        return *this;
-    }
-
-    Shader::ShaderBuilder & Shader::ShaderBuilder::withSourceString(const std::string &shaderSource, ShaderType shaderSources) {
-        this->shaderSources[shaderSources] = shaderSource;
-        return *this;
-    }
-
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceFile(const std::string &shaderFile, ShaderType shaderType) {
         return *this;
     }
 }
