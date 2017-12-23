@@ -277,7 +277,7 @@ namespace sre {
 					glVertexAttrib1fv(shaderAttribute.second.position, a);
 					break;
                 default:
-					throw std::runtime_error("Unhandled attribute type");
+                    LOG_ERROR("Unhandled attribute type: %i",(int)shaderAttribute.second.type);
                 	break;
 
                 }

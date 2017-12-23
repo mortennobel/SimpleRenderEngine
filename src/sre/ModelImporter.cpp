@@ -77,7 +77,7 @@ namespace {
             in.close();
             return contents;
         }
-        throw(errno);
+        LOG_ERROR("Error reading %s. Error code: %i",filename.c_str(), errno);
     }
 
     std::string concat(std::vector<std::string> v, int from){
