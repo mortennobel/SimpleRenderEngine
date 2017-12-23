@@ -240,6 +240,7 @@ namespace sre {
     }
 
     std::vector<glm::vec4> RenderPass::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+        assert(mIsFinished);
         finish();
         if (builder.framebuffer!=nullptr){
             builder.framebuffer->bind();

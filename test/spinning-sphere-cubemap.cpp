@@ -53,7 +53,10 @@ void main(void)
     fragColor = texture(tex, vNormal);
 }
 )";
-        auto shader = Shader::create().withSource(vertexShaderStr, fragmentShaderStr).build();
+        auto shader = Shader::create()
+                .withSourceString(vertexShaderStr, ShaderType::Vertex)
+                .withSourceString(fragmentShaderStr, ShaderType::Fragment)
+                .build();
         material = shader->createMaterial();
         tex = Texture::create()
                 .withFileCubemap("test_data/cube-posx.png", Texture::TextureCubemapSide::PositiveX)

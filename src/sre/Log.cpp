@@ -34,9 +34,6 @@ namespace sre{
                 break;
         }
         std::cout <<msg<<std::endl;
-        if (type == LogType::Fatal){
-            throw std::runtime_error(msg);
-        }
     };
 
     void Log::verbose(const char * function,const char * file, int line, const char *message, ...) {

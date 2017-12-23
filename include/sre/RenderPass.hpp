@@ -12,6 +12,7 @@
 #include "sre/Material.hpp"
 #include "sre/WorldLights.hpp"
 #include <string>
+#include <functional>
 
 #include "sre/impl/Export.hpp"
 #include "SpriteBatch.hpp"
@@ -102,7 +103,7 @@ namespace sre {
 
         std::vector<glm::vec4> readPixels(unsigned int x,               // Reads pixel(s) from the current framebuffer
                                           unsigned int y,               // The defined rectable must be within the size of the current framebuffer
-                                          unsigned int width = 1,
+                                          unsigned int width = 1,       // This function must be called after finish has been explicit called on the renderPass
                                           unsigned int height = 1);
 
         void finishGPUCommandBuffer();                                  // GPU command buffer (must be called when

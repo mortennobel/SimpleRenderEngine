@@ -58,7 +58,8 @@ void main(void)
 )";
 
         mat1 = Shader::create()
-                .withSource(vertexShaderSource,fragmentShaderSource)
+                .withSourceString(vertexShaderSource,ShaderType::Vertex)
+                .withSourceString(fragmentShaderSource,ShaderType::Fragment)
                 .build()->createMaterial();
 
         r.frameRender = [&](){

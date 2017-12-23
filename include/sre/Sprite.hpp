@@ -10,6 +10,7 @@
 #include <memory>
 #include <array>
 #include "glm/glm.hpp"
+#include "sre/impl/CPPShim.hpp"
 
 namespace sre{
 
@@ -58,11 +59,11 @@ private:
     glm::bvec2 flip   = {false, false};
     union {
         uint64_t globalOrder;
-        struct {
+		PACK(struct {
             uint16_t drawOrder;    // lowest priority
             uint32_t texture;
             uint16_t orderInBatch; // highest priority
-        } __attribute__((__packed__)) details;
+        } ) details;
     }  order;
     glm::vec4 color   = {1.0f,1.0f,1.0f,1.0f};
 

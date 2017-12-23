@@ -37,6 +37,15 @@ namespace sre {
         Invalid
     };
 
+    enum class ShaderType {
+        Vertex,
+        Fragment,
+        Geometry,
+        TessellationControl,
+        TessellationEvaluation,
+        NumberOfShaderTypes
+    };
+
     const char* c_str(UniformType u);
 
     struct DllExport Uniform {
@@ -83,8 +92,11 @@ namespace sre {
 
         class DllExport ShaderBuilder {
         public:
+            DEPRECATED("Use ShaderType withSourceString() or withSourceFile() instead")
             ShaderBuilder& withSource(const std::string& vertexShaderGLSL,
                                       const std::string& fragmentShaderGLSL);
+            ShaderBuilder& withSourceString(const std::string& shaderSource, ShaderType shaderType);
+            ShaderBuilder& withSourceFile(const std::string& shaderFile, ShaderType shaderType);
             ShaderBuilder& withSourceStandard();
             ShaderBuilder& withSourceUnlit();
             ShaderBuilder& withSourceUnlitSprite();
@@ -100,8 +112,7 @@ namespace sre {
         private:
             ShaderBuilder() = default;
             ShaderBuilder(const ShaderBuilder&) = default;
-            std::string vertexShaderStr;
-            std::string fragmentShaderStr;
+            std::map<ShaderType,std::string> shaderSources;
             bool depthTest = true;
             bool depthWrite = true;
             glm::vec2 offset = {0,0};
@@ -171,7 +182,7 @@ namespace sre {
 
         Shader();
 
-        bool build(const std::string& vertexShader, const std::string& fragmentShader);
+        bool build(std::map<ShaderType,std::string> shaderSources);
 
         void bind();
 
