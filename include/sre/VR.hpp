@@ -1,11 +1,13 @@
 /*
  *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
- *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
+ *  Created by Morten Nobel-Jï¿½rgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
 
 #include "sre/RenderPass.hpp"
+#include "sre/Framebuffer.hpp"
+#include "sre/Camera.hpp"
 #include "glm/glm.hpp"
 #include <functional>
 
@@ -18,12 +20,20 @@ namespace vr {
 #endif
 
 namespace sre {
+
+	enum class VRType {
+		OpenVR,
+		Oculus
+	};
+
 	class VR
 	{
 	public:
-		VR();
-		void render();
-		std::function<void(RenderPass& r, bool leftEye)> renderVR;
+		static std::shared_ptr<VR> create(VRType vrType);		// Initiate VR integration. If unsuccessful
+		void render();											// Update HMD cameras (position and rotation)
+															 	// and invoke renderVR to render frame
+		std::function<void(std::shared_ptr<sre::Framebuffer> fb, sre::Camera cam, bool leftEye)> renderVR;
+																// Callback from render function to render a single eye
 
 		void lookAt(glm::vec3 eye, glm::vec3 at, glm::vec3 up); // set position of camera in world space (view transform) using
 																// eye position of the camera
@@ -36,6 +46,7 @@ namespace sre {
 		void setNearFarPlanes(float nearPlane, float farPlane);
 		void debugGUI();
 	private:
+		VR();
 		void updateHMDMatrixPose();
 		glm::mat4 baseViewTransform = glm::mat4(1);
 		float nearPlane = 0.1;

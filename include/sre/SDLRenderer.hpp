@@ -58,9 +58,6 @@ public:
                                         | SDL_WINDOW_RESIZABLE,
               bool vsync = true);
 
-
-
-
     void setWindowTitle(std::string title);
     void setWindowSize(glm::ivec2 size);
 
@@ -77,6 +74,8 @@ public:
                                                                 // called). Using Emscripten the event loop is not blocking (but internally using a callback function), which means
                                                                 // that when using Emscripten avoid allocating objects on the stack (see examples for a workaround).
 
+    void startEventLoop(std::shared_ptr<VR> vr);                //
+
     void stopEventLoop();                                       // The render loop will stop running when the frame is complete.
 
     SDL_Window *getSDLWindow();                                 // Get a pointer to SDL_Window
@@ -84,6 +83,8 @@ private:
     void frame(float deltaTimeSec);
     Renderer* r;
     SDLRenderer(const SDLRenderer&) = delete;
+
+    std::unique_ptr<VR> vr;
     std::string windowTitle;
 
     float timePerFrame = 1.0f/60;

@@ -66,12 +66,7 @@ namespace sre {
 
 		std::string version = (char*)glGetString(GL_VERSION);
         LOG_INFO("OpenGL version %s",glGetString(GL_VERSION) );
-        LOG_INFO("sre version %i.%i.%i",sre_version_major,sre_version_minor ,sre_version_point  );
-
-
-#ifdef SRE_OPENVR
-		vr = new VR();
-#endif
+        LOG_INFO("sre version %i.%i.%i", sre_version_major, sre_version_minor , sre_version_point);
 
         // setup opengl context
         glEnable(GL_DEPTH_TEST);
@@ -132,10 +127,5 @@ namespace sre {
 
     bool Renderer::usesVSync() {
         return vsync;
-    }
-
-	VR* Renderer::getVR()
-    {
-		return vr;
     }
 }

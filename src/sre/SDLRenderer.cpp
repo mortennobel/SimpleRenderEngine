@@ -243,13 +243,9 @@ namespace sre{
         using FpSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
         auto lastTick = Clock::now();
         float deltaTime = 0;
-		VR* vr = r->getVR();
+
         while (running){
-			if (vr)
-			{
-				vr->render();
-			}
-            frame(deltaTime);
+			frame(deltaTime);
 
             auto tick = Clock::now();
             deltaTime = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
@@ -265,6 +261,28 @@ namespace sre{
             lastTick = tick;
         }
 #endif
+    }
+
+    void SDLRenderer::startEventLoop(std::shared_ptr<VR> vr) {
+        if (!window){
+            LOG_INFO("SDLRenderer::init() not called");
+        }
+
+        running = true;
+
+        typedef std::chrono::high_resolution_clock Clock;
+        using FpSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
+        auto lastTick = Clock::now();
+        float deltaTime = 0;
+
+        while (running){
+            vr->render();
+			frame(deltaTime);
+
+            auto tick = Clock::now();
+            deltaTime = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
+            lastTick = tick;
+        }
     }
 
     void SDLRenderer::stopEventLoop() {

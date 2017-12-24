@@ -7,7 +7,6 @@
 
 #ifdef SRE_OPENVR
 
-
 std::string GetTrackedDeviceString(vr::IVRSystem *pHmd, vr::TrackedDeviceIndex_t unDevice, vr::TrackedDeviceProperty prop, vr::TrackedPropertyError *peError = NULL)
 {
 	uint32_t unRequiredBufferLen = pHmd->GetStringTrackedDeviceProperty(unDevice, prop, NULL, 0, peError);
@@ -25,63 +24,22 @@ std::string GetTrackedDeviceString(vr::IVRSystem *pHmd, vr::TrackedDeviceIndex_t
 namespace sre
 {
 	VR::VR()
-		:renderVR([](RenderPass&,bool)
+		:renderVR([](std::shared_ptr<sre::Framebuffer> fb, sre::Camera cam, bool leftEye)
 	{
 		LOG_INFO("VR::renderVR not implemented");
 	})
 	{
-#ifdef SRE_OPENVR
-		vr::HmdError peError = vr::VRInitError_None;
-		vrSystem = vr::VR_Init(&peError, vr::VRApplication_Scene);
-		if (peError != vr::VRInitError_None)
-		{
-			vrSystem = nullptr;
-			LOG_ERROR(vr::VR_GetVRInitErrorAsEnglishDescription(peError)); 
-			return;
-		}
-		else
-		{
-			auto m_strDriver = GetTrackedDeviceString(vrSystem, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_TrackingSystemName_String);
-			auto m_strDisplay = GetTrackedDeviceString(vrSystem, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_SerialNumber_String);
-			LOG_INFO("HMD Driver: %s", m_strDriver.c_str());
-			LOG_INFO("HMD Display: %s", m_strDisplay.c_str());
-		}
 
-		if (!vr::VRCompositor())
-		{
-			LOG_ERROR("Compositor initialization failed. See log file for details\n");
-			return;
-		}
-		memset(m_rDevClassChar, 0, sizeof(m_rDevClassChar));
-
-		vrSystem->GetRecommendedRenderTargetSize(&targetSizeW, &targetSizeH);
-		leftTex = Texture::create().withRGBData(nullptr, targetSizeW, targetSizeH).withGenerateMipmaps( false).withFilterSampling(false).build();
-
-		leftFB = Framebuffer::create().withTexture(leftTex).build();
-		rightTex = Texture::create().withRGBData(nullptr, targetSizeW, targetSizeH).withGenerateMipmaps(false).withFilterSampling(false).build();
-
-		rightFB = Framebuffer::create().withTexture(rightTex).build();
-
-		setupCameras();
-		mat4eyePosLeft = getHMDMatrixPoseEye(vr::Eye_Left);
-		mat4eyePosRight = getHMDMatrixPoseEye(vr::Eye_Right);
-#endif
 	}
 
 	void VR::render()
 	{
 #ifdef SRE_OPENVR
 		updateHMDMatrixPose();
-		{
-			auto rpLeft = RenderPass::create().withCamera(left).withFramebuffer(leftFB).withGUI(false).withName("VR_Left").build();
-			renderVR(rpLeft, true);
-		}
+		renderVR(leftFB, left, true);
 		vr::Texture_t leftEyeTexture = { (void*)(uintptr_t)leftTex->textureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
 		vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
-		{
-			auto rpRight = RenderPass::create().withCamera(right).withFramebuffer(rightFB).withGUI(false).withName("VR_Right").build();
-			renderVR(rpRight, false);
-		}
+		renderVR(rightFB, right, false);
 		vr::Texture_t rightEyeTexture = { (void*)(uintptr_t)rightTex->textureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
 		vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
 #endif
@@ -90,7 +48,7 @@ namespace sre
 	void VR::updateHMDMatrixPose()
 	{
 #ifdef SRE_OPENVR
-		vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, NULL, 0);
+		vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 		
 		m_iValidPoseCount = 0;
 		m_strPoseClasses = "";
@@ -201,5 +159,59 @@ namespace sre
 #else
 		ImGui::LabelText("", "VR not enabled");
 #endif			
+	}
+
+	std::shared_ptr<VR> VR::create(VRType vrType) {
+		auto res = std::shared_ptr<VR>();
+
+		if (vrType == VRType::OpenVR){
+#ifdef SRE_OPENVR
+			vr::HmdError peError = vr::VRInitError_None;
+			res->vrSystem = vr::VR_Init(&peError, vr::VRApplication_Scene);
+			if (peError != vr::VRInitError_None)
+			{
+				res->vrSystem = nullptr;
+				LOG_ERROR(vr::VR_GetVRInitErrorAsEnglishDescription(peError));
+				return {nullptr};
+			}
+			else
+			{
+				auto m_strDriver = GetTrackedDeviceString(res->vrSystem, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_TrackingSystemName_String);
+				auto m_strDisplay = GetTrackedDeviceString(res->vrSystem, vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_SerialNumber_String);
+				LOG_INFO("HMD Driver: %s", m_strDriver.c_str());
+				LOG_INFO("HMD Display: %s", m_strDisplay.c_str());
+			}
+
+			if (!vr::VRCompositor())
+			{
+				LOG_ERROR("Compositor initialization failed. See log file for details\n");
+				return {nullptr};
+			}
+			memset(res->m_rDevClassChar, 0, sizeof(res->m_rDevClassChar));
+
+			res->vrSystem->GetRecommendedRenderTargetSize(&res->targetSizeW, &res->targetSizeH);
+			res->leftTex = Texture::create().withRGBData(nullptr, res->targetSizeW, res->targetSizeH).withGenerateMipmaps( false).withFilterSampling(false).build();
+
+			res->leftFB = Framebuffer::create().withTexture(res->leftTex).build();
+			res->rightTex = Texture::create().withRGBData(nullptr, res->targetSizeW, res->targetSizeH).withGenerateMipmaps(false).withFilterSampling(false).build();
+
+			res->rightFB = Framebuffer::create().withTexture(res->rightTex).build();
+
+			res->setupCameras();
+			res->mat4eyePosLeft = res->getHMDMatrixPoseEye(vr::Eye_Left);
+			res->mat4eyePosRight = res->getHMDMatrixPoseEye(vr::Eye_Right);
+#else
+			LOG_INFO("SRE not compiled with OpenVR support");
+            return {nullptr};
+#endif
+		}
+		else if (vrType == VRType::Oculus){
+
+			LOG_INFO("No OculusSDK support");
+			return {nullptr};
+
+		}
+
+		return res;
 	}
 }
