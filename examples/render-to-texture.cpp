@@ -9,7 +9,7 @@
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <sre/Profiler.hpp>
+#include <sre/Inspector.hpp>
 
 
 using namespace sre;
@@ -63,7 +63,7 @@ public:
 
         renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), material);
                                                                         // The offscreen texture is used in material
-        // static Profiler prof;
+        // static Inspector prof;
         // prof.update();
         // prof.gui(true);
 

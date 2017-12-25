@@ -192,6 +192,7 @@ namespace sre {
         std::string name;
         BlendType blend = BlendType::Disabled;
         glm::vec2 offset = glm::vec2(0,0);
+        std::map<ShaderType,std::string> shaderSources;
 
         std::vector<Uniform> uniforms;
 
@@ -207,6 +208,7 @@ namespace sre {
         friend class Mesh;
         friend class Material;
         friend class RenderPass;
+        friend class Inspector;
 
         int uniformLocationModel;
         int uniformLocationView;

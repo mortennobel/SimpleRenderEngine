@@ -4,7 +4,7 @@
 
 #include "sre/Texture.hpp"
 #include "sre/Renderer.hpp"
-#include "sre/Profiler.hpp"
+#include "sre/Inspector.hpp"
 #include "sre/Material.hpp"
 
 #include <glm/gtx/euler_angles.hpp>
@@ -17,7 +17,7 @@ using namespace sre;
 class GUIExample {
 public:
     GUIExample()
-    :r{},profiler{300,&r}
+    :r{},inspector{300,&r}
     {
         r.init();
 
@@ -122,13 +122,13 @@ public:
 
             ImGui::End();
         }
-        profiler.update();
-        profiler.gui();
+        inspector.update();
+        inspector.gui();
     }
 private:
     SDLRenderer r;
     glm::vec2 rotation;
-    Profiler profiler;
+    Inspector inspector;
     bool show_another_window = false;
     ImVec4 clear_color = ImColor(114, 144, 154);
     std::shared_ptr<Mesh> mesh;

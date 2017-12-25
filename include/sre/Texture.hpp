@@ -113,7 +113,7 @@ private:
     friend class Material;
     friend class Framebuffer;
     friend class RenderPass;
-    friend class Profiler;
+    friend class Inspector;
     friend class sre::Framebuffer::FrameBufferBuilder;
     friend class VR;
     friend class Sprite;

@@ -8,6 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <sre/SDLRenderer.hpp>
 #include <sre/impl/GL.hpp>
+#include <sre/Inspector.hpp>
 
 using namespace sre;
 
@@ -31,8 +32,8 @@ public:
         mat1->setColor({1,1,1,1});
         mat1->setSpecularity(50);
 
-        mat2 = Shader::getStandard()->createMaterial();
-        mat2->setColor({1,0,0,1});
+        mat2 = Shader::getUnlit()->createMaterial();
+        mat2->setColor({1,1,0,1});
         mat2->setSpecularity(0);
 
         r.frameUpdate = [&](float deltaTime){
@@ -40,6 +41,15 @@ public:
         };
         r.frameRender = [&](){
             render();
+
+        };
+
+        std::cout << "d for debug" << std::endl;
+        r.keyEvent = [&](SDL_Event& event){
+            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_d){
+                debug = true;
+            }
+
         };
         r.startEventLoop();
     }
@@ -59,6 +69,11 @@ public:
 
         checkGLError();
         rp.draw(mesh, pos2, mat2);
+        if (debug){
+            static sre::Inspector inspector;
+            inspector.update();
+            inspector.gui();
+        }
 
         checkGLError();
 
@@ -71,6 +86,7 @@ private:
     WorldLights worldLights;
     std::shared_ptr<Material> mat1;
     std::shared_ptr<Material> mat2;
+    bool debug = false;
     glm::mat4 pos1 = glm::translate(glm::mat4(1), {-1,0,0});
     glm::mat4 pos2 = glm::translate(glm::mat4(1), {1,0,0});
 };

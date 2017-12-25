@@ -4,7 +4,7 @@
  *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
  *  License: MIT
  */
-#include "sre/Profiler.hpp"
+#include "sre/Inspector.hpp"
 #include <algorithm>
 #include <iostream>
 #include <glm/gtx/euler_angles.hpp>
@@ -63,7 +63,7 @@ namespace sre {
         }
     }
 
-    Profiler::Profiler(int frames,SDLRenderer* sdlRenderer)
+    Inspector::Inspector(int frames,SDLRenderer* sdlRenderer)
             :frames(frames),frameCount(0),sdlRenderer(sdlRenderer)
     {
         stats.resize(frames);
@@ -72,7 +72,7 @@ namespace sre {
         lastTick = Clock::now();
     }
 
-    void Profiler::showTexture(Texture* tex){
+    void Inspector::showTexture(Texture* tex){
         std::string s = tex->getName()+"##"+std::to_string((int64_t)tex);
         if (ImGui::TreeNode(s.c_str())){
 
@@ -90,7 +90,7 @@ namespace sre {
         }
     }
 
-    void Profiler::showMesh(Mesh* mesh){
+    void Inspector::showMesh(Mesh* mesh){
         std::string s = mesh->getName()+"##"+std::to_string((int64_t)mesh);
         if (ImGui::TreeNode(s.c_str())){
             ImGui::LabelText("Vertex count", "%i", mesh->getVertexCount());
@@ -159,9 +159,12 @@ namespace sre {
 
     std::string glUniformToString(UniformType type);
 
-    void Profiler::showShader(Shader* shader){
+    void Inspector::showShader(Shader* shader){
         std::string s = shader->getName()+"##"+std::to_string((int64_t)shader);
         if (ImGui::TreeNode(s.c_str())){
+            if (ImGui::Button("Edit")) {
+                shaderEdit = std::weak_ptr<Shader>(shader->shared_from_this());
+            }
             if (ImGui::TreeNode("Attributes")) {
                 auto attributeNames = shader->getAttributeNames();
                 for (auto a : attributeNames){
@@ -260,7 +263,7 @@ namespace sre {
         }
     }
 
-    void Profiler::gui(bool useWindow) {
+    void Inspector::gui(bool useWindow) {
         Renderer* r = Renderer::instance;
         if (useWindow){
             static bool open = true;
@@ -434,9 +437,49 @@ namespace sre {
         if (useWindow) {
             ImGui::End();
         }
+
+        if (auto shaderEditPtr = shaderEdit.lock()){
+            editShader(shaderEditPtr.get());
+        }
     }
 
-    void Profiler::update() {
+    void Inspector::editShader(Shader* shader){
+        bool open = true;
+        ImGui::Begin("SRE Edit Shader",&open);
+        for (auto source : shader->shaderSources){
+            char* shaderType = "Unknown";
+            switch (source.first){
+                case ShaderType::Vertex:
+                    shaderType = "Vertex";
+                    break;
+                case ShaderType::Fragment:
+                    shaderType = "Fragment";
+                    break;
+                case ShaderType::Geometry:
+                    shaderType = "Geometry";
+                    break;
+                case ShaderType::TessellationControl:
+                    shaderType = "TessellationControl";
+                    break;
+                case ShaderType::TessellationEvaluation:
+                    shaderType = "TessellationEvaluation";
+                    break;
+            }
+            if (ImGui::CollapsingHeader(shaderType)){
+                const int maxLength = 8096;
+                static char textBuffer[8096];
+                memcpy(textBuffer,source.second.c_str(), std::min((size_t)maxLength, source.second.length()+1));
+                ImGui::InputTextMultiline("Source", textBuffer, maxLength);
+            }
+        }
+        ImGui::End();
+
+        if (!open) {
+            shaderEdit.reset();
+        }
+    }
+
+    void Inspector::update() {
         usedTextures = 0;
         auto tick = Clock::now();
         float deltaTime = std::chrono::duration_cast<Milliseconds>(tick - lastTick).count();
@@ -448,7 +491,7 @@ namespace sre {
         frameCount++;
     }
 
-    void Profiler::showSpriteAtlas(SpriteAtlas *pAtlas) {
+    void Inspector::showSpriteAtlas(SpriteAtlas *pAtlas) {
         std::string s = pAtlas->getAtlasName()+"##"+std::to_string((int64_t)pAtlas);
         if (ImGui::TreeNode(s.c_str())){
             std::stringstream ss;
@@ -482,9 +525,9 @@ namespace sre {
         }
     }
 
-    void Profiler::initFramebuffer() {
+    void Inspector::initFramebuffer() {
         if (framebuffer == nullptr){
-            framebuffer = Framebuffer::create().withTexture(getTmpTexture()).withName("SRE Profiler Framebufferobject").build();
+            framebuffer = Framebuffer::create().withTexture(getTmpTexture()).withName("SRE Inspector Framebufferobject").build();
             usedTextures = 0; // reset usedTextures count to avoid an extra texture to be created
             worldLights.setAmbientLight({0.2,0.2,0.2});
             auto light = Light::create().withPointLight({0,0,4}).build();
@@ -492,13 +535,13 @@ namespace sre {
         }
     }
 
-    std::shared_ptr<Texture> Profiler::getTmpTexture() {
+    std::shared_ptr<Texture> Inspector::getTmpTexture() {
         if (usedTextures < offscreenTextures.size()){
             int index = usedTextures;
             usedTextures++;
             return offscreenTextures[index];
         }
-        auto offscreenTex = Texture::create().withRGBData(nullptr, 256,256).withName(std::string("SRE Profiler Tex #")+std::to_string(offscreenTextures.size())).build();
+        auto offscreenTex = Texture::create().withRGBData(nullptr, 256,256).withName(std::string("SRE Inspector Tex #")+std::to_string(offscreenTextures.size())).build();
         offscreenTextures.push_back(offscreenTex);
         usedTextures++;
         return offscreenTex;

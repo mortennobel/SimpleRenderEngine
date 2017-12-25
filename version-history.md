@@ -1,12 +1,12 @@
 ## Version history
 
- * 0.9.24
+ * 0.9.24 Profiler renamed to Inspector
  * 0.9.23 Add support for geometry and tesselation shaders. Fix MSVC compile error.
  * 0.9.22 OpenVR support (experimental). Queue draw calls (to better support simultaneous renderpasses). Make max scenelight count depends on Renderer::maxSceneLights. Optimize and clarify sprite batch order.
  * 0.9.21 Improved .obj importer.
  * 0.9.20 Add Camera.screenPointToRay().
  * 0.9.19 Improve sprite rendering (multiple sprite atlases supported within a sprite batch). Enforce framerate with Vsync. Improve png support. Fix color issue with multiple draw lines.
- * 0.9.18 Add VSync support (default behavior). Update ImGUI to 0.52 and fix Profiler preview. Flip sprite anchor point on SpriteAtlasImport (TexturePacker compatible).
+ * 0.9.18 Add VSync support (default behavior). Update ImGUI to 0.52 and fix Inspector preview. Flip sprite anchor point on SpriteAtlasImport (TexturePacker compatible).
  * 0.9.17 Fix compile issue on Linux
  * 0.9.16 Framerate issue on Windows 10
  * 0.9.15 Fix issue with mesh binding
@@ -17,7 +17,7 @@
  * 0.9.10 Improved Linux support
  * 0.9.9 Minor Bugfixes
  * 0.9.8 Update ImGUI and GLM
- * 0.9.7 Add Mesh preview and Shader preview in profiler
+ * 0.9.7 Add Mesh preview and Shader preview in inspector
  * 0.9.6 Offset in shaders for calculating depth values
  * 0.9.5 Profiling 
  * 0.9.4 High DPI, Fullscreen mode, mouse cursor visibility and mouse lock. 

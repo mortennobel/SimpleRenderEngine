@@ -18,7 +18,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <sre/SpriteAtlas.hpp>
-#include <sre/Profiler.hpp>
+#include <sre/Inspector.hpp>
 
 
 using namespace sre;
@@ -68,7 +68,7 @@ public:
         static glm::vec2 position(100,300);
         static float rotation = 0;
         static glm::bvec2 flip = {false,false};
-        static bool profilerEnabled = false;
+        static bool inspectorEnabled = false;
 
         ImGui::ColorEdit4("Color", &color.x,ImGuiColorEditFlags_RGB|ImGuiColorEditFlags_Float);
         ImGui::DragFloat2("Pos", &position.x,1);
@@ -76,7 +76,7 @@ public:
         ImGui::DragFloat2("Scale", &scale.x,0.1);
         ImGui::Checkbox("Flip x", &flip.x);
         ImGui::Checkbox("Flip y", &flip.y);
-        ImGui::Checkbox("Profiler", &profilerEnabled);
+        ImGui::Checkbox("Inspector", &inspectorEnabled);
         ImGui::DragInt("sprite1 OrderInBatch", &spriteIndex1,1,0,10);
         ImGui::DragInt("sprite2 OrderInBatch", &spriteIndex2,1,0,10);
         ImGui::Checkbox("useSameAtlas", &useSameAtlas);
@@ -121,10 +121,10 @@ public:
         }
         renderPass.drawLines(lines);
 
-        static Profiler profiler;
-        profiler.update();
-        if (profilerEnabled){
-            profiler.gui();
+        static Inspector inspector;
+        inspector.update();
+        if (inspectorEnabled){
+            inspector.gui();
         }
     }
 private:

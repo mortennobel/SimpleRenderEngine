@@ -99,7 +99,7 @@ namespace sre {
         friend class Texture;
         friend class Framebuffer;
         friend class RenderPass;
-        friend class Profiler;
+        friend class Inspector;
         friend class SpriteAtlas;
 		friend class VR;
         friend class RenderPass::RenderPassBuilder;

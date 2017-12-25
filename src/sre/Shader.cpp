@@ -159,6 +159,7 @@ namespace sre {
         res->blend = this->blend;
         res->name = this->name;
         res->offset = this->offset;
+        res->shaderSources = this->shaderSources;
         return std::shared_ptr<Shader>(res);
     }
 

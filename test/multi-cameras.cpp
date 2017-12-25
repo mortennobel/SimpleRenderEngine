@@ -11,7 +11,7 @@
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <sre/Profiler.hpp>
+#include <sre/Inspector.hpp>
 
 
 using namespace sre;
@@ -82,7 +82,7 @@ public:
         ImGui::LabelText("GetPos","%f %f %f", pos.x, pos.y, pos.z);
         ImGui::LabelText("GetRot","%f %f %f", rot.x, rot.y, rot.z);
 
-        // static Profiler prof;
+        // static Inspector prof;
         // prof.update();
         // prof.gui(true);
 
