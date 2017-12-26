@@ -156,4 +156,20 @@ namespace sre {
         }
         return false;
     }
+
+    float Material::getMetallic() {
+        return get<float>("metallic");
+    }
+
+    bool Material::setMetallic(float metallic) {
+        return set("metallic", metallic);
+    }
+
+    float Material::getRoughness() {
+        return get<float>("roughness");
+    }
+
+    bool Material::setRoughness(float roughness) {
+        return set("roughness", roughness);
+    }
 }

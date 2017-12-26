@@ -44,13 +44,34 @@ namespace sre {
 
         bool setColor(const glm::vec4 &color);
 
+        std::shared_ptr<sre::Texture> getTexture();
+
+        bool setTexture(std::shared_ptr<sre::Texture> texture);
+
         float getSpecularity();
 
         bool setSpecularity(float specularity);
 
-        std::shared_ptr<sre::Texture> getTexture();
+        float getMetallic();                    // The metalness of the material. A value of 1.0 means the material is
+        bool setMetallic(float metallic);       // a metal. A value of 0.0 means the material is a dielectric. Values in
+                                                // between are for blending between metals and dielectrics such as dirty
+                                                // metallic surfaces. This value is linear. If a metallicRoughnessTexture
+                                                // is specified, this value is multiplied with the metallic texel values.
+                                                // (Source https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness)
 
-        bool setTexture(std::shared_ptr<sre::Texture> texture);
+        float getRoughness();                   // The roughness of the material. A value of 1.0 means the material is
+        bool setRoughness(float roughness);     // completely rough. A value of 0.0 means the material is completely smooth.
+                                                //  This value is linear. If a metallicRoughnessTexture is specified,
+                                                // this value is multiplied with the roughness texel values.
+                                                // (Source https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness)
+
+        std::shared_ptr<sre::Texture> getMetallicRoughnessTexture();
+        bool setMetallicRoughnessTexture(std::shared_ptr<sre::Texture> texture);
+                                                // The metallic-roughness texture. The metalness values are sampled from
+                                                // the B channel. The roughness values are sampled from the G channel.
+                                                // These values are linear. If other channels are present (R or A), they
+                                                // are ignored for metallic-roughness calculations.
+                                                // (Source https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness)
 
         bool set(std::string uniformName, glm::vec4 value);
         bool set(std::string uniformName, float value);
