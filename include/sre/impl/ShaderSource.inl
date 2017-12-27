@@ -1,38 +1,10 @@
 #include <map>
 #include <utility>
+#include <string>
 
-std::map<const char*, const char*> builtInShaderSource  {
-        std::make_pair<const char*,const char*>("standard_vert.glsl",R"(#version 140
-in vec3 position;
-in vec3 normal;
-in vec4 uv;
-out vec3 vNormal;
-out vec2 vUV;
-out vec3 vEyePos;
-
-uniform mat4 g_model;
-uniform mat4 g_view;
-uniform mat4 g_projection;
-uniform mat3 g_normal;
-
-void main(void) {
-    vec4 eyePos = g_view * g_model * vec4(position,1.0);
-    gl_Position = g_projection * eyePos;
-    vNormal = normalize(g_normal * normal);
-    vUV = uv.xy;
-    vEyePos = eyePos.xyz;
-}
-)"),
-        std::make_pair<const char*,const char*>("standard_frag.glsl",R"(#version 140
-out vec4 fragColor;
-in vec3 vNormal;
-in vec2 vUV;
-in vec3 vEyePos;
-
+std::map<std::string, std::string> builtInShaderSource  {
+        std::make_pair<std::string,std::string>("light-phong.glsl",R"(
 uniform vec3 g_ambientLight;
-uniform vec4 color;
-uniform sampler2D tex;
-
 uniform vec4 g_lightPosType[SCENE_LIGHTS];
 uniform vec4 g_lightColorRange[SCENE_LIGHTS];
 uniform float specularity;
@@ -83,6 +55,38 @@ vec3 computeLight(){
 
     return lightColor;
 }
+)"),
+        std::make_pair<std::string,std::string>("standard_vert.glsl",R"(#version 140
+in vec3 position;
+in vec3 normal;
+in vec4 uv;
+out vec3 vNormal;
+out vec2 vUV;
+out vec3 vEyePos;
+
+uniform mat4 g_model;
+uniform mat4 g_view;
+uniform mat4 g_projection;
+uniform mat3 g_normal;
+
+void main(void) {
+    vec4 eyePos = g_view * g_model * vec4(position,1.0);
+    gl_Position = g_projection * eyePos;
+    vNormal = normalize(g_normal * normal);
+    vUV = uv.xy;
+    vEyePos = eyePos.xyz;
+}
+)"),
+        std::make_pair<std::string,std::string>("standard_frag.glsl",R"(#version 140
+out vec4 fragColor;
+in vec3 vNormal;
+in vec2 vUV;
+in vec3 vEyePos;
+
+uniform vec4 color;
+uniform sampler2D tex;
+
+#pragma include "light-phong.glsl"
 
 void main(void)
 {
@@ -93,7 +97,7 @@ void main(void)
     fragColor = c * vec4(l, 1.0);
 }
         )"),
-        std::make_pair<const char*,const char*>("unlit_vert.glsl",R"(#version 140
+        std::make_pair<std::string,std::string>("unlit_vert.glsl",R"(#version 140
 in vec3 position;
 in vec3 normal;
 in vec4 uv;
@@ -108,7 +112,7 @@ void main(void) {
     vUV = uv.xy;
 }
 )"),
-        std::make_pair<const char*,const char*>("unlit_frag.glsl", R"(#version 140
+        std::make_pair<std::string,std::string>("unlit_frag.glsl", R"(#version 140
 out vec4 fragColor;
 in vec2 vUV;
 
@@ -120,7 +124,7 @@ void main(void)
     fragColor = color * texture(tex, vUV);
 }
 )"),
-        std::make_pair<const char*,const char*>("sprite_vert.glsl",R"(#version 140
+        std::make_pair<std::string,std::string>("sprite_vert.glsl",R"(#version 140
 in vec3 position;
 in vec4 uv;
 in vec4 color;
@@ -137,7 +141,7 @@ void main(void) {
     vColor = color;
 }
         )"),
-        std::make_pair<const char*,const char*>("sprite_frag.glsl", R"(#version 140
+        std::make_pair<std::string,std::string>("sprite_frag.glsl", R"(#version 140
 out vec4 fragColor;
 in vec2 vUV;
 in vec4 vColor;
@@ -149,7 +153,7 @@ void main(void)
     fragColor = vColor * texture(tex, vUV);
 }
         )"),
-        std::make_pair<const char*,const char*>("particles_vert.glsl", R"(#version 140
+        std::make_pair<std::string,std::string>("particles_vert.glsl", R"(#version 140
 in vec3 position;
 in float particleSize;
 in vec4 uv;
@@ -192,7 +196,7 @@ void main(void) {
     uvSize = uv.xyz;
 }
 )"),
-        std::make_pair<const char*,const char*>("particles_frag.glsl", R"(#version 140
+        std::make_pair<std::string,std::string>("particles_frag.glsl", R"(#version 140
 out vec4 fragColor;
 in mat3 vUVMat;
 in vec3 uvSize;
@@ -217,7 +221,7 @@ void main(void)
     fragColor = c;
 }
 )"),
-        std::make_pair<const char*,const char*>("debug_uv_vert.glsl", R"(#version 140
+        std::make_pair<std::string,std::string>("debug_uv_vert.glsl", R"(#version 140
 in vec3 position;
 in vec4 uv;
 out vec2 vUV;
@@ -231,7 +235,7 @@ void main(void) {
     vUV = uv.xy;
 }
 )"),
-        std::make_pair<const char*,const char*>("debug_uv_frag.glsl", R"(#version 140
+        std::make_pair<std::string,std::string>("debug_uv_frag.glsl", R"(#version 140
 in vec2 vUV;
 out vec4 fragColor;
 
@@ -240,7 +244,7 @@ void main(void)
     fragColor = vec4(vUV,0.0,1.0);
 }
 )"),
-        std::make_pair<const char*,const char*>("debug_normal_vert.glsl", R"(#version 140
+        std::make_pair<std::string,std::string>("debug_normal_vert.glsl", R"(#version 140
 in vec3 position;
 in vec3 normal;
 out vec3 vNormal;
@@ -255,7 +259,7 @@ void main(void) {
     vNormal = g_normal * normal;
 }
 )"),
-        std::make_pair<const char*,const char*>("debug_normal_frag.glsl", R"(#version 140
+        std::make_pair<std::string,std::string>("debug_normal_frag.glsl", R"(#version 140
 out vec4 fragColor;
 in vec3 vNormal;
 

@@ -11,6 +11,10 @@
 
 #include "sre/impl/GL.hpp"
 #include <iostream>
+#include <fstream>
+#include <sstream>
+#include <cerrno>
+#include <cctype>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <string>
@@ -23,6 +27,8 @@
 #include "sre/Renderer.hpp"
 #include "sre/Texture.hpp"
 
+using namespace std;
+
 namespace sre {
     // anonymous (file local) namespace
     namespace {
@@ -30,6 +36,54 @@ namespace sre {
         std::shared_ptr<Shader> unlit;
         std::shared_ptr<Shader> unlitSprite;
         std::shared_ptr<Shader> standardParticles;
+
+        // from http://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring
+        string getFileContents(string filename)
+        {
+            ifstream in{filename, ios::in | ios::binary};
+            if (in && in.is_open())
+            {
+                std::string contents;
+                in.seekg(0, std::ios::end);
+                auto size = in.tellg();
+                if (size>0){
+                    contents.resize((string::size_type)size);
+                    in.seekg(0, std::ios::beg);
+                    in.read(&contents[0], contents.size());
+                }
+                in.close();
+                return contents;
+            }
+            auto res = builtInShaderSource.find(filename);
+            if (res != builtInShaderSource.end()){
+                return res->second;
+            }
+            LOG_ERROR("Cannot find shader source %s", filename.c_str());
+            return "";
+        }
+
+        std::string pragmaInclude(std::string source){
+            if (source.find("#pragma include")==-1) {
+                return source;
+            }
+            std::stringstream sstream;
+            auto pch = strtok (const_cast<char *>(source.c_str()), "\n\r"); // note destroys input string
+            std::regex e ( R"_(#pragma\s+include\s+"([^"]*)")_", std::regex::ECMAScript);
+            while (pch != nullptr)
+            {
+                std::string s (pch);
+                std::smatch m;
+                if (std::regex_search (s,m,e)) {
+                    std::string match = m[1];
+                    sstream << getFileContents(match) << "\n";
+                } else {
+                    sstream << pch << "\n";
+                }
+
+                pch = strtok (nullptr, "\n\r");
+            }
+            return sstream.str();
+        }
 
         void logCurrentCompileException(GLuint shader, GLenum type) {
             GLint logSize = 0;
@@ -143,6 +197,11 @@ namespace sre {
 
     std::shared_ptr<Shader> Shader::ShaderBuilder::build() {
         for (auto& e : shaderSources){
+            // Replace includes with content
+            // for each occurrence of #pragma include replace with substitute
+            e.second = pragmaInclude(e.second);
+
+            // Set engine defined shader constants
             e.second = std::regex_replace(e.second, std::regex("SCENE_LIGHTS"), std::to_string(Renderer::maxSceneLights));
         }
 
@@ -677,16 +736,16 @@ namespace sre {
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceStandard() {
-        std::string vertexShaderStr = builtInShaderSource["standard_vert.glsl"];
-        std::string fragmentShaderStr = builtInShaderSource["standard_frag.glsl"];
+        std::string vertexShaderStr = getFileContents("standard_vert.glsl");
+        std::string fragmentShaderStr = getFileContents("standard_frag.glsl");
         withSourceString(vertexShaderStr, ShaderType::Vertex);
         withSourceString(fragmentShaderStr, ShaderType::Fragment);
         return *this;
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceUnlit() {
-        std::string vertexShaderStr = builtInShaderSource["unlit_vert.glsl"];
-        std::string fragmentShaderStr = builtInShaderSource["unlit_frag.glsl"];
+        std::string vertexShaderStr = getFileContents("unlit_vert.glsl");
+        std::string fragmentShaderStr = getFileContents("unlit_frag.glsl");
         withSourceString(vertexShaderStr, ShaderType::Vertex);
         withSourceString(fragmentShaderStr, ShaderType::Fragment);
 
@@ -694,8 +753,8 @@ namespace sre {
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceUnlitSprite() {
-        std::string vertexShaderStr = builtInShaderSource["sprite_vert.glsl"];
-        std::string fragmentShaderStr = builtInShaderSource["sprite_frag.glsl"];
+        std::string vertexShaderStr = getFileContents("sprite_vert.glsl");
+        std::string fragmentShaderStr = getFileContents("sprite_frag.glsl");
 
         withSourceString(vertexShaderStr, ShaderType::Vertex);
         withSourceString(fragmentShaderStr, ShaderType::Fragment);
@@ -707,8 +766,8 @@ namespace sre {
     // for perspective projection, the size of particles are defined in screenspace size at the distance of 1.0 on a viewport of height 600.
     // for orthographic projection, the size of particles are defined in screenspace size on a viewport of height 600.
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceStandardParticles() {
-        auto vertexShaderStr = builtInShaderSource["particles_vert.glsl"];
-        auto fragmentShaderStr = builtInShaderSource["particles_frag.glsl"];
+        auto vertexShaderStr = getFileContents("particles_vert.glsl");
+        auto fragmentShaderStr = getFileContents("particles_frag.glsl");
         withSourceString(vertexShaderStr, ShaderType::Vertex);
         withSourceString(fragmentShaderStr, ShaderType::Fragment);
 
@@ -716,8 +775,8 @@ namespace sre {
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceDebugUV() {
-        auto vertexShaderStr = builtInShaderSource["debug_uv_vert.glsl"];
-        auto fragmentShaderStr = builtInShaderSource["debug_uv_frag.glsl"];
+        auto vertexShaderStr = getFileContents("debug_uv_vert.glsl");
+        auto fragmentShaderStr = getFileContents("debug_uv_frag.glsl");
         withSourceString(vertexShaderStr, ShaderType::Vertex);
         withSourceString(fragmentShaderStr, ShaderType::Fragment);
 
@@ -725,8 +784,8 @@ namespace sre {
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceDebugNormals() {
-        auto vertexShaderStr = builtInShaderSource["debug_normal_vert.glsl"];
-        auto fragmentShaderStr = builtInShaderSource["debug_normal_frag.glsl"];
+        auto vertexShaderStr = getFileContents("debug_normal_vert.glsl");
+        auto fragmentShaderStr = getFileContents("debug_normal_frag.glsl");
         withSourceString(vertexShaderStr, ShaderType::Vertex);
         withSourceString(fragmentShaderStr, ShaderType::Fragment);
 
