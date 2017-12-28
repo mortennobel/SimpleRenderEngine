@@ -444,35 +444,78 @@ namespace sre {
     }
 
     void Inspector::editShader(Shader* shader){
+        static Shader* shaderRef = nullptr;
+        if (shaderRef != shader){
+            shaderRef = shader;
+        }
         bool open = true;
+        ImGui::PushID(shader);
         ImGui::Begin("SRE Edit Shader",&open);
+        std::vector<const char*> activeShaders;
+        std::vector<ShaderType> sources;
         for (auto source : shader->shaderSources){
-            char* shaderType = "Unknown";
+            sources.push_back(source.first);
             switch (source.first){
                 case ShaderType::Vertex:
-                    shaderType = "Vertex";
+                    activeShaders.push_back("Vertex");
                     break;
                 case ShaderType::Fragment:
-                    shaderType = "Fragment";
+                    activeShaders.push_back("Fragment");
                     break;
                 case ShaderType::Geometry:
-                    shaderType = "Geometry";
+                    activeShaders.push_back("Geometry");
                     break;
                 case ShaderType::TessellationControl:
-                    shaderType = "TessellationControl";
+                    activeShaders.push_back("TessellationControl");
                     break;
                 case ShaderType::TessellationEvaluation:
-                    shaderType = "TessellationEvaluation";
+                    activeShaders.push_back("TessellationEvaluation");
+                    break;
+                case ShaderType::NumberOfShaderTypes:
+                    LOG_ERROR("ShaderType::NumberOfShaderTypes should never be used");
+                    break;
+                default:
+                    LOG_ERROR("Unhandled shader");
                     break;
             }
-            if (ImGui::CollapsingHeader(shaderType)){
-                const int maxLength = 8096;
-                static char textBuffer[8096];
-                memcpy(textBuffer,source.second.c_str(), std::min((size_t)maxLength, source.second.length()+1));
-                ImGui::InputTextMultiline("Source", textBuffer, maxLength);
-            }
         }
+
+        static int selectedShader = 0;
+        selectedShader = std::min(selectedShader, (int)activeShaders.size());
+
+        ImGui::PushItemWidth(-1); // align to right
+        ImGui::Combo("####ShaderType", &selectedShader, activeShaders.data(), static_cast<int>(activeShaders.size()));
+
+        const int maxLength = 8096;
+        static char textBuffer[8096];
+        static std::string source;
+        static std::string precompiled;
+        static uint64_t selectedShaderKey = -1;
+        uint64_t key = selectedShader + (uint64_t)(void*)shader;
+        if (key != selectedShaderKey){
+            selectedShaderKey = key;
+            source = Shader::getSource(shader->shaderSources[sources[selectedShader]]);
+            memcpy(textBuffer, source.c_str(), std::min((size_t)maxLength, source.length()+1));
+        }
+        static bool showPrecompiled = false;
+        ImGui::Checkbox("Show precompiled", &showPrecompiled);
+
+        // hide label
+        ImGui::PushItemWidth(-1); // align to right
+        ImGui::PushID(activeShaders[selectedShader]);
+        // count the newlines with an algorithm specialized for counting:
+        int line_count = (int)std::count(source.begin(), source.end(),'\n');
+        int textHeight = (int)std::ceil(ImGui::GetTextLineHeight())*(line_count+1);
+        if (showPrecompiled){
+            precompiled = Shader::precompile(textBuffer);
+            ImGui::InputTextMultiline("##precompiled", const_cast<char *>(precompiled.c_str()), maxLength, ImVec2(600, textHeight), ImGuiInputTextFlags_AllowTabInput|ImGuiInputTextFlags_ReadOnly);
+        } else {
+            ImGui::InputTextMultiline("##sources", textBuffer, maxLength, ImVec2(600,textHeight),ImGuiInputTextFlags_AllowTabInput);
+        }
+
+        ImGui::PopID();
         ImGui::End();
+        ImGui::PopID();
 
         if (!open) {
             shaderEdit.reset();

@@ -12,12 +12,14 @@
 #include "sre/WorldLights.hpp"
 #include "sre/imgui_sre.hpp"
 #include "sre/impl/Export.hpp"
-
+#include "sre/impl/GL.hpp"
 #include "sre/impl/CPPShim.hpp"
+
 #include <string>
 #include <memory>
 #include <vector>
 #include <map>
+
 
 namespace sre {
 
@@ -88,6 +90,15 @@ namespace sre {
      *     - Material uniform (without 'g_' prefix). Which are exposed to materials.
      */
     class DllExport Shader : public std::enable_shared_from_this<Shader> {
+        enum class ResourceType{
+            File,
+            Memory
+        };
+
+        struct Resource{
+            ResourceType resourceType;
+            std::string value;
+        };
     public:
 
         class DllExport ShaderBuilder {
@@ -112,7 +123,7 @@ namespace sre {
         private:
             ShaderBuilder() = default;
             ShaderBuilder(const ShaderBuilder&) = default;
-            std::map<ShaderType,std::string> shaderSources;
+            std::map<ShaderType, Resource> shaderSources;
             bool depthTest = true;
             bool depthWrite = true;
             glm::vec2 offset = {0,0};
@@ -178,12 +189,15 @@ namespace sre {
         bool validateMesh(Mesh* mesh, std::string & info);
 
     private:
+        static std::string precompile(std::string source);
+
         bool setLights(WorldLights* worldLights, glm::mat4 viewTransform);
 
         Shader();
 
-        bool build(std::map<ShaderType,std::string> shaderSources);
-
+        bool build(std::map<ShaderType,Resource> shaderSources);
+        static std::string getSource(Resource& resource);
+        static bool compileShader(Resource& resource, GLenum type, GLuint& shader);
         void bind();
 
         unsigned int shaderProgramId;
@@ -192,7 +206,10 @@ namespace sre {
         std::string name;
         BlendType blend = BlendType::Disabled;
         glm::vec2 offset = glm::vec2(0,0);
-        std::map<ShaderType,std::string> shaderSources;
+
+
+
+        std::map<ShaderType, Resource> shaderSources;
 
         std::vector<Uniform> uniforms;
 
@@ -201,6 +218,8 @@ namespace sre {
             unsigned int type;
             int32_t arraySize;
         };
+
+
 
         std::map<std::string, ShaderAttribute> attributes;
         void updateUniformsAndAttributes();
