@@ -178,22 +178,32 @@ namespace sre {
     }
 
     std::shared_ptr<Shader> Shader::ShaderBuilder::build() {
-        if (name.length()==0){
-            name = "Unnamed shader";
+        std::vector<std::string> errors;
+        return build(errors);
+    }
+
+    std::shared_ptr<Shader> Shader::ShaderBuilder::build(std::vector<std::string>& errors) {
+        std::shared_ptr<Shader> shader;
+        if (updateShader){
+            shader = updateShader->shared_from_this();
+        } else {
+            if (name.length()==0){
+                name = "Unnamed shader";
+            }
+            shader = std::shared_ptr<Shader>(new Shader());
         }
-        auto res = new Shader();
-        bool compileSuccess = res->build(shaderSources);
+        bool compileSuccess = shader->build(shaderSources, errors);
         if (!compileSuccess){
-            delete res;
-            return std::shared_ptr<Shader>();
+            shader.reset();
+            return shader;
         }
-        res->depthTest = this->depthTest;
-        res->depthWrite = this->depthWrite;
-        res->blend = this->blend;
-        res->name = this->name;
-        res->offset = this->offset;
-        res->shaderSources = this->shaderSources;
-        return std::shared_ptr<Shader>(res);
+        shader->depthTest = this->depthTest;
+        shader->depthWrite = this->depthWrite;
+        shader->blend = this->blend;
+        shader->name = this->name;
+        shader->offset = this->offset;
+        shader->shaderSources = this->shaderSources;
+        return std::shared_ptr<Shader>(shader);
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withName(const std::string& name) {
@@ -208,16 +218,16 @@ namespace sre {
 
     Shader::ShaderBuilder & Shader::ShaderBuilder::withSourceString(const std::string &shaderSource, ShaderType shaderType) {
         this->shaderSources[shaderType] = {
-                ResourceType::Memory,
-                shaderSource
+            ResourceType::Memory,
+            shaderSource
         };
         return *this;
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceFile(const std::string &shaderFile, ShaderType shaderType) {
         this->shaderSources[shaderType] = {
-                ResourceType::File,
-                shaderFile
+            ResourceType::File,
+            shaderFile
         };
         return *this;
     }
@@ -425,7 +435,6 @@ namespace sre {
         if (! Renderer::instance ){
             LOG_FATAL("Cannot instantiate sre::Shader before sre::Renderer is created.");
         }
-        shaderProgramId = glCreateProgram();
         Renderer::instance->renderStats.shaderCount++;
 
         Renderer::instance->shaders.emplace_back(this);
@@ -604,7 +613,10 @@ namespace sre {
         return Shader::ShaderBuilder();
     }
 
-    bool Shader::build(std::map<ShaderType,Resource> shaderSources) {
+    bool Shader::build(std::map<ShaderType,Resource> shaderSources, std::vector<std::string>& errors) {
+        unsigned int oldShaderProgramId = shaderProgramId;
+        shaderProgramId = glCreateProgram();
+        assert(shaderProgramId != 0);
         for (ShaderType i=ShaderType::Vertex;i<ShaderType::NumberOfShaderTypes;i = (ShaderType )((int)i+1)) {
             auto shaderSourcesIter = shaderSources.find(i);
             if (shaderSourcesIter!=shaderSources.end()){
@@ -643,7 +655,12 @@ namespace sre {
 
         bool linked = linkProgram(shaderProgramId);
         if (!linked){
+            glDeleteProgram( shaderProgramId );
+            shaderProgramId = oldShaderProgramId;
             return false;
+        }
+        if (oldShaderProgramId != 0){
+            glDeleteProgram( oldShaderProgramId );
         }
         updateUniformsAndAttributes();
         return true;
@@ -749,6 +766,17 @@ namespace sre {
         return source;
     }
 
+    Shader::ShaderBuilder Shader::update() {
+        auto res =  Shader::ShaderBuilder(this);
+        res.depthTest = this->depthTest;
+        res.depthWrite = this->depthWrite;
+        res.blend = this->blend;
+        res.name = this->name;
+        res.offset = this->offset;
+        res.shaderSources = this->shaderSources;
+        return res;
+    }
+
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSource(const std::string& vertexShader, const std::string& fragmentShader) {
         withSourceString(vertexShader, ShaderType::Vertex);
         withSourceString(fragmentShader, ShaderType::Fragment);
@@ -798,5 +826,10 @@ namespace sre {
         withSourceFile("debug_normal_frag.glsl", ShaderType::Fragment);
 
         return *this;
+    }
+
+    Shader::ShaderBuilder::ShaderBuilder(Shader *shader)
+    :updateShader(shader)
+    {
     }
 }

@@ -461,6 +461,7 @@ namespace sre {
             selectedShader = 0;
             textEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::GLSL());
             textEditor.SetText(shaderCode[selectedShader]);
+            textEditor.SetPalette(TextEditor::GetDarkPalette());
             showPrecompiled = false;
         }
         bool open = true;
@@ -495,13 +496,31 @@ namespace sre {
             }
         }
         ImGui::PushItemWidth(-1); // align to right
-        bool changed = ImGui::Combo("####ShaderType", &selectedShader, activeShaders.data(), static_cast<int>(activeShaders.size()));
+        int lastSelectedShader = selectedShader;
+        bool updatedShader = ImGui::Combo("####ShaderType", &selectedShader, activeShaders.data(), static_cast<int>(activeShaders.size()));
 
         selectedShader = std::min(selectedShader, (int)activeShaders.size());
 
-        changed |= ImGui::Checkbox("Show precompiled", &showPrecompiled);
+        bool updatedPrecompile = ImGui::Checkbox("Show precompiled", &showPrecompiled); ImGui::SameLine();
+        if (updatedPrecompile){
+            textEditor.SetPalette(showPrecompiled? TextEditor::GetLightPalette():TextEditor::GetDarkPalette());
+        }
+        bool compile = ImGui::Button("Compile");
 
-        if (changed){
+        // update if compile or shader type changed or showPrecompiled is selected
+        if ((compile && !showPrecompiled) || (updatedShader && !showPrecompiled) || (updatedPrecompile && showPrecompiled)){
+            shaderCode[lastSelectedShader] = textEditor.GetText(); // get text before updating the editor
+        }
+
+        if (compile){
+            auto builder = shader->update();
+            for (int i=0;i<sources.size();i++){
+                builder.withSourceString(shaderCode[i], sources[i]);
+            }
+            builder.build();
+        }
+
+        if (updatedShader || updatedPrecompile){
             if (showPrecompiled){
                 textEditor.SetText(Shader::precompile(shaderCode[selectedShader]));
                 textEditor.SetReadOnly(true);

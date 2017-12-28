@@ -119,15 +119,18 @@ namespace sre {
             ShaderBuilder& withDepthWrite(bool enable);
             ShaderBuilder& withBlend(BlendType blendType);
             ShaderBuilder& withName(const std::string& name);
+            std::shared_ptr<Shader> build(std::vector<std::string>& errors);
             std::shared_ptr<Shader> build();
-        private:
-            ShaderBuilder() = default;
             ShaderBuilder(const ShaderBuilder&) = default;
+        private:
+            ShaderBuilder(Shader* shader);
+            ShaderBuilder() = default;
             std::map<ShaderType, Resource> shaderSources;
             bool depthTest = true;
             bool depthWrite = true;
             glm::vec2 offset = {0,0};
             std::string name;
+            Shader *updateShader = nullptr;
             BlendType blend = BlendType::Disabled;
             friend class Shader;
         };
@@ -162,6 +165,7 @@ namespace sre {
                                                                // Expects a mesh with topology = Points
 
         static ShaderBuilder create();
+        ShaderBuilder update();                                // Update the shader using the builder pattern. (Must end with build()).
 
         ~Shader();
 
@@ -195,12 +199,12 @@ namespace sre {
 
         Shader();
 
-        bool build(std::map<ShaderType,Resource> shaderSources);
+        bool build(std::map<ShaderType,Resource> shaderSources, std::vector<std::string>& errors);
         static std::string getSource(Resource& resource);
         static bool compileShader(Resource& resource, GLenum type, GLuint& shader);
         void bind();
 
-        unsigned int shaderProgramId;
+        unsigned int shaderProgramId = 0;
         bool depthTest = true;
         bool depthWrite = true;
         std::string name;
@@ -218,8 +222,6 @@ namespace sre {
             unsigned int type;
             int32_t arraySize;
         };
-
-
 
         std::map<std::string, ShaderAttribute> attributes;
         void updateUniformsAndAttributes();

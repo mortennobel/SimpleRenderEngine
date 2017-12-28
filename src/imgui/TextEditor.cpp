@@ -449,7 +449,7 @@ void TextEditor::Render(const char* aTitle, const ImVec2& aSize, bool aBorder)
 				auto c = (unsigned char)io.InputCharacters[i];
 				if (c != 0)
 				{
-					if (isprint(c) || isspace(c))
+					//if (isprint(c) || isspace(c) || c == '\t')
 					{
 						if (c == '\r')
 							c = '\n';
