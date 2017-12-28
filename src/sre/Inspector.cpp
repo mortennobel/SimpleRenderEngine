@@ -5,6 +5,7 @@
  *  License: MIT
  */
 #include "sre/Inspector.hpp"
+#include "TextEditor.h"
 #include <algorithm>
 #include <iostream>
 #include <glm/gtx/euler_angles.hpp>
@@ -445,12 +446,26 @@ namespace sre {
 
     void Inspector::editShader(Shader* shader){
         static Shader* shaderRef = nullptr;
+        static std::vector<std::string> shaderCode;
+        static TextEditor textEditor;
+        static int selectedShader = 0;
+        static bool showPrecompiled = false;
+
         if (shaderRef != shader){
             shaderRef = shader;
+            shaderCode.clear();
+            for (auto source : shader->shaderSources){
+                auto source_ = Shader::getSource(source.second);
+                shaderCode.emplace_back(source_);
+            }
+            selectedShader = 0;
+            textEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::GLSL());
+            textEditor.SetText(shaderCode[selectedShader]);
+            showPrecompiled = false;
         }
         bool open = true;
         ImGui::PushID(shader);
-        ImGui::Begin("SRE Edit Shader",&open);
+        ImGui::Begin(shader->name.c_str(),&open);
         std::vector<const char*> activeShaders;
         std::vector<ShaderType> sources;
         for (auto source : shader->shaderSources){
@@ -479,41 +494,24 @@ namespace sre {
                     break;
             }
         }
+        ImGui::PushItemWidth(-1); // align to right
+        bool changed = ImGui::Combo("####ShaderType", &selectedShader, activeShaders.data(), static_cast<int>(activeShaders.size()));
 
-        static int selectedShader = 0;
         selectedShader = std::min(selectedShader, (int)activeShaders.size());
 
-        ImGui::PushItemWidth(-1); // align to right
-        ImGui::Combo("####ShaderType", &selectedShader, activeShaders.data(), static_cast<int>(activeShaders.size()));
+        changed |= ImGui::Checkbox("Show precompiled", &showPrecompiled);
 
-        const int maxLength = 8096;
-        static char textBuffer[8096];
-        static std::string source;
-        static std::string precompiled;
-        static uint64_t selectedShaderKey = -1;
-        uint64_t key = selectedShader + (uint64_t)(void*)shader;
-        if (key != selectedShaderKey){
-            selectedShaderKey = key;
-            source = Shader::getSource(shader->shaderSources[sources[selectedShader]]);
-            memcpy(textBuffer, source.c_str(), std::min((size_t)maxLength, source.length()+1));
+        if (changed){
+            if (showPrecompiled){
+                textEditor.SetText(Shader::precompile(shaderCode[selectedShader]));
+                textEditor.SetReadOnly(true);
+            } else {
+                textEditor.SetText(shaderCode[selectedShader]);
+                textEditor.SetReadOnly(false);
+            }
         }
-        static bool showPrecompiled = false;
-        ImGui::Checkbox("Show precompiled", &showPrecompiled);
+        textEditor.Render("##editor");
 
-        // hide label
-        ImGui::PushItemWidth(-1); // align to right
-        ImGui::PushID(activeShaders[selectedShader]);
-        // count the newlines with an algorithm specialized for counting:
-        int line_count = (int)std::count(source.begin(), source.end(),'\n');
-        int textHeight = (int)std::ceil(ImGui::GetTextLineHeight())*(line_count+1);
-        if (showPrecompiled){
-            precompiled = Shader::precompile(textBuffer);
-            ImGui::InputTextMultiline("##precompiled", const_cast<char *>(precompiled.c_str()), maxLength, ImVec2(600, textHeight), ImGuiInputTextFlags_AllowTabInput|ImGuiInputTextFlags_ReadOnly);
-        } else {
-            ImGui::InputTextMultiline("##sources", textBuffer, maxLength, ImVec2(600,textHeight),ImGuiInputTextFlags_AllowTabInput);
-        }
-
-        ImGui::PopID();
         ImGui::End();
         ImGui::PopID();
 
