@@ -444,12 +444,43 @@ namespace sre {
         }
     }
 
+    void updateErrorMarkers(std::vector<std::string>& errors, TextEditor& textEditor, ShaderType type){
+        TextEditor::ErrorMarkers errorMarkers;
+        std::regex e ( "\\d+:(\\d+)", std::regex::ECMAScript);
+
+        std::smatch m;
+
+        for (auto err : errors){
+            auto trimmedStr = err;
+            auto idx = err.find("##");
+            int filter = -1;
+            if (idx > 0){
+                trimmedStr = err.substr(0,idx);
+                auto filterStr = err.substr(idx+2);
+                filter = std::stoi(filterStr);
+            }
+            if (filter == to_id(type)){
+                int line = 0;
+                if (std::regex_search (trimmedStr,m,e)) {
+                    std::string match = m[1];
+                    line = std::stoi(match);
+                }
+                errorMarkers.insert(std::pair<int, std::string>(line, trimmedStr));
+            }
+        }
+        textEditor.SetErrorMarkers(errorMarkers);
+    }
+
     void Inspector::editShader(Shader* shader){
         static Shader* shaderRef = nullptr;
         static std::vector<std::string> shaderCode;
+        static std::vector<std::string> errors;
+        static std::string errorsStr;
         static TextEditor textEditor;
         static int selectedShader = 0;
         static bool showPrecompiled = false;
+        static std::vector<const char*> activeShaders;
+        static std::vector<ShaderType> shaderTypes;
 
         if (shaderRef != shader){
             shaderRef = shader;
@@ -463,42 +494,56 @@ namespace sre {
             textEditor.SetText(shaderCode[selectedShader]);
             textEditor.SetPalette(TextEditor::GetDarkPalette());
             showPrecompiled = false;
+            errors.clear();
+            errorsStr = "";
+            textEditor.SetErrorMarkers(TextEditor::ErrorMarkers());
+            activeShaders.clear();
+            shaderTypes.clear();
+            for (auto source : shader->shaderSources){
+                shaderTypes.push_back(source.first);
+                switch (source.first){
+                    case ShaderType::Vertex:
+                        activeShaders.push_back("Vertex");
+                        break;
+                    case ShaderType::Fragment:
+                        activeShaders.push_back("Fragment");
+                        break;
+                    case ShaderType::Geometry:
+                        activeShaders.push_back("Geometry");
+                        break;
+                    case ShaderType::TessellationControl:
+                        activeShaders.push_back("TessellationControl");
+                        break;
+                    case ShaderType::TessellationEvaluation:
+                        activeShaders.push_back("TessellationEvaluation");
+                        break;
+                    case ShaderType::NumberOfShaderTypes:
+                        LOG_ERROR("ShaderType::NumberOfShaderTypes should never be used");
+                        break;
+                    default:
+                        LOG_ERROR("Unhandled shader");
+                        break;
+                }
+            }
         }
         bool open = true;
         ImGui::PushID(shader);
         ImGui::Begin(shader->name.c_str(),&open);
-        std::vector<const char*> activeShaders;
-        std::vector<ShaderType> sources;
-        for (auto source : shader->shaderSources){
-            sources.push_back(source.first);
-            switch (source.first){
-                case ShaderType::Vertex:
-                    activeShaders.push_back("Vertex");
-                    break;
-                case ShaderType::Fragment:
-                    activeShaders.push_back("Fragment");
-                    break;
-                case ShaderType::Geometry:
-                    activeShaders.push_back("Geometry");
-                    break;
-                case ShaderType::TessellationControl:
-                    activeShaders.push_back("TessellationControl");
-                    break;
-                case ShaderType::TessellationEvaluation:
-                    activeShaders.push_back("TessellationEvaluation");
-                    break;
-                case ShaderType::NumberOfShaderTypes:
-                    LOG_ERROR("ShaderType::NumberOfShaderTypes should never be used");
-                    break;
-                default:
-                    LOG_ERROR("Unhandled shader");
-                    break;
-            }
-        }
+
         ImGui::PushItemWidth(-1); // align to right
         int lastSelectedShader = selectedShader;
         bool updatedShader = ImGui::Combo("####ShaderType", &selectedShader, activeShaders.data(), static_cast<int>(activeShaders.size()));
-
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("CTRL+1, CTRL+2, ...");
+        ImGuiIO& io = ImGui::GetIO();
+        if (io.KeyCtrl){
+            for (int i=SDLK_1;i<SDLK_9;i++){
+               if (ImGui::IsKeyPressed(i)){
+                   selectedShader = i-SDLK_1;
+                   updatedShader = true;
+               }
+            }
+        }
         selectedShader = std::min(selectedShader, (int)activeShaders.size());
 
         bool updatedPrecompile = ImGui::Checkbox("Show precompiled", &showPrecompiled); ImGui::SameLine();
@@ -506,7 +551,12 @@ namespace sre {
             textEditor.SetPalette(showPrecompiled? TextEditor::GetLightPalette():TextEditor::GetDarkPalette());
         }
         bool compile = ImGui::Button("Compile");
+        if (ImGui::IsItemHovered())
+            ImGui::SetTooltip("CTRL+S");
 
+        if (io.KeyCtrl && ImGui::IsKeyPressed(SDLK_s)){
+            compile = true;
+        }
         // update if compile or shader type changed or showPrecompiled is selected
         if ((compile && !showPrecompiled) || (updatedShader && !showPrecompiled) || (updatedPrecompile && showPrecompiled)){
             shaderCode[lastSelectedShader] = textEditor.GetText(); // get text before updating the editor
@@ -514,19 +564,38 @@ namespace sre {
 
         if (compile){
             auto builder = shader->update();
-            for (int i=0;i<sources.size();i++){
-                builder.withSourceString(shaderCode[i], sources[i]);
+            for (int i=0;i<shaderTypes.size();i++){
+                builder.withSourceString(shaderCode[i], shaderTypes[i]);
             }
-            builder.build();
+            errors.clear();
+            builder.build(errors);
+            errorsStr = "";
+
+            for (auto& err:errors) {
+                errorsStr+=err+"\n";
+            }
+            updateErrorMarkers(errors,textEditor,shaderTypes[selectedShader]);
         }
 
         if (updatedShader || updatedPrecompile){
             if (showPrecompiled){
-                textEditor.SetText(Shader::precompile(shaderCode[selectedShader]));
+                std::vector<std::string> temp;
+                textEditor.SetText(Shader::precompile(shaderCode[selectedShader],temp, to_id(shaderTypes[selectedShader])));
                 textEditor.SetReadOnly(true);
+                textEditor.SetErrorMarkers(TextEditor::ErrorMarkers());
             } else {
                 textEditor.SetText(shaderCode[selectedShader]);
                 textEditor.SetReadOnly(false);
+                updateErrorMarkers(errors,textEditor,shaderTypes[selectedShader]);
+            }
+        }
+        // Show error messages
+        if (errorsStr.size() > 0){
+            if (ImGui::CollapsingHeader("Errors")){
+                for (int i=0;i<errors.size();i++){
+                    std::string id = std::string("##_errors_")+std::to_string(i);
+                    ImGui::LabelText(id.c_str(), errors[i].c_str());
+                }
             }
         }
         textEditor.Render("##editor");

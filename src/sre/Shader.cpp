@@ -62,20 +62,28 @@ namespace sre {
             return "";
         }
 
-        std::string pragmaInclude(std::string source){
+        std::string pragmaInclude(std::string source, std::vector<std::string>& errors, uint32_t shaderType){
             if (source.find("#pragma include")==-1) {
                 return source;
             }
             std::stringstream sstream;
             auto pch = strtok (const_cast<char *>(source.c_str()), "\n\r"); // note destroys input string
             std::regex e ( R"_(#pragma\s+include\s+"([^"]*)")_", std::regex::ECMAScript);
+            int lineNumber = 0;
             while (pch != nullptr)
             {
+                lineNumber++;
                 std::string s (pch);
                 std::smatch m;
                 if (std::regex_search (s,m,e)) {
                     std::string match = m[1];
-                    sstream << getFileContents(match) << "\n";
+                    auto res = getFileContents(match);
+                    if (res == ""){
+                        errors.push_back(std::string("0:")+std::to_string(lineNumber)+" cannot find include file "+match+"##"+std::to_string(shaderType));
+                        sstream << pch << "\n";
+                    } else {
+                        sstream <<  res << "\n";
+                    }
                 } else {
                     sstream << pch << "\n";
                 }
@@ -85,7 +93,7 @@ namespace sre {
             return sstream.str();
         }
 
-        void logCurrentCompileException(GLuint shader, GLenum type) {
+        void logCurrentCompileException(GLuint &shader, GLenum type, vector<string> &errors) {
             GLint logSize = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
 
@@ -116,9 +124,10 @@ namespace sre {
                     break;
             }
             LOG_ERROR("Shader compile error in %s: %s",typeStr.c_str() ,errorLog.data());
+            errors.push_back(std::string(errorLog.data())+"##"+std::to_string(type));
         }
 
-        bool linkProgram(GLuint mShaderProgram){
+        bool linkProgram(GLuint mShaderProgram, std::vector<std::string>& errors){
 #ifndef EMSCRIPTEN
             glBindFragDataLocation(mShaderProgram, 0, "fragColor");
 #endif
@@ -131,6 +140,7 @@ namespace sre {
                 glGetProgramiv(mShaderProgram, GL_INFO_LOG_LENGTH, &logSize);
                 std::vector<char> errorLog((size_t) logSize);
                 glGetProgramInfoLog(mShaderProgram, logSize, NULL, errorLog.data() );
+                errors.push_back(errorLog.data());
                 LOG_ERROR("Shader linker error: %s",errorLog.data());
                 return false;
             }
@@ -194,7 +204,9 @@ namespace sre {
         }
         bool compileSuccess = shader->build(shaderSources, errors);
         if (!compileSuccess){
-            shader.reset();
+            if (!updateShader) {
+                shader.reset();
+            }
             return shader;
         }
         shader->depthTest = this->depthTest;
@@ -621,39 +633,19 @@ namespace sre {
             auto shaderSourcesIter = shaderSources.find(i);
             if (shaderSourcesIter!=shaderSources.end()){
                 GLuint s;
-                GLenum shader;
-                switch (i){
-                    case ShaderType::Vertex:
-                        shader = GL_VERTEX_SHADER;
-                        break;
-                    case ShaderType::Fragment:
-                        shader = GL_FRAGMENT_SHADER;
-                        break;
-#ifndef EMSCRIPTEN
-                    case ShaderType::Geometry:
-                        shader = GL_GEOMETRY_SHADER;
-                        break;
-                    case ShaderType::TessellationEvaluation:
-                        shader = GL_TESS_EVALUATION_SHADER ;
-                        break;
-                    case ShaderType::TessellationControl:
-                        shader = GL_TESS_CONTROL_SHADER;
-                        break;
-#endif
-                    default:
-                        LOG_ERROR("Invalid shader type. Was %d",(int)i);
-                        break;
-                }
+                GLenum shader = to_id(i);
 
-                bool res = compileShader(shaderSourcesIter->second, shader, s);
+                bool res = compileShader(shaderSourcesIter->second, shader, s, errors);
                 if (!res){
+                    glDeleteProgram( shaderProgramId );
+                    shaderProgramId = oldShaderProgramId;
                     return false;
                 }
                 glAttachShader(shaderProgramId,  s);
             }
         }
 
-        bool linked = linkProgram(shaderProgramId);
+        bool linked = linkProgram(shaderProgramId, errors);
         if (!linked){
             glDeleteProgram( shaderProgramId );
             shaderProgramId = oldShaderProgramId;
@@ -724,9 +716,9 @@ namespace sre {
         return source;
     }
 
-    bool Shader::compileShader(Resource& resource, GLenum type, GLuint& shader){
+    bool Shader::compileShader(Resource& resource, GLenum type, GLuint& shader, std::vector<std::string>& errors){
         auto source = getSource(resource);
-        std::string source_ = precompile(source);
+        std::string source_ = precompile(source, errors, type);
         shader = glCreateShader(type);
         auto stringPtr = source_.c_str();
         GLint length = (GLint)strlen(stringPtr);
@@ -735,7 +727,7 @@ namespace sre {
         GLint success = 0;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if (success == GL_FALSE){
-            logCurrentCompileException(shader, type);
+            logCurrentCompileException(shader, type, errors);
             return false;
         }
         return true;
@@ -750,12 +742,12 @@ namespace sre {
         return offset;
     }
 
-    std::string Shader::precompile(std::string source) {
+    std::string Shader::precompile(std::string source, std::vector<std::string>& errors, uint32_t shaderType) {
 
 
         // Replace includes with content
         // for each occurrence of #pragma include replace with substitute
-        source = pragmaInclude(source);
+        source = pragmaInclude(source, errors, shaderType);
 
         // Set engine defined shader constants
         source = std::regex_replace(source, std::regex("SCENE_LIGHTS"), std::to_string(Renderer::maxSceneLights));
@@ -831,5 +823,32 @@ namespace sre {
     Shader::ShaderBuilder::ShaderBuilder(Shader *shader)
     :updateShader(shader)
     {
+    }
+
+    uint32_t to_id(ShaderType st) {
+        uint32_t shader;
+        switch (st){
+            case ShaderType::Vertex:
+                shader = GL_VERTEX_SHADER;
+                break;
+            case ShaderType::Fragment:
+                shader = GL_FRAGMENT_SHADER;
+                break;
+#ifndef EMSCRIPTEN
+            case ShaderType::Geometry:
+                shader = GL_GEOMETRY_SHADER;
+                break;
+            case ShaderType::TessellationEvaluation:
+                shader = GL_TESS_EVALUATION_SHADER ;
+                break;
+            case ShaderType::TessellationControl:
+                shader = GL_TESS_CONTROL_SHADER;
+                break;
+#endif
+            default:
+                LOG_ERROR("Invalid shader type. Was %d",(int)st);
+                break;
+        }
+        return shader;
     }
 }

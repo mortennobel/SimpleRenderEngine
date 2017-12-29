@@ -48,6 +48,8 @@ namespace sre {
         NumberOfShaderTypes
     };
 
+    uint32_t to_id(ShaderType st);
+
     const char* c_str(UniformType u);
 
     struct DllExport Uniform {
@@ -193,7 +195,7 @@ namespace sre {
         bool validateMesh(Mesh* mesh, std::string & info);
 
     private:
-        static std::string precompile(std::string source);
+        static std::string precompile(std::string source, std::vector<std::string>& errors, uint32_t shaderType);
 
         bool setLights(WorldLights* worldLights, glm::mat4 viewTransform);
 
@@ -201,7 +203,7 @@ namespace sre {
 
         bool build(std::map<ShaderType,Resource> shaderSources, std::vector<std::string>& errors);
         static std::string getSource(Resource& resource);
-        static bool compileShader(Resource& resource, GLenum type, GLuint& shader);
+        static bool compileShader(Resource& resource, GLenum type, GLuint& shader, std::vector<std::string>& errors);
         void bind();
 
         unsigned int shaderProgramId = 0;
