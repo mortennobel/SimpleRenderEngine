@@ -21,10 +21,11 @@ std::string GetTrackedDeviceString(vr::IVRSystem *pHmd, vr::TrackedDeviceIndex_t
 }
 #endif
 
+
 namespace sre
 {
-	VR::VR()
-		:renderVR([](std::shared_ptr<sre::Framebuffer> fb, sre::Camera cam, bool leftEye)
+	VR::VR(VRType vrType)
+		:vrType(vrType), renderVR([](std::shared_ptr<sre::Framebuffer> fb, sre::Camera cam, bool leftEye)
 	{
 		LOG_INFO("VR::renderVR not implemented");
 	})
@@ -34,55 +35,59 @@ namespace sre
 
 	void VR::render()
 	{
+		if (vrType == VRType::OpenVR){
 #ifdef SRE_OPENVR
-		updateHMDMatrixPose();
-		renderVR(leftFB, left, true);
-		vr::Texture_t leftEyeTexture = { (void*)(uintptr_t)leftTex->textureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
-		vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
-		renderVR(rightFB, right, false);
-		vr::Texture_t rightEyeTexture = { (void*)(uintptr_t)rightTex->textureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
-		vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
+			updateHMDMatrixPose();
+			renderVR(leftFB, left, true);
+			vr::Texture_t leftEyeTexture = { (void*)(uintptr_t)leftTex->textureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+			vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
+			renderVR(rightFB, right, false);
+			vr::Texture_t rightEyeTexture = { (void*)(uintptr_t)rightTex->textureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+			vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
 #endif
+		}
 	}
 
 	void VR::updateHMDMatrixPose()
 	{
+		if (vrType == VRType::OpenVR) {
 #ifdef SRE_OPENVR
-		vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
-		
-		m_iValidPoseCount = 0;
-		m_strPoseClasses = "";
-		for (int nDevice = 0; nDevice < vr::k_unMaxTrackedDeviceCount; ++nDevice)
-		{
-			if (m_rTrackedDevicePose[nDevice].bPoseIsValid)
-			{
-				m_iValidPoseCount++;
-				float *f = &(m_rTrackedDevicePose[nDevice].mDeviceToAbsoluteTracking.m[0][0]);
-				glm::mat3x4 m = glm::make_mat3x4(f);
-				m_rmat4DevicePose[nDevice] = glm::transpose((glm::mat4)m);
-				if (m_rDevClassChar[nDevice] == 0)
-				{
-					switch (vrSystem->GetTrackedDeviceClass(nDevice))
-					{
-					case vr::TrackedDeviceClass_Controller:        m_rDevClassChar[nDevice] = 'C'; break;
-					case vr::TrackedDeviceClass_HMD:               m_rDevClassChar[nDevice] = 'H'; break;
-					case vr::TrackedDeviceClass_Invalid:           m_rDevClassChar[nDevice] = 'I'; break;
-					case vr::TrackedDeviceClass_GenericTracker:    m_rDevClassChar[nDevice] = 'G'; break;
-					case vr::TrackedDeviceClass_TrackingReference: m_rDevClassChar[nDevice] = 'T'; break;
-					default:                                       m_rDevClassChar[nDevice] = '?'; break;
-					}
-				}
-				m_strPoseClasses += m_rDevClassChar[nDevice];
-			}
-		}
+			vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
-		if (m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid)
-		{
-			m_mat4HMDPose = m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd];
-			left.setViewTransform(glm::inverse(mat4eyePosLeft*m_mat4HMDPose)*baseViewTransform);
-			right.setViewTransform(glm::inverse(mat4eyePosRight*m_mat4HMDPose)*baseViewTransform);
-		}
+			m_iValidPoseCount = 0;
+			m_strPoseClasses = "";
+			for (int nDevice = 0; nDevice < vr::k_unMaxTrackedDeviceCount; ++nDevice)
+			{
+				if (m_rTrackedDevicePose[nDevice].bPoseIsValid)
+				{
+					m_iValidPoseCount++;
+					float *f = &(m_rTrackedDevicePose[nDevice].mDeviceToAbsoluteTracking.m[0][0]);
+					glm::mat3x4 m = glm::make_mat3x4(f);
+					m_rmat4DevicePose[nDevice] = glm::transpose((glm::mat4)m);
+					if (m_rDevClassChar[nDevice] == 0)
+					{
+						switch (vrSystem->GetTrackedDeviceClass(nDevice))
+						{
+						case vr::TrackedDeviceClass_Controller:        m_rDevClassChar[nDevice] = 'C'; break;
+						case vr::TrackedDeviceClass_HMD:               m_rDevClassChar[nDevice] = 'H'; break;
+						case vr::TrackedDeviceClass_Invalid:           m_rDevClassChar[nDevice] = 'I'; break;
+						case vr::TrackedDeviceClass_GenericTracker:    m_rDevClassChar[nDevice] = 'G'; break;
+						case vr::TrackedDeviceClass_TrackingReference: m_rDevClassChar[nDevice] = 'T'; break;
+						default:                                       m_rDevClassChar[nDevice] = '?'; break;
+						}
+					}
+					m_strPoseClasses += m_rDevClassChar[nDevice];
+				}
+			}
+
+			if (m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid)
+			{
+				m_mat4HMDPose = m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd];
+				left.setViewTransform(glm::inverse(mat4eyePosLeft*m_mat4HMDPose)*baseViewTransform);
+				right.setViewTransform(glm::inverse(mat4eyePosRight*m_mat4HMDPose)*baseViewTransform);
+			}
 #endif
+		}
 	}
 
 	void  VR::lookAt(glm::vec3 eye, glm::vec3 at, glm::vec3 up)
@@ -104,12 +109,14 @@ namespace sre
 	
 	void VR::setupCameras()
 	{
+		if (vrType == VRType::OpenVR) {
 #ifdef SRE_OPENVR
-		const auto mat4ProjectionLeft = getHMDMatrixProjectionEye(vr::Eye_Left);
-		const auto mat4ProjectionRight = getHMDMatrixProjectionEye(vr::Eye_Right);
-		left.setProjectionTransform(mat4ProjectionLeft);
-		right.setProjectionTransform(mat4ProjectionRight);
+			const auto mat4ProjectionLeft = getHMDMatrixProjectionEye(vr::Eye_Left);
+			const auto mat4ProjectionRight = getHMDMatrixProjectionEye(vr::Eye_Right);
+			left.setProjectionTransform(mat4ProjectionLeft);
+			right.setProjectionTransform(mat4ProjectionRight);
 #endif
+		}
 	}
 #ifdef SRE_OPENVR
 	glm::mat4 VR::getHMDMatrixProjectionEye(vr::Hmd_Eye nEye)
@@ -150,19 +157,23 @@ namespace sre
 
 	void VR::debugGUI()
 	{
+		if (vrType == VRType::OpenVR) {
 #ifdef SRE_OPENVR
-		LabelMat4("PoseEyeL", getHMDMatrixPoseEye(vr::Hmd_Eye::Eye_Left));
-		LabelMat4("PoseEyeR", getHMDMatrixPoseEye(vr::Hmd_Eye::Eye_Right));
-		LabelMat4("ProjEyeL", getHMDMatrixProjectionEye(vr::Hmd_Eye::Eye_Left));
-		LabelMat4("ProjEyeR", getHMDMatrixProjectionEye(vr::Hmd_Eye::Eye_Right));
-		LabelMat4("HDMPose ", m_mat4HMDPose);
+		
+			LabelMat4("PoseEyeL", getHMDMatrixPoseEye(vr::Hmd_Eye::Eye_Left));
+			LabelMat4("PoseEyeR", getHMDMatrixPoseEye(vr::Hmd_Eye::Eye_Right));
+			LabelMat4("ProjEyeL", getHMDMatrixProjectionEye(vr::Hmd_Eye::Eye_Left));
+			LabelMat4("ProjEyeR", getHMDMatrixProjectionEye(vr::Hmd_Eye::Eye_Right));
+			LabelMat4("HDMPose ", m_mat4HMDPose);
+		
 #else
-		ImGui::LabelText("", "VR not enabled");
-#endif			
+			ImGui::LabelText("", "VR not enabled");
+#endif		
+		}
 	}
 
 	std::shared_ptr<VR> VR::create(VRType vrType) {
-		auto res = std::shared_ptr<VR>();
+		auto res = std::shared_ptr<VR>(new VR(vrType));
 
 		if (vrType == VRType::OpenVR){
 #ifdef SRE_OPENVR
@@ -205,13 +216,7 @@ namespace sre
             return {nullptr};
 #endif
 		}
-		else if (vrType == VRType::Oculus){
-
-			LOG_INFO("No OculusSDK support");
-			return {nullptr};
-
-		}
-
+		
 		return res;
 	}
 }
