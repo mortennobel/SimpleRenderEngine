@@ -44,6 +44,8 @@ API documentation is defined in header files.
  
  * https://www.libsdl.org Simple Direct Layer 2.x 
  * https://www.libsdl.org/projects/SDL_image/ Simple Direct Layer Image 2.x
- * http://glm.g-truc.net/ OpenGL Mathematics
+ * http://glm.g-truc.net/ OpenGL Mathematics (bundled)
  * https://www.opengl.org/registry/ OpenGL Registry
- * https://github.com/ocornut/imgui ImGui 1.52
+ * https://github.com/ocornut/imgui ImGui 1.53 (bundled)
+ * https://github.com/BalazsJako/ImGuiColorTextEdit ImGuiColorTextEdit (bundled)
+ 
