@@ -370,6 +370,64 @@ std::string TextEditor::GetWordAt(const Coordinates & aCoords) const
 	return r;
 }
 
+void TextEditor::NewLine(){
+	Coordinates at = GetCursorPosition();
+
+	if (at.mLine >= (int)mLines.size())
+		return;
+
+	auto& line = mLines[at.mLine];
+
+	if (at.mColumn > (int)line.size())
+		return;
+
+
+	EnterCharacter((char)'\n');
+	bool indentation = true;
+	std::vector<char> indent;
+	int level = 0;
+	for (int i=0;i<at.mColumn;i++){
+		if (indentation){
+			if (line[i].mChar == '\t'){
+				indent.push_back('\t');
+			} else if (line[i].mChar == ' '){
+				indent.push_back(' ');
+			} else {
+				indentation = false;
+			}
+		} else {
+			if (line[i].mChar == '{'){
+				level++;
+			} else if (line[i].mChar == '}'){
+				level--;
+			}
+		}
+	}
+	// adjust level
+	for (int i=0;i<std::abs(level);i++){
+		if (level<0){
+			auto res = std::find(indent.begin(),indent.end(),'\t');
+			if (res != indent.end()){
+				indent.erase(res);
+			} else {
+				int spaces = 4;
+				for (int j=indent.size()-1;j>=0 && spaces > 0;j--){
+					if (indent[j]==' '){
+						indent.erase(indent.begin()+j);
+						spaces--;
+					}
+				}
+			}
+		} else {
+			indent.insert(indent.begin(),'\t');
+		}
+	}
+	// insert indent
+	for (auto c:indent){
+		EnterCharacter(c);
+	}
+}
+
 void TextEditor::Render(const char* aTitle, const ImVec2& aSize, bool aBorder)
 {
 	mWithinRender = true;
@@ -402,7 +460,10 @@ void TextEditor::Render(const char* aTitle, const ImVec2& aSize, bool aBorder)
 				Undo();
 		if (!IsReadOnly() && ctrl && !shift && !alt && ImGui::IsKeyPressed('Y'))
 			Redo();
-
+		if (!IsReadOnly() && !ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Tab)))
+			EnterCharacter((char)'\t');
+		if (!IsReadOnly() && !ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Enter)))
+			NewLine();
 		if (!ctrl && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_UpArrow)))
 			MoveUp(1, shift);
 		else if (!ctrl && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_DownArrow)))
@@ -449,7 +510,7 @@ void TextEditor::Render(const char* aTitle, const ImVec2& aSize, bool aBorder)
 				auto c = (unsigned char)io.InputCharacters[i];
 				if (c != 0)
 				{
-					//if (isprint(c) || isspace(c) || c == '\t')
+					if (isprint(c) || isspace(c) || c == '\t')
 					{
 						if (c == '\r')
 							c = '\n';

@@ -26,6 +26,8 @@ namespace sre {
 
     class SDLRenderer;
 
+
+
     /**
      * The inspector measures resources used by SimpleRenderEngine.
      * Inspector.update() records the current state and must be called each frame.
@@ -73,4 +75,6 @@ namespace sre {
         const float previewSize = 100;
     };
 
+    DEPRECATED("Use Inspector instead")
+    typedef Inspector Profiler;
 }

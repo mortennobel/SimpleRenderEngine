@@ -308,6 +308,7 @@ private:
 	void EnterCharacter(Char aChar);
 	void BackSpace();
 	void DeleteSelection();
+	void NewLine();
 	std::string GetWordUnderCursor() const;
 	std::string GetWordAt(const Coordinates& aCoords) const;
 
