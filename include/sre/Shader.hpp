@@ -90,6 +90,13 @@ namespace sre {
      *   Shaders have two kinds of uniforms variables:
      *     - Global uniforms (prefixed with 'g_' which is automatically set by the engine)
      *     - Material uniform (without 'g_' prefix). Which are exposed to materials.
+     *
+     *   Shaders can be specialized using specialization constants, which is a list of key-value pairs, used to define
+     *   special behavior of shaders. Specialization constants (key-values) are translated to preprocessor symbols in
+     *   the shader code.
+     *   Using specialized shaders is useful for performance reasons - only enabling features that the shader needs. But
+     *   creating a specialized shader (as well as creating shaders in general) may caurse performance issues and should
+     *   avoid during realtime rendering.
      */
     class DllExport Shader : public std::enable_shared_from_this<Shader> {
         enum class ResourceType{
@@ -128,6 +135,7 @@ namespace sre {
             ShaderBuilder(Shader* shader);
             ShaderBuilder() = default;
             std::map<ShaderType, Resource> shaderSources;
+            std::map<std::string,std::string> specializationConstants;
             bool depthTest = true;
             bool depthWrite = true;
             glm::vec2 offset = {0,0};
@@ -171,7 +179,7 @@ namespace sre {
 
         ~Shader();
 
-        std::shared_ptr<Material> createMaterial();
+        std::shared_ptr<Material> createMaterial(std::map<std::string,std::string> specializationConstants = {});
 
         Uniform getUniformType(const std::string &name);
 
@@ -194,12 +202,20 @@ namespace sre {
         // This method should be used for debug purpose only
         bool validateMesh(Mesh* mesh, std::string & info);
 
+        std::map<std::string,std::string> getCurrentSpecializationConstants();
+
+        std::vector<std::string> getAllSpecializationConstants();
     private:
         static std::string precompile(std::string source, std::vector<std::string>& errors, uint32_t shaderType);
 
         bool setLights(WorldLights* worldLights, glm::mat4 viewTransform);
 
         Shader();
+
+        std::map<std::string,std::string> specializationConstants = {};
+        std::string specializationConstantsKey;                         // for fast comparison
+        std::shared_ptr<Shader> parent = nullptr;
+        std::vector<std::weak_ptr<Shader>> specializations;
 
         bool build(std::map<ShaderType,Resource> shaderSources, std::vector<std::string>& errors);
         static std::string getSource(Resource& resource);
@@ -212,8 +228,6 @@ namespace sre {
         std::string name;
         BlendType blend = BlendType::Disabled;
         glm::vec2 offset = glm::vec2(0,0);
-
-
 
         std::map<ShaderType, Resource> shaderSources;
 

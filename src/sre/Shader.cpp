@@ -19,6 +19,7 @@
 #include <glm/gtx/string_cast.hpp>
 #include <string>
 #include <regex>
+#include <utility>
 #include <vector>
 #include <map>
 #include <sstream>
@@ -36,6 +37,15 @@ namespace sre {
         std::shared_ptr<Shader> unlit;
         std::shared_ptr<Shader> unlitSprite;
         std::shared_ptr<Shader> standardParticles;
+
+        // From https://stackoverflow.com/a/8473603/420250
+        template <typename Map>
+        bool map_compare (Map const &lhs, Map const &rhs) {
+            // No predicate needed because there is operator== for pairs already.
+            return lhs.size() == rhs.size()
+                   && std::equal(lhs.begin(), lhs.end(),
+                                 rhs.begin());
+        }
 
         // from http://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring
         string getFileContents(string filename)
@@ -700,7 +710,32 @@ namespace sre {
         return valid;
     }
 
-    std::shared_ptr<Material> Shader::createMaterial() {
+    std::shared_ptr<Material> Shader::createMaterial(std::map<std::string,std::string> specializationConstants) {
+        if (parent){
+            return parent->createMaterial(std::move(specializationConstants));
+        }
+        if (specializationConstants.size()>0){
+            for (auto & s : specializations){
+                if (auto ptr = s.lock()){
+                    if (map_compare(specializationConstants, ptr->specializationConstants)){
+                        return std::shared_ptr<Material>(new Material(ptr));
+                    }
+                }
+            }
+            // no specialization shader found
+            auto res =  Shader::ShaderBuilder();
+            res.depthTest = this->depthTest;
+            res.depthWrite = this->depthWrite;
+            res.blend = this->blend;
+            res.name = this->name;
+            res.offset = this->offset;
+            res.shaderSources = this->shaderSources;
+            res.specializationConstants = specializationConstants;
+            auto specializedShader = res.build();
+            specializedShader->parent = shared_from_this();
+            specializations.push_back(std::weak_ptr<Shader>(specializedShader));
+            return std::shared_ptr<Material>(new Material(specializedShader));
+        }
         return std::shared_ptr<Material>(new Material(shared_from_this()));
     }
 
@@ -767,6 +802,15 @@ namespace sre {
         res.offset = this->offset;
         res.shaderSources = this->shaderSources;
         return res;
+    }
+
+    std::map<std::string,std::string> Shader::getCurrentSpecializationConstants() {
+        return specializationConstants;
+    }
+
+    std::vector<std::string> Shader::getAllSpecializationConstants() {
+        LOG_ERROR("getAllSpecializationConstants not implemented"); // todo fix
+        return vector<string>();
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSource(const std::string& vertexShader, const std::string& fragmentShader) {
