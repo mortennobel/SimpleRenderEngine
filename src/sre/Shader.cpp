@@ -38,6 +38,8 @@ namespace sre {
         std::shared_ptr<Shader> unlitSprite;
         std::shared_ptr<Shader> standardParticles;
 
+        const std::regex SPECIALIZATION_CONSTANT_PATTERN("(S_[A-Z_0-9]+)");
+
         // From https://stackoverflow.com/a/8473603/420250
         template <typename Map>
         bool map_compare (Map const &lhs, Map const &rhs) {
@@ -45,6 +47,29 @@ namespace sre {
             return lhs.size() == rhs.size()
                    && std::equal(lhs.begin(), lhs.end(),
                                  rhs.begin());
+        }
+
+        std::string insertPreprocessorDefines(std::string source,
+                                              std::map<std::string, std::string> &specializationConstants){
+            if (specializationConstants.empty()){
+                return source;
+            }
+            stringstream ss;
+            for (auto & sc : specializationConstants){
+                ss<<"#define "<<sc.first<<" "<<sc.second<<"\n";
+            }
+
+            // If the shader contains any #version or #extension statements, the defines are added after them.
+            auto version = static_cast<int>(source.rfind("#version"));
+            auto extension = static_cast<int>(source.rfind("#extension"));
+            auto last = std::max(version, extension);
+            if (last == -1){
+                return ss.str()+source;
+            }
+            auto insertPos = source.find('\n', last);
+            return source.substr(0, insertPos+1) +
+                   ss.str()+
+                    source.substr(insertPos+1);
         }
 
         // from http://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring
@@ -211,6 +236,7 @@ namespace sre {
                 name = "Unnamed shader";
             }
             shader = std::shared_ptr<Shader>(new Shader());
+            shader->specializationConstants = this->specializationConstants;
         }
         bool compileSuccess = shader->build(shaderSources, errors);
         if (!compileSuccess){
@@ -305,11 +331,12 @@ namespace sre {
         uniformLocationModel = -1;
         uniformLocationView = -1;
         uniformLocationProjection = -1;
-        uniformLocationNormal = -1;
+        uniformLocationModelViewInverseTranspose = -1;
         uniformLocationViewport = -1;
         uniformLocationAmbientLight = -1;
         uniformLocationLightPosType = -1;
         uniformLocationLightColorRange = -1;
+        uniformLocationCameraPosition = -1;
         uniforms.clear();
         GLint uniformCount;
         glGetProgramiv(shaderProgramId,GL_ACTIVE_UNIFORMS,&uniformCount);
@@ -352,7 +379,6 @@ namespace sre {
                 case GL_SAMPLER_CUBE:
                     uniformType = UniformType::TextureCube;
                     break;
-
                 default:
                 LOG_ERROR("Unsupported shader type %s name %s",type,name);
             }
@@ -392,18 +418,18 @@ namespace sre {
                         LOG_ERROR("Invalid g_projection uniform type. Expected mat4 - was %s.",c_str(uniformType));
                     }
                 }
-                if (strcmp(name, "g_normal")==0){
+                if (strcmp(name, "g_model_view_it")==0){
                     if (uniformType == UniformType::Mat3){
-                        uniformLocationNormal = location;
+                        uniformLocationModelViewInverseTranspose = location;
                     } else {
-                        LOG_ERROR("Invalid g_normal uniform type. Expected mat3 - was %s.",c_str(uniformType));
+                        LOG_ERROR("Invalid g_model_view_it uniform type. Expected mat3 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_viewport")==0){
                     if (uniformType == UniformType::Vec4){
                         uniformLocationViewport = location;
                     } else {
-                        LOG_ERROR("Invalid g_normal uniform type. Expected vec4 - was %s.",c_str(uniformType));
+                        LOG_ERROR("Invalid g_viewport uniform type. Expected vec4 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_ambientLight")==0){
@@ -427,6 +453,14 @@ namespace sre {
                         LOG_ERROR("Invalid g_lightPosType uniform type. Expected vec4[Renderer::maxSceneLights] - was %s[%i].",c_str(uniformType),size);
                     }
                 }
+                if (strcmp(name, "g_cameraPos")==0){
+                    if (uniformType == UniformType::Vec4){
+                        uniformLocationCameraPosition = location;
+                    } else {
+                        LOG_ERROR("Invalid g_cameraPos uniform type. Expected vec4 - was %s[%i].",c_str(uniformType),size);
+                    }
+                }
+
             }
         }
 
@@ -778,14 +812,15 @@ namespace sre {
     }
 
     std::string Shader::precompile(std::string source, std::vector<std::string>& errors, uint32_t shaderType) {
-
+        // Insert preprocessor define symbols
+        source = insertPreprocessorDefines(source, specializationConstants);
 
         // Replace includes with content
         // for each occurrence of #pragma include replace with substitute
         source = pragmaInclude(source, errors, shaderType);
 
         // Set engine defined shader constants
-        source = std::regex_replace(source, std::regex("SCENE_LIGHTS"), std::to_string(Renderer::maxSceneLights));
+        source = std::regex_replace(source, std::regex("S_LIGHTS"), std::to_string(Renderer::maxSceneLights));
 
 #ifdef EMSCRIPTEN
         source = Shader::translateToGLSLES(source, type==GL_VERTEX_SHADER);
@@ -808,9 +843,21 @@ namespace sre {
         return specializationConstants;
     }
 
-    std::vector<std::string> Shader::getAllSpecializationConstants() {
-        LOG_ERROR("getAllSpecializationConstants not implemented"); // todo fix
-        return vector<string>();
+    std::set<std::string> Shader::getAllSpecializationConstants() {
+        if (parent){
+            return parent->getAllSpecializationConstants();
+        }
+        std::set<string> res;
+        for (auto& source : shaderSources){
+            string s = getSource(source.second);
+            std::smatch m;
+            while (std::regex_search(s, m, SPECIALIZATION_CONSTANT_PATTERN)) {
+                std::string match = m.str();
+                res.insert(match);
+                s = m.suffix();
+            }
+        }
+        return res;
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSource(const std::string& vertexShader, const std::string& fragmentShader) {
@@ -890,6 +937,7 @@ namespace sre {
                 break;
 #endif
             default:
+                shader = GL_VERTEX_SHADER;
                 LOG_ERROR("Invalid shader type. Was %d",(int)st);
                 break;
         }

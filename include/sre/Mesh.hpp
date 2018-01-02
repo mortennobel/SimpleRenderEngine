@@ -25,7 +25,7 @@ namespace sre {
 
     /**
      * Represents a Mesh object.
-     * A mesh is composed of a list of named vertex attributes
+     * A mesh is composed of a list of named vertex attributes such as
      * - positions (vec3)
      * - normals (vec3)
      * - uvs (aka. texture coordinates) (vec4)
@@ -51,7 +51,8 @@ namespace sre {
             MeshBuilder& withPositions(const std::vector<glm::vec3> &vertexPositions);          // Set vertex attribute "position" of type vec3
             MeshBuilder& withNormals(const std::vector<glm::vec3> &normals);                    // Set vertex attribute "normal" of type vec3
             MeshBuilder& withUVs(const std::vector<glm::vec4> &uvs);                            // Set vertex attribute "uv" of type vec4 (treated as two sets of texture coordinates)
-            MeshBuilder& withColors(const std::vector<glm::vec4> &colors);                      // Set vertex attribute "colors" of type vec4
+            MeshBuilder& withColors(const std::vector<glm::vec4> &colors);                      // Set vertex attribute "color" of type vec4
+            MeshBuilder& withTangents(const std::vector<glm::vec4> &tangent);                   // Set vertex attribute "tangent" of type vec4
             MeshBuilder& withParticleSizes(const std::vector<float> &particleSize);             // Set vertex attribute "particleSize" of type float
             MeshBuilder& withMeshTopology(MeshTopology meshTopology);                           // Defines the meshTopology (default is Triangles)
             MeshBuilder& withIndices(const std::vector<uint16_t> &indices, MeshTopology meshTopology = MeshTopology::Triangles, int indexSet=0);
@@ -92,6 +93,7 @@ namespace sre {
         std::vector<glm::vec3> getNormals();                        // Get normal vertex attribute
         std::vector<glm::vec4> getUVs();                            // Get uv vertex attribute
         std::vector<glm::vec4> getColors();                         // Get color vertex attribute
+        std::vector<glm::vec4> getTangents();                       // Get tangent vertex attribute (the w component contains the orientation of bitangent: -1 or 1)
         std::vector<float> getParticleSizes();                      // Get particle size vertex attribute
 
         int getIndexSets();                                         // Return the number of index sets

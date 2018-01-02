@@ -52,15 +52,14 @@ namespace sre {
 
         bool setSpecularity(float specularity);
 
-        float getMetallic();                    // The metalness of the material. A value of 1.0 means the material is
-        bool setMetallic(float metallic);       // a metal. A value of 0.0 means the material is a dielectric. Values in
+        glm::vec2 getMetallicRoughness();       // The metalness of the material. A value of 1.0 means the material is
+        bool setMetallicRoughness(glm::vec2 metallicRoughness);       // a metal. A value of 0.0 means the material is a dielectric. Values in
                                                 // between are for blending between metals and dielectrics such as dirty
                                                 // metallic surfaces. This value is linear. If a metallicRoughnessTexture
                                                 // is specified, this value is multiplied with the metallic texel values.
                                                 // (Source https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness)
-
-        float getRoughness();                   // The roughness of the material. A value of 1.0 means the material is
-        bool setRoughness(float roughness);     // completely rough. A value of 0.0 means the material is completely smooth.
+                                                // The roughness of the material. A value of 1.0 means the material is
+                                                // completely rough. A value of 0.0 means the material is completely smooth.
                                                 //  This value is linear. If a metallicRoughnessTexture is specified,
                                                 // this value is multiplied with the roughness texel values.
                                                 // (Source https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness)

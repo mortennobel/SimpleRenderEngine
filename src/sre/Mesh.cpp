@@ -389,6 +389,15 @@ namespace sre {
         return indices.at(indexSet).size();
     }
 
+    std::vector<glm::vec4> Mesh::getTangents() {
+        std::vector<glm::vec4> res;
+        auto ref = attributesVec4.find("tangent");
+        if (ref != attributesVec4.end()){
+            res = ref->second;
+        }
+        return res;
+    }
+
     Mesh::MeshBuilder &Mesh::MeshBuilder::withPositions(const std::vector<glm::vec3> &vertexPositions) {
         withAttribute("position", vertexPositions);
         return *this;
@@ -406,6 +415,11 @@ namespace sre {
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withColors(const std::vector<glm::vec4> &colors) {
         withAttribute("color", colors);
+        return *this;
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withTangents(const std::vector<glm::vec4> &tangent) {
+        withAttribute("tangent", tangent);
         return *this;
     }
 

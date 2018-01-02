@@ -157,19 +157,20 @@ namespace sre {
         return false;
     }
 
-    float Material::getMetallic() {
-        return get<float>("metallic");
+    std::shared_ptr<sre::Texture> Material::getMetallicRoughnessTexture() {
+        return get<std::shared_ptr<sre::Texture>>("mrTex");
     }
 
-    bool Material::setMetallic(float metallic) {
-        return set("metallic", metallic);
+    bool Material::setMetallicRoughnessTexture(std::shared_ptr<sre::Texture> texture) {
+        return set("mrTex",texture);
+
     }
 
-    float Material::getRoughness() {
-        return get<float>("roughness");
+    glm::vec2 Material::getMetallicRoughness() {
+        return (glm::vec2)get<glm::vec4>("metallicRoughness");
     }
 
-    bool Material::setRoughness(float roughness) {
-        return set("roughness", roughness);
+    bool Material::setMetallicRoughness(glm::vec2 metallicRoughness) {
+        return set("metallicRoughness",glm::vec4(metallicRoughness,0,0));
     }
 }

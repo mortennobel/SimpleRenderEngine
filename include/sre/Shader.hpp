@@ -19,6 +19,7 @@
 #include <memory>
 #include <vector>
 #include <map>
+#include <set>
 
 
 namespace sre {
@@ -97,6 +98,7 @@ namespace sre {
      *   Using specialized shaders is useful for performance reasons - only enabling features that the shader needs. But
      *   creating a specialized shader (as well as creating shaders in general) may caurse performance issues and should
      *   avoid during realtime rendering.
+     *   Specialization constants must start start with 'S_' and must consist of capital letters, digits and underscore.
      */
     class DllExport Shader : public std::enable_shared_from_this<Shader> {
         enum class ResourceType{
@@ -204,22 +206,22 @@ namespace sre {
 
         std::map<std::string,std::string> getCurrentSpecializationConstants();
 
-        std::vector<std::string> getAllSpecializationConstants();
+        std::set<std::string> getAllSpecializationConstants();
     private:
-        static std::string precompile(std::string source, std::vector<std::string>& errors, uint32_t shaderType);
+        std::string precompile(std::string source, std::vector<std::string>& errors, uint32_t shaderType);
 
         bool setLights(WorldLights* worldLights, glm::mat4 viewTransform);
 
         Shader();
 
         std::map<std::string,std::string> specializationConstants = {};
-        std::string specializationConstantsKey;                         // for fast comparison
+
         std::shared_ptr<Shader> parent = nullptr;
         std::vector<std::weak_ptr<Shader>> specializations;
 
         bool build(std::map<ShaderType,Resource> shaderSources, std::vector<std::string>& errors);
         static std::string getSource(Resource& resource);
-        static bool compileShader(Resource& resource, GLenum type, GLuint& shader, std::vector<std::string>& errors);
+        bool compileShader(Resource& resource, GLenum type, GLuint& shader, std::vector<std::string>& errors);
         void bind();
 
         unsigned int shaderProgramId = 0;
@@ -250,11 +252,13 @@ namespace sre {
         int uniformLocationModel;
         int uniformLocationView;
         int uniformLocationProjection;
-        int uniformLocationNormal;
+        int uniformLocationModelInverseTranspose;
+        int uniformLocationModelViewInverseTranspose;
         int uniformLocationViewport;
         int uniformLocationAmbientLight;
         int uniformLocationLightPosType;
         int uniformLocationLightColorRange;
+        int uniformLocationCameraPosition;
 
     public:
         static std::string translateToGLSLES(std::string source, bool vertexShader);

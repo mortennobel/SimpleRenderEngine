@@ -580,7 +580,7 @@ namespace sre {
         if (updatedShader || updatedPrecompile){
             if (showPrecompiled){
                 std::vector<std::string> temp;
-                textEditor.SetText(Shader::precompile(shaderCode[selectedShader],temp, to_id(shaderTypes[selectedShader])));
+                textEditor.SetText(shader->precompile(shaderCode[selectedShader],temp, to_id(shaderTypes[selectedShader])));
                 textEditor.SetReadOnly(true);
                 textEditor.SetErrorMarkers(TextEditor::ErrorMarkers());
             } else {
@@ -590,7 +590,7 @@ namespace sre {
             }
         }
         // Show error messages
-        if (errorsStr.size() > 0){
+        if (!errorsStr.empty()){
             if (ImGui::CollapsingHeader("Errors")){
                 for (int i=0;i<errors.size();i++){
                     std::string id = std::string("##_errors_")+std::to_string(i);
