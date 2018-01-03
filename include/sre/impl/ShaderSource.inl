@@ -9,7 +9,7 @@ uniform vec4 g_lightPosType[S_LIGHTS];
 uniform vec4 g_lightColorRange[S_LIGHTS];
 uniform float specularity;
 
-vec3 computeLight(){
+vec3 computeLight(vec3 wsPos, vec3 wsCameraPos){
     vec3 lightColor = vec3(0.0,0.0,0.0);
     vec3 normal = normalize(vNormal);
     for (int i=0;i<S_LIGHTS;i++){
@@ -20,7 +20,7 @@ vec3 computeLight(){
         if (isDirectional){
             lightDirection = g_lightPosType[i].xyz;
         } else if (isPoint) {
-            vec3 lightVector = g_lightPosType[i].xyz - vEyePos;
+            vec3 lightVector = g_lightPosType[i].xyz - wsPos;
             float lightVectorLength = length(lightVector);
             float lightRange = g_lightColorRange[i].w;
             lightDirection = lightVector / lightVectorLength; // compute normalized lightDirection (using length)
@@ -43,7 +43,7 @@ vec3 computeLight(){
 
         // specular light
         if (specularity > 0.0){
-            vec3 H = normalize(lightDirection - normalize(vEyePos));
+            vec3 H = normalize(lightDirection - normalize(wsPos - wsCameraPos));
             float nDotHV = dot(normal, H);
             if (nDotHV > 0.0){
                 float pf = pow(nDotHV, specularity);
@@ -73,7 +73,7 @@ out vec3 vWsPos;
 uniform mat4 g_model;
 uniform mat4 g_view;
 uniform mat4 g_projection;
-uniform mat3 g_model_view_it;
+uniform mat3 g_model_it;
 uniform vec4 g_lightPosType[S_LIGHTS];
 
 void main(void) {
@@ -81,11 +81,11 @@ void main(void) {
     vWsPos = wsPos.xyz / wsPos.w;
     gl_Position = g_projection * g_view * wsPos;
 #ifdef S_TANGENTS
-    vec3 wsNormal = normalize(g_model_view_it * normal);
-    vec3 wsTangent = normalize(g_model_view_it * tangent.xyz);
+    vec3 wsNormal = normalize(g_model_it * normal);
+    vec3 wsTangent = normalize(g_model_it * tangent.xyz);
     vec3 wsBitangent = cross(wsNormal, wsTangent) * tangent.w;
 #else
-    vNormal = normalize(g_model_view_it * normal);
+    vNormal = normalize(g_model_it * normal);
 #endif
     vUV = uv.xy;
 
@@ -301,35 +301,36 @@ void main(void)
         //color = mix(color, vec3(metallic), u_ScaleDiffBaseMR.z);
         //color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
     }
-    fragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a);
+    fragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a); // gamma correction
 }
         )"),
-        std::make_pair<std::string,std::string>("standard_phong.glsl",R"(#version 140
+        std::make_pair<std::string,std::string>("standard_phong_vert.glsl",R"(#version 140
 in vec3 position;
 in vec3 normal;
 in vec4 uv;
 out vec3 vNormal;
 out vec2 vUV;
-out vec3 vEyePos;
+out vec3 vWsPos;
 
 uniform mat4 g_model;
 uniform mat4 g_view;
 uniform mat4 g_projection;
-uniform mat3 g_model_view_it;
+uniform mat3 g_model_it;
 
 void main(void) {
-    vec4 eyePos = g_view * g_model * vec4(position,1.0);
-    gl_Position = g_projection * eyePos;
-    vNormal = normalize(g_model_view_it * normal);
+    vec4 wsPos = g_model * vec4(position,1.0);
+    gl_Position = g_projection * g_view * wsPos;
+    vNormal = normalize(g_model_it * normal);
     vUV = uv.xy;
-    vEyePos = eyePos.xyz;
+    vWsPos = vWsPos.xyz;
 }
 )"),
-        std::make_pair<std::string,std::string>("standard_phong.glsl",R"(#version 140
+        std::make_pair<std::string,std::string>("standard_phong_frag.glsl",R"(#version 140
 out vec4 fragColor;
 in vec3 vNormal;
 in vec2 vUV;
-in vec3 vEyePos;
+in vec3 vWsPos;
+uniform vec4 g_cameraPos;
 
 uniform vec4 color;
 uniform sampler2D tex;
@@ -340,7 +341,7 @@ void main(void)
 {
     vec4 c = color * texture(tex, vUV);
 
-    vec3 l = computeLight();
+    vec3 l = computeLight(vWsPos, g_cameraPos.xyz);
 
     fragColor = c * vec4(l, 1.0);
 }

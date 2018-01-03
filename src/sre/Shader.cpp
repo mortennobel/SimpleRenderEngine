@@ -419,6 +419,13 @@ namespace sre {
                         LOG_ERROR("Invalid g_projection uniform type. Expected mat4 - was %s.",c_str(uniformType));
                     }
                 }
+                if (strcmp(name, "g_model_it")==0){
+                    if (uniformType == UniformType::Mat3){
+                        uniformLocationModelInverseTranspose = location;
+                    } else {
+                        LOG_ERROR("Invalid g_model_it uniform type. Expected mat3 - was %s.",c_str(uniformType));
+                    }
+                }
                 if (strcmp(name, "g_model_view_it")==0){
                     if (uniformType == UniformType::Mat3){
                         uniformLocationModelViewInverseTranspose = location;
@@ -536,7 +543,7 @@ namespace sre {
                     lightPosType[i] = glm::vec4(light->direction, 0);
                 }
                 // transform to eye space
-                lightPosType[i] = viewTransform * lightPosType[i];
+                lightPosType[i] = lightPosType[i];
                 lightColorRange[i] = glm::vec4(light->color, light->range);
 
             }

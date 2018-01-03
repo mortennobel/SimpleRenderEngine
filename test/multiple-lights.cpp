@@ -30,9 +30,12 @@ class MultipleLightsExample {
         mesh = Mesh::create().withSphere().build();
 
         for (int i=0;i<Renderer::maxSceneLights;i++){
-            worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build());
+            worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,1,1}).withRange(10).build());
         }
-        mat = Shader::getStandard()->createMaterial();
+        mat = Shader::create().
+                withSourceFile("standard_phong_vert.glsl", ShaderType::Vertex).
+                withSourceFile("standard_phong_frag.glsl", ShaderType::Fragment).
+                build()->createMaterial();
         r.frameUpdate = [&](float deltaTime){
             update(deltaTime);
         };
@@ -83,6 +86,30 @@ class MultipleLightsExample {
         if (debugLight) {
             ImGui::DragFloat("DebugLightSize", &debugLightSize,0.1f,0,3);
         }
+
+        static int currenLightModel = 0;
+        bool changed = ImGui::Combo("LightModel", &currenLightModel,"Phong\0PBR\0");
+        if (changed){
+            if (currenLightModel == 1){
+                mat = Shader::getStandard()->createMaterial();
+                mat->setMetallicRoughness(metallicRoughness);
+            } else {
+                mat = Shader::create().
+                        withSourceFile("standard_phong_vert.glsl", ShaderType::Vertex).
+                        withSourceFile("standard_phong_frag.glsl", ShaderType::Fragment).
+                        build()->createMaterial();
+                mat->setSpecularity(specularity);
+            }
+        }
+        if (currenLightModel == 0){
+            ImGui::DragFloat("Specularity", &specularity,0.1f,0,120);
+            mat->setSpecularity(specularity);
+        } else {
+            ImGui::DragFloat("Metallic", &metallicRoughness.x,0.02f,0,1);
+            ImGui::DragFloat("Roughness", &metallicRoughness.y,0.02f,0,1);
+            mat->setMetallicRoughness(metallicRoughness);
+        }
+
         // Show Label (with invisible window)
         for (int i=0;i<Renderer::maxSceneLights;i++){
             auto l = worldLights.getLight(i);
@@ -98,7 +125,9 @@ class MultipleLightsExample {
                 ImGui::RadioButton("Unused", &lightType, 2);
                 l->lightType = (LightType)lightType;
 
+
                 ImGui::ColorEdit3("Color", &(l->color.x));
+
                 ImGui::DragFloat3("Position", &(l->position.x));
                 ImGui::DragFloat3("Direction", &(l->direction.x));
                 ImGui::DragFloat("Range", &(l->range),1,0,30);
@@ -139,8 +168,11 @@ class MultipleLightsExample {
     glm::vec3 up{0,1,0};
     Camera camera;
 
-    std::shared_ptr<Material> mat;
+    glm::vec2 metallicRoughness = {0.5,0.5};
     float specularity = 20;
+
+    std::shared_ptr<Material> mat;
+
     glm::vec4 color {1,1,1,1};
 
     std::shared_ptr<Mesh> mesh;
