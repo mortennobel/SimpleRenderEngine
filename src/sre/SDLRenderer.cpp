@@ -203,25 +203,19 @@ namespace sre{
 
 #ifdef SRE_DEBUG_CONTEXT
 			if (glDebugMessageCallback) {
-				//GLenum err = glewInit();
-				//if (GLEW_OK != err)
-				{
-					/* Problem: glewInit failed, something is seriously wrong. */
-					LOG_INFO("Register OpenGL debug callback ");
+				LOG_INFO("Register OpenGL debug callback ");
 
-					std::cout << "Register OpenGL debug callback " << std::endl;
-					glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-					glDebugMessageCallback(openglCallbackFunction, nullptr);
-					GLuint unusedIds = 0;
-					glDebugMessageControl(GL_DONT_CARE,
-						GL_DONT_CARE,
-						GL_DONT_CARE,
-						0,
-						&unusedIds,
-						true);
-				}
-				//else
-				//	LOG_INFO("glDebugMessageCallback not available");
+				std::cout << "Register OpenGL debug callback " << std::endl;
+				glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+				glDebugMessageCallback(openglCallbackFunction, nullptr);
+				GLuint unusedIds = 0;
+				glDebugMessageControl(GL_DONT_CARE,
+					GL_DONT_CARE,
+					GL_DONT_CARE,
+					0,
+					&unusedIds,
+					true);
+				
 			}
 #endif
 #ifndef EMSCRIPTEN

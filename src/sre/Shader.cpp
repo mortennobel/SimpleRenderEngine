@@ -332,6 +332,7 @@ namespace sre {
         uniformLocationView = -1;
         uniformLocationProjection = -1;
         uniformLocationModelViewInverseTranspose = -1;
+		uniformLocationModelInverseTranspose = -1;
         uniformLocationViewport = -1;
         uniformLocationAmbientLight = -1;
         uniformLocationLightPosType = -1;
