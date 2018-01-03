@@ -19,11 +19,11 @@ namespace vr {
 }
 #endif
 
+
 namespace sre {
 
 	enum class VRType {
-		OpenVR,
-		Oculus
+		OpenVR
 	};
 
 	class VR
@@ -46,7 +46,8 @@ namespace sre {
 		void setNearFarPlanes(float nearPlane, float farPlane);
 		void debugGUI();
 	private:
-		VR();
+		VRType vrType;
+		VR(VRType vrType);
 		void updateHMDMatrixPose();
 		glm::mat4 baseViewTransform = glm::mat4(1);
 		float nearPlane = 0.1;

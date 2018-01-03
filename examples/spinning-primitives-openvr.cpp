@@ -67,7 +67,7 @@ public:
 			render(renderPass);
 		};
 		vr->lookAt(eye, at, up);
-        r.startEventLoop();
+        r.startEventLoop(vr);
     }
 
     void render(){
