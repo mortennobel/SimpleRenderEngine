@@ -427,6 +427,14 @@ void TextEditor::NewLine(){
 		EnterCharacter(c);
 	}
 }
+namespace {
+	static bool IsKeyPressedMap(ImGuiKey key, bool repeat = true)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		const int key_index = io.KeyMap[key];
+		return (key_index >= 0) ? ImGui::IsKeyPressed(key_index, repeat) : false;
+	}
+}
 
 void TextEditor::Render(const char* aTitle, const ImVec2& aSize, bool aBorder)
 {
@@ -445,6 +453,7 @@ void TextEditor::Render(const char* aTitle, const ImVec2& aSize, bool aBorder)
 	auto shift = io.KeyShift;
 	auto ctrl = io.KeyCtrl;
 	auto alt = io.KeyAlt;
+	const bool is_shortcut_key_only = (io.OptMacOSXBehaviors ? (io.KeySuper && !io.KeyCtrl) : (io.KeyCtrl && !io.KeySuper)) && !io.KeyAlt && !io.KeyShift; // OS X style: Shortcuts using Cmd/Super instead of Ctrl
 
 	if (ImGui::IsWindowFocused())
 	{
@@ -452,13 +461,9 @@ void TextEditor::Render(const char* aTitle, const ImVec2& aSize, bool aBorder)
 			ImGui::SetMouseCursor(ImGuiMouseCursor_TextInput);
 		//ImGui::CaptureKeyboardFromApp(true);
 
-		if (!IsReadOnly() && ImGui::IsKeyPressed('Z'))
-			if (ctrl && !shift && !alt)
-				Undo();
-		if (!IsReadOnly() && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Backspace)))
-			if (!ctrl && !shift && alt)
-				Undo();
-		if (!IsReadOnly() && ctrl && !shift && !alt && ImGui::IsKeyPressed('Y'))
+		if (!IsReadOnly() && is_shortcut_key_only && IsKeyPressedMap(ImGuiKey_Z))
+			Undo();
+		if (!IsReadOnly() && ctrl && shift &&  IsKeyPressedMap(ImGuiKey_Z))
 			Redo();
 		if (!IsReadOnly() && !ctrl && !shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Tab)))
 			EnterCharacter((char)'\t');
@@ -490,17 +495,13 @@ void TextEditor::Render(const char* aTitle, const ImVec2& aSize, bool aBorder)
 			BackSpace();
 		else if (!ctrl && !shift && !alt && ImGui::IsKeyPressed(45))
 			mOverwrite ^= true;
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed(45))
+		else if (!IsReadOnly() && is_shortcut_key_only && IsKeyPressedMap(ImGuiKey_C))
 			Copy();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('C'))
+		else if (!IsReadOnly() && is_shortcut_key_only && IsKeyPressedMap(ImGuiKey_Y))
 			Copy();
-		else if (!IsReadOnly() && !ctrl && shift && !alt && ImGui::IsKeyPressed(45))
+		else if (!IsReadOnly() && is_shortcut_key_only && IsKeyPressedMap(ImGuiKey_V))
 			Paste();
-		else if (!IsReadOnly() && ctrl && !shift && !alt && ImGui::IsKeyPressed('V'))
-			Paste();
-		else if (ctrl && !shift && !alt && ImGui::IsKeyPressed('X'))
-			Cut();
-		else if (!ctrl && shift && !alt && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Delete)))
+		else if (!IsReadOnly() && is_shortcut_key_only && IsKeyPressedMap(ImGuiKey_X))
 			Cut();
 
 		if (!IsReadOnly())
