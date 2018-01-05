@@ -34,6 +34,7 @@ namespace sre {
     // anonymous (file local) namespace
     namespace {
         std::shared_ptr<Shader> standard;
+        std::shared_ptr<Shader> standardPhong;
         std::shared_ptr<Shader> unlit;
         std::shared_ptr<Shader> unlitSprite;
         std::shared_ptr<Shader> standardParticles;
@@ -873,6 +874,18 @@ namespace sre {
             }
         }
         return res;
+    }
+
+    std::shared_ptr<Shader> Shader::getStandardPhong() {
+        if (standardPhong != nullptr){
+            return standardPhong;
+        }
+        standardPhong = create()
+                .withSourceFile("standard_phong_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("standard_phong_frag.glsl", ShaderType::Fragment)
+                .withName("StandardPhong")
+                .build();
+        return standardPhong;
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSource(const std::string& vertexShader, const std::string& fragmentShader) {

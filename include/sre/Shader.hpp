@@ -157,6 +157,16 @@ namespace sre {
                                                                //   "normal" vec3
                                                                //   "uv" vec4
 
+        static std::shared_ptr<Shader> getStandardPhong();      // Phong Light Model. Uses light objects and ambient light set in Renderer.
+                                                                // Uniforms
+                                                                //   "color" vec4 (default (1,1,1,1))
+                                                                //   "tex" shared_ptr<Texture> (default white texture)
+                                                                // "specularity" float (default 0 = no specularity)
+                                                                // VertexAttributes
+                                                                //   "position" vec3
+                                                                //   "normal" vec3
+                                                                //   "uv" vec4
+
         static std::shared_ptr<Shader> getUnlit();             // Unlit model.
                                                                // Uniforms
                                                                //   "color" vec4 (default (1,1,1,1))

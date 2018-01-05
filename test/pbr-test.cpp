@@ -1,7 +1,6 @@
 //
 // Created by Morten Nobel-Jørgensen on 18/07/2017.
 //
-// Test based on http://www.schaik.com/pngsuite/pngsuite_bas_png.html
 
 #include <iostream>
 #include <vector>
@@ -9,7 +8,6 @@
 
 #include "sre/Texture.hpp"
 #include "sre/Renderer.hpp"
-#include "sre/Material.hpp"
 #include "sre/SDLRenderer.hpp"
 
 #include <glm/gtx/euler_angles.hpp>

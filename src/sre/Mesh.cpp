@@ -485,6 +485,7 @@ namespace sre {
         size_t vertexCount = (size_t) ((stacks + 1) * (slices+1));
         vector<vec3> vertices{vertexCount};
         vector<vec3> normals{vertexCount};
+        vector<vec4> tangents{vertexCount};
         vector<vec4> uvs{vertexCount};
 
         int index = 0;
@@ -502,6 +503,7 @@ namespace sre {
                             sinLong * cosLat1};
                 vec3 normal = (vec3)normalize(normalD);
                 normals[index] = normal;
+                tangents[index] = vec4((vec3)normalize(dvec3(-sinLong * cosLat1,0,cosLong * cosLat1)),1);
                 uvs[index] = vec4{1 - i /(float) slices, j /(float) stacks,0,0};
                 vertices[index] = normal * radius;
                 index++;
@@ -509,6 +511,7 @@ namespace sre {
         }
         vector<vec3> finalPosition;
         vector<vec3> finalNormals;
+        vector<vec4> finalTangents;
         vector<vec4> finalUVs;
         // create indices
         for (int j = 0; j < stacks; j++) {
@@ -537,6 +540,7 @@ namespace sre {
 
         withPositions(finalPosition);
         withNormals(finalNormals);
+        withTangents(finalTangents);
         withUVs(finalUVs);
         withMeshTopology(MeshTopology::Triangles);
 
@@ -557,6 +561,7 @@ namespace sre {
         size_t vertexCount = (size_t) ((segmentsC + 1) * (segmentsA+1));
         vector<vec3> vertices{vertexCount};
         vector<vec3> normals{vertexCount};
+        vector<vec4> tangents{vertexCount};
         vector<vec4> uvs{vertexCount};
 
         int index = 0;
@@ -579,14 +584,21 @@ namespace sre {
                         (radiusC+(radiusA*2)*cos(v))*sin(u),
                         (radiusA*2)*sin(v)
                 };
+                glm::vec3 tangent {
+                        (radiusC+radiusA*cos(v))*cos(u),
+                        (radiusC+radiusA*cos(v))*sin(u),
+                        radiusA*sin(v)
+                };
                 uvs[index] = vec4{1 - j /(float) segmentsC, i /(float) segmentsA,0,0};
                 vertices[index] = pos;
                 normals[index] = glm::normalize(posOuter - pos);
+                tangents[index] = vec4((vec3)normalize(dvec3(-sin(u) * cos(u),cos(u)* cos(u),0)),1);
                 index++;
             }
         }
         vector<vec3> finalPosition;
         vector<vec3> finalNormals;
+        vector<vec4> finalTangents;
         vector<vec4> finalUVs;
         // create indices
         for (int j = 0; j < segmentsC; j++) {
@@ -607,6 +619,7 @@ namespace sre {
                     index = o[1] * (segmentsA+1)  + o[0];
                     finalPosition.push_back(vertices[index]);
                     finalNormals.push_back(normals[index]);
+                    finalTangents.push_back(tangents[index]);
                     finalUVs.push_back(uvs[index]);
                 }
 
@@ -615,6 +628,7 @@ namespace sre {
 
         withPositions(finalPosition);
         withNormals(finalNormals);
+        withTangents(finalTangents);
         withUVs(finalUVs);
         withMeshTopology(MeshTopology::Triangles);
 
@@ -710,9 +724,49 @@ namespace sre {
                                      vec3{0, -1, 0},
                              });
 
+        vector<vec4> tangents({
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{0, 0, -1,1},
+                                     vec4{0, 0, -1,1},
+                                     vec4{0, 0, -1,1},
+                                     vec4{0, 0, -1,1},
+                                     vec4{0, 0, -1,1},
+                                     vec4{0, 0, -1,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{0, 0,  1,1},
+                                     vec4{0, 0,  1,1},
+                                     vec4{0, 0,  1,1},
+                                     vec4{0, 0,  1,1},
+                                     vec4{0, 0,  1,1},
+                                     vec4{0, 0,  1,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                             });
+
         withPositions(positions);
         withNormals(normals);
         withUVs(uvs);
+        withTangents(tangents);
         withMeshTopology(MeshTopology::Triangles);
 
         return *this;
@@ -737,6 +791,12 @@ namespace sre {
                                                glm::vec3{0, 0, 1},
                                                glm::vec3{0, 0, 1}
                                        });
+        std::vector<glm::vec4> tangents({
+                                               glm::vec4{1, 0,0, 1},
+                                               glm::vec4{1, 0,0, 1},
+                                               glm::vec4{1, 0,0, 1},
+                                               glm::vec4{1, 0,0, 1}
+                                       });
         std::vector<glm::vec4> uvs({
                                            glm::vec4{1, 0,0,0},
                                            glm::vec4{1, 1,0,0},
@@ -749,6 +809,7 @@ namespace sre {
         };
         withPositions(vertices);
         withNormals(normals);
+        withTangents(tangents);
         withUVs(uvs);
         withIndices(indices);
         withMeshTopology(MeshTopology::Triangles);

@@ -14,8 +14,8 @@ Simple Render Engine provides some coding styles:
 * glm::mat4 **g_model** Model transform, which transforms from local space to world space. 
 * glm::mat4 **g_view** View transform, which transforms from world space to eye space.
 * glm::mat4 **g_projection** Projection transform, which transforms from eye space to clip space.
-* glm::mat3 **g_model_it** Model transform inverse transpose, which transforms normals local space to world space.
-* glm::mat3 **g_model_view_it** Model-View inverse transpose, which transforms normals local space to eye space.
+* glm::mat3 **g_model_it** Model transform inverse transpose, used to transforms normals local space to world space.
+* glm::mat3 **g_model_view_it** Model-View inverse transpose, used to transforms normals local space to eye space.
 * glm::mat3 **g_viewport** viewportSize (xy) and viewportOffset(zw)
 
 **Light**

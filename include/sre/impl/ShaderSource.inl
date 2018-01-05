@@ -60,7 +60,7 @@ vec3 computeLight(vec3 wsPos, vec3 wsCameraPos){
 in vec3 position;
 in vec3 normal;
 in vec4 uv;
-#ifdef S_TANGENTS
+#if defined(S_TANGENTS) && defined(S_NORMALMAP)
 in vec4 tangent;
 out mat3 vTBN;
 #else
@@ -80,10 +80,11 @@ void main(void) {
     vec4 wsPos = g_model * vec4(position,1.0);
     vWsPos = wsPos.xyz;
     gl_Position = g_projection * g_view * wsPos;
-#ifdef S_TANGENTS
+#if defined(S_TANGENTS) && defined(S_NORMALMAP)
     vec3 wsNormal = normalize(g_model_it * normal);
     vec3 wsTangent = normalize(g_model_it * tangent.xyz);
     vec3 wsBitangent = cross(wsNormal, wsTangent) * tangent.w;
+    vTBN = mat3(wsTangent, wsBitangent, wsNormal);
 #else
     vNormal = normalize(g_model_it * normal);
 #endif
@@ -107,7 +108,11 @@ void main(void) {
 #extension GL_EXT_shader_texture_lod: enable
 #extension GL_OES_standard_derivatives : enable
 out vec4 fragColor;
+#if defined(S_TANGENTS) && defined(S_NORMALMAP)
+in mat3 vTBN;
+#else
 in vec3 vNormal;
+#endif
 in vec2 vUV;
 in vec3 vWsPos;
 in vec3 vLightDir[S_LIGHTS];
@@ -167,7 +172,7 @@ vec3 getNormal()
     vec3 b = normalize(cross(ng, t));
     mat3 tbn = mat3(t, b, ng);
 #else // S_TANGENTS
-    mat3 tbn = v_TBN;
+    mat3 tbn = vTBN;
 #endif
 
     vec3 n = texture(normalTex, vUV).rgb;
