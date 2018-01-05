@@ -226,7 +226,7 @@ namespace sre {
 
 
 
-        projection = builder.camera.getProjectionTransform(windowSize);
+        projection = builder.camera.getProjectionTransform(viewportSize);
 
         for (auto & rqObj : renderQueue){
             drawInstance(rqObj);
