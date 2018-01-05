@@ -78,7 +78,7 @@ uniform vec4 g_lightPosType[S_LIGHTS];
 
 void main(void) {
     vec4 wsPos = g_model * vec4(position,1.0);
-    vWsPos = wsPos.xyz / wsPos.w;
+    vWsPos = wsPos.xyz;
     gl_Position = g_projection * g_view * wsPos;
 #ifdef S_TANGENTS
     vec3 wsNormal = normalize(g_model_it * normal);
@@ -97,7 +97,7 @@ void main(void) {
         if (isDirectional){
             vLightDir[i] = g_lightPosType[i].xyz;
         } else if (isPoint) {
-            vLightDir[i] = g_lightPosType[i].xyz - vWsPos;
+            vLightDir[i] = normalize(g_lightPosType[i].xyz - vWsPos);
         }
     }
 }
@@ -117,16 +117,42 @@ uniform vec4 color;
 uniform vec4 metallicRoughness;
 uniform vec4 g_cameraPos;
 uniform sampler2D tex;
+#ifdef S_METALROUGHNESSMAP
 uniform sampler2D mrTex;
+#endif
 #ifdef S_NORMALMAP
 uniform sampler2D normalTex;
 uniform float normalScale;
 #endif
+#ifdef S_EMISSIVEMAP
+uniform sampler2D emissiveTex;
+uniform vec4 emissiveFactor;
+#endif
+#ifdef S_OCCLUSIONMAP
+uniform sampler2D occlusionTex;
+uniform float occlusionStrength;
+#endif
+
+vec4 SRGBtoLINEAR(vec4 srgbIn)
+{
+    #ifdef MANUAL_SRGB
+    #ifdef SRGB_FAST_APPROXIMATION
+    vec3 linOut = pow(srgbIn.xyz,vec3(2.2));
+    #else //SRGB_FAST_APPROXIMATION
+    vec3 bLess = step(vec3(0.04045),srgbIn.xyz);
+    vec3 linOut = mix( srgbIn.xyz/vec3(12.92), pow((srgbIn.xyz+vec3(0.055))/vec3(1.055),vec3(2.4)), bLess );
+    #endif //SRGB_FAST_APPROXIMATION
+    return vec4(linOut,srgbIn.w);
+    #else //MANUAL_SRGB
+    return srgbIn;
+    #endif //MANUAL_SRGB
+}
 
 // Find the normal for this fragment, pulling either from a predefined normal map
 // or from the interpolated mesh normal and tangent attributes.
 vec3 getNormal()
 {
+#ifdef S_NORMALMAP
     // Retrieve the tangent space matrix
 #ifndef S_TANGENTS
     vec3 pos_dx = dFdx(vWsPos);
@@ -144,11 +170,10 @@ vec3 getNormal()
     mat3 tbn = v_TBN;
 #endif
 
-#ifdef S_NORMALMAP
-    vec3 n = texture2D(normalTex, vUV).rgb;
+    vec3 n = texture(normalTex, vUV).rgb;
     n = normalize(tbn * ((2.0 * n - 1.0) * vec3(normalScale, normalScale, 1.0)));
 #else
-    vec3 n = tbn[2].xyz;
+    vec3 n = normalize(vNormal);
 #endif
 
     return n;
@@ -224,7 +249,7 @@ void main(void)
 #ifdef S_METALROUGHNESSMAP
     // Roughness is stored in the 'g' channel, metallic is stored in the 'b' channel.
     // This layout intentionally reserves the 'r' channel for (optional) occlusion map data
-    vec4 mrSample = texture2D(mrTex, vUV);
+    vec4 mrSample = texture(mrTex, vUV);
     perceptualRoughness = mrSample.g * perceptualRoughness;
     metallic = mrSample.b * metallic;
 #endif
@@ -234,7 +259,7 @@ void main(void)
     // convert to material roughness by squaring the perceptual roughness [2].
     float alphaRoughness = perceptualRoughness * perceptualRoughness;
 
-#ifdef S_BASECOLORMAP
+#ifndef S_NO_BASECOLORMAP
     vec4 baseColor = SRGBtoLINEAR(texture(tex, vUV)) * color;
 #else
     vec4 baseColor = color;
@@ -261,8 +286,8 @@ void main(void)
         vec3 h = normalize(l+v);                          // Half vector between both l and v
         vec3 reflection = -normalize(reflect(v, n));
 
-        float NdotL = clamp(dot(n, l), 0.001, 1.0);
-        float NdotV = abs(dot(n, v)) + 0.001;
+        float NdotL = clamp(dot(n, l), 0.0001, 1.0);
+        float NdotV = abs(dot(n, v)) + 0.0001;
         float NdotH = clamp(dot(n, h), 0.0, 1.0);
         float LdotH = clamp(dot(l, h), 0.0, 1.0);
         float VdotH = clamp(dot(v, h), 0.0, 1.0);
@@ -291,16 +316,17 @@ void main(void)
         vec3 diffuseContrib = (1.0 - F) * diffuse(pbrInputs);
         vec3 specContrib = F * G * D / (4.0 * NdotL * NdotV);
         color += NdotL * g_lightColorRange[i].xyz * (diffuseContrib + specContrib);
-
-        //color = mix(color, F, u_ScaleFGDSpec.x);
-        //color = mix(color, vec3(G), u_ScaleFGDSpec.y);
-        //color = mix(color, vec3(D), u_ScaleFGDSpec.z);
-        //color = mix(color, specContrib, u_ScaleFGDSpec.w);
-        //color = mix(color, diffuseContrib, u_ScaleDiffBaseMR.x);
-        //color = mix(color, baseColor.rgb, u_ScaleDiffBaseMR.y);
-        //color = mix(color, vec3(metallic), u_ScaleDiffBaseMR.z);
-        //color = mix(color, vec3(perceptualRoughness), u_ScaleDiffBaseMR.w);
     }
+
+    // Apply optional PBR terms for additional (optional) shading
+#ifdef S_OCCLUSIONMAP
+    float ao = texture(occlusionTex, vUV).r;
+    color = mix(color, color * ao, occlusionStrength);
+#endif
+#ifdef S_EMISSIVEMAP
+    vec3 emissive = SRGBtoLINEAR(texture(emissiveTex, vUV)).rgb * emissiveFactor.xyz;
+    color += emissive;
+#endif
     fragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a); // gamma correction
 }
         )"),

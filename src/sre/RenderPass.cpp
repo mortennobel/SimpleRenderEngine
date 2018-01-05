@@ -160,7 +160,7 @@ namespace sre {
                 glm::vec4 cameraPos = glm::vec4(this->builder.camera.getPosition(),1.0f);
                 glUniform4fv(shader->uniformLocationCameraPosition, 1, glm::value_ptr(cameraPos));
             }
-            shader->setLights(builder.worldLights, builder.camera.getViewTransform());
+            shader->setLights(builder.worldLights);
         }
     }
 

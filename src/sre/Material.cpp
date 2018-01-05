@@ -30,6 +30,7 @@ namespace sre {
             glActiveTexture(GL_TEXTURE0 + textureSlot);
             glBindTexture(t.value->target, t.value->textureId);
             glUniform1i(t.id, textureSlot);
+            textureSlot++;
         }
         for (auto t : vectorValues) {
             glUniform4fv(t.id, 1, glm::value_ptr(t.value));

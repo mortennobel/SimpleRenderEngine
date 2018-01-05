@@ -20,6 +20,7 @@ namespace sre {
         void removeLight(int index);                        // Remove light by index
         Light* getLight(int index);                         // Get light at position
         int lightCount();                                   // The number of lights
+        void clear();                                       // Clear all lights
         void setAmbientLight(const glm::vec3& light);       // Set ambient light
         glm::vec3 getAmbientLight();                        // Get ambient light
     private:

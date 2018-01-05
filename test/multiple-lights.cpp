@@ -16,6 +16,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <sre/SDLRenderer.hpp>
+#include <sre/Inspector.hpp>
 
 using namespace sre;
 
@@ -32,10 +33,14 @@ class MultipleLightsExample {
         for (int i=0;i<Renderer::maxSceneLights;i++){
             worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,1,1}).withRange(10).build());
         }
-        mat = Shader::create().
-                withSourceFile("standard_phong_vert.glsl", ShaderType::Vertex).
-                withSourceFile("standard_phong_frag.glsl", ShaderType::Fragment).
-                build()->createMaterial();
+        for (int i=1;i<Renderer::maxSceneLights;i++){
+            worldLights.getLight(i)->lightType = LightType::Unused;
+        }
+        mat = Shader::create()
+                .withName("Phong")
+                .withSourceFile("standard_phong_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("standard_phong_frag.glsl", ShaderType::Fragment)
+                .build()->createMaterial();
         r.frameUpdate = [&](float deltaTime){
             update(deltaTime);
         };
@@ -76,10 +81,11 @@ class MultipleLightsExample {
         camera.lookAt(eye,at, up);
         if (animatedLight){
             worldLights.getLight(0)->position = {
-                    sin(time)*1.5f,
-                    sin(time*2)*0.5f,
-                    cos(time)*1.5f,
+                    sin(time)*1.5f*2,
+                    sin(time*2)*0.5f*2,
+                    cos(time)*1.5f*2,
             };
+            std::cout << glm::length(worldLights.getLight(0)->position) << std::endl;
         }
 
         ImGui::Checkbox("DebugLight",&debugLight);
@@ -94,10 +100,11 @@ class MultipleLightsExample {
                 mat = Shader::getStandard()->createMaterial();
                 mat->setMetallicRoughness(metallicRoughness);
             } else {
-                mat = Shader::create().
-                        withSourceFile("standard_phong_vert.glsl", ShaderType::Vertex).
-                        withSourceFile("standard_phong_frag.glsl", ShaderType::Fragment).
-                        build()->createMaterial();
+                mat = Shader::create()
+                        .withName("Phong")
+                        .withSourceFile("standard_phong_vert.glsl", ShaderType::Vertex)
+                        .withSourceFile("standard_phong_frag.glsl", ShaderType::Fragment)
+                        .build()->createMaterial();
                 mat->setSpecularity(specularity);
             }
         }
@@ -142,6 +149,10 @@ class MultipleLightsExample {
             ImGui::ColorEdit3("Color", &(color.x));
             ImGui::TreePop();
         }
+
+        static Inspector inspector;
+        inspector.update();
+        inspector.gui();
     }
 
     void drawCross(RenderPass& rp, glm::vec3 p, float size = 0.3f){
@@ -162,7 +173,7 @@ class MultipleLightsExample {
     }
 
     private:
-        SDLRenderer r;
+    SDLRenderer r;
     glm::vec3 eye{0,0,5};
     glm::vec3 at{0,0,0};
     glm::vec3 up{0,1,0};

@@ -210,7 +210,7 @@ namespace sre {
     private:
         std::string precompile(std::string source, std::vector<std::string>& errors, uint32_t shaderType);
 
-        bool setLights(WorldLights* worldLights, glm::mat4 viewTransform);
+        bool setLights(WorldLights* worldLights);
 
         Shader();
 

@@ -515,11 +515,12 @@ namespace sre {
         }
     }
 
-    bool Shader::setLights(WorldLights* worldLights, glm::mat4 viewTransform){
-        if (worldLights==nullptr){
+    bool Shader::setLights(WorldLights* worldLights){
+        if (worldLights == nullptr){
             glUniform4f(uniformLocationAmbientLight, 0,0,0,0);
-            static float noLight[Renderer::maxSceneLights*4];
-            for (int i=0;i<Renderer::maxSceneLights*4;i++){
+            const int vec4Elements = 4;
+            float noLight[Renderer::maxSceneLights * vec4Elements];
+            for (int i=0;i<Renderer::maxSceneLights * vec4Elements;i++){
                 noLight[i] = 0;
             }
             glUniform4fv(uniformLocationLightPosType, Renderer::maxSceneLights, noLight);
@@ -540,7 +541,7 @@ namespace sre {
                 } else if (light->lightType == LightType::Point) {
                     lightPosType[i] = glm::vec4(light->position, 1);
                 } else if (light->lightType == LightType::Directional) {
-                    lightPosType[i] = glm::vec4(light->direction, 0);
+                    lightPosType[i] = glm::vec4(glm::normalize(light->direction), 0);
                 }
                 // transform to eye space
                 lightPosType[i] = lightPosType[i];
@@ -756,7 +757,7 @@ namespace sre {
         if (parent){
             return parent->createMaterial(std::move(specializationConstants));
         }
-        if (specializationConstants.size()>0){
+        if (!specializationConstants.empty()){
             for (auto & s : specializations){
                 if (auto ptr = s.lock()){
                     if (map_compare(specializationConstants, ptr->specializationConstants)){
@@ -774,6 +775,10 @@ namespace sre {
             res.shaderSources = this->shaderSources;
             res.specializationConstants = specializationConstants;
             auto specializedShader = res.build();
+            if (specializedShader == nullptr){
+                LOG_WARNING("Cannot create specialized shader. Using shader without specialization.");
+                return std::shared_ptr<Material>(new Material(shared_from_this()));
+            }
             specializedShader->parent = shared_from_this();
             specializations.push_back(std::weak_ptr<Shader>(specializedShader));
             return std::shared_ptr<Material>(new Material(specializedShader));
@@ -828,7 +833,9 @@ namespace sre {
         source = pragmaInclude(source, errors, shaderType);
 
         // Set engine defined shader constants
-        source = std::regex_replace(source, std::regex("S_LIGHTS"), std::to_string(Renderer::maxSceneLights));
+        if (specializationConstants.find("S_LIGHTS") == specializationConstants.end()){
+            source = std::regex_replace(source, std::regex("S_LIGHTS"), std::to_string(Renderer::maxSceneLights));
+        }
 
 #ifdef EMSCRIPTEN
         source = Shader::translateToGLSLES(source, type==GL_VERTEX_SHADER);

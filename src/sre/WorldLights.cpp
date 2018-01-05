@@ -46,4 +46,8 @@ namespace sre {
     glm::vec3 WorldLights::getAmbientLight() {
         return ambientLight;
     }
+
+    void WorldLights::clear() {
+        lights.clear();
+    }
 }
