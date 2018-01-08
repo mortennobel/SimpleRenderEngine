@@ -1,2 +1,2 @@
-add_executable(files_to_cpp files_to_cpp.cpp)
+add_executable(files-to-cpp files_to_cpp.cpp)
 

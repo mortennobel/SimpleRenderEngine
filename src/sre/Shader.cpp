@@ -640,7 +640,11 @@ namespace sre {
         return unlitSprite;
     }
 
-    std::shared_ptr<Shader> Shader::getStandard() {
+    std::shared_ptr<Shader> Shader::getStandard(){
+        return getStandardPhong();
+    }
+
+    std::shared_ptr<Shader> Shader::getStandardPBR(){
         if (standard != nullptr){
             return standard;
         }

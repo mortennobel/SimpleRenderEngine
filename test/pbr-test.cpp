@@ -87,7 +87,7 @@ public:
 
     void updateMaterial(){
 
-        material = Shader::getStandard()->createMaterial(specialization);
+        material = Shader::getStandardPBR()->createMaterial(specialization);
         material->setColor(color);
         material->setMetallicRoughness(metallicRoughness);
         material->setTexture(colorTex);
@@ -177,7 +177,7 @@ public:
             ImGui::Combo("Mesh",&meshType, "Sphere\0Cube\0Torus\0");
         }
         if (ImGui::CollapsingHeader("Shader")){
-            auto shaderConstants = Shader::getStandard()->getAllSpecializationConstants();
+            auto shaderConstants = Shader::getStandardPBR()->getAllSpecializationConstants();
             for (auto& s : shaderConstants){
                 bool checked = specialization.find(s) != specialization.end();
                 if (ImGui::Checkbox(s.c_str(), &checked)){

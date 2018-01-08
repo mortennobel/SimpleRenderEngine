@@ -148,7 +148,10 @@ namespace sre {
             friend class Shader;
         };
 
-        static std::shared_ptr<Shader> getStandard();          // Phong Light Model. Uses light objects and ambient light set in Renderer.
+        DEPRECATED("Use getStandardPBR or getStandardPhong")
+        static std::shared_ptr<Shader> getStandard();
+
+        static std::shared_ptr<Shader> getStandardPBR();       // Phong Light Model. Uses light objects and ambient light set in Renderer.
                                                                // Uniforms
                                                                //   "color" vec4 (default (1,1,1,1))
                                                                //   "tex" shared_ptr<Texture> (default white texture)
