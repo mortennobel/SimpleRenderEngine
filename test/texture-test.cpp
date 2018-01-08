@@ -54,7 +54,11 @@ public:
 		}
 
 		mesh = Mesh::create().withCube().build();
-		material = Shader::create().withSourceUnlit().withBlend(BlendType::AlphaBlending).build()->createMaterial();
+		material = Shader::create()
+				.withSourceFile("unlit_vert.glsl", ShaderType::Vertex)
+				.withSourceFile("unlit_frag.glsl", ShaderType::Fragment)
+				.withBlend(BlendType::AlphaBlending)
+				.build()->createMaterial();
 		
         r.frameRender = [&](){
             render();

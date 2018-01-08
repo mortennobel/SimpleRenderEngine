@@ -618,7 +618,8 @@ namespace sre {
         }
 
         unlit = create()
-                .withSourceUnlit()
+                .withSourceFile("unlit_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("unlit_frag.glsl", ShaderType::Fragment)
                 .withName("Unlit")
                 .build();
         return unlit;
@@ -630,7 +631,8 @@ namespace sre {
         }
 
         unlitSprite =  create()
-                .withSourceUnlitSprite()
+                .withSourceFile("sprite_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("sprite_frag.glsl", ShaderType::Fragment)
                 .withBlend(BlendType::AlphaBlending)
                 .withDepthTest(false)
                 .withName("Unlit Sprite")
@@ -643,7 +645,8 @@ namespace sre {
             return standard;
         }
         standard = create()
-                .withSourceStandard()
+                .withSourceFile("standard_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("standard_frag.glsl", ShaderType::Fragment)
                 .withName("Standard")
                 .build();
         return standard;
@@ -661,13 +664,17 @@ namespace sre {
 		return u;
     }
 
+    // The particle size used in this shader depends on the height of the screensize (to make the particles resolution independent):
+    // for perspective projection, the size of particles are defined in screenspace size at the distance of 1.0 on a viewport of height 600.
+    // for orthographic projection, the size of particles are defined in screenspace size on a viewport of height 600.
     std::shared_ptr<Shader> Shader::getStandardParticles() {
         if (standardParticles != nullptr){
             return standardParticles;
         }
 
         standardParticles = create()
-                .withSourceStandardParticles()
+                .withSourceFile("particles_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("particles_frag.glsl", ShaderType::Fragment)
                 .withBlend(BlendType::AdditiveBlending)
                 .withDepthWrite(false)
                 .withName("Standard Particles")
@@ -891,50 +898,6 @@ namespace sre {
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSource(const std::string& vertexShader, const std::string& fragmentShader) {
         withSourceString(vertexShader, ShaderType::Vertex);
         withSourceString(fragmentShader, ShaderType::Fragment);
-
-        return *this;
-    }
-
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceStandard() {
-        withSourceFile("standard_vert.glsl", ShaderType::Vertex);
-        withSourceFile("standard_frag.glsl", ShaderType::Fragment);
-        return *this;
-    }
-
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceUnlit() {
-        withSourceFile("unlit_vert.glsl", ShaderType::Vertex);
-        withSourceFile("unlit_frag.glsl", ShaderType::Fragment);
-
-        return *this;
-    }
-
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceUnlitSprite() {
-        withSourceFile("sprite_vert.glsl", ShaderType::Vertex);
-        withSourceFile("sprite_frag.glsl", ShaderType::Fragment);
-
-        return *this;
-    }
-
-    // The particle size used in this shader depends on the height of the screensize (to make the particles resolution independent):
-    // for perspective projection, the size of particles are defined in screenspace size at the distance of 1.0 on a viewport of height 600.
-    // for orthographic projection, the size of particles are defined in screenspace size on a viewport of height 600.
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceStandardParticles() {
-        withSourceFile("particles_vert.glsl", ShaderType::Vertex);
-        withSourceFile("particles_frag.glsl", ShaderType::Fragment);
-
-        return *this;
-    }
-
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceDebugUV() {
-        withSourceFile("debug_uv_vert.glsl", ShaderType::Vertex);
-        withSourceFile("debug_uv_frag.glsl", ShaderType::Fragment);
-
-        return *this;
-    }
-
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceDebugNormals() {
-        withSourceFile("debug_normal_vert.glsl", ShaderType::Vertex);
-        withSourceFile("debug_normal_frag.glsl", ShaderType::Fragment);
 
         return *this;
     }

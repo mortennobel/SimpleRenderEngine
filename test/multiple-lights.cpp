@@ -42,7 +42,6 @@ public:
         r.startEventLoop();
     }
 
-
     void update(float deltaTime) {
         mat->setSpecularity(specularity);
         mat->setColor(color);

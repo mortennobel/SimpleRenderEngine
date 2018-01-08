@@ -73,6 +73,13 @@ namespace sre {
      *      - color (vec4) (default white)
      *      - tex (shared_ptr<Texture>) (default white texture)
      *      - specular (float) (default 0.0) (means no specular)
+     * - Shader::getStandardPhong()
+     *    - Shades the mesh using the Phong light model, and uses the current light states and camera states as well as
+     *      the color and texture parameters
+     *    - Parameters:
+     *      - color (vec4) (default white)
+     *      - tex (shared_ptr<Texture>) (default white texture)
+     *      - specular (float) (default 0.0) (means no specular)
      * - Shader::getUnlit()
      *    - Uses the camera states as well as the color and texture parameters to define the surface color
      *    - Parameters:
@@ -119,12 +126,6 @@ namespace sre {
                                       const std::string& fragmentShaderGLSL);
             ShaderBuilder& withSourceString(const std::string& shaderSource, ShaderType shaderType);
             ShaderBuilder& withSourceFile(const std::string& shaderFile, ShaderType shaderType);
-            ShaderBuilder& withSourceStandard();
-            ShaderBuilder& withSourceUnlit();
-            ShaderBuilder& withSourceUnlitSprite();
-            ShaderBuilder& withSourceStandardParticles();
-            ShaderBuilder& withSourceDebugUV();
-            ShaderBuilder& withSourceDebugNormals();
             ShaderBuilder& withOffset(float factor,float units);  // set the scale and units used to calculate depth values (note for WebGL1.0/OpenGL ES 2.0 only affects polygon fill)
             ShaderBuilder& withDepthTest(bool enable);
             ShaderBuilder& withDepthWrite(bool enable);
@@ -151,11 +152,22 @@ namespace sre {
                                                                // Uniforms
                                                                //   "color" vec4 (default (1,1,1,1))
                                                                //   "tex" shared_ptr<Texture> (default white texture)
-                                                               // "specularity" float (default 0 = no specularity)
+                                                               //   "metallicRoughness" vec4 (default 0,0) x = metallic, y = roughness
                                                                // VertexAttributes
                                                                //   "position" vec3
                                                                //   "normal" vec3
                                                                //   "uv" vec4
+                                                               // Specializations
+                                                               // S_METALROUGHNESSMAP
+                                                               //   Adds Uniforms "mrTex" (Texture). rg-channel used for metallic and roughness
+                                                               // S_TANGENTS
+                                                               //   Adds VertexAttribute "tangent" vec4. Used for normal maps. Otherwise compute using
+                                                               // S_NORMALMAP
+                                                               //   Adds Uniforms "normalTex" (Texture) and "normalScale" (float)
+                                                               // S_EMISSIVEMAP
+                                                               //   Adds Uniforms "emissiveTex" (Texture) and "emissiveFactor" (vec4)
+                                                               // S_OCCLUSIONMAP
+                                                               //   Adds Uniforms "occlusionTex" (Texture) and "occlusionStrength" (float)
 
         static std::shared_ptr<Shader> getStandardPhong();      // Phong Light Model. Uses light objects and ambient light set in Renderer.
                                                                 // Uniforms

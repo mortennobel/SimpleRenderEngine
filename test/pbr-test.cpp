@@ -52,6 +52,9 @@ public:
         normalTex = Texture::create().withWhiteData(2,2).build();
         emissiveTex = Texture::create().withWhiteData(2,2).build();
         occlusionTex = Texture::create().withWhiteData(2,2).build();
+
+
+
         updateMaterial();
 
         meshes = {{
@@ -223,9 +226,9 @@ private:
     int selection = 0;
     glm::vec4 color = glm::vec4(1,1,1,1);
     const static int maxTextSize = 512;
-    char colorTexStr[maxTextSize] =    "";
+    char colorTexStr[maxTextSize]    = "";
     char metRoughTexStr[maxTextSize] = "";
-    char normalTexStr[maxTextSize] =   "";
+    char normalTexStr[maxTextSize]   = "";
     float normalScale = 1;
     char emissiveTexStr[maxTextSize] = "";
     float emissiveFactor = 1;
