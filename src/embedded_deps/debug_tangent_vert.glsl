@@ -9,5 +9,5 @@ uniform mat4 g_projection;
 
 void main(void) {
     gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
-    vTangent = vTangent.xyz;
+    vTangent = tangent.xyz * tangent.w;
 }
