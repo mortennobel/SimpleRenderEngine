@@ -17,7 +17,7 @@ namespace sre {
     Material::Material(std::shared_ptr<Shader> shader)
     :shader{nullptr}
     {
-        setShader(shader);
+        setShader(std::move(shader));
         name = "Undefined material";
     }
 
@@ -26,7 +26,7 @@ namespace sre {
 
     void Material::bind(){
         unsigned int textureSlot = 0;
-        for (auto t : textureValues) {
+        for (const auto & t : textureValues) {
             glActiveTexture(GL_TEXTURE0 + textureSlot);
             glBindTexture(t.value->target, t.value->textureId);
             glUniform1i(t.id, textureSlot);
@@ -52,7 +52,6 @@ namespace sre {
         floatValues.clear();
 
         for (auto & u : shader->uniforms){
-
             switch (u.type){
                 case UniformType::Vec4:
                 {

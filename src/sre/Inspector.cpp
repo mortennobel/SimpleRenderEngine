@@ -133,7 +133,7 @@ namespace sre {
                  .withClearColor(true, {0, 0, 0, 1})
                  .withGUI(false)
                  .build();
-            static auto litMat = Shader::getStandard()->createMaterial();
+            static auto litMat = Shader::getStandardPhong()->createMaterial();
             static auto unlitMat = Shader::getUnlit()->createMaterial();
 
             bool hasNormals = mesh->getNormals().size()>0;
@@ -161,7 +161,8 @@ namespace sre {
     std::string glUniformToString(UniformType type);
 
     void Inspector::showShader(Shader* shader){
-        std::string s = shader->getName()+"##"+std::to_string((int64_t)shader);
+        auto specialization = shader->getCurrentSpecializationConstants();
+        std::string s = shader->getName()+(specialization.empty()?"":" Specialized")+"##"+std::to_string((int64_t)shader);
         if (ImGui::TreeNode(s.c_str())){
             if (ImGui::Button("Edit")) {
                 shaderEdit = std::weak_ptr<Shader>(shader->shared_from_this());
@@ -186,6 +187,13 @@ namespace sre {
                 }
                 ImGui::TreePop();
             }
+            if (ImGui::TreeNode("Specialization")) {
+                for (auto a : specialization ){
+                    ImGui::LabelText(a.first.c_str(), a.second.c_str());
+                }
+                ImGui::TreePop();
+            }
+
             auto blend = shader->getBlend();
             std::string s;
             switch (blend){

@@ -26,9 +26,11 @@ namespace sre {
     /**
      * Represents a Mesh object.
      * A mesh is composed of a list of named vertex attributes such as
-     * - positions (vec3)
-     * - normals (vec3)
-     * - uvs (aka. texture coordinates) (vec4)
+     * - position (vec3)
+     * - normal (vec3)
+     * - tangent (vec3)
+     * - uv (aka. texture coordinates) (vec4)
+     * - color (vec4)
      *
      * A mesh also has a meshType, which can be either: MeshTopology::Points, MeshTopology::Lines, or MeshTopology::Triangles
      *

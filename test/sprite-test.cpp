@@ -54,7 +54,7 @@ public:
 
         auto names = atlas->getNames();
 
-        static const char** namesPtr = new const char*[names.size()];
+        static const auto ** namesPtr = new const char*[names.size()];
         for (int i=0;i<names.size();i++){
             namesPtr[i] = names[i].c_str();
         }

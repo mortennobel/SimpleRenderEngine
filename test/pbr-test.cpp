@@ -52,8 +52,11 @@ public:
         normalTex = Texture::create().withWhiteData(2,2).build();
         emissiveTex = Texture::create().withWhiteData(2,2).build();
         occlusionTex = Texture::create().withWhiteData(2,2).build();
-
-
+        colorTex =      Texture::create().withFile(colorTexStr    ).build();
+        metToughTex =   Texture::create().withFile(metRoughTexStr ).build();
+        normalTex =     Texture::create().withFile(normalTexStr   ).build();
+        emissiveTex =   Texture::create().withFile(emissiveTexStr ).build();
+        occlusionTex =  Texture::create().withFile(occlusionTexStr).build();
 
         updateMaterial();
 
@@ -159,7 +162,7 @@ public:
             }
             if (specialization.find("S_EMISSIVEMAP") != specialization.end()) {
                 updatedMat |= loadTexture("Emissive Tex", emissiveTex,emissiveTexStr);
-                updatedMat |= ImGui::DragFloat("Emissive Factor", &emissiveFactor, 0.1f, 0.0f, 2.0f);
+                updatedMat |= ImGui::DragFloat4("Emissive Factor", &emissiveFactor.x, 0.1f, 0.0f, 2.0f);
             }
         }
         if (ImGui::CollapsingHeader("Light")){
@@ -226,13 +229,13 @@ private:
     int selection = 0;
     glm::vec4 color = glm::vec4(1,1,1,1);
     const static int maxTextSize = 512;
-    char colorTexStr[maxTextSize]    = "";
-    char metRoughTexStr[maxTextSize] = "";
-    char normalTexStr[maxTextSize]   = "";
+    char colorTexStr[maxTextSize]    = "BoomBox_baseColor.png";
+    char metRoughTexStr[maxTextSize] = "BoomBox_roughnessMetallic.png";
+    char normalTexStr[maxTextSize]   = "BoomBox_normal.png";
     float normalScale = 1;
-    char emissiveTexStr[maxTextSize] = "";
-    float emissiveFactor = 1;
-    char occlusionTexStr[maxTextSize] ="";
+    char emissiveTexStr[maxTextSize] = "BoomBox_emissive.png";
+    glm::vec4 emissiveFactor = glm::vec4(1,1,1,1);
+    char occlusionTexStr[maxTextSize] ="BoomBox_occlusion.png";
     float occlusionStrength = 1;
     std::shared_ptr<sre::Texture> colorTex;
     std::shared_ptr<sre::Texture> metToughTex;

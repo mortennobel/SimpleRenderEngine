@@ -10,5 +10,5 @@ uniform mat3 g_model_view_it;
 
 void main(void) {
     gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
-    vNormal = g_model_view_it * normal;
+    vNormal = normal;
 }
