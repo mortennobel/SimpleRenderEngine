@@ -22,14 +22,14 @@
 namespace sre {
     uint16_t Mesh::meshIdCount = 0;
 
-    Mesh::Mesh(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology, std::string name,RenderStats& renderStats)
+    Mesh::Mesh(std::map<std::string,std::vector<float>>&& attributesFloat,std::map<std::string,std::vector<glm::vec2>>&& attributesVec2, std::map<std::string,std::vector<glm::vec3>>&& attributesVec3,std::map<std::string,std::vector<glm::vec4>>&& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>&& attributesIVec4, std::vector<std::vector<uint16_t>> &&indices, std::vector<MeshTopology> meshTopology, std::string name,RenderStats& renderStats)
     {
         meshId = meshIdCount++;
         if ( Renderer::instance == nullptr){
             LOG_FATAL("Cannot instantiate sre::Mesh before sre::Renderer is created.");
         }
         glGenBuffers(1, &vertexBufferId);
-        update(attributesFloat, attributesVec2, attributesVec3,attributesVec4,attributesIVec4, indices, meshTopology,name,renderStats);
+        update(std::move(attributesFloat), std::move(attributesVec2), std::move(attributesVec3),std::move(attributesVec4),std::move(attributesIVec4), std::move(indices), meshTopology,name,renderStats);
         Renderer::instance->meshes.emplace_back(this);
     }
 
@@ -87,15 +87,13 @@ namespace sre {
         return vertexCount;
     }
 
-    void Mesh::update(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology,std::string name,RenderStats& renderStats) {
+    void Mesh::update(std::map<std::string,std::vector<float>>&& attributesFloat,std::map<std::string,std::vector<glm::vec2>>&& attributesVec2, std::map<std::string,std::vector<glm::vec3>>&& attributesVec3,std::map<std::string,std::vector<glm::vec4>>&& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>&& attributesIVec4, std::vector<std::vector<uint16_t>> &&indices, std::vector<MeshTopology> meshTopology,std::string name,RenderStats& renderStats) {
         this->meshTopology = meshTopology;
         this->name = name;
         meshId = meshIdCount++;
 
         vertexCount = 0;
-        totalBytesPerVertex = 0;
         dataSize = 0;
-        std::vector<int> offset;
 
 #ifndef EMSCRIPTEN
         for (auto arrayObj : shaderToVertexArrayObject){
@@ -105,81 +103,14 @@ namespace sre {
 #endif
         attributeByName.clear();
 
-        // enforced std140 layout rules ( https://learnopengl.com/#!Advanced-OpenGL/Advanced-GLSL )
-        // the order is vec3, vec4, ivec4, vec2, float
-        for (auto & pair : attributesVec3){
-            vertexCount = std::max(vertexCount, (int)pair.second.size());
-            offset.push_back(totalBytesPerVertex);
-            attributeByName[pair.first] = {totalBytesPerVertex, 3, GL_FLOAT, GL_FLOAT_VEC3};
-            totalBytesPerVertex += sizeof(glm::vec4); // note use vec4 size
-        }
-        for (auto & pair : attributesVec4){
-            vertexCount = std::max(vertexCount, (int)pair.second.size());
-            offset.push_back(totalBytesPerVertex);
-            attributeByName[pair.first] = {totalBytesPerVertex, 4, GL_FLOAT, GL_FLOAT_VEC4};
-            totalBytesPerVertex += sizeof(glm::vec4);
-        }
-        for (auto & pair : attributesIVec4){
-            vertexCount = std::max(vertexCount, (int)pair.second.size());
-            offset.push_back(totalBytesPerVertex);
-            attributeByName[pair.first] = {totalBytesPerVertex, 4,GL_INT, GL_INT_VEC4};
-            totalBytesPerVertex += sizeof(glm::i32vec4);
-        }
-        for (auto & pair : attributesVec2){
-            vertexCount = std::max(vertexCount, (int)pair.second.size());
-            offset.push_back(totalBytesPerVertex);
-            attributeByName[pair.first] = {totalBytesPerVertex, 2, GL_FLOAT,GL_FLOAT_VEC2};
-            totalBytesPerVertex += sizeof(glm::vec2);
-        }
-        for (auto & pair : attributesFloat){
-            vertexCount = std::max(vertexCount, (int)pair.second.size());
-            offset.push_back(totalBytesPerVertex);
-            attributeByName[pair.first] = {totalBytesPerVertex, 1, GL_FLOAT, GL_FLOAT};
-            totalBytesPerVertex += sizeof(float);
-        }
-        // add final padding (make vertex align with vec4)
-        if (totalBytesPerVertex%(sizeof(float)*4) != 0) {
-            totalBytesPerVertex += sizeof(float)*4 - totalBytesPerVertex%(sizeof(float)*4);
-        }
-        std::vector<float> interleavedData((vertexCount * totalBytesPerVertex) / sizeof(float), 0);
-        const char * dataPtr = (char*) interleavedData.data();
+        this->indices         = std::move(indices);
+        this->attributesFloat = std::move(attributesFloat);
+        this->attributesVec2  = std::move(attributesVec2);
+        this->attributesVec3  = std::move(attributesVec3);
+        this->attributesVec4  = std::move(attributesVec4);
+        this->attributesIVec4 = std::move(attributesIVec4);
 
-        // add data (copy each element into interleaved buffer)
-        for (auto & pair : attributesVec3){
-            auto& offsetBytes = attributeByName[pair.first];
-            for (int i=0;i<pair.second.size();i++){
-                glm::vec3 * locationPtr = (glm::vec3 *) (dataPtr + (totalBytesPerVertex * i) + offsetBytes.offset);
-                *locationPtr = pair.second[i];
-            }
-        }
-        for (auto & pair : attributesVec4){
-            auto& offsetBytes = attributeByName[pair.first];
-            for (int i=0;i<pair.second.size();i++) {
-                glm::vec4 * locationPtr = (glm::vec4 *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
-                *locationPtr = pair.second[i];
-            }
-        }
-        for (auto & pair : attributesIVec4){
-            auto& offsetBytes = attributeByName[pair.first];
-            for (int i=0;i<pair.second.size();i++) {
-                glm::i32vec4 * locationPtr = (glm::i32vec4 *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
-                *locationPtr = pair.second[i];
-            }
-        }
-        for (auto & pair : attributesVec2){
-            auto& offsetBytes = attributeByName[pair.first];
-            for (int i=0;i<pair.second.size();i++) {
-                glm::vec2 * locationPtr = (glm::vec2 *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
-                *locationPtr = pair.second[i];
-            }
-        }
-        for (auto & pair : attributesFloat){
-            auto& offsetBytes = attributeByName[pair.first];
-            for (int i=0;i<pair.second.size();i++) {
-                float * locationPtr = (float *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
-                *locationPtr = pair.second[i];
-            }
-        }
+        auto interleavedData = getInterleavedData();
 
 #ifndef EMSCRIPTEN
         glBindVertexArray(0);
@@ -187,8 +118,8 @@ namespace sre {
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float)*interleavedData.size(), interleavedData.data(), GL_STATIC_DRAW);
 
-        if (!indices.empty()){
-            for (int i=0;i<indices.size();i++){
+        if (!this->indices.empty()){
+            for (int i=0;i<this->indices.size();i++){
                 unsigned int eBufferId;
                 if (i >= elementBufferId.size()){
                     glGenBuffers(1, &eBufferId);
@@ -197,18 +128,11 @@ namespace sre {
                     eBufferId = elementBufferId[i];
                 }
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eBufferId);
-                GLsizeiptr indicesSize = indices[i].size()*sizeof(uint16_t);
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices[i].data(), GL_STATIC_DRAW);
+                GLsizeiptr indicesSize = this->indices[i].size()*sizeof(uint16_t);
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, this->indices[i].data(), GL_STATIC_DRAW);
                 dataSize += indicesSize;
             }
         }
-
-        this->indices = std::move(indices);
-        this->attributesFloat = std::move(attributesFloat);
-        this->attributesVec2  = std::move(attributesVec2);
-        this->attributesVec3  = std::move(attributesVec3);
-        this->attributesVec4  = std::move(attributesVec4);
-        this->attributesIVec4 = std::move(attributesIVec4);
 
         boundsMinMax[0] = glm::vec3{std::numeric_limits<float>::max()};
         boundsMinMax[1] = glm::vec3{-std::numeric_limits<float>::max()};
@@ -219,7 +143,7 @@ namespace sre {
                 boundsMinMax[1] = glm::max(boundsMinMax[1], v);
             }
         }
-        dataSize = totalBytesPerVertex*vertexCount;
+        dataSize = totalBytesPerVertex * vertexCount;
 
         renderStats.meshBytes += dataSize;
         renderStats.meshBytesAllocated += dataSize;
@@ -398,6 +322,87 @@ namespace sre {
         return res;
     }
 
+    std::vector<float> Mesh::getInterleavedData() {
+        totalBytesPerVertex = 0;
+        std::vector<int> offset;
+        // enforced std140 layout rules ( https://learnopengl.com/#!Advanced-OpenGL/Advanced-GLSL )
+        // the order is vec3, vec4, ivec4, vec2, float
+        for (auto & pair : attributesVec3){
+            vertexCount = std::max(vertexCount, (int)pair.second.size());
+            offset.push_back(totalBytesPerVertex);
+            attributeByName[pair.first] = {totalBytesPerVertex, 3, GL_FLOAT, GL_FLOAT_VEC3};
+            totalBytesPerVertex += sizeof(glm::vec4); // note use vec4 size
+        }
+        for (auto & pair : attributesVec4){
+            vertexCount = std::max(vertexCount, (int)pair.second.size());
+            offset.push_back(totalBytesPerVertex);
+            attributeByName[pair.first] = {totalBytesPerVertex, 4, GL_FLOAT, GL_FLOAT_VEC4};
+            totalBytesPerVertex += sizeof(glm::vec4);
+        }
+        for (auto & pair : attributesIVec4){
+            vertexCount = std::max(vertexCount, (int)pair.second.size());
+            offset.push_back(totalBytesPerVertex);
+            attributeByName[pair.first] = {totalBytesPerVertex, 4,GL_INT, GL_INT_VEC4};
+            totalBytesPerVertex += sizeof(glm::i32vec4);
+        }
+        for (auto & pair : attributesVec2){
+            vertexCount = std::max(vertexCount, (int)pair.second.size());
+            offset.push_back(totalBytesPerVertex);
+            attributeByName[pair.first] = {totalBytesPerVertex, 2, GL_FLOAT,GL_FLOAT_VEC2};
+            totalBytesPerVertex += sizeof(glm::vec2);
+        }
+        for (auto & pair : attributesFloat){
+            vertexCount = std::max(vertexCount, (int)pair.second.size());
+            offset.push_back(totalBytesPerVertex);
+            attributeByName[pair.first] = {totalBytesPerVertex, 1, GL_FLOAT, GL_FLOAT};
+            totalBytesPerVertex += sizeof(float);
+        }
+        // add final padding (make vertex align with vec4)
+        if (totalBytesPerVertex%(sizeof(float)*4) != 0) {
+            totalBytesPerVertex += sizeof(float)*4 - totalBytesPerVertex%(sizeof(float)*4);
+        }
+        std::vector<float> interleavedData((vertexCount * totalBytesPerVertex) / sizeof(float), 0);
+        const char * dataPtr = (char*) interleavedData.data();
+
+        // add data (copy each element into interleaved buffer)
+        for (auto & pair : attributesVec3){
+            auto& offsetBytes = attributeByName[pair.first];
+            for (int i=0;i<pair.second.size();i++){
+                glm::vec3 * locationPtr = (glm::vec3 *) (dataPtr + (totalBytesPerVertex * i) + offsetBytes.offset);
+                *locationPtr = pair.second[i];
+            }
+        }
+        for (auto & pair : attributesVec4){
+            auto& offsetBytes = attributeByName[pair.first];
+            for (int i=0;i<pair.second.size();i++) {
+                glm::vec4 * locationPtr = (glm::vec4 *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
+                *locationPtr = pair.second[i];
+            }
+        }
+        for (auto & pair : attributesIVec4){
+            auto& offsetBytes = attributeByName[pair.first];
+            for (int i=0;i<pair.second.size();i++) {
+                glm::i32vec4 * locationPtr = (glm::i32vec4 *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
+                *locationPtr = pair.second[i];
+            }
+        }
+        for (auto & pair : attributesVec2){
+            auto& offsetBytes = attributeByName[pair.first];
+            for (int i=0;i<pair.second.size();i++) {
+                glm::vec2 * locationPtr = (glm::vec2 *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
+                *locationPtr = pair.second[i];
+            }
+        }
+        for (auto & pair : attributesFloat){
+            auto& offsetBytes = attributeByName[pair.first];
+            for (int i=0;i<pair.second.size();i++) {
+                float * locationPtr = (float *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
+                *locationPtr = pair.second[i];
+            }
+        }
+        return interleavedData;
+    }
+
     Mesh::MeshBuilder &Mesh::MeshBuilder::withPositions(const std::vector<glm::vec3> &vertexPositions) {
         withAttribute("position", vertexPositions);
         return *this;
@@ -459,13 +464,13 @@ namespace sre {
 
         if (updateMesh != nullptr){
             renderStats.meshBytes -= updateMesh->getDataSize();
-            updateMesh->update(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology,name,renderStats);
+            updateMesh->update(std::move(this->attributesFloat), std::move(this->attributesVec2), std::move(this->attributesVec3), std::move(this->attributesVec4), std::move(this->attributesIVec4), std::move(indices), meshTopology,name,renderStats);
 
 
             return updateMesh->shared_from_this();
         }
 
-        auto res = new Mesh(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology,name,renderStats);
+        auto res = new Mesh(std::move(this->attributesFloat), std::move(this->attributesVec2), std::move(this->attributesVec3), std::move(this->attributesVec4), std::move(this->attributesIVec4), std::move(indices), meshTopology,name,renderStats);
         renderStats.meshCount++;
 
         return std::shared_ptr<Mesh>(res);
@@ -502,8 +507,10 @@ namespace sre {
                             sinLat1,
                             sinLong * cosLat1};
                 vec3 normal = (vec3)normalize(normalD);
+                vec4 tangent = vec4((vec3)normalize(dvec3(cos(longitude+glm::half_pi<double>()),0, sin(longitude+glm::half_pi<double>()))),1);
                 normals[index] = normal;
-                tangents[index] = vec4((vec3)normalize(dvec3(-sinLong * cosLat1,0,cosLong * cosLat1)),1);
+                tangents[index] = tangent;
+                std::cout << glm::to_string(normal)<<" "<<glm::to_string(tangent)<<std::endl;
                 uvs[index] = vec4{1 - i /(float) slices, j /(float) stacks,0,0};
                 vertices[index] = normal * radius;
                 index++;
@@ -532,6 +539,7 @@ namespace sre {
                     index = o[1] * (slices+1)  + o[0];
                     finalPosition.push_back(vertices[index]);
                     finalNormals.push_back(normals[index]);
+                    finalTangents.push_back(tangents[index]);
                     finalUVs.push_back(uvs[index]);
                 }
 

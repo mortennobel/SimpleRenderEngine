@@ -118,6 +118,45 @@ namespace sre {
                 }
                 ImGui::TreePop();
             }
+            if (ImGui::TreeNode("Mesh Data")) {
+                auto interleavedData = mesh->getInterleavedData();
+                auto attributes = mesh->attributeByName;
+                for (auto& att : attributes){
+                    auto attributeName = att.first;
+                    if (ImGui::TreeNode(attributeName.c_str())) {
+                        auto attributeType = att.second.attributeType;
+                        auto attributeTypeStr = std::to_string(attributeType);
+                        ImGui::LabelText("attributeType", attributeTypeStr.c_str());
+                        auto dataType = att.second.dataType;
+                        auto dataTypeStr = std::to_string(dataType);
+                        ImGui::LabelText("dataType", dataTypeStr.c_str());
+                        auto elementCount = att.second.elementCount;
+                        auto elementCountStr = std::to_string(elementCount);
+                        ImGui::LabelText("elementCount", elementCountStr.c_str());
+                        auto offset = att.second.offset;
+                        auto offsetStr = std::to_string(offset);
+                        ImGui::LabelText("offset", offsetStr.c_str());
+
+                        for (int j=0;j<std::min(5,mesh->vertexCount); j++){
+                            std::string value = "";
+                            for (int i=0;i<att.second.elementCount;i++){
+                                float data = interleavedData[att.second.offset/sizeof(float)+i + (j*mesh->totalBytesPerVertex)/sizeof(float)];
+                                value += std::to_string(data)+" ";
+                            }
+                            std::string label = "Value ";
+                            label+= std::to_string(j);
+                            ImGui::LabelText(label.c_str(), value.c_str());
+                        }
+
+                        ImGui::TreePop();
+                    }
+                    ;
+                    auto attributeType = att.second.attributeType;
+
+                }
+                ImGui::TreePop();
+
+            }
             initFramebuffer();
 
             Camera camera;
