@@ -510,7 +510,6 @@ namespace sre {
                 vec4 tangent = vec4((vec3)normalize(dvec3(cos(longitude+glm::half_pi<double>()),0, sin(longitude+glm::half_pi<double>()))),1);
                 normals[index] = normal;
                 tangents[index] = tangent;
-                std::cout << glm::to_string(normal)<<" "<<glm::to_string(tangent)<<std::endl;
                 uvs[index] = vec4{1 - i /(float) slices, j /(float) stacks,0,0};
                 vertices[index] = normal * radius;
                 index++;
@@ -576,11 +575,11 @@ namespace sre {
 
         // create vertices
         for (unsigned short j = 0; j <= segmentsC; j++) {
+            // outer circle
+            float u = glm::two_pi<float>() * j/(float)segmentsC;
+            auto t = vec4((vec3)normalize(dvec3(cos(u+glm::half_pi<double>()),sin(u+glm::half_pi<double>()),0)),1);
             for (int i = 0; i <= segmentsA; i++) {
-
-                //vec3 normal = (vec3)normalize(normalD);
-                //normals[index] = normal;
-                float u = glm::two_pi<float>() * j/(float)segmentsC;
+                // inner circle
                 float v = glm::two_pi<float>() * i/(float)segmentsA;
                 glm::vec3 pos {
                         (radiusC+radiusA*cos(v))*cos(u),
@@ -600,7 +599,7 @@ namespace sre {
                 uvs[index] = vec4{1 - j /(float) segmentsC, i /(float) segmentsA,0,0};
                 vertices[index] = pos;
                 normals[index] = glm::normalize(posOuter - pos);
-                tangents[index] = vec4((vec3)normalize(dvec3(-sin(u) * cos(u),cos(u)* cos(u),0)),1);
+                tangents[index] = t;
                 index++;
             }
         }

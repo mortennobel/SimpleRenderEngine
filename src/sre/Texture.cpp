@@ -344,7 +344,7 @@ namespace sre {
     }
 
 	Texture::TextureBuilder &Texture::TextureBuilder::withWhiteData(int width, int height) {
-		char one = (char)0xff;
+		auto one = (char)0xff;
         this->width = width;
         this->height = height;
         std::vector<char> dataOwned (width * height * 4, one);
@@ -354,12 +354,11 @@ namespace sre {
 
 
     Texture::TextureBuilder &Texture::TextureBuilder::withWhiteCubemapData(int width, int height) {
-		char one = (char)0xff;
+		auto one = (char)0xff;
         std::vector<char> dataOwned (width * height * 4, one);
         this->width = width;
         this->height = height;
         for (int i=0;i<6;i++){
-
             GLenum format = GL_RGBA;
 
             this->target = GL_TEXTURE_CUBE_MAP;
