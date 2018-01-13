@@ -50,29 +50,6 @@ namespace sre {
                                  rhs.begin());
         }
 
-        std::string insertPreprocessorDefines(std::string source,
-                                              std::map<std::string, std::string> &specializationConstants){
-            if (specializationConstants.empty()){
-                return source;
-            }
-            stringstream ss;
-            for (auto & sc : specializationConstants){
-                ss<<"#define "<<sc.first<<" "<<sc.second<<"\n";
-            }
-
-            // If the shader contains any #version or #extension statements, the defines are added after them.
-            auto version = static_cast<int>(source.rfind("#version"));
-            auto extension = static_cast<int>(source.rfind("#extension"));
-            auto last = std::max(version, extension);
-            if (last == -1){
-                return ss.str()+source;
-            }
-            auto insertPos = source.find('\n', last);
-            return source.substr(0, insertPos+1) +
-                   ss.str()+
-                    source.substr(insertPos+1);
-        }
-
         // from http://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring
         string getFileContents(string filename)
         {
@@ -129,7 +106,7 @@ namespace sre {
             return sstream.str();
         }
 
-        void logCurrentCompileException(GLuint &shader, GLenum type, vector<string> &errors) {
+        void logCurrentCompileException(GLuint &shader, GLenum type, vector<string> &errors, std::string source) {
             GLint logSize = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
 
@@ -160,6 +137,8 @@ namespace sre {
                     break;
             }
             LOG_ERROR("Shader compile error in %s: %s",typeStr.c_str() ,errorLog.data());
+            std::cout<<source.c_str()<<std::endl;
+
             errors.push_back(std::string(errorLog.data())+"##"+std::to_string(type));
         }
 
@@ -821,7 +800,7 @@ namespace sre {
         GLint success = 0;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if (success == GL_FALSE){
-            logCurrentCompileException(shader, type, errors);
+            logCurrentCompileException(shader, type, errors, source_);
             return false;
         }
         return true;
@@ -838,16 +817,11 @@ namespace sre {
 
     std::string Shader::precompile(std::string source, std::vector<std::string>& errors, uint32_t shaderType) {
         // Insert preprocessor define symbols
-        source = insertPreprocessorDefines(source, specializationConstants);
+        source = insertPreprocessorDefines(source, specializationConstants, shaderType);
 
         // Replace includes with content
         // for each occurrence of #pragma include replace with substitute
         source = pragmaInclude(source, errors, shaderType);
-
-        // Set engine defined shader constants
-        if (specializationConstants.find("S_LIGHTS") == specializationConstants.end()){
-            source = std::regex_replace(source, std::regex("S_LIGHTS"), std::to_string(Renderer::maxSceneLights));
-        }
 
 #ifdef EMSCRIPTEN
         source = Shader::translateToGLSLES(source, type==GL_VERTEX_SHADER);
@@ -909,6 +883,50 @@ namespace sre {
     Shader::ShaderBuilder::ShaderBuilder(Shader *shader)
     :updateShader(shader)
     {
+    }
+
+    std::string Shader::insertPreprocessorDefines(std::string source,
+                                          std::map<std::string, std::string> &specializationConstants,
+                                          uint32_t shaderType){
+        stringstream ss;
+        for (auto & sc : specializationConstants){
+            ss<<"#define "<<sc.first<<" "<<sc.second<<"\n";
+        }
+        ss<<"#define SI_LIGHTS "<<Renderer::instance->maxSceneLights<<"\n";
+        switch (shaderType){
+            case GL_FRAGMENT_SHADER:
+                ss<<"#define SI_FRAGMENT 1\n";
+                break;
+            case GL_VERTEX_SHADER:
+                ss<<"#define SI_VERTEX 1\n";
+                break;
+#ifndef EMSCRIPTEN
+            case GL_GEOMETRY_SHADER:
+                ss<<"#define SI_GEOMETRY 1\n";
+                break;
+            case GL_TESS_CONTROL_SHADER:
+                ss<<"#define SI_TESS_CTRL 1\n";
+                break;
+            case GL_TESS_EVALUATION_SHADER:
+                ss<<"#define SI_TESS_EVAL 1\n";
+                break;
+#endif
+            default:
+                LOG_WARNING("Unknown shader type");
+                break;
+        }
+
+        // If the shader contains any #version or #extension statements, the defines are added after them.
+        auto version = static_cast<int>(source.rfind("#version"));
+        auto extension = static_cast<int>(source.rfind("#extension"));
+        auto last = std::max(version, extension);
+        if (last == -1){
+            return ss.str()+source;
+        }
+        auto insertPos = source.find('\n', last);
+        return source.substr(0, insertPos+1) +
+               ss.str()+
+               source.substr(insertPos+1);
     }
 
     uint32_t to_id(ShaderType st) {

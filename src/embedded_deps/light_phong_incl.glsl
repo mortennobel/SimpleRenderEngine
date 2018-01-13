@@ -1,12 +1,11 @@
 uniform vec3 g_ambientLight;
-uniform vec4 g_lightPosType[S_LIGHTS];
-uniform vec4 g_lightColorRange[S_LIGHTS];
+uniform vec4 g_lightPosType[SI_LIGHTS];
+uniform vec4 g_lightColorRange[SI_LIGHTS];
 uniform float specularity;
 
-vec3 computeLight(vec3 wsPos, vec3 wsCameraPos){
+vec3 computeLight(vec3 wsPos, vec3 wsCameraPos, vec3 normal){
     vec3 lightColor = vec3(0.0,0.0,0.0);
-    vec3 normal = normalize(vNormal);
-    for (int i=0;i<S_LIGHTS;i++){
+    for (int i=0;i<SI_LIGHTS;i++){
         bool isDirectional = g_lightPosType[i].w == 0.0;
         bool isPoint       = g_lightPosType[i].w == 1.0;
         vec3 lightDirection;

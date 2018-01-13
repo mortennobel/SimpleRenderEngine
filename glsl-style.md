@@ -38,9 +38,7 @@ The built in shaders uses the following attributes:
 ### Shader specializations
 
 Shaders can be specialized using specialization constants. These constants are injected as shader preprocessor 
-symbols (e.g. "#define S_PI 3.14").
-
-* **S_LIGHTS** number of lights per draw call. The number is defined as a engine constant, but can be overwritten.
+symbols (e.g. "#define S_PI 3.14"). Shader specialization constants must start with "S_".
 
 To instantiate a specialized shader, use:
 
@@ -50,6 +48,16 @@ auto mat = shader->createMaterial({{"S_PI","3.14"}});
 
 This will instantiate a new shader and keep a reference in the main shader shader, which makes sure that the specialized 
 shader is only instantiated once.
+
+There are also defined a number of engine specific definitions, which cannot be changed. All prefixed with "SI_":
+
+* **SI_LIGHTS** number of lights per draw call. The number is defined as a engine constant.
+* **SI_VERTEX** Defined only for vertex shaders.
+* **SI_FRAGMENT** Defined only for fragment shaders.
+* **SI_GEOMETRY** Defined only for geometry shaders.
+* **SI_TESS_CTRL** Defined only for tesselation control shaders.
+* **SI_TESS_EVAL** Defined only for tesselation evaluation shaders.
+
 
 ### Overwriting built-in shaders
 

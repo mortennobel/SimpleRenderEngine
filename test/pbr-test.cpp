@@ -90,7 +90,7 @@ public:
 
     void updateMaterial(){
 
-        material = Shader::getStandardPBR()->createMaterial(specialization);
+        material = (pbrShader?Shader::getStandardPBR():Shader::getStandardPhong())->createMaterial(specialization);
         material->setColor(color);
         material->setMetallicRoughness(metallicRoughness);
         material->setTexture(colorTex);
@@ -180,7 +180,8 @@ public:
             ImGui::Combo("Mesh",&meshType, "Sphere\0Cube\0Torus\0");
         }
         if (ImGui::CollapsingHeader("Shader")){
-            auto shaderConstants = Shader::getStandardPBR()->getAllSpecializationConstants();
+            updatedMat |= ImGui::Checkbox("pbrShader", &pbrShader);
+            auto shaderConstants = (pbrShader?Shader::getStandardPBR():Shader::getStandardPhong())->getAllSpecializationConstants();
             for (auto& s : shaderConstants){
                 bool checked = specialization.find(s) != specialization.end();
                 if (ImGui::Checkbox(s.c_str(), &checked)){
@@ -223,6 +224,7 @@ public:
 private:
     SDLRenderer r;
     Camera camera;
+    bool pbrShader = true;
     static constexpr float cameraDist = 3.5f;
     float cameraRotateX = 0;
     float cameraRotateY = 0;
