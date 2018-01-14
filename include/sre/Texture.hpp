@@ -62,8 +62,18 @@ public:
     private:
         TextureBuilder();
         TextureBuilder(const TextureBuilder&) = default;
-        int width = -1;
-        int height = -1;
+
+        struct TextureDefinition {
+            int width = -1;
+            int height = -1;
+            bool transparent;
+            int bytesPerPixel;
+            uint32_t format;
+            std::string resourcename;
+            std::vector<char> data;
+        };
+
+
         std::string name;
 		bool transparent;
         bool generateMipmaps = false;
@@ -72,7 +82,7 @@ public:
         uint32_t target = 0;
         unsigned int textureId = 0;
 
-        std::map<uint32_t, std::vector<char>> textureTypeData;
+        std::map<uint32_t, TextureDefinition> textureTypeData;
 
         friend class Texture;
         friend class RenderPass;

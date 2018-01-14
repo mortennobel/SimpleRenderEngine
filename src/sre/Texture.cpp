@@ -154,11 +154,11 @@ namespace {
 
         SDL_RWops *source = SDL_RWFromConstMem(data, dataSize);
         SDL_Surface *res_texture = IMG_Load_RW(source, 1);
-        if (res_texture == NULL) {
-            LOG_ERROR("Cannot load texture. IMG_Load_RW returned %s",IMG_GetError());
+        if (res_texture == nullptr) {
+            LOG_ERROR("Cannot load texture. IMG_Load_RW returned %s", IMG_GetError());
             return {};
         }
-		alpha = isAlpha(res_texture->format);
+		alpha = isAlpha( res_texture->format );
 
         SDL_Surface *formattedSurf = SDL_ConvertSurfaceFormat(res_texture,
                                                               alpha ?SDL_PIXELFORMAT_RGBA32 : SDL_PIXELFORMAT_RGB24, 0);
@@ -238,31 +238,21 @@ namespace sre {
         }
         auto fileData = readAllBytes(filename.c_str());
         GLenum format;
+        int width;
+        int height;
         int bytesPerPixel;
         fileData = loadFileFromMemory(fileData.data(), (int) fileData.size(), format, this->transparent, width, height,bytesPerPixel);
-        this->target = GL_TEXTURE_2D;
-		 
-        GLint mipmapLevel = 0;
-#ifdef EMSCRIPTEN
-        GLint internalFormat = (bytesPerPixel==4?GL_RGBA:GL_RGB);
-#else
-        GLint internalFormat = bytesPerPixel==4?GL_SRGB_ALPHA:GL_SRGB;
-#endif
-        GLint border = 0;
 
-        bool isPOT = isPowerOfTwo(width) && isPowerOfTwo(height);
-        if (!isPOT && filterSampling){
-            LOG_WARNING("Texture %s is not power of two (was %i x %i ). filter sampling ",filename.c_str(), width, height);
-            filterSampling = false;
-        }
-        if (!isPOT && generateMipmaps){
-            LOG_WARNING("Texture %s is not power of two (was %i x %i ). mipmapping disabled ",filename.c_str(), width, height);
-            generateMipmaps = false;
-        }
+        textureTypeData[GL_TEXTURE_2D] = {
+                width,
+                height,
+                transparent,
+                bytesPerPixel,
+                format,
+                filename,
+                fileData
+        };
 
-        GLenum type = GL_UNSIGNED_BYTE;
-        glBindTexture(target, textureId);
-        glTexImage2D(target, mipmapLevel, internalFormat, width, height, border, format, type, fileData.data());
         return *this;
     }
 
@@ -270,67 +260,127 @@ namespace sre {
         auto fileData = readAllBytes(filename.c_str());
         GLenum format;
         int bytesPerPixel;
+        int width;
+        int height;
         fileData = loadFileFromMemory(fileData.data(), (int) fileData.size(), format,this->transparent, width, height,bytesPerPixel, false);
-        this->target = GL_TEXTURE_CUBE_MAP;
-        GLint mipmapLevel = 0;
 
-#ifdef EMSCRIPTEN
-        GLint internalFormat = (bytesPerPixel==4?GL_RGBA:GL_RGB);
-#else
-        GLint internalFormat = bytesPerPixel==4 ? GL_SRGB_ALPHA : GL_SRGB;
-#endif
-        GLint border = 0;
-        GLenum type = GL_UNSIGNED_BYTE;
-        glBindTexture(target, textureId);
-        glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+(unsigned int)side, mipmapLevel, internalFormat, width, height, border, format, type, fileData.data());
+        textureTypeData[GL_TEXTURE_CUBE_MAP_POSITIVE_X+(unsigned int)side] = {
+                width,
+                height,
+                transparent,
+                bytesPerPixel,
+                format,
+                filename,
+                fileData
+        };
+
         return *this;
     }
 
     Texture::TextureBuilder &Texture::TextureBuilder::withRGBData(const char *data, int width, int height) {
-        this->width = width;
-        this->height = height;
 
-        GLenum format = GL_RGB;
+        int bytesPerPixel = 3;
+        textureTypeData[GL_TEXTURE_2D] = {
+                width,
+                height,
+                transparent,
+                bytesPerPixel,
+                GL_RGB,
+                "memory"
+        };
+        if (data != nullptr){
+            auto dataSize = static_cast<size_t>(width * height * bytesPerPixel);
+            textureTypeData[GL_TEXTURE_2D].data.resize(dataSize);
+            memcpy(textureTypeData[GL_TEXTURE_2D].data.data(), data, dataSize);
+        }
 
-
-        this->target = GL_TEXTURE_2D;
-        GLint mipmapLevel = 0;
-        GLint internalFormat = format;
-        GLint border = 0;
-        GLenum type = GL_UNSIGNED_BYTE;
-        glBindTexture(target, textureId);
-        glTexImage2D(target, mipmapLevel, internalFormat, width, height, border, format, type, data);
         return *this;
     }
 
     Texture::TextureBuilder &Texture::TextureBuilder::withRGBAData(const char *data, int width, int height) {
-        this->width = width;
-        this->height = height;
+        int bytesPerPixel = 4;
+        textureTypeData[GL_TEXTURE_2D] = {
+                width,
+                height,
+                transparent,
+                bytesPerPixel,
+                GL_RGBA,
+                "memory"
+        };
 
-        GLenum format = GL_RGBA;
+        if (data != nullptr) {
+            auto dataSize = static_cast<size_t>(width * height * bytesPerPixel);
+            textureTypeData[GL_TEXTURE_2D].data.resize(dataSize);
+            memcpy(textureTypeData[GL_TEXTURE_2D].data.data(), data, dataSize);
+        }
 
-        this->target = GL_TEXTURE_2D;
-        GLint mipmapLevel = 0;
-        GLint internalFormat = format;
-        GLint border = 0;
-        GLenum type = GL_UNSIGNED_BYTE;
-        glBindTexture(target, textureId);
-        glTexImage2D(target, mipmapLevel, internalFormat, width, height, border, format, type, data);
         return *this;
     }
 
     std::shared_ptr<Texture> Texture::TextureBuilder::build() {
-        if (this->target == 0){
-            LOG_FATAL("Texture contain no data");
-        }
         if (textureId == 0){
             LOG_FATAL("Texture is already build");
         }
         if (name.length() == 0){
             name = "Unnamed Texture";
         }
+        std::map<uint32_t, TextureDefinition>::iterator val;
+        TextureDefinition* textureDefPtr;
+        if ((val = textureTypeData.find(GL_TEXTURE_2D)) != textureTypeData.end()){
+            auto& textureDef = val->second;
+            textureDefPtr = &textureDef;
+            this->target = GL_TEXTURE_2D;
+            // create texture
+            GLint mipmapLevel = 0;
+#ifdef EMSCRIPTEN
+            GLint internalFormat = (data.bytesPerPixel==4?GL_RGBA:GL_RGB);
+#else
+            GLint internalFormat = textureDef.bytesPerPixel==4?GL_SRGB_ALPHA:GL_SRGB;
+#endif
+            GLint border = 0;
+
+            bool isPOT = isPowerOfTwo(textureDef.width) && isPowerOfTwo(textureDef.height);
+            if (!isPOT && filterSampling){
+                LOG_WARNING("Texture %s is not power of two (was %i x %i ). filter sampling ",textureDef.resourcename.c_str(), textureDef.width, textureDef.height);
+                filterSampling = false;
+            }
+            if (!isPOT && generateMipmaps){
+                LOG_WARNING("Texture %s is not power of two (was %i x %i ). mipmapping disabled ",textureDef.resourcename.c_str(), textureDef.width, textureDef.height);
+                generateMipmaps = false;
+            }
+
+            GLenum type = GL_UNSIGNED_BYTE;
+            glBindTexture(target, textureId);
+            void* dataPtr = textureDef.data.size()>0?textureDef.data.data(): nullptr;
+            glTexImage2D(target, mipmapLevel, internalFormat, textureDef.width, textureDef.height, border, textureDef.format, type, dataPtr);
+        } else {
+            for (int i=0;i<6;i++){
+                if ((val = textureTypeData.find(GL_TEXTURE_CUBE_MAP_POSITIVE_X+i)) != textureTypeData.end()) {
+                    auto &textureDef = val->second;
+                    textureDefPtr = &textureDef;
+                    this->target = GL_TEXTURE_CUBE_MAP;
+                    GLint mipmapLevel = 0;
+#ifdef EMSCRIPTEN
+                    GLint internalFormat = (data.bytesPerPixel==4?GL_RGBA:GL_RGB);
+#else
+                    GLint internalFormat = textureDef.bytesPerPixel == 4 ? GL_SRGB_ALPHA : GL_SRGB;
+#endif
+                    GLint border = 0;
+                    GLenum type = GL_UNSIGNED_BYTE;
+                    glBindTexture(target, textureId);
+                    void* dataPtr = textureDef.data.size()>0?textureDef.data.data() : nullptr;
+                    glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + (unsigned int) i, mipmapLevel, internalFormat,
+                                 textureDef.width, textureDef.height, border, textureDef.format, type, dataPtr);
+                }
+            }
+        }
+        if (target == 0){
+            LOG_FATAL("Texture contain no data");
+            return {};
+        }
+
         // build texture
-        Texture * res = new Texture(textureId, width, height, target, name);
+        Texture * res = new Texture(textureId, textureDefPtr->width, textureDefPtr->height, target, name);
         res->generateMipmap = this->generateMipmaps;
 		res->transparent = this->transparent;
         if (this->generateMipmaps){
@@ -344,8 +394,6 @@ namespace sre {
 
 	Texture::TextureBuilder &Texture::TextureBuilder::withWhiteData(int width, int height) {
 		auto one = (char)0xff;
-        this->width = width;
-        this->height = height;
         std::vector<char> dataOwned (width * height * 4, one);
         withRGBAData(dataOwned.data(), width, height);
 		return *this;
@@ -355,22 +403,18 @@ namespace sre {
     Texture::TextureBuilder &Texture::TextureBuilder::withWhiteCubemapData(int width, int height) {
 		auto one = (char)0xff;
         std::vector<char> dataOwned (width * height * 4, one);
-        this->width = width;
-        this->height = height;
+        int bytesPerPixel = 4;
+        GLenum format = GL_RGBA;
         for (int i=0;i<6;i++){
-            GLenum format = GL_RGBA;
-
-            this->target = GL_TEXTURE_CUBE_MAP;
-            GLint mipmapLevel = 0;
-#ifdef EMSCRIPTEN
-            GLenum internalFormat = has_sRGB()?GL_SRGB_ALPHA:GL_RGBA;
-#else
-            GLint internalFormat = GL_SRGB_ALPHA;
-#endif
-            GLint border = 0;
-            GLenum type = GL_UNSIGNED_BYTE;
-            glBindTexture(target, textureId);
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X+(unsigned int)i, mipmapLevel, internalFormat, width, height, border, format, type, dataOwned.data());
+            textureTypeData[GL_TEXTURE_CUBE_MAP_POSITIVE_X+(unsigned int)i] = {
+                    width,
+                    height,
+                    transparent,
+                    bytesPerPixel,
+                    format,
+                    "CubeWhite",
+                    dataOwned
+            };
         }
 
 
