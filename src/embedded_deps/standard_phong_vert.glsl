@@ -10,6 +10,10 @@ out mat3 vTBN;
 out vec3 vNormal;
 #endif
 out vec3 vWsPos;
+#ifdef S_VERTEX_COLOR
+in vec4 color;
+out vec4 vColor;
+#endif
 
 uniform mat4 g_model;
 uniform mat4 g_view;
@@ -28,4 +32,7 @@ void main(void) {
 #endif
     vUV = uv.xy;
     vWsPos = vWsPos.xyz;
+#ifdef S_VERTEX_COLOR
+    vColor = color;
+#endif
 }

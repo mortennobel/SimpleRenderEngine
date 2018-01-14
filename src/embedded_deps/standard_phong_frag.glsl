@@ -12,7 +12,9 @@ uniform vec4 g_cameraPos;
 uniform sampler2D normalTex;
 uniform float normalScale;
 #endif
-
+#ifdef S_VERTEX_COLOR
+in vec4 vColor;
+#endif
 
 uniform vec4 color;
 uniform sampler2D tex;
@@ -23,6 +25,9 @@ uniform sampler2D tex;
 void main(void)
 {
     vec4 c = color * texture(tex, vUV);
+#ifdef S_VERTEX_COLOR
+    c = c * vColor;
+#endif
     vec3 normal = getNormal();
     vec3 l = computeLight(vWsPos, g_cameraPos.xyz, normal);
 

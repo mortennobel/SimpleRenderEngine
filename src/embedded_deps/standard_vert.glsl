@@ -8,6 +8,10 @@ out mat3 vTBN;
 #else
 out vec3 vNormal;
 #endif
+#ifdef S_VERTEX_COLOR
+in vec4 color;
+out vec4 vColor;
+#endif
 out vec2 vUV;
 out vec3 vLightDir[SI_LIGHTS];
 out vec3 vWsPos;
@@ -42,4 +46,7 @@ void main(void) {
             vLightDir[i] = normalize(g_lightPosType[i].xyz - vWsPos);
         }
     }
+#ifdef S_VERTEX_COLOR
+    vColor = color;
+#endif
 }

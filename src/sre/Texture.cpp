@@ -138,8 +138,6 @@ namespace {
         return ((x != 0) && !(x & (x - 1)));
     }
 
-	
-
     std::vector<char> loadFileFromMemory(const char* data, int dataSize, GLenum& format, bool & alpha,int& width, int& height, int& bytesPerPixel, bool invertY = true){
 #ifndef EMSCRIPTEN
         static bool initialized = false;
@@ -169,7 +167,7 @@ namespace {
         format = getFormat(formattedSurf);
 
         bytesPerPixel = format == GL_RGB ? 3 : 4;
-        char *pixels = static_cast<char *>(formattedSurf->pixels);
+        auto pixels = static_cast<char *>(formattedSurf->pixels);
         if (invertY){
             invert_image(width*bytesPerPixel, height, pixels);
         }
@@ -331,6 +329,7 @@ namespace sre {
         if (name.length() == 0){
             name = "Unnamed Texture";
         }
+        // build texture
         Texture * res = new Texture(textureId, width, height, target, name);
         res->generateMipmap = this->generateMipmaps;
 		res->transparent = this->transparent;

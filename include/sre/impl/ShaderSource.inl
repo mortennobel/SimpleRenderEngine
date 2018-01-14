@@ -229,6 +229,9 @@ uniform samplerCube diffuseEnvCube;
 uniform samplerCube specularEnvCube;
 uniform sampler2D brdfLUT;
 #endif
+#ifdef S_VERTEX_COLOR
+in vec4 vColor;
+#endif
 
 #pragma include "normalmap_incl.glsl"
 
@@ -358,6 +361,9 @@ void main(void)
 #else
     vec4 baseColor = color;
 #endif
+#ifdef S_VERTEX_COLOR
+    baseColor = baseColor * vColor;
+#endif
 
     vec3 f0 = vec3(0.04);
     vec3 diffuseColor = baseColor.rgb * (vec3(1.0) - f0);
@@ -437,6 +443,10 @@ out mat3 vTBN;
 #else
 out vec3 vNormal;
 #endif
+#ifdef S_VERTEX_COLOR
+in vec4 color;
+out vec4 vColor;
+#endif
 out vec2 vUV;
 out vec3 vLightDir[SI_LIGHTS];
 out vec3 vWsPos;
@@ -471,6 +481,9 @@ void main(void) {
             vLightDir[i] = normalize(g_lightPosType[i].xyz - vWsPos);
         }
     }
+#ifdef S_VERTEX_COLOR
+    vColor = color;
+#endif
 })"),
 std::make_pair<std::string,std::string>("standard_phong_frag.glsl",R"(#version 140
 out vec4 fragColor;
@@ -536,6 +549,9 @@ void main(void) {
 std::make_pair<std::string,std::string>("unlit_frag.glsl",R"(#version 140
 out vec4 fragColor;
 in vec2 vUV;
+#ifdef S_VERTEX_COLOR
+in vec4 vColor;
+#endif
 
 uniform vec4 color;
 uniform sampler2D tex;
@@ -543,10 +559,17 @@ uniform sampler2D tex;
 void main(void)
 {
     fragColor = color * texture(tex, vUV);
+    #ifdef S_VERTEX_COLOR
+    fragColor = fragColor * vColor;
+    #endif
 })"),
 std::make_pair<std::string,std::string>("unlit_vert.glsl",R"(#version 140
 in vec3 position;
 in vec3 normal;
+#ifdef S_VERTEX_COLOR
+in vec4 color;
+out vec4 vColor;
+#endif
 in vec4 uv;
 out vec2 vUV;
 
@@ -557,6 +580,9 @@ uniform mat4 g_projection;
 void main(void) {
     gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
     vUV = uv.xy;
+    #ifdef S_VERTEX_COLOR
+    vColor = color;
+    #endif
 })"),
 std::make_pair<std::string,std::string>("debug_tangent_frag.glsl",R"(#version 140
 out vec4 fragColor;

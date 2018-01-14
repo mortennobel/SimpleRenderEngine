@@ -36,6 +36,9 @@ uniform samplerCube diffuseEnvCube;
 uniform samplerCube specularEnvCube;
 uniform sampler2D brdfLUT;
 #endif
+#ifdef S_VERTEX_COLOR
+in vec4 vColor;
+#endif
 
 #pragma include "normalmap_incl.glsl"
 
@@ -164,6 +167,9 @@ void main(void)
     vec4 baseColor = SRGBtoLINEAR(texture(tex, vUV)) * color;
 #else
     vec4 baseColor = color;
+#endif
+#ifdef S_VERTEX_COLOR
+    baseColor = baseColor * vColor;
 #endif
 
     vec3 f0 = vec3(0.04);

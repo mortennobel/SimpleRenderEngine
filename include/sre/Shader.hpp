@@ -171,6 +171,9 @@ namespace sre {
                                                                //   Adds Uniforms "emissiveTex" (Texture) and "emissiveFactor" (vec4)
                                                                // S_OCCLUSIONMAP
                                                                //   Adds Uniforms "occlusionTex" (Texture) and "occlusionStrength" (float)
+                                                               // S_VERTEX_COLOR
+                                                               //   Adds vertex color. VertexAttributes "color" vec4
+
 
         static std::shared_ptr<Shader> getStandardPhong();      // Phong Light Model. Uses light objects and ambient light set in Renderer.
                                                                 // Uniforms
@@ -181,11 +184,17 @@ namespace sre {
                                                                 //   "position" vec3
                                                                 //   "normal" vec3
                                                                 //   "uv" vec4
+                                                                // Specializations
+                                                                // S_VERTEX_COLOR
+                                                                //   Adds vertex color. VertexAttributes "color" vec4
 
         static std::shared_ptr<Shader> getUnlit();             // Unlit model.
                                                                // Uniforms
                                                                //   "color" vec4 (default (1,1,1,1))
                                                                //   "tex" shared_ptr<Texture> (default white texture)
+                                                               // Specializations
+                                                               // S_VERTEX_COLOR
+                                                               //   Adds vertex color. VertexAttributes "color" vec4
 
         static std::shared_ptr<Shader> getUnlitSprite();       // UnlitSprite = no depth examples and alpha blending
                                                                // Uniforms

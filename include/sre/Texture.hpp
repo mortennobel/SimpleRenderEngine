@@ -44,6 +44,7 @@ public:
         PositiveZ,
         NegativeZ
     };
+
     class DllExport TextureBuilder {
     public:
         ~TextureBuilder();
@@ -70,6 +71,8 @@ public:
         bool wrapTextureCoordinates = true;
         uint32_t target = 0;
         unsigned int textureId = 0;
+
+        std::map<uint32_t, std::vector<char>> textureTypeData;
 
         friend class Texture;
         friend class RenderPass;
@@ -114,7 +117,6 @@ private:
     friend class Framebuffer;
     friend class RenderPass;
     friend class Inspector;
-    friend class sre::Framebuffer::FrameBufferBuilder;
     friend class VR;
     friend class Sprite;
 };

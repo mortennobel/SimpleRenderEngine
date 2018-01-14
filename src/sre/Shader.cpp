@@ -106,40 +106,42 @@ namespace sre {
             return sstream.str();
         }
 
-        void logCurrentCompileException(GLuint &shader, GLenum type, vector<string> &errors, std::string source) {
+        void logCurrentCompileInfo(GLuint &shader, GLenum type, vector<string> &errors, std::string source) {
             GLint logSize = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
+            while (logSize > 0){
+                std::vector<char> errorLog((unsigned long) logSize);
+                glGetShaderInfoLog(shader, logSize, &logSize, errorLog.data());
 
-            std::vector<char> errorLog((unsigned long) logSize);
-            glGetShaderInfoLog(shader, logSize, &logSize, errorLog.data());
+                std::string typeStr;
+                switch (type){
+                    case GL_FRAGMENT_SHADER:
+                        typeStr = "Fragment shader";
+                        break;
+                    case GL_VERTEX_SHADER:
+                        typeStr = "Vertex shader";
+                        break;
+    #ifndef EMSCRIPTEN
+                    case GL_GEOMETRY_SHADER:
+                        typeStr = "Geometry shader";
+                        break;
+                    case GL_TESS_CONTROL_SHADER:
+                        typeStr = "Tessellation control shader";
+                        break;
+                    case GL_TESS_EVALUATION_SHADER:
+                        typeStr = "Tessellation eval shader";
+                        break;
+    #endif
+                    default:
+                        typeStr = std::string("Unknown error type: ") + std::to_string(type);
+                        break;
+                }
+                LOG_ERROR("Shader compile error in %s: %s",typeStr.c_str() ,errorLog.data());
+                std::cout<<source.c_str()<<std::endl;
 
-            std::string typeStr;
-            switch (type){
-                case GL_FRAGMENT_SHADER:
-                    typeStr = "Fragment shader";
-                    break;
-                case GL_VERTEX_SHADER:
-                    typeStr = "Vertex shader";
-                    break;
-#ifndef EMSCRIPTEN
-                case GL_GEOMETRY_SHADER:
-                    typeStr = "Geometry shader";
-                    break;
-                case GL_TESS_CONTROL_SHADER:
-                    typeStr = "Tessellation control shader";
-                    break;
-                case GL_TESS_EVALUATION_SHADER:
-                    typeStr = "Tessellation eval shader";
-                    break;
-#endif
-                default:
-                    typeStr = std::string("Unknown error type: ") + std::to_string(type);
-                    break;
+                errors.push_back(std::string(errorLog.data())+"##"+std::to_string(type));
+                glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
             }
-            LOG_ERROR("Shader compile error in %s: %s",typeStr.c_str() ,errorLog.data());
-            std::cout<<source.c_str()<<std::endl;
-
-            errors.push_back(std::string(errorLog.data())+"##"+std::to_string(type));
         }
 
         bool linkProgram(GLuint mShaderProgram, std::vector<std::string>& errors){
@@ -800,7 +802,7 @@ namespace sre {
         GLint success = 0;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
         if (success == GL_FALSE){
-            logCurrentCompileException(shader, type, errors, source_);
+            logCurrentCompileInfo(shader, type, errors, source_);
             return false;
         }
         return true;
