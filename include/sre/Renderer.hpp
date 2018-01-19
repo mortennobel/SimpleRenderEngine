@@ -90,6 +90,8 @@ namespace sre {
         std::vector<Texture*> textures;
         std::vector<SpriteAtlas*> spriteAtlases;
 
+        bool useFramebufferSRGB = false;
+
 		VR* vr = nullptr;
 
         friend class Mesh;

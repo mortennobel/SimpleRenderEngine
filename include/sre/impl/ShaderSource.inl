@@ -12,6 +12,9 @@ in vec3 vNormal;
 void main(void)
 {
     fragColor = vec4(vNormal*0.5+0.5,1.0);
+#ifndef SI_FRAMEBUFFER_SRGB
+    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/2.2)), fragColor.a); // gamma correction
+#endif    
 })"),
 std::make_pair<std::string,std::string>("debug_normal_vert.glsl",R"(#version 140
 in vec3 position;
@@ -34,6 +37,9 @@ in vec4 vUV;
 void main(void)
 {
     fragColor = vUV;
+#ifndef SI_FRAMEBUFFER_SRGB
+    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/2.2)), fragColor.a); // gamma correction
+#endif
 })"),
 std::make_pair<std::string,std::string>("debug_uv_vert.glsl",R"(#version 140
 in vec3 position;
@@ -121,6 +127,10 @@ void main(void)
     }
     vec4 c = vColor * texture(tex, uv);
     fragColor = c;
+#ifndef SI_FRAMEBUFFER_SRGB
+    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/2.2)), fragColor.a); // gamma correction
+#endif
+
 })"),
 std::make_pair<std::string,std::string>("particles_vert.glsl",R"(#version 140
 in vec3 position;
@@ -174,6 +184,9 @@ uniform sampler2D tex;
 void main(void)
 {
     fragColor = vColor * texture(tex, vUV);
+#ifndef SI_FRAMEBUFFER_SRGB
+    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/2.2)), fragColor.a); // gamma correction
+#endif
 })"),
 std::make_pair<std::string,std::string>("sprite_vert.glsl",R"(#version 140
 in vec3 position;
@@ -431,7 +444,12 @@ void main(void)
     vec3 emissive = SRGBtoLINEAR(texture(emissiveTex, vUV)).rgb * emissiveFactor.xyz;
     color += emissive;
 #endif
+#ifdef SI_FRAMEBUFFER_SRGB
+    fragColor = vec4(color,baseColor.a);
+#else
     fragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a); // gamma correction
+#endif
+
 })"),
 std::make_pair<std::string,std::string>("standard_vert.glsl",R"(#version 140
 in vec3 position;
@@ -499,7 +517,9 @@ uniform vec4 g_cameraPos;
 uniform sampler2D normalTex;
 uniform float normalScale;
 #endif
-
+#ifdef S_VERTEX_COLOR
+in vec4 vColor;
+#endif
 
 uniform vec4 color;
 uniform sampler2D tex;
@@ -510,10 +530,16 @@ uniform sampler2D tex;
 void main(void)
 {
     vec4 c = color * texture(tex, vUV);
+#ifdef S_VERTEX_COLOR
+    c = c * vColor;
+#endif
     vec3 normal = getNormal();
     vec3 l = computeLight(vWsPos, g_cameraPos.xyz, normal);
 
     fragColor = c * vec4(l, 1.0);
+#ifndef SI_FRAMEBUFFER_SRGB
+    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/2.2)), fragColor.a); // gamma correction
+#endif
 })"),
 std::make_pair<std::string,std::string>("standard_phong_vert.glsl",R"(#version 140
 in vec3 position;
@@ -527,6 +553,10 @@ out mat3 vTBN;
 out vec3 vNormal;
 #endif
 out vec3 vWsPos;
+#ifdef S_VERTEX_COLOR
+in vec4 color;
+out vec4 vColor;
+#endif
 
 uniform mat4 g_model;
 uniform mat4 g_view;
@@ -545,6 +575,9 @@ void main(void) {
 #endif
     vUV = uv.xy;
     vWsPos = vWsPos.xyz;
+#ifdef S_VERTEX_COLOR
+    vColor = color;
+#endif
 })"),
 std::make_pair<std::string,std::string>("unlit_frag.glsl",R"(#version 140
 out vec4 fragColor;
@@ -559,9 +592,12 @@ uniform sampler2D tex;
 void main(void)
 {
     fragColor = color * texture(tex, vUV);
-    #ifdef S_VERTEX_COLOR
+#ifdef S_VERTEX_COLOR
     fragColor = fragColor * vColor;
-    #endif
+#endif
+#ifndef SI_FRAMEBUFFER_SRGB
+    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/2.2)), fragColor.a); // gamma correction
+#endif
 })"),
 std::make_pair<std::string,std::string>("unlit_vert.glsl",R"(#version 140
 in vec3 position;
@@ -580,9 +616,9 @@ uniform mat4 g_projection;
 void main(void) {
     gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
     vUV = uv.xy;
-    #ifdef S_VERTEX_COLOR
+#ifdef S_VERTEX_COLOR
     vColor = color;
-    #endif
+#endif
 })"),
 std::make_pair<std::string,std::string>("debug_tangent_frag.glsl",R"(#version 140
 out vec4 fragColor;
@@ -591,6 +627,9 @@ in vec3 vTangent;
 void main(void)
 {
     fragColor = vec4(vTangent*0.5+0.5,1.0);
+#ifndef SI_FRAMEBUFFER_SRGB
+    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/2.2)), fragColor.a); // gamma correction
+#endif
 })"),
 std::make_pair<std::string,std::string>("debug_tangent_vert.glsl",R"(#version 140
 in vec3 position;

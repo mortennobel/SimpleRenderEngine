@@ -895,6 +895,10 @@ namespace sre {
             ss<<"#define "<<sc.first<<" "<<sc.second<<"\n";
         }
         ss<<"#define SI_LIGHTS "<<Renderer::instance->maxSceneLights<<"\n";
+        if (Renderer::instance->useFramebufferSRGB){
+
+            ss<<"#define SI_FRAMEBUFFER_SRGB 1\n";
+        }
         switch (shaderType){
             case GL_FRAGMENT_SHADER:
                 ss<<"#define SI_FRAGMENT 1\n";

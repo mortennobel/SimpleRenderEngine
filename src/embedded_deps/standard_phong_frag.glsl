@@ -32,4 +32,8 @@ void main(void)
     vec3 l = computeLight(vWsPos, g_cameraPos.xyz, normal);
 
     fragColor = c * vec4(l, 1.0);
+#ifndef SI_FRAMEBUFFER_SRGB
+    float gamma = 2.2;
+    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/gamma)), fragColor.a); // gamma correction
+#endif
 }

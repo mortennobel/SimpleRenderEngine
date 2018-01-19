@@ -13,7 +13,6 @@
 #include "sre/impl/Export.hpp"
 
 namespace sre {
-
     /**
      * The camera contains two important properties:
      * - view transform matrix: Contains information about location and orientation of the camera. This matrix will

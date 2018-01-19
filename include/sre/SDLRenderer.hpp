@@ -94,7 +94,12 @@ private:
     int windowHeight = 600;
     SDL_Window *window = nullptr;
 
+    float deltaTimeEvent;
+    float deltaTimeUpdate;
+    float deltaTimeRender;
+
     friend class SDLRendererInternal;
+    friend class Inspector;
 };
 
 }

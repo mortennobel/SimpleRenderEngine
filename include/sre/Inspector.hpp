@@ -26,8 +26,6 @@ namespace sre {
 
     class SDLRenderer;
 
-
-
     /**
      * The inspector measures resources used by SimpleRenderEngine.
      * Inspector.update() records the current state and must be called each frame.
@@ -50,6 +48,9 @@ namespace sre {
         int frameCount;
         std::weak_ptr<Shader> shaderEdit;
         std::vector<float> milliseconds;
+        std::vector<float> millisecondsEvent;
+        std::vector<float> millisecondsUpdate;
+        std::vector<float> millisecondsRender;
         std::vector<RenderStats> stats;
 
         std::vector<float> data;

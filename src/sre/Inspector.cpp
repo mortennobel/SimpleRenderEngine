@@ -69,6 +69,12 @@ namespace sre {
     {
         stats.resize(frames);
         milliseconds.resize(frames);
+        if (sdlRenderer){
+            millisecondsEvent.resize(frames);
+            millisecondsUpdate.resize(frames);
+            millisecondsRender.resize(frames);
+        }
+
         data.resize(frames);
         lastTick = Clock::now();
     }
@@ -664,6 +670,12 @@ namespace sre {
 
         stats[frameCount%frames] = Renderer::instance->getRenderStats();
         milliseconds[frameCount%frames] = deltaTime;
+        if (sdlRenderer){
+            millisecondsEvent[frameCount%frames] = sdlRenderer->deltaTimeEvent;
+            millisecondsUpdate[frameCount%frames] = sdlRenderer->deltaTimeUpdate;
+            millisecondsRender[frameCount%frames] = sdlRenderer->deltaTimeRender;
+        }
+
         frameCount++;
     }
 

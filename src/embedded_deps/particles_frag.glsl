@@ -21,4 +21,9 @@ void main(void)
     }
     vec4 c = vColor * texture(tex, uv);
     fragColor = c;
+#ifndef SI_FRAMEBUFFER_SRGB
+    float gamma = 2.2;
+    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/gamma)), fragColor.a); // gamma correction
+#endif
+
 }

@@ -46,7 +46,8 @@ vec4 SRGBtoLINEAR(vec4 srgbIn)
 {
     #ifdef MANUAL_SRGB
     #ifdef SRGB_FAST_APPROXIMATION
-    vec3 linOut = pow(srgbIn.xyz,vec3(2.2));
+    float gamma = 2.2;
+    vec3 linOut = pow(srgbIn.xyz,vec3(gamma));
     #else //SRGB_FAST_APPROXIMATION
     vec3 bLess = step(vec3(0.04045),srgbIn.xyz);
     vec3 linOut = mix( srgbIn.xyz/vec3(12.92), pow((srgbIn.xyz+vec3(0.055))/vec3(1.055),vec3(2.4)), bLess );
@@ -238,5 +239,11 @@ void main(void)
     vec3 emissive = SRGBtoLINEAR(texture(emissiveTex, vUV)).rgb * emissiveFactor.xyz;
     color += emissive;
 #endif
-    fragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a); // gamma correction
+#ifdef SI_FRAMEBUFFER_SRGB
+    fragColor = vec4(color,baseColor.a);
+#else
+    float gamma = 2.2;
+    fragColor = vec4(pow(color,vec3(1.0/gamma)), baseColor.a); // gamma correction
+#endif
+
 }

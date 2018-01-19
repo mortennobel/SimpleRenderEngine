@@ -38,13 +38,16 @@ namespace sre {
 		instance = this;
 
         
-#ifndef EMSCRIPTEN
+#ifdef EMSCRIPTEN
+        vsync = true; // WebGL uses vsync like approach
+        useFramebufferSRGB = false;
+#else
         glcontext = SDL_GL_CreateContext(window);
         if (vsync){
             vsync = SDL_GL_SetSwapInterval(1) == 0; // return 0 is success
         }
-#else
-        vsync = true; // WebGL uses vsync like approach
+        useFramebufferSRGB = true;
+        glEnable(GL_FRAMEBUFFER_SRGB);
 #endif
 #if defined(_WIN32)
 		glewExperimental = GL_TRUE;
