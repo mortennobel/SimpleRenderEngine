@@ -5,10 +5,9 @@ in vec3 uvSize;
 in vec4 vColor;
 #ifdef GL_ES
 uniform precision highp vec4 g_viewport;
-else
+#else
 uniform vec4 g_viewport;
 #endif
-
 
 uniform sampler2D tex;
 
@@ -25,5 +24,4 @@ void main(void)
     float gamma = 2.2;
     fragColor = vec4(pow(fragColor.xyz,vec3(1.0/gamma)), fragColor.a); // gamma correction
 #endif
-
 }

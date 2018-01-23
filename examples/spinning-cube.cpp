@@ -26,7 +26,7 @@ public:
         materialPhong = Shader::getStandardPhong()->createMaterial();
         materialPhong->setColor({1.0f,1.0f,1.0f,1.0f});
         materialPhong->setSpecularity(20.0f);
-        material = Shader::getStandard()->createMaterial();
+        material = Shader::getStandardPhong()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
         material->setSpecularity(20.0f);
 

@@ -33,7 +33,7 @@ public:
         camera.lookAt({0,0,3},{0,0,0},{0,1,0});
         camera.setPerspectiveProjection(60,0.1,farPlane);
 
-        auto material = Shader::getStandard()->createMaterial();
+        auto material = Shader::getStandardPhong()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
         material->setSpecularity(20.0f);
         materials.push_back(material);

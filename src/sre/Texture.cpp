@@ -38,6 +38,7 @@
 #ifndef GL_SRGB
 #define GL_SRGB 0x8C40
 #endif
+#include <iomanip>
 
 #include "sre/Log.hpp"
 
@@ -220,7 +221,7 @@ namespace sre {
         return *this;
     }
 
-    Texture::TextureBuilder &Texture::TextureBuilder::withFileCubemap(std::string filename, TextureCubemapSide side){
+    Texture::TextureBuilder &Texture::TextureBuilder::withFileCubemap(std::string filename, CubemapSide side){
         auto fileData = readAllBytes(filename.c_str());
         GLenum format;
         int bytesPerPixel;
@@ -297,9 +298,14 @@ namespace sre {
             // create texture
             GLint mipmapLevel = 0;
 #ifdef EMSCRIPTEN
-            GLint internalFormat = (textureDef.bytesPerPixel==4?GL_RGBA:GL_RGB);
+            GLint internalFormat = textureDef.bytesPerPixel==4?GL_RGBA:GL_RGB;
 #else
-            GLint internalFormat = textureDef.bytesPerPixel==4?GL_SRGB_ALPHA:GL_SRGB;
+            GLint internalFormat;
+            if (samplerColorspace == SamplerColorspace::Linear){
+                internalFormat = textureDef.bytesPerPixel==4?GL_SRGB_ALPHA:GL_SRGB;
+            } else {
+                internalFormat = textureDef.bytesPerPixel==4?GL_RGBA:GL_RGB;
+            }
 #endif
             GLint border = 0;
 
@@ -316,6 +322,9 @@ namespace sre {
             GLenum type = GL_UNSIGNED_BYTE;
             glBindTexture(target, textureId);
             void* dataPtr = textureDef.data.size()>0?textureDef.data.data(): nullptr;
+            if (this->dumpDebug){
+                textureDef.dumpDebug();
+            }
             glTexImage2D(target, mipmapLevel, internalFormat, textureDef.width, textureDef.height, border, textureDef.format, type, dataPtr);
         } else {
             for (int i=0;i<6;i++){
@@ -325,14 +334,22 @@ namespace sre {
                     this->target = GL_TEXTURE_CUBE_MAP;
                     GLint mipmapLevel = 0;
 #ifdef EMSCRIPTEN
-                    GLint internalFormat = (textureDef.bytesPerPixel==4?GL_RGBA:GL_RGB);
+                    GLint internalFormat = (textureDef.bytesPerPixel==4 ? GL_RGBA : GL_RGB);
 #else
-                    GLint internalFormat = textureDef.bytesPerPixel == 4 ? GL_SRGB_ALPHA : GL_SRGB;
+                    GLint internalFormat;
+                    if (samplerColorspace == SamplerColorspace::Linear){
+                        internalFormat = textureDef.bytesPerPixel==4?GL_SRGB_ALPHA:GL_SRGB;
+                    } else {
+                        internalFormat = textureDef.bytesPerPixel==4?GL_RGBA:GL_RGB;
+                    }
 #endif
                     GLint border = 0;
                     GLenum type = GL_UNSIGNED_BYTE;
                     glBindTexture(target, textureId);
                     void* dataPtr = textureDef.data.size()>0?textureDef.data.data() : nullptr;
+                    if (this->dumpDebug){
+                        textureDef.dumpDebug();
+                    }
                     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + (unsigned int) i, mipmapLevel, internalFormat,
                                  textureDef.width, textureDef.height, border, textureDef.format, type, dataPtr);
                 }
@@ -363,6 +380,10 @@ namespace sre {
 		return *this;
 	}
 
+    Texture::TextureBuilder &Texture::TextureBuilder::withSamplerColorspace(SamplerColorspace samplerColorspace) {
+		this->samplerColorspace = samplerColorspace;
+		return *this;
+	}
 
     Texture::TextureBuilder &Texture::TextureBuilder::withWhiteCubemapData(int width, int height) {
 		auto one = (char)0xff;
@@ -397,6 +418,11 @@ namespace sre {
 
     Texture::TextureBuilder &Texture::TextureBuilder::withName(const std::string& name) {
         this->name = name;
+        return *this;
+    }
+
+    Texture::TextureBuilder &Texture::TextureBuilder::withDumpDebug() {
+        this->dumpDebug = true;
         return *this;
     }
 
@@ -571,5 +597,35 @@ namespace sre {
         SDL_FreeSurface(res_texture);
 
         return res;
+    }
+
+    void Texture::TextureBuilder::TextureDefinition::dumpDebug() {
+        std::cout << "Width "<<width<<std::endl;
+        std::cout << "Height "<<height<<std::endl;
+        std::cout << "Transparent "<<transparent<<std::endl;
+        std::cout << "Transparent "<<transparent<<std::endl;
+        std::cout << "BytesPerPixel "<<bytesPerPixel<<std::endl;
+        std::cout << "Format "<<format<<std::endl;
+        std::cout << "Resourcename "<<resourcename<<std::endl;
+        std::cout << "Data";
+        // store formatting
+        std::ios_base::fmtflags oldFlags = std::cout.flags();
+        std::streamsize         oldPrec  = std::cout.precision();
+        char               oldFill  = std::cout.fill();
+        std::cout << std::showbase // show the 0x prefix
+                  << std::internal // fill between the prefix and the number
+                  << std::setfill('0') // fill with 0s
+                  << std::setw(3);
+        for (int i=0;i<data.size();i++){
+            if (i%(width*bytesPerPixel)==0){
+                std::cout << std::endl;
+            }
+
+            std::cout << (data[i]&0xFF)<<" ";
+        }
+        // restore formatting
+        std::cout.flags(oldFlags);
+        std::cout.precision(oldPrec);
+        std::cout.fill(oldFill);
     }
 }

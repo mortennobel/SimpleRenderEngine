@@ -63,8 +63,8 @@ namespace sre {
 
         void setWindowCoordinates();                             // set orthographic transform and view, where the origin is located in the lower left corner
                                                                  // z depth is between -1 and 1
-                                                                 // width the width of the window, if -1 uses current window size
-                                                                 // height the height of the window, if -1 uses current window size
+                                                                 // width the width of the window
+                                                                 // height the height of the window
 
         void setViewTransform(const glm::mat4 &viewTransform);   // Set the view transform. Used to position the virtual camera position and orientation.
                                                                  // This is commonly set using lookAt

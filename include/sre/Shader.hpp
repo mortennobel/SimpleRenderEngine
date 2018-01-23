@@ -172,7 +172,7 @@ namespace sre {
                                                                // S_OCCLUSIONMAP
                                                                //   Adds Uniforms "occlusionTex" (Texture) and "occlusionStrength" (float)
                                                                // S_VERTEX_COLOR
-                                                               //   Adds vertex color. VertexAttributes "color" vec4
+                                                               //   Adds vertex color. VertexAttributes "color" vec4. Colors are defined in linear space.
 
 
         static std::shared_ptr<Shader> getStandardPhong();      // Phong Light Model. Uses light objects and ambient light set in Renderer.

@@ -53,10 +53,17 @@ public:
         emissiveTex = Texture::create().withWhiteData(2,2).build();
         occlusionTex = Texture::create().withWhiteData(2,2).build();
         colorTex =      Texture::create().withFile(colorTexStr    ).build();
-        metToughTex =   Texture::create().withFile(metRoughTexStr ).build();
-        normalTex =     Texture::create().withFile(normalTexStr   ).build();
+        metToughTex =   Texture::create().withFile(metRoughTexStr )
+                .withSamplerColorspace(Texture::SamplerColorspace::Gamma)
+                .build();
+        normalTex =     Texture::create()
+                .withFile(normalTexStr   )
+                .withSamplerColorspace(Texture::SamplerColorspace::Gamma)
+                .build();
         emissiveTex =   Texture::create().withFile(emissiveTexStr ).build();
-        occlusionTex =  Texture::create().withFile(occlusionTexStr).build();
+        occlusionTex =  Texture::create().withFile(occlusionTexStr)
+                .withSamplerColorspace(Texture::SamplerColorspace::Gamma)
+                .build();
 
         updateMaterial();
 
@@ -72,7 +79,7 @@ public:
         r.mouseEvent = [&](SDL_Event event){
             static bool validClick = false;
             if (event.type == SDL_MOUSEBUTTONDOWN){
-                validClick = !ImGui::IsMouseHoveringAnyWindow();
+                validClick = !ImGui::IsAnyWindowHovered();
             }
             if (event.type == SDL_MOUSEMOTION && validClick){
                 if (event.motion.state & SDL_BUTTON_LMASK){
@@ -231,13 +238,13 @@ private:
     int selection = 0;
     glm::vec4 color = glm::vec4(1,1,1,1);
     const static int maxTextSize = 512;
-    char colorTexStr[maxTextSize]    = "BoomBox_baseColor.png";
-    char metRoughTexStr[maxTextSize] = "BoomBox_roughnessMetallic.png";
-    char normalTexStr[maxTextSize]   = "BoomBox_normal.png";
+    char colorTexStr[maxTextSize]    = "test_data/BoomBox_baseColor.png";
+    char metRoughTexStr[maxTextSize] = "test_data/BoomBox_roughnessMetallic.png";
+    char normalTexStr[maxTextSize]   = "test_data/BoomBox_normal.png";
     float normalScale = 1;
-    char emissiveTexStr[maxTextSize] = "BoomBox_emissive.png";
+    char emissiveTexStr[maxTextSize] = "test_data/BoomBox_emissive.png";
     glm::vec4 emissiveFactor = glm::vec4(1,1,1,1);
-    char occlusionTexStr[maxTextSize] ="BoomBox_occlusion.png";
+    char occlusionTexStr[maxTextSize] ="test_data/BoomBox_occlusion.png";
     float occlusionStrength = 1;
     std::shared_ptr<sre::Texture> colorTex;
     std::shared_ptr<sre::Texture> metToughTex;

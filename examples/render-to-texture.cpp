@@ -26,8 +26,8 @@ public:
 
         framebuffer = Framebuffer::create().withTexture(texture).build();
 
-        materialOffscreen = Shader::getStandard()->createMaterial();
-        material = Shader::getStandard()->createMaterial();
+        materialOffscreen = Shader::getStandardPhong()->createMaterial();
+        material = Shader::getStandardPhong()->createMaterial();
         material->setTexture(texture);
 
         mesh = Mesh::create().withCube().build();

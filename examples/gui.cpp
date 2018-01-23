@@ -33,7 +33,7 @@ public:
                                       .withRange(50)
                                       .build());
 
-        material = Shader::getStandard()->createMaterial();
+        material = Shader::getStandardPhong()->createMaterial();
         material->setSpecularity(20);
 
         // connect render callback
@@ -69,14 +69,16 @@ public:
 
         // Show Label (with invisible window)
         ImGui::SetNextWindowPos(ImVec2(100,000));
-        ImGui::Begin("#TestLabel",&open,ImVec2(500,100),0,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs);
+        ImGui::SetNextWindowSize(ImVec2(500,100));
+        ImGui::Begin("#TestLabel",&open,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs);
         ImGui::Text("Hello, world!");
         ImGui::End();
 
         // Show Button (with invisible window)
         // Note window may disappear behind other windows
         ImGui::SetNextWindowPos(ImVec2(200,100));
-        ImGui::Begin("#Button",&open,ImVec2(100,25),0,ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoScrollbar);
+        ImGui::SetNextWindowSize(ImVec2(100,25));
+        ImGui::Begin("#Button",&open,ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoScrollbar);
         if (ImGui::Button("Click me")){
             std::cout << "Clicked"<<std::endl;
         }
@@ -115,7 +117,7 @@ public:
         // 2. Show another simple window, this time using an explicit Begin/End pair
         if(show_another_window)
         {
-            ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
+            ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiCond_FirstUseEver);
             ImGui::Begin("Another Window", &show_another_window);
             ImGui::Text("Hello");
 

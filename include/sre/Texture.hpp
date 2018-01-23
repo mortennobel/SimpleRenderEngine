@@ -38,7 +38,7 @@ namespace sre{
      */
 class DllExport Texture : public std::enable_shared_from_this<Texture> {
 public:
-    enum class TextureCubemapSide{
+    enum class CubemapSide{
         PositiveX,
         NegativeX,
         PositiveY,
@@ -47,19 +47,27 @@ public:
         NegativeZ
     };
 
+
+    enum class SamplerColorspace {
+        Linear,             // Convert values from gamma space to linear space, when gamma correction is enabled. Default behavior.
+        Gamma               // No gamma convertions. This is useful for e.g. normal textures where no gamma correction must be performed
+    };
+
     class DllExport TextureBuilder {
     public:
         ~TextureBuilder();
         TextureBuilder& withGenerateMipmaps(bool enable);
         TextureBuilder& withFilterSampling(bool enable);                                    // if true texture sampling is filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
         TextureBuilder& withWrappedTextureCoordinates(bool enable);
-        TextureBuilder& withFileCubemap(std::string filename, TextureCubemapSide side);     // Must define a cubemap for each side
+        TextureBuilder& withFileCubemap(std::string filename, CubemapSide side);     // Must define a cubemap for each side
         TextureBuilder& withFile(std::string filename);                                     // Currently only PNG files supported
         TextureBuilder& withRGBData(const char* data, int width, int height);               // data may be null (for a uninitialized texture)
         TextureBuilder& withRGBAData(const char* data, int width, int height);              // data may be null (for a uninitialized texture)
         TextureBuilder& withWhiteData(int width=2, int height=2);
+        TextureBuilder& withSamplerColorspace(SamplerColorspace samplerColorspace);
         TextureBuilder& withWhiteCubemapData(int width=2, int height=2);
         TextureBuilder& withName(const std::string& name);
+        TextureBuilder& withDumpDebug();                                                    // Output debug info on build
         std::shared_ptr<Texture> build();
     private:
         TextureBuilder();
@@ -73,6 +81,7 @@ public:
             uint32_t format;
             std::string resourcename;
             std::vector<char> data;
+            void dumpDebug();
         };
 
         std::string name;
@@ -80,6 +89,8 @@ public:
         bool generateMipmaps = false;
         bool filterSampling = true;                                                         // true = linear/trilinear sampling, false = point sampling
         bool wrapTextureCoordinates = true;
+        bool dumpDebug = false;
+        SamplerColorspace samplerColorspace = SamplerColorspace::Linear;
         uint32_t target = 0;
         unsigned int textureId = 0;
 
