@@ -98,6 +98,7 @@ namespace sre {
         friend class Mesh::MeshBuilder;
         friend class Shader;
         friend class Shader;
+        friend class Material;
         friend class Texture;
         friend class Framebuffer;
         friend class RenderPass;

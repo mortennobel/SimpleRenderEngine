@@ -16,6 +16,8 @@
 #include "sre/Framebuffer.hpp"
 #include "sre/Shader.hpp"
 
+class SDL_Surface;
+
 namespace sre{
 
     class RenderPass;
@@ -73,7 +75,6 @@ public:
             std::vector<char> data;
         };
 
-
         std::string name;
 		bool transparent;
         bool generateMipmaps = false;
@@ -113,6 +114,8 @@ private:
     Texture(unsigned int textureId, int width, int height, uint32_t target, std::string string);
     void updateTextureSampler(bool filterSampling, bool wrapTextureCoordinates);
     void invokeGenerateMipmap();
+    static GLenum getFormat(SDL_Surface *image);
+    static std::vector<char> loadFileFromMemory(const char* data, int dataSize, GLenum& format, bool & alpha,int& width, int& height, int& bytesPerPixel, bool invertY = true);
     int width;
     int height;
     uint32_t target;

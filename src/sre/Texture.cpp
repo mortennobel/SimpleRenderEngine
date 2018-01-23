@@ -82,27 +82,7 @@ namespace {
 		return false;
 	}
 
-    GLenum getFormat(SDL_Surface *image) {
-        SDL_PixelFormat *format = image->format;
-        auto pixelFormat = format->format;
 
-        const bool alpha = isAlpha(format);
-        if (alpha) {
-            return GL_RGBA;
-        }
-        else {
-            if (format->BytesPerPixel == 4) {
-                return GL_RGBA;
-            }
-            else if (format->BytesPerPixel == 3) {
-                return GL_RGB;
-            }
-            else {
-                LOG_ERROR("Unknown image format. Only PNG is supported.");
-                return 0;
-            }
-        }
-    }
 
     int invert_image(int width, int height, void *image_pixels) {
         auto temp_row = std::unique_ptr<char>(new char[width]);
@@ -138,46 +118,7 @@ namespace {
         return ((x != 0) && !(x & (x - 1)));
     }
 
-    std::vector<char> loadFileFromMemory(const char* data, int dataSize, GLenum& format, bool & alpha,int& width, int& height, int& bytesPerPixel, bool invertY = true){
-#ifndef EMSCRIPTEN
-        static bool initialized = false;
-        if (!initialized) {
-            initialized = true;
-            int flags = IMG_INIT_PNG;
-            int initted = IMG_Init(flags);
-            if ((initted & flags) != flags) {
-                LOG_ERROR("IMG_Init: Failed to init required png support!\nIMG_Init() returned %s",IMG_GetError());
-                // handle error
-            }
-        }
-#endif
 
-        SDL_RWops *source = SDL_RWFromConstMem(data, dataSize);
-        SDL_Surface *res_texture = IMG_Load_RW(source, 1);
-        if (res_texture == nullptr) {
-            LOG_ERROR("Cannot load texture. IMG_Load_RW returned %s", IMG_GetError());
-            return {};
-        }
-		alpha = isAlpha( res_texture->format );
-
-        SDL_Surface *formattedSurf = SDL_ConvertSurfaceFormat(res_texture,
-                                                              alpha ?SDL_PIXELFORMAT_RGBA32 : SDL_PIXELFORMAT_RGB24, 0);
-        width = formattedSurf->w;
-        height = formattedSurf->h;
-        format = getFormat(formattedSurf);
-
-        bytesPerPixel = format == GL_RGB ? 3 : 4;
-        auto pixels = static_cast<char *>(formattedSurf->pixels);
-        if (invertY){
-            invert_image(width*bytesPerPixel, height, pixels);
-        }
-
-        std::vector<char> res(pixels, pixels+width*bytesPerPixel*height);
-        SDL_FreeSurface(formattedSurf);
-        SDL_FreeSurface(res_texture);
-
-        return res;
-    }
 }
 
 namespace sre {
@@ -220,6 +161,29 @@ namespace sre {
     Texture::TextureBuilder &Texture::TextureBuilder::withGenerateMipmaps(bool enable) {
         generateMipmaps = enable;
         return *this;
+    }
+
+    GLenum Texture::getFormat(SDL_Surface *image) {
+        SDL_PixelFormat *format = image->format;
+        auto pixelFormat = format->format;
+
+        const bool alpha = isAlpha(format);
+
+        if (alpha) {
+            return GL_RGBA;
+        }
+        else {
+            if (format->BytesPerPixel == 4) {
+                return GL_RGBA;
+            }
+            else if (format->BytesPerPixel == 3) {
+                return GL_RGB;
+            }
+            else {
+                LOG_ERROR("Unknown image format. Only PNG is supported.");
+                return 0;
+            }
+        }
     }
 
     Texture::TextureBuilder &Texture::TextureBuilder::withFilterSampling(bool enable) {
@@ -333,7 +297,7 @@ namespace sre {
             // create texture
             GLint mipmapLevel = 0;
 #ifdef EMSCRIPTEN
-            GLint internalFormat = (data.bytesPerPixel==4?GL_RGBA:GL_RGB);
+            GLint internalFormat = (textureDef.bytesPerPixel==4?GL_RGBA:GL_RGB);
 #else
             GLint internalFormat = textureDef.bytesPerPixel==4?GL_SRGB_ALPHA:GL_SRGB;
 #endif
@@ -361,7 +325,7 @@ namespace sre {
                     this->target = GL_TEXTURE_CUBE_MAP;
                     GLint mipmapLevel = 0;
 #ifdef EMSCRIPTEN
-                    GLint internalFormat = (data.bytesPerPixel==4?GL_RGBA:GL_RGB);
+                    GLint internalFormat = (textureDef.bytesPerPixel==4?GL_RGBA:GL_RGB);
 #else
                     GLint internalFormat = textureDef.bytesPerPixel == 4 ? GL_SRGB_ALPHA : GL_SRGB;
 #endif
@@ -566,5 +530,46 @@ namespace sre {
 
     bool Texture::isMipmapped() {
         return generateMipmap;
+    }
+
+    std::vector<char> Texture::loadFileFromMemory(const char* data, int dataSize, GLenum& format, bool & alpha,int& width, int& height, int& bytesPerPixel, bool invertY){
+#ifndef EMSCRIPTEN
+        static bool initialized = false;
+        if (!initialized) {
+            initialized = true;
+            int flags = IMG_INIT_PNG;
+            int initted = IMG_Init(flags);
+            if ((initted & flags) != flags) {
+                LOG_ERROR("IMG_Init: Failed to init required png support!\nIMG_Init() returned %s",IMG_GetError());
+                // handle error
+            }
+        }
+#endif
+
+        SDL_RWops *source = SDL_RWFromConstMem(data, dataSize);
+        SDL_Surface *res_texture = IMG_Load_RW(source, 1);
+        if (res_texture == nullptr) {
+            LOG_ERROR("Cannot load texture. IMG_Load_RW returned %s", IMG_GetError());
+            return {};
+        }
+        alpha = isAlpha( res_texture->format );
+
+        SDL_Surface *formattedSurf = SDL_ConvertSurfaceFormat(res_texture,
+                                                              alpha ?SDL_PIXELFORMAT_RGBA32 : SDL_PIXELFORMAT_RGB24, 0);
+        width = formattedSurf->w;
+        height = formattedSurf->h;
+        format = getFormat(formattedSurf);
+
+        bytesPerPixel = format == GL_RGB ? 3 : 4;
+        auto pixels = static_cast<char *>(formattedSurf->pixels);
+        if (invertY){
+            invert_image(width*bytesPerPixel, height, pixels);
+        }
+
+        std::vector<char> res(pixels, pixels+width*bytesPerPixel*height);
+        SDL_FreeSurface(formattedSurf);
+        SDL_FreeSurface(res_texture);
+
+        return res;
     }
 }

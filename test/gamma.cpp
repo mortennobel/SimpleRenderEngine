@@ -19,34 +19,8 @@ public:
         mesh = Mesh::create().withCube()
                 .build();
 
-        std::string vertexShaderSource =  R"(#version 140
-in vec4 posxyzw;    // should automatically cast vec2 -> vec4 by appending (z = 0.0, w = 1.0)
-in vec4 color;
-out vec4 vColor;
-
-uniform mat4 g_model;
-uniform mat4 g_view;
-uniform mat4 g_projection;
-
-void main(void) {
-    gl_Position = g_projection * g_view * g_model * posxyzw;
-    vColor = color;
-}
-)";
-        std::string fragmentShaderSource = R"(#version 140
-out vec4 fragColor;
-in vec4 vColor;
-
-void main(void)
-{
-    fragColor = vColor;
-}
-)";
-
-        mat1 = Shader::create()
-                .withSourceString(vertexShaderSource,ShaderType::Vertex)
-                .withSourceString(fragmentShaderSource, ShaderType::Fragment)
-                .build()->createMaterial();
+        mat1 = Shader::getUnlit()->createMaterial();
+        mat1->setTexture(Texture::create().withFile("test_data/gamma-test.png").build());
 
         r.frameRender = [&](){
             render();

@@ -13,8 +13,9 @@ void main(void)
 {
     fragColor = vec4(vNormal*0.5+0.5,1.0);
 #ifndef SI_FRAMEBUFFER_SRGB
-    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/2.2)), fragColor.a); // gamma correction
-#endif    
+    float gamma = 2.2;
+    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/gamma)), fragColor.a); // gamma correction
+#endif
 })"),
 std::make_pair<std::string,std::string>("debug_normal_vert.glsl",R"(#version 140
 in vec3 position;
@@ -38,7 +39,8 @@ void main(void)
 {
     fragColor = vUV;
 #ifndef SI_FRAMEBUFFER_SRGB
-    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/2.2)), fragColor.a); // gamma correction
+    float gamma = 2.2;
+    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/gamma)), fragColor.a); // gamma correction
 #endif
 })"),
 std::make_pair<std::string,std::string>("debug_uv_vert.glsl",R"(#version 140
@@ -128,7 +130,8 @@ void main(void)
     vec4 c = vColor * texture(tex, uv);
     fragColor = c;
 #ifndef SI_FRAMEBUFFER_SRGB
-    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/2.2)), fragColor.a); // gamma correction
+    float gamma = 2.2;
+    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/gamma)), fragColor.a); // gamma correction
 #endif
 
 })"),
@@ -185,7 +188,8 @@ void main(void)
 {
     fragColor = vColor * texture(tex, vUV);
 #ifndef SI_FRAMEBUFFER_SRGB
-    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/2.2)), fragColor.a); // gamma correction
+    float gamma = 2.2;
+    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/gamma)), fragColor.a); // gamma correction
 #endif
 })"),
 std::make_pair<std::string,std::string>("sprite_vert.glsl",R"(#version 140
@@ -252,7 +256,8 @@ vec4 SRGBtoLINEAR(vec4 srgbIn)
 {
     #ifdef MANUAL_SRGB
     #ifdef SRGB_FAST_APPROXIMATION
-    vec3 linOut = pow(srgbIn.xyz,vec3(2.2));
+    float gamma = 2.2;
+    vec3 linOut = pow(srgbIn.xyz,vec3(gamma));
     #else //SRGB_FAST_APPROXIMATION
     vec3 bLess = step(vec3(0.04045),srgbIn.xyz);
     vec3 linOut = mix( srgbIn.xyz/vec3(12.92), pow((srgbIn.xyz+vec3(0.055))/vec3(1.055),vec3(2.4)), bLess );
@@ -447,7 +452,8 @@ void main(void)
 #ifdef SI_FRAMEBUFFER_SRGB
     fragColor = vec4(color,baseColor.a);
 #else
-    fragColor = vec4(pow(color,vec3(1.0/2.2)), baseColor.a); // gamma correction
+    float gamma = 2.2;
+    fragColor = vec4(pow(color,vec3(1.0/gamma)), baseColor.a); // gamma correction
 #endif
 
 })"),
@@ -538,7 +544,8 @@ void main(void)
 
     fragColor = c * vec4(l, 1.0);
 #ifndef SI_FRAMEBUFFER_SRGB
-    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/2.2)), fragColor.a); // gamma correction
+    float gamma = 2.2;
+    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/gamma)), fragColor.a); // gamma correction
 #endif
 })"),
 std::make_pair<std::string,std::string>("standard_phong_vert.glsl",R"(#version 140
@@ -595,8 +602,9 @@ void main(void)
 #ifdef S_VERTEX_COLOR
     fragColor = fragColor * vColor;
 #endif
-#ifndef SI_FRAMEBUFFER_SRGB
-    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/2.2)), fragColor.a); // gamma correction
+#ifdef SI_FRAMEBUFFER_SRGB
+    float gamma = 2.2;
+    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/gamma)), fragColor.a); // gamma correction
 #endif
 })"),
 std::make_pair<std::string,std::string>("unlit_vert.glsl",R"(#version 140
@@ -628,7 +636,8 @@ void main(void)
 {
     fragColor = vec4(vTangent*0.5+0.5,1.0);
 #ifndef SI_FRAMEBUFFER_SRGB
-    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/2.2)), fragColor.a); // gamma correction
+    float gamma = 2.2;
+    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/gamma)), fragColor.a); // gamma correction
 #endif
 })"),
 std::make_pair<std::string,std::string>("debug_tangent_vert.glsl",R"(#version 140

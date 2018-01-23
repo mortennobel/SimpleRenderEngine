@@ -8,6 +8,7 @@
 #include "sre/Material.hpp"
 #include "sre/impl/GL.hpp"
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/color_space.hpp>
 #include "sre/Renderer.hpp"
 #include "sre/Log.hpp"
 
@@ -97,7 +98,13 @@ namespace sre {
     }
 
     bool Material::setColor(const glm::vec4 &color) {
-        return set("color", color);
+        auto col = color;
+        // make linear
+        if (Renderer::instance->useFramebufferSRGB){
+            auto col3 = glm::convertSRGBToLinear(glm::vec3(col));
+            col = glm::vec4(col3, color.w);
+        }
+        return set("color", col);
     }
 
     float Material::getSpecularity()   {
