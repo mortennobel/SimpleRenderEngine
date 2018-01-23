@@ -10,6 +10,7 @@
 #include "sre/Shader.hpp"
 #include "sre/Texture.hpp"
 #include "glm/glm.hpp"
+#include "sre/Color.hpp"
 
 #include <string>
 #include <map>
@@ -40,9 +41,9 @@ namespace sre {
         void setName(const std::string &name);
 
         // uniform parameters
-        glm::vec4 getColor();
+        Color getColor();
 
-        bool setColor(const glm::vec4 &color);
+        bool setColor(const Color &color);
 
         std::shared_ptr<sre::Texture> getTexture();
 
@@ -75,6 +76,7 @@ namespace sre {
         bool set(std::string uniformName, glm::vec4 value);
         bool set(std::string uniformName, float value);
         bool set(std::string uniformName, std::shared_ptr<sre::Texture>);
+        bool set(std::string uniformName, Color value);
 
         template<typename T>
         inline T get(std::string uniformName);
@@ -116,26 +118,39 @@ namespace sre {
     template<>
     inline glm::vec4 Material::get(std::string uniformName)  {
         auto t = shader->getUniformType(uniformName.c_str());
-        if (t.type != UniformType::Vec4){
-            return glm::vec4(0,0,0,0);
-        }
-        for (auto & tv : vectorValues){
-            if (tv.id == t.id){
-                return tv.value;
+        if (t.type == UniformType::Vec4){
+            for (auto & tv : vectorValues){
+                if (tv.id == t.id){
+                    return tv.value;
+                }
             }
         }
         return glm::vec4(0,0,0,0);
     }
 
     template<>
+    inline Color Material::get(std::string uniformName)  {
+        auto t = shader->getUniformType(uniformName.c_str());
+        if (t.type == UniformType::Vec4){
+            for (auto & tv : vectorValues){
+                if (tv.id == t.id){
+                    Color value;
+                    value.setFromLinear(tv.value);
+                    return value;
+                }
+            }
+        }
+        return {0,0,0,0};
+    }
+
+    template<>
     inline float Material::get(std::string uniformName) {
         auto t = shader->getUniformType(uniformName.c_str());
-        if (t.type != UniformType::Vec4){
-            return 0.0f;
-        }
-        for (auto & tv : floatValues){
-            if (tv.id == t.id){
-                return tv.value;
+        if (t.type == UniformType::Float) {
+            for (auto &tv : floatValues) {
+                if (tv.id == t.id) {
+                    return tv.value;
+                }
             }
         }
         return 0.0f;

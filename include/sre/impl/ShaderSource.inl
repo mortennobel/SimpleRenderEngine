@@ -154,7 +154,7 @@ void main(void)
     if (uv != clamp(uv, uvSize.xy, uvSize.xy + uvSize.zz)){
         discard;
     }
-    vec4 c = vColor * texture(tex, uv);
+    vec4 c = vColor * toLinear(texture(tex, uv));
     fragColor = c;
     fragColor = toOutput(fragColor);
 })"),
@@ -211,7 +211,7 @@ uniform sampler2D tex;
 
 void main(void)
 {
-    fragColor = vColor * texture(tex, vUV);
+    fragColor = vColor * toLinear(texture(tex, vUV));
     fragColor = toOutput(fragColor);
 })"),
 std::make_pair<std::string,std::string>("sprite_vert.glsl",R"(#version 140
@@ -275,22 +275,6 @@ in vec4 vColor;
 #pragma include "normalmap_incl.glsl"
 #pragma include "sre_utils_incl.glsl"
 
-vec4 SRGBtoLINEAR(vec4 srgbIn)
-{
-    #ifdef MANUAL_SRGB
-    #ifdef SRGB_FAST_APPROXIMATION
-    float gamma = 2.2;
-    vec3 linOut = pow(srgbIn.xyz,vec3(gamma));
-    #else //SRGB_FAST_APPROXIMATION
-    vec3 bLess = step(vec3(0.04045),srgbIn.xyz);
-    vec3 linOut = mix( srgbIn.xyz/vec3(12.92), pow((srgbIn.xyz+vec3(0.055))/vec3(1.055),vec3(2.4)), bLess );
-    #endif //SRGB_FAST_APPROXIMATION
-    return vec4(linOut,srgbIn.w);
-    #else //MANUAL_SRGB
-    return srgbIn;
-    #endif //MANUAL_SRGB
-}
-
 
 // Encapsulate the various inputs used by the various functions in the shading equation
 // We store values in this struct to simplify the integration of alternative implementations
@@ -338,13 +322,13 @@ vec3 getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection)
     float mipCount = 9.0; // resolution of 512x512
     float lod = (pbrInputs.perceptualRoughness * mipCount);
     // retrieve a scale and bias to F0. See [1], Figure 3
-    vec3 brdf = SRGBtoLINEAR(texture(brdfLUT, vec2(pbrInputs.NdotV, 1.0 - pbrInputs.perceptualRoughness))).rgb;
-    vec3 diffuseLight = SRGBtoLINEAR(texture(diffuseEnvCube, n)).rgb;
+    vec3 brdf = toLinear(texture(brdfLUT, vec2(pbrInputs.NdotV, 1.0 - pbrInputs.perceptualRoughness))).rgb;
+    vec3 diffuseLight = toLinear(texture(diffuseEnvCube, n)).rgb;
 
 #ifdef S_USE_TEX_LOD
-    vec3 specularLight = SRGBtoLINEAR(textureLod(specularEnvCube, reflection, lod)).rgb;
+    vec3 specularLight = toLinear(textureLod(specularEnvCube, reflection, lod)).rgb;
 #else
-    vec3 specularLight = SRGBtoLINEAR(texture(specularEnvCube, reflection)).rgb;
+    vec3 specularLight = toLinear(texture(specularEnvCube, reflection)).rgb;
 #endif
 
     vec3 diffuse = diffuseLight * pbrInputs.diffuseColor;
@@ -398,7 +382,7 @@ void main(void)
     float alphaRoughness = perceptualRoughness * perceptualRoughness;
 
 #ifndef S_NO_BASECOLORMAP
-    vec4 baseColor = SRGBtoLINEAR(texture(tex, vUV)) * color;
+    vec4 baseColor = toLinear(texture(tex, vUV)) * color;
 #else
     vec4 baseColor = color;
 #endif
@@ -469,7 +453,7 @@ void main(void)
     color = mix(color, color * ao, occlusionStrength);
 #endif
 #ifdef S_EMISSIVEMAP
-    vec3 emissive = SRGBtoLINEAR(texture(emissiveTex, vUV)).rgb * emissiveFactor.xyz;
+    vec3 emissive = toLinear(texture(emissiveTex, vUV)).rgb * emissiveFactor.xyz;
     color += emissive;
 #endif
 
@@ -554,7 +538,7 @@ uniform sampler2D tex;
 
 void main(void)
 {
-    vec4 c = color * texture(tex, vUV);
+    vec4 c = color * toLinear(texture(tex, vUV));
 #ifdef S_VERTEX_COLOR
     c = c * vColor;
 #endif
@@ -616,7 +600,7 @@ uniform sampler2D tex;
 
 void main(void)
 {
-    fragColor = color * texture(tex, vUV);
+    fragColor = color * toLinear(texture(tex, vUV));
 #ifdef S_VERTEX_COLOR
     fragColor = fragColor * vColor;
 #endif

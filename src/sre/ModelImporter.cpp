@@ -6,6 +6,7 @@
  */
 
 #include "sre/ModelImporter.hpp"
+#include "sre/Color.hpp"
 #include <algorithm>
 #include <fstream>
 #include <string>
@@ -140,6 +141,16 @@ namespace {
         return res;
     }
 
+    sre::Color toColorRGB(vector<string> &tokens){
+        sre::Color res{0,0,0};
+        for (int i=0;i<3;i++){
+            if (i+1 < tokens.size()){
+                res[i] = (float)atof(tokens[i+1].c_str());
+            }
+        }
+        return res;
+    }
+
     // replace first occurrence of from in str with to
     bool replace(std::string& str, const std::string& from, const std::string& to) {
         size_t start_pos = str.find(from);
@@ -198,9 +209,9 @@ namespace {
 
     struct ObjMaterial {
         std::string name;
-        glm::vec3 ambientColor; // Ka
-        glm::vec3 diffuseColor; // Kd
-        glm::vec3 specularColor; // Ks
+        sre::Color ambientColor; // Ka
+        sre::Color diffuseColor; // Kd
+        sre::Color specularColor; // Ks
         float specularCoefficient; // Ns
         float transparent; // d or Tr
         std::vector<ObjIlluminationMode> illuminationModes;
@@ -258,7 +269,7 @@ namespace {
                 continue;
             }
             if (tokens[0] == "newmtl"){
-                vec3 zero{0,0,0};
+                sre::Color zero{0,0,0};
                 auto name = concat(tokens,1);
                 ObjMaterial material{replaceAll(name,"\r",""),zero,zero,zero,50,1};
                 materials.push_back(material);
@@ -268,11 +279,11 @@ namespace {
                 }
                 ObjMaterial & currentMat = materials.back();
                 if (tokens[0] == "Ka"){
-                    currentMat.ambientColor = toVec3(tokens);
+                    currentMat.ambientColor = toColorRGB(tokens);
                 } else if (tokens[0] == "Kd"){
-                    currentMat.diffuseColor = toVec3(tokens);
+                    currentMat.diffuseColor = toColorRGB(tokens);
                 } else if (tokens[0] == "Ks"){
-                    currentMat.specularColor = toVec3(tokens);
+                    currentMat.specularColor = toColorRGB(tokens);
                 } else if (tokens[0] == "d"){
                     currentMat.transparent = (float)atof(tokens[1].c_str());
                 } else if (tokens[0] == "illum"){
@@ -349,7 +360,7 @@ namespace {
         auto shader = sre::Shader::getStandardBlinnPhong();
         auto mat = shader->createMaterial();
 
-        mat->setColor({foundMat->diffuseColor,1.0});
+        mat->setColor(foundMat->diffuseColor);
         mat->setSpecularity(foundMat->specularCoefficient);
         auto name = materialName;
         for (auto & map :foundMat->textureMaps){

@@ -25,7 +25,7 @@ uniform sampler2D tex;
 
 void main(void)
 {
-    vec4 c = color * texture(tex, vUV);
+    vec4 c = color * toLinear(texture(tex, vUV));
 #ifdef S_VERTEX_COLOR
     c = c * vColor;
 #endif

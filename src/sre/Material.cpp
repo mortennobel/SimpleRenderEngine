@@ -93,18 +93,12 @@ namespace sre {
         }
     }
 
-    glm::vec4 Material::getColor()   {
-        return get<glm::vec4>("color");
+    Color Material::getColor()   {
+        return get<Color>("color");
     }
 
-    bool Material::setColor(const glm::vec4 &color) {
-        auto col = color;
-        // make linear
-        if (Renderer::instance->useFramebufferSRGB){
-            auto col3 = glm::convertSRGBToLinear(glm::vec3(col));
-            col = glm::vec4(col3, color.w);
-        }
-        return set("color", col);
+    bool Material::setColor(const Color &color) {
+        return set("color", color);
     }
 
     float Material::getSpecularity()   {
@@ -141,6 +135,19 @@ namespace sre {
         }
         return false;
     }
+
+    bool Material::set(std::string uniformName, Color value){
+        auto type = shader->getUniformType(uniformName);
+        for (auto & v : vectorValues){
+            if (v.id==type.id){
+                v.value = value.toLinear();
+                return true;
+            }
+        }
+        return false;
+    }
+
+
 
     bool Material::set(std::string uniformName, float value){
         auto type = shader->getUniformType(uniformName);

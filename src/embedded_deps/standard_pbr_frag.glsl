@@ -43,22 +43,6 @@ in vec4 vColor;
 #pragma include "normalmap_incl.glsl"
 #pragma include "sre_utils_incl.glsl"
 
-vec4 SRGBtoLINEAR(vec4 srgbIn)
-{
-    #ifdef MANUAL_SRGB
-    #ifdef SRGB_FAST_APPROXIMATION
-    float gamma = 2.2;
-    vec3 linOut = pow(srgbIn.xyz,vec3(gamma));
-    #else //SRGB_FAST_APPROXIMATION
-    vec3 bLess = step(vec3(0.04045),srgbIn.xyz);
-    vec3 linOut = mix( srgbIn.xyz/vec3(12.92), pow((srgbIn.xyz+vec3(0.055))/vec3(1.055),vec3(2.4)), bLess );
-    #endif //SRGB_FAST_APPROXIMATION
-    return vec4(linOut,srgbIn.w);
-    #else //MANUAL_SRGB
-    return srgbIn;
-    #endif //MANUAL_SRGB
-}
-
 
 // Encapsulate the various inputs used by the various functions in the shading equation
 // We store values in this struct to simplify the integration of alternative implementations
@@ -106,13 +90,13 @@ vec3 getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection)
     float mipCount = 9.0; // resolution of 512x512
     float lod = (pbrInputs.perceptualRoughness * mipCount);
     // retrieve a scale and bias to F0. See [1], Figure 3
-    vec3 brdf = SRGBtoLINEAR(texture(brdfLUT, vec2(pbrInputs.NdotV, 1.0 - pbrInputs.perceptualRoughness))).rgb;
-    vec3 diffuseLight = SRGBtoLINEAR(texture(diffuseEnvCube, n)).rgb;
+    vec3 brdf = toLinear(texture(brdfLUT, vec2(pbrInputs.NdotV, 1.0 - pbrInputs.perceptualRoughness))).rgb;
+    vec3 diffuseLight = toLinear(texture(diffuseEnvCube, n)).rgb;
 
 #ifdef S_USE_TEX_LOD
-    vec3 specularLight = SRGBtoLINEAR(textureLod(specularEnvCube, reflection, lod)).rgb;
+    vec3 specularLight = toLinear(textureLod(specularEnvCube, reflection, lod)).rgb;
 #else
-    vec3 specularLight = SRGBtoLINEAR(texture(specularEnvCube, reflection)).rgb;
+    vec3 specularLight = toLinear(texture(specularEnvCube, reflection)).rgb;
 #endif
 
     vec3 diffuse = diffuseLight * pbrInputs.diffuseColor;
@@ -166,7 +150,7 @@ void main(void)
     float alphaRoughness = perceptualRoughness * perceptualRoughness;
 
 #ifndef S_NO_BASECOLORMAP
-    vec4 baseColor = SRGBtoLINEAR(texture(tex, vUV)) * color;
+    vec4 baseColor = toLinear(texture(tex, vUV)) * color;
 #else
     vec4 baseColor = color;
 #endif
@@ -237,7 +221,7 @@ void main(void)
     color = mix(color, color * ao, occlusionStrength);
 #endif
 #ifdef S_EMISSIVEMAP
-    vec3 emissive = SRGBtoLINEAR(texture(emissiveTex, vUV)).rgb * emissiveFactor.xyz;
+    vec3 emissive = toLinear(texture(emissiveTex, vUV)).rgb * emissiveFactor.xyz;
     color += emissive;
 #endif
 

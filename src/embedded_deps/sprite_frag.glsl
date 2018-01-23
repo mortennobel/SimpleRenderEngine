@@ -9,6 +9,6 @@ uniform sampler2D tex;
 
 void main(void)
 {
-    fragColor = vColor * texture(tex, vUV);
+    fragColor = vColor * toLinear(texture(tex, vUV));
     fragColor = toOutput(fragColor);
 }

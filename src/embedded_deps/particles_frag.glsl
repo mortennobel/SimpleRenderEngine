@@ -20,7 +20,7 @@ void main(void)
     if (uv != clamp(uv, uvSize.xy, uvSize.xy + uvSize.zz)){
         discard;
     }
-    vec4 c = vColor * texture(tex, uv);
+    vec4 c = vColor * toLinear(texture(tex, uv));
     fragColor = c;
     fragColor = toOutput(fragColor);
 }

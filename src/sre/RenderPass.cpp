@@ -19,6 +19,8 @@
 #include <sre/Renderer.hpp>
 #include <imgui_internal.h>
 #include <glm/gtc/type_precision.hpp>
+#include <glm/gtc/color_space.hpp>
+
 namespace sre {
     RenderPass::RenderPassBuilder RenderPass::create() {
         return RenderPass::RenderPassBuilder(&Renderer::instance->renderStats);
@@ -44,9 +46,15 @@ namespace sre {
         return *this;
     }
 
-    RenderPass::RenderPassBuilder &RenderPass::RenderPassBuilder::withClearColor(bool enabled, glm::vec4 color) {
+    RenderPass::RenderPassBuilder &RenderPass::RenderPassBuilder::withClearColor(bool enabled, Color color) {
+        if (Renderer::instance->useFramebufferSRGB){
+            auto col3 = glm::convertSRGBToLinear(glm::vec3(color.r, color.g, color.b));
+            this->clearColorValue = glm::vec4(col3, color.a);
+        } else {
+            this->clearColorValue = glm::vec4(color.r, color.g, color.b, color.a);
+        }
         this->clearColor = enabled;
-        this->clearColorValue = color;
+
         return *this;
     }
 
@@ -164,7 +172,7 @@ namespace sre {
         }
     }
 
-    void RenderPass::drawLines(const std::vector<glm::vec3> &verts, glm::vec4 color, MeshTopology meshTopology) {
+    void RenderPass::drawLines(const std::vector<glm::vec3> &verts, Color color, MeshTopology meshTopology) {
         assert(!mIsFinished && "RenderPass is finished. Can no longer be modified.");
 
         // Keep a shared mesh and material
