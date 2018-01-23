@@ -93,7 +93,14 @@ public:
 
 		ImGui::LabelText("Size", "%d x %d", textures[selection]->getWidth(), textures[selection]->getHeight());
 		ImGui::LabelText("Transparent", "%s", textures[selection]->isTransparent()?"true":"false");
-		
+		char* colorSpace;
+		if (textures[selection]->getSamplerColorSpace() == Texture::SamplerColorspace::Gamma){
+			colorSpace = "Gamma";
+		} else {
+			colorSpace = "Linear";
+		}
+		ImGui::LabelText("Colorspace", "%s", colorSpace);
+
 		material->setTexture(textures[selection]);
 		renderPass.draw(mesh, glm::mat4(1), material);
     }

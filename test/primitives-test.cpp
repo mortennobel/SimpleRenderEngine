@@ -23,7 +23,7 @@ public:
         camera.lookAt({0,0,3},{0,0,0},{0,1,0});
         camera.setPerspectiveProjection(60,0.1,100);
 
-        material = Shader::getStandardPhong()->createMaterial();
+        material = Shader::getStandardBlinnPhong()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
         material->setSpecularity(20.0f);
 
@@ -57,7 +57,7 @@ public:
         if (changed){
             switch (shader){
                 case 0:
-                    material = Shader::getStandardPhong()->createMaterial();
+                    material = Shader::getStandardBlinnPhong()->createMaterial();
                     break;
                 case 1:
                     material = Shader::create()

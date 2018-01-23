@@ -330,7 +330,7 @@ namespace {
 
     shared_ptr<sre::Material> createMaterial(const std::string& materialName, const std::vector<ObjMaterial>& matVector, std::string path) {
         if (matVector.empty()){
-            auto shader = sre::Shader::getStandardPhong();
+            auto shader = sre::Shader::getStandardBlinnPhong();
             auto mat = shader->createMaterial();
             return mat;
         }
@@ -346,7 +346,7 @@ namespace {
             LOG_WARNING("Could not find material ",materialName.c_str());
             foundMat = matVector.data();
         }
-        auto shader = sre::Shader::getStandardPhong();
+        auto shader = sre::Shader::getStandardBlinnPhong();
         auto mat = shader->createMaterial();
 
         mat->setColor({foundMat->diffuseColor,1.0});

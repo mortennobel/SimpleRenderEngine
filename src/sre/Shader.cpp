@@ -622,7 +622,7 @@ namespace sre {
     }
 
     std::shared_ptr<Shader> Shader::getStandard(){
-        return getStandardPhong();
+        return getStandardBlinnPhong();
     }
 
     std::shared_ptr<Shader> Shader::getStandardPBR(){
@@ -630,8 +630,8 @@ namespace sre {
             return standard;
         }
         standard = create()
-                .withSourceFile("standard_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("standard_frag.glsl", ShaderType::Fragment)
+                .withSourceFile("standard_pbr_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("standard_pbr_frag.glsl", ShaderType::Fragment)
                 .withName("Standard")
                 .build();
         return standard;
@@ -863,13 +863,13 @@ namespace sre {
         return res;
     }
 
-    std::shared_ptr<Shader> Shader::getStandardPhong() {
+    std::shared_ptr<Shader> Shader::getStandardBlinnPhong() {
         if (standardPhong != nullptr){
             return standardPhong;
         }
         standardPhong = create()
-                .withSourceFile("standard_phong_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("standard_phong_frag.glsl", ShaderType::Fragment)
+                .withSourceFile("standard_blinn_phong_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("standard_blinn_phong_frag.glsl", ShaderType::Fragment)
                 .withName("StandardPhong")
                 .build();
         return standardPhong;
@@ -898,6 +898,10 @@ namespace sre {
         if (Renderer::instance->useFramebufferSRGB){
 
             ss<<"#define SI_FRAMEBUFFER_SRGB 1\n";
+        }
+        if (Renderer::instance->supportTextureSamplerSRGB){
+
+            ss<<"#define SI_TEX_SAMPLER_SRGB 1\n";
         }
         switch (shaderType){
             case GL_FRAGMENT_SHADER:

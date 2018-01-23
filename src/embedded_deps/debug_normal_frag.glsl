@@ -2,11 +2,10 @@
 out vec4 fragColor;
 in vec3 vNormal;
 
+#pragma include "sre_utils_incl.glsl"
+
 void main(void)
 {
     fragColor = vec4(vNormal*0.5+0.5,1.0);
-#ifndef SI_FRAMEBUFFER_SRGB
-    float gamma = 2.2;
-    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/gamma)), fragColor.a); // gamma correction
-#endif
+    fragColor = toOutput(fragColor);
 }

@@ -31,7 +31,7 @@ public:
 
         camera.lookAt({0,0,3},{0,0,0},{0,1,0});
         camera.setPerspectiveProjection(60,0.1,100);
-        defaultMat  = Shader::getStandardPhong()->createMaterial();
+        defaultMat  = Shader::getStandardBlinnPhong()->createMaterial();
         particleMat = Shader::getStandardParticles()->createMaterial();
         defaultMat->setSpecularity(20.0f);
         particleMat->setTexture(Texture::getSphereTexture());

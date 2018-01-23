@@ -33,7 +33,7 @@ public:
                                       .withRange(50)
                                       .build());
 
-        material = Shader::getStandardPhong()->createMaterial();
+        material = Shader::getStandardBlinnPhong()->createMaterial();
         material->setSpecularity(20);
 
         // connect render callback

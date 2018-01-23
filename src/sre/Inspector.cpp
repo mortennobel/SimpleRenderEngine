@@ -87,6 +87,14 @@ namespace sre {
             ImGui::LabelText("Cubemap","%s",tex->isCubemap()?"true":"false");
             ImGui::LabelText("Filtersampling","%s",tex->isFilterSampling()?"true":"false");
             ImGui::LabelText("Mipmapping","%s",tex->isMipmapped()?"true":"false");
+            ImGui::LabelText("Transparent","%s",tex->isTransparent()?"true":"false");
+            char* colorSpace;
+            if (tex->getSamplerColorSpace() == Texture::SamplerColorspace::Gamma){
+                colorSpace = "Gamma";
+            } else {
+                colorSpace = "Linear";
+            }
+            ImGui::LabelText("Colorspace", "%s", colorSpace);
             ImGui::LabelText("Wrap tex-coords","%s",tex->isWrapTextureCoordinates()?"true":"false");
             ImGui::LabelText("Data size","%f MB",tex->getDataSize()/(1000*1000.0f));
             if (!tex->isCubemap()){
@@ -178,7 +186,7 @@ namespace sre {
                  .withClearColor(true, {0, 0, 0, 1})
                  .withGUI(false)
                  .build();
-            static auto litMat = Shader::getStandardPhong()->createMaterial();
+            static auto litMat = Shader::getStandardBlinnPhong()->createMaterial();
             static auto unlitMat = Shader::getUnlit()->createMaterial();
 
             bool hasNormals = mesh->getNormals().size()>0;

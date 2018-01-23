@@ -28,7 +28,7 @@ public:
                  .withDirectionalLight(glm::normalize(glm::vec3(1,1,1)))
                  .build());
 
-        mat1 = Shader::getStandardPhong()->createMaterial();
+        mat1 = Shader::getStandardBlinnPhong()->createMaterial();
         mat1->setColor({1,1,1,1});
         mat1->setSpecularity(50);
 

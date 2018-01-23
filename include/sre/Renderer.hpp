@@ -91,6 +91,7 @@ namespace sre {
         std::vector<SpriteAtlas*> spriteAtlases;
 
         bool useFramebufferSRGB = false;
+        bool supportTextureSamplerSRGB = false;
 
 		VR* vr = nullptr;
 

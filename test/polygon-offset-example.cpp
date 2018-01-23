@@ -32,13 +32,13 @@ public:
         camera.lookAt({0,0,3},{0,0,0},{0,1,0});
         camera.setPerspectiveProjection(60,0.001,10000000);
         
-        material = Shader::getStandardPhong()->createMaterial();
+        material = Shader::getStandardBlinnPhong()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
         material->setSpecularity(20.0f);
 
         material2 = Shader::create()
-                .withSourceFile("standard_phong_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("standard_phong_frag.glsl", ShaderType::Fragment)
+                .withSourceFile("standard_blinn_phong_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("standard_blinn_phong_frag.glsl", ShaderType::Fragment)
                 .withName("StandardPhongOffset")
                 .withOffset(factor,offset).build()->createMaterial();
         material2->setColor({1.0f,0.0f,0.0f,1.0f});
@@ -73,8 +73,8 @@ public:
 
         bool changed = ImGui::SliderFloat2("Factor/Offset",&factor,0,3);
         if (changed){
-            material2 = Shader::create().withSourceFile("standard_phong_vert.glsl", ShaderType::Vertex)
-                    .withSourceFile("standard_phong_frag.glsl", ShaderType::Fragment)
+            material2 = Shader::create().withSourceFile("standard_blinn_phong_vert.glsl", ShaderType::Vertex)
+                    .withSourceFile("standard_blinn_phong_frag.glsl", ShaderType::Fragment)
                     .withName("StandardPhongOffset")
                     .withOffset(factor,offset).build()->createMaterial();
             material2->setColor({1.0f,0.0f,0.0f,1.0f});

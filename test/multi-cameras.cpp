@@ -28,7 +28,7 @@ public:
         camera2.setPerspectiveProjection(60,0.1,100);
         camera2.setViewport({0,0.8},{0.2,0.2});
 
-        material = Shader::getStandardPhong()->createMaterial();
+        material = Shader::getStandardBlinnPhong()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
         material->setSpecularity(20.0f);
 

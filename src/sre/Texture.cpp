@@ -364,6 +364,7 @@ namespace sre {
         Texture * res = new Texture(textureId, textureDefPtr->width, textureDefPtr->height, target, name);
         res->generateMipmap = this->generateMipmaps;
 		res->transparent = this->transparent;
+		res->samplerColorspace = this->samplerColorspace;
         if (this->generateMipmaps){
             res->invokeGenerateMipmap();
         }
@@ -627,5 +628,9 @@ namespace sre {
         std::cout.flags(oldFlags);
         std::cout.precision(oldPrec);
         std::cout.fill(oldFill);
+    }
+
+    sre::Texture::SamplerColorspace Texture::getSamplerColorSpace() {
+        return samplerColorspace;
     }
 }

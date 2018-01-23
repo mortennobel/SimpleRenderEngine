@@ -97,7 +97,7 @@ public:
 
     void updateMaterial(){
 
-        material = (pbrShader?Shader::getStandardPBR():Shader::getStandardPhong())->createMaterial(specialization);
+        material = (pbrShader?Shader::getStandardPBR(): Shader::getStandardBlinnPhong())->createMaterial(specialization);
         material->setColor(color);
         material->setMetallicRoughness(metallicRoughness);
         material->setTexture(colorTex);
@@ -188,7 +188,7 @@ public:
         }
         if (ImGui::CollapsingHeader("Shader")){
             updatedMat |= ImGui::Checkbox("pbrShader", &pbrShader);
-            auto shaderConstants = (pbrShader?Shader::getStandardPBR():Shader::getStandardPhong())->getAllSpecializationConstants();
+            auto shaderConstants = (pbrShader?Shader::getStandardPBR(): Shader::getStandardBlinnPhong())->getAllSpecializationConstants();
             for (auto& s : shaderConstants){
                 bool checked = specialization.find(s) != specialization.end();
                 if (ImGui::Checkbox(s.c_str(), &checked)){

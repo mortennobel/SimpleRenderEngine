@@ -47,6 +47,7 @@ namespace sre {
             vsync = SDL_GL_SetSwapInterval(1) == 0; // return 0 is success
         }
         useFramebufferSRGB = true;
+        supportTextureSamplerSRGB = true;
         glEnable(GL_FRAMEBUFFER_SRGB);
 #endif
 #if defined(_WIN32)

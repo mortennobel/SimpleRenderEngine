@@ -32,7 +32,7 @@ public:
         for (int i=0;i<Renderer::maxSceneLights;i++){
             worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,1,1}).withRange(10).build());
         }
-        mat = Shader::getStandardPhong()->createMaterial();
+        mat = Shader::getStandardBlinnPhong()->createMaterial();
         r.frameUpdate = [&](float deltaTime){
             update(deltaTime);
         };

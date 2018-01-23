@@ -148,7 +148,7 @@ namespace sre {
             friend class Shader;
         };
 
-        DEPRECATED("Use getStandardPBR or getStandardPhong")
+        DEPRECATED("Use getStandardPBR or getStandardBlinnPhong")
         static std::shared_ptr<Shader> getStandard();
 
         static std::shared_ptr<Shader> getStandardPBR();       // Phong Light Model. Uses light objects and ambient light set in Renderer.
@@ -175,7 +175,7 @@ namespace sre {
                                                                //   Adds vertex color. VertexAttributes "color" vec4. Colors are defined in linear space.
 
 
-        static std::shared_ptr<Shader> getStandardPhong();      // Phong Light Model. Uses light objects and ambient light set in Renderer.
+        static std::shared_ptr<Shader> getStandardBlinnPhong(); // Blinn-Phong Light Model. Uses light objects and ambient light set in Renderer.
                                                                 // Uniforms
                                                                 //   "color" vec4 (default (1,1,1,1))
                                                                 //   "tex" shared_ptr<Texture> (default white texture)

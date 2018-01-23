@@ -62,6 +62,8 @@ namespace sre {
         glm::uvec2 size;
         friend class RenderPass;
     };
+
+
 }
 
 

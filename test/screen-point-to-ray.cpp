@@ -46,15 +46,15 @@ public:
                                      .build());
 
 
-        mat1 = Shader::getStandardPhong()->createMaterial();
+        mat1 = Shader::getStandardBlinnPhong()->createMaterial();
         mat1->setColor({1,1,1,1});
         mat1->setSpecularity(0);
 
-        mat2 = Shader::getStandardPhong()->createMaterial();
+        mat2 = Shader::getStandardBlinnPhong()->createMaterial();
         mat2->setColor({1,0,0,1});
         mat2->setSpecularity(0);
 
-        matPlane = Shader::getStandardPhong()->createMaterial();
+        matPlane = Shader::getStandardBlinnPhong()->createMaterial();
         matPlane->setColor({1,1,1,1});
         matPlane->setSpecularity(0);
 

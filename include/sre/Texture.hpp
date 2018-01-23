@@ -50,7 +50,7 @@ public:
 
     enum class SamplerColorspace {
         Linear,             // Convert values from gamma space to linear space, when gamma correction is enabled. Default behavior.
-        Gamma               // No gamma convertions. This is useful for e.g. normal textures where no gamma correction must be performed
+        Gamma               // Sampler performs no gamma convertions. This is useful for e.g. normal textures where no gamma correction must be performed
     };
 
     class DllExport TextureBuilder {
@@ -117,7 +117,7 @@ public:
     bool isCubemap();                                                                       // is cubemap texture
     bool isMipmapped();                                                                     // has texture mipmapped enabled
 	bool isTransparent();																	// Does texture has alpha channel
-
+    SamplerColorspace getSamplerColorSpace();
     const std::string& getName();                                                           // name of the string
 
     int getDataSize();                                                                      // get size of the texture in bytes on GPU
@@ -133,6 +133,7 @@ private:
     bool generateMipmap;
 	bool transparent;
     std::string name;
+    SamplerColorspace samplerColorspace;
     bool filterSampling = true; // true = linear/trilinear sampling, false = point sampling
     bool wrapTextureCoordinates = true;
     unsigned int textureId;

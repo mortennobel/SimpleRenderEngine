@@ -41,6 +41,7 @@ in vec4 vColor;
 #endif
 
 #pragma include "normalmap_incl.glsl"
+#pragma include "sre_utils_incl.glsl"
 
 vec4 SRGBtoLINEAR(vec4 srgbIn)
 {
@@ -239,11 +240,6 @@ void main(void)
     vec3 emissive = SRGBtoLINEAR(texture(emissiveTex, vUV)).rgb * emissiveFactor.xyz;
     color += emissive;
 #endif
-#ifdef SI_FRAMEBUFFER_SRGB
-    fragColor = vec4(color,baseColor.a);
-#else
-    float gamma = 2.2;
-    fragColor = vec4(pow(color,vec3(1.0/gamma)), baseColor.a); // gamma correction
-#endif
 
+    fragColor = toOutput(color,baseColor.a);
 }

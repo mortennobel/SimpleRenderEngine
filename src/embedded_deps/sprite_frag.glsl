@@ -5,11 +5,10 @@ in vec4 vColor;
 
 uniform sampler2D tex;
 
+#pragma include "sre_utils_incl.glsl"
+
 void main(void)
 {
     fragColor = vColor * texture(tex, vUV);
-#ifndef SI_FRAMEBUFFER_SRGB
-    float gamma = 2.2;
-    fragColor = vec4(pow(fragColor.xyz,vec3(1.0/gamma)), fragColor.a); // gamma correction
-#endif
+    fragColor = toOutput(fragColor);
 }
