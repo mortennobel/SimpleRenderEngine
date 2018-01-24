@@ -138,7 +138,11 @@ namespace sre {
         void setVertexAttributePointers(Shader* shader);
         std::vector<MeshTopology> meshTopology;
         unsigned int vertexBufferId;
-        std::map<unsigned int,unsigned int> shaderToVertexArrayObject;
+        struct VAOBinding {
+            long shaderId;
+            unsigned int vaoID;
+        };
+        std::map<unsigned int, VAOBinding> shaderToVertexArrayObject;
         std::vector<unsigned int> elementBufferId;
         int vertexCount;
         int dataSize;

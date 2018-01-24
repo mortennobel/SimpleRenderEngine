@@ -46,7 +46,7 @@ namespace sre {
 
 #ifndef EMSCRIPTEN
         for (auto arrayObj : shaderToVertexArrayObject) {
-            glDeleteVertexArrays(1, &(arrayObj.second));
+            glDeleteVertexArrays(1, &(arrayObj.second.vaoID));
         }
 #endif
         glDeleteBuffers(1, &vertexBufferId);
@@ -57,15 +57,19 @@ namespace sre {
     void Mesh::bind(Shader* shader) {
 #ifndef EMSCRIPTEN
         auto res = shaderToVertexArrayObject.find(shader->shaderProgramId);
-        if (res != shaderToVertexArrayObject.end()) {
-            GLuint vao = res->second;
+        if (res != shaderToVertexArrayObject.end() && res->second.shaderId == shader->shaderUniqueId) {
+            GLuint vao = res->second.vaoID;
             glBindVertexArray(vao);
         } else {
             GLuint index;
-            glGenVertexArrays(1, &index);
+            if (res != shaderToVertexArrayObject.end()){
+                index = res->second.vaoID;
+            } else {
+                glGenVertexArrays(1, &index);
+            }
             glBindVertexArray(index);
             setVertexAttributePointers(shader);
-            shaderToVertexArrayObject[shader->shaderProgramId] = index;
+            shaderToVertexArrayObject[shader->shaderProgramId] = {shader->shaderUniqueId, index};
         }
 #else
         setVertexAttributePointers(shader);
@@ -97,7 +101,7 @@ namespace sre {
 
 #ifndef EMSCRIPTEN
         for (auto arrayObj : shaderToVertexArrayObject){
-            glDeleteVertexArrays(1, &(arrayObj.second));
+            glDeleteVertexArrays(1, &(arrayObj.second.vaoID));
         }
         shaderToVertexArrayObject.clear();
 #endif
