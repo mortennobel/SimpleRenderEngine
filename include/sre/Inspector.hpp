@@ -58,7 +58,6 @@ namespace sre {
         float time;
 
         std::chrono::time_point<std::chrono::high_resolution_clock> lastTick;
-        SDLRenderer *sdlRenderer;
 
         void showMesh(Mesh *mesh);
 

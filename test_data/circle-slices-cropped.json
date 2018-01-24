@@ -1,0 +1,48 @@
+{"frames": [
+
+{
+	"filename": "CircleSlices_01.png",
+	"frame": {"x":1,"y":135,"w":103,"h":100},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":33,"y":29,"w":103,"h":100},
+	"sourceSize": {"w":256,"h":256},
+	"pivot": {"x":1,"y":1}
+},
+{
+	"filename": "CircleSlices_02.png",
+	"frame": {"x":106,"y":135,"w":102,"h":99},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":121,"y":30,"w":102,"h":99},
+	"sourceSize": {"w":256,"h":255},
+	"pivot": {"x":0,"y":1}
+},
+{
+	"filename": "CircleSlices_03.png",
+	"frame": {"x":121,"y":1,"w":117,"h":131},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":121,"y":94,"w":117,"h":131},
+	"sourceSize": {"w":256,"h":257},
+	"pivot": {"x":0,"y":0}
+},
+{
+	"filename": "CircleSlices_04.png",
+	"frame": {"x":1,"y":1,"w":118,"h":132},
+	"rotated": false,
+	"trimmed": true,
+	"spriteSourceSize": {"x":18,"y":93,"w":118,"h":132},
+	"sourceSize": {"w":256,"h":256},
+	"pivot": {"x":1,"y":0}
+}],
+"meta": {
+	"app": "http://www.codeandweb.com/texturepacker",
+	"version": "1.0",
+	"image": "circle-slices-cropped.png",
+	"format": "RGBA8888",
+	"size": {"w":256,"h":256},
+	"scale": "1",
+	"smartupdate": "$TexturePacker:SmartUpdate:8a4d8c5f99a90ef0c3a2f644a4ceefef:35f95f5d44f0eb19fdda6b258d62fbac:9a839ac760cf1c8e1bd67413b8e5b706$"
+}
+}

@@ -12,8 +12,7 @@ sre provides:
  * Texture support (JPEG, PNG, Raw)
  * Cube map support
  * Mesh support (with custom vertex attributes)
- * Shaders (unlit, specular, alpha blending, and custom shaders)
- * Light and shading
+ * Shaders (PBR, Blinn-Phong, unlit, alpha blending, and custom shaders)
  * Enforces efficient use of OpenGL
  * Forward rendering
  * Full C++14 support

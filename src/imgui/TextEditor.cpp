@@ -6,6 +6,10 @@
 
 #include "TextEditor.h"
 
+/**
+ * https://github.com/BalazsJako/ImGuiColorTextEdit
+ */
+
 static const int cTextStart = 7;
 
 // TODO

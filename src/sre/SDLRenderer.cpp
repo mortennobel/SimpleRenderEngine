@@ -126,7 +126,7 @@ namespace sre{
 
     void SDLRenderer::frame(float deltaTimeSec){
         typedef std::chrono::high_resolution_clock Clock;
-        using FpSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
+        using MilliSeconds = std::chrono::duration<float, std::chrono::milliseconds::period>;
         auto lastTick = Clock::now();
 
         SDL_Event e;
@@ -177,19 +177,19 @@ namespace sre{
         }
         {   // time meassure
             auto tick = Clock::now();
-            deltaTimeEvent = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
+            deltaTimeEvent = std::chrono::duration_cast<MilliSeconds>(tick - lastTick).count();
             lastTick = tick;
         }
         frameUpdate(deltaTimeSec);
         {   // time meassure
             auto tick = Clock::now();
-            deltaTimeUpdate = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
+            deltaTimeUpdate = std::chrono::duration_cast<MilliSeconds>(tick - lastTick).count();
             lastTick = tick;
         }
         frameRender();
         {   // time meassure
             auto tick = Clock::now();
-            deltaTimeRender = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
+            deltaTimeRender = std::chrono::duration_cast<MilliSeconds>(tick - lastTick).count();
             lastTick = tick;
         }
 

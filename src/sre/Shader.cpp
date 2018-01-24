@@ -9,28 +9,12 @@
 #include "sre/Material.hpp"
 #include "sre/impl/ShaderSource.inl"
 
-#include "sre/impl/GL.hpp"
-#include <iostream>
 #include <fstream>
-#include <sstream>
-#include <cerrno>
-#include <cctype>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
-#include <string>
 #include <regex>
-#include <utility>
-#include <vector>
-#include <map>
-#include <sstream>
-#include <utility>
 #include <sre/Log.hpp>
 #include "sre/Renderer.hpp"
-#include "sre/Texture.hpp"
-#include <string>
-#include <sstream>
-#include <vector>
-#include <iterator>
 
 
 using namespace std;

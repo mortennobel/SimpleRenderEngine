@@ -65,11 +65,11 @@ namespace sre {
     }
 
     Inspector::Inspector(int frames)
-            :frames(frames),frameCount(0),sdlRenderer(SDLRenderer::instance)
+            :frames(frames),frameCount(0)
     {
         stats.resize(frames);
         millisecondsFrameTime.resize(frames);
-        if (sdlRenderer){
+        if (SDLRenderer::instance){
             millisecondsEvent.resize(frames);
             millisecondsUpdate.resize(frames);
             millisecondsRender.resize(frames);
@@ -335,10 +335,10 @@ namespace sre {
         if (ImGui::CollapsingHeader("Renderer")){
 
             ImGui::LabelText("SRE Version", "%d.%d.%d",r->sre_version_major, r->sre_version_minor, r->sre_version_point);
-            if (sdlRenderer != nullptr){
-                ImGui::LabelText("Fullscreen", "%s",sdlRenderer->isFullscreen()?"true":"false");
-                ImGui::LabelText("Mouse cursor locked", "%s",sdlRenderer->isMouseCursorLocked()?"true":"false");
-                ImGui::LabelText("Mouse cursor visible", "%s",sdlRenderer->isMouseCursorVisible()?"true":"false");
+            if (SDLRenderer::instance){
+                ImGui::LabelText("Fullscreen", "%s",SDLRenderer::instance->isFullscreen()?"true":"false");
+                ImGui::LabelText("Mouse cursor locked", "%s",SDLRenderer::instance->isMouseCursorLocked()?"true":"false");
+                ImGui::LabelText("Mouse cursor visible", "%s",SDLRenderer::instance->isMouseCursorVisible()?"true":"false");
             }
             ImGui::LabelText("Window size", "%ix%i",r->getWindowSize().x,r->getWindowSize().y);
             ImGui::LabelText("Drawable size", "%ix%i",r->getDrawableSize().x,r->getDrawableSize().y);
@@ -370,7 +370,7 @@ namespace sre {
         }
 
         if (ImGui::CollapsingHeader("Performance")){
-            if (sdlRenderer){
+            if (SDLRenderer::instance){
                 plotTimings(millisecondsEvent.data(), "Event ms");
                 plotTimings(millisecondsUpdate.data(), "Update ms");
                 plotTimings(millisecondsRender.data(), "Render ms");
@@ -512,7 +512,9 @@ namespace sre {
             avg = sum / std::min(frameCount, frames);
         }
         char res[128];
-        sprintf(res,"Avg time: %4.2f ms\nMax time: %4.2f ms",avg,max);
+        sprintf(res,"Avg time: %4.2f ms\n"
+                    "Max time: %4.2f ms\n"
+                    "Cur time: %4.2f ms",avg,max, data[frames-1]);
 
         ImGui::PlotLines(res, data.data(), frames, 0, title, -1, max * 1.2f, ImVec2(ImGui::CalcItemWidth(), 150));
     }
@@ -664,7 +666,7 @@ namespace sre {
         }
         // Show error messages
         if (!errorsStr.empty()){
-            if (ImGui::CollapsingHeader("Errors")){
+            if (ImGui::CollapsingHeader("Warnings / Errors")){
                 for (int i=0;i<errors.size();i++){
                     std::string id = std::string("##_errors_")+std::to_string(i);
                     ImGui::LabelText(id.c_str(), errors[i].c_str());
@@ -690,10 +692,10 @@ namespace sre {
 
         stats[frameCount%frames] = Renderer::instance->getRenderStats();
         millisecondsFrameTime[frameCount%frames] = deltaTime;
-        if (sdlRenderer){
-            millisecondsEvent[frameCount%frames] = sdlRenderer->deltaTimeEvent;
-            millisecondsUpdate[frameCount%frames] = sdlRenderer->deltaTimeUpdate;
-            millisecondsRender[frameCount%frames] = sdlRenderer->deltaTimeRender;
+        if (SDLRenderer::instance){
+            millisecondsEvent[frameCount%frames] = SDLRenderer::instance->deltaTimeEvent;
+            millisecondsUpdate[frameCount%frames] = SDLRenderer::instance->deltaTimeUpdate;
+            millisecondsRender[frameCount%frames] = SDLRenderer::instance->deltaTimeRender;
         }
 
         frameCount++;
@@ -706,7 +708,7 @@ namespace sre {
             for (auto& str : pAtlas->getNames()){
                 ss<< str<<'\0';
             }
-            ss<< '\0';
+            ss << '\0';
             auto ss_str = ss.str();
             static std::map<SpriteAtlas *,int> spriteAtlasSelection;
             auto elem = spriteAtlasSelection.find(pAtlas);
