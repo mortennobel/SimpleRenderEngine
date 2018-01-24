@@ -501,16 +501,16 @@ namespace sre {
         float max = 0;
         float sum = 0;
         for (int i=0; i < frames; i++){
-                int idx = (frameCount + i) % frames;
-                float t = inputData[idx];
-                data[(-frameCount % frames + idx + frames) % frames] = t;
-                max = std::__1::max(max, t);
-                sum += t;
-            }
+            int idx = (frameCount + i) % frames;
+            float t = inputData[idx];
+            data[(-frameCount % frames + idx + frames) % frames] = t;
+            max = std::max(max, t);
+            sum += t;
+        }
         float avg = 0;
         if (frameCount > 0){
-                avg = sum / std::__1::min(frameCount, frames);
-            }
+            avg = sum / std::min(frameCount, frames);
+        }
         char res[128];
         sprintf(res,"Avg time: %4.2f ms\nMax time: %4.2f ms",avg,max);
 
