@@ -35,9 +35,12 @@ public:
         // Create sprite atlas using default texture properties
         atlas = SpriteAtlas::create("test_data/sprite_test.json","test_data/sprite_test.png");
 
+
         // create sprite atlas using point sampling and no mipmaps
         auto tex = Texture::create().withFile("test_data/sprite_test.png").withFilterSampling(false).withGenerateMipmaps(false).build();
         atlas2 = SpriteAtlas::create("test_data/sprite_test.json",tex);
+
+        atlas3 = SpriteAtlas::create("test_data/circle-slices-cropped.json","test_data/circle-slices-cropped.png");
 
         r.frameRender = [&](){
             render();
@@ -52,17 +55,27 @@ public:
                 .withClearColor(true, {.3, .3, 1, 1})
                 .build();
 
-        auto names = atlas->getNames();
 
-        static const auto ** namesPtr = new const char*[names.size()];
+
+        static int selectedAtlas = 0;
+        char * atlasNames = "Sprite\0Sprite - nofilter\0circle\0";
+        ImGui::Combo("Atlas", &selectedAtlas,atlasNames);
+
+        auto atlasPtr = selectedAtlas==0?atlas:(selectedAtlas==1?atlas2:atlas3);
+
+        auto names = atlasPtr->getNames();
+
+        const auto ** namesPtr = new const char*[names.size()];
         for (int i=0;i<names.size();i++){
             namesPtr[i] = names[i].c_str();
         }
-        static int selected = 0;
 
-        ImGui::Combo("Sprite", &selected,namesPtr,names.size());
+        static int selectedSprite = 0;
+        selectedSprite = selectedSprite % names.size();
+        ImGui::Combo("Sprite", &selectedSprite,namesPtr,names.size());
+        delete namesPtr;
 
-        auto sprite = atlas->get(names.at(selected));
+        auto sprite = atlasPtr->get(names.at(selectedSprite));
         static glm::vec4 color (1,1,1,1);
         static glm::vec2 scale(1,1);
         static glm::vec2 position(100,300);
@@ -89,10 +102,8 @@ public:
         sprite.setFlip(flip);
         sprite.setOrderInBatch(spriteIndex1);
 
-        auto sprite2 = atlas2->get(names.at(selected));
-        if (useSameAtlas){
-            sprite2 = atlas->get(names.at(selected));
-        }
+        auto sprite2 = atlas2->get(atlas2->getNames().at(selectedSprite%atlas2->getNames().size()));
+
         sprite2.setColor(color);
         sprite2.setScale(scale);
         sprite2.setPosition(glm::vec2{300, 300});
@@ -114,7 +125,7 @@ public:
 
 
         std::vector<glm::vec3> lines;
-        auto spriteCorners = sprite.getCorners();
+        auto spriteCorners = sprite.getTrimmedCorners();
         for (int i=0;i<4;i++){
             lines.push_back({spriteCorners[i],0});
             lines.push_back({spriteCorners[(i+1)%4],0});
@@ -130,6 +141,7 @@ public:
 private:
     std::shared_ptr<SpriteAtlas> atlas;
     std::shared_ptr<SpriteAtlas> atlas2;
+    std::shared_ptr<SpriteAtlas> atlas3;
     int spriteIndex1 = 0;
     int spriteIndex2 = 0;
     SDLRenderer r;

@@ -46,7 +46,7 @@ public:
 
     const glm::vec2 &getSpriteAnchor() const;   // anchor (relative to spriteSize)
 
-    std::array<glm::vec2,4> getCorners();       // return the position of the sprite
+    std::array<glm::vec2,4> getTrimmedCorners();       // return the position of the trimmed sprite
 
     std::array<glm::vec2,4> getUVs();
 

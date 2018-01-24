@@ -110,7 +110,7 @@ sre::Sprite::Sprite(const Sprite &s)
     this->order.globalOrder = s.order.globalOrder;
 }
 
-std::array<glm::vec2, 4> sre::Sprite::getCorners() {
+std::array<glm::vec2, 4> sre::Sprite::getTrimmedCorners() {
     float x0 = 0 - spriteAnchor.x * spriteSize.x;
     float x1 = spriteSize.x - spriteAnchor.x * spriteSize.x;
     float y0 = 0 - spriteAnchor.y * spriteSize.y;

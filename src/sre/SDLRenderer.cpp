@@ -79,13 +79,11 @@ void GLAPIENTRY openglCallbackFunction(GLenum source,
 
 namespace sre{
 
-
+    SDLRenderer* SDLRenderer::instance = nullptr;
 #ifdef EMSCRIPTEN
-    static SDLRenderer* sdlInstance = nullptr;
-
     struct SDLRendererInternal{
         static void update(float f){
-            sdlInstance->frame(f);
+            SDLRenderer::instance->frame(f);
         }
     };
 
@@ -111,17 +109,17 @@ namespace sre{
      otherEvent([](SDL_Event&){}),
      windowTitle( std::string("SimpleRenderEngine ")+std::to_string(Renderer::sre_version_major)+"."+std::to_string(Renderer::sre_version_minor )+"."+std::to_string(Renderer::sre_version_point))
     {
-#ifdef EMSCRIPTEN
-        sdlInstance = this;
-#endif
+
+        instance = this;
+
     }
 
     SDLRenderer::~SDLRenderer() {
         delete r;
         r = nullptr;
-#ifdef EMSCRIPTEN
-        sdlInstance = nullptr;
-#endif
+
+        instance = nullptr;
+
         SDL_DestroyWindow(window);
         SDL_Quit();
     }
@@ -200,6 +198,7 @@ namespace sre{
 
     void SDLRenderer::init(uint32_t sdlInitFlag,uint32_t sdlWindowFlags, bool vsync) {
         if (running){
+            LOG_ERROR("SDLRenderer has already been initialized");
             return;
         }
         if (!window){
@@ -235,9 +234,6 @@ namespace sre{
 					true);
 				
 			}
-#endif
-#ifndef EMSCRIPTEN
-            glEnable(GL_FRAMEBUFFER_SRGB);
 #endif
         }
     }

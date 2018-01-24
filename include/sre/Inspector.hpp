@@ -33,7 +33,7 @@ namespace sre {
      */
     class Inspector {
     public:
-        explicit Inspector(int frames = 300, SDLRenderer *sdlRenderer = nullptr);
+        explicit Inspector(int frames = 300);
 
         void update();                  // must be called each in the beginning of each frame to capture data
         void gui(bool useWindow = true);// called when gui should be shown
@@ -47,7 +47,7 @@ namespace sre {
         int frames;
         int frameCount;
         std::weak_ptr<Shader> shaderEdit;
-        std::vector<float> milliseconds;
+        std::vector<float> millisecondsFrameTime;
         std::vector<float> millisecondsEvent;
         std::vector<float> millisecondsUpdate;
         std::vector<float> millisecondsRender;
@@ -74,6 +74,8 @@ namespace sre {
         void initFramebuffer();
 
         const float previewSize = 100;
+
+        void plotTimings(float *inputData, const char *title);
     };
 
     DEPRECATED("Use Inspector instead")

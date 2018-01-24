@@ -33,7 +33,7 @@ emcc -Iinclude src/imgui/imgui.cpp \
                src/sre/Inspector.cpp \
                src/sre/Log.cpp \
                examples/$FILENAME.cpp \
-               -O2 -std=c++14 -s TOTAL_MEMORY=33554432 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' --preload-file examples_data -s USE_SDL=2 -o html/$FILENAME.html
+               -O2 -std=c++14 -s FORCE_FILESYSTEM=1 -s TOTAL_MEMORY=33554432 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' --preload-file examples_data -s USE_SDL=2 -o html/$FILENAME.html
 done
 
 for FILENAME in custom-mesh-layout-default-values imgui_demo multi-cameras multiple-lights particle-sprite particle-test polygon-offset-example spinning-sphere-cubemap sprite-test static_vertex_attribute texture-test
@@ -61,5 +61,5 @@ emcc -Iinclude src/imgui/imgui.cpp \
                src/sre/Inspector.cpp \
                src/sre/Log.cpp \
                test/$FILENAME.cpp \
-               -O2 -std=c++14 -s TOTAL_MEMORY=33554432 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' --preload-file test_data -s USE_SDL=2 -o html/$FILENAME.html
+               -O2 -std=c++14 -s FORCE_FILESYSTEM=1 -s TOTAL_MEMORY=33554432 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' --preload-file test_data -s USE_SDL=2 -o html/$FILENAME.html
 done

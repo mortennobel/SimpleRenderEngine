@@ -64,11 +64,11 @@ namespace sre {
         }
     }
 
-    Inspector::Inspector(int frames,SDLRenderer* sdlRenderer)
-            :frames(frames),frameCount(0),sdlRenderer(sdlRenderer)
+    Inspector::Inspector(int frames)
+            :frames(frames),frameCount(0),sdlRenderer(SDLRenderer::instance)
     {
         stats.resize(frames);
-        milliseconds.resize(frames);
+        millisecondsFrameTime.resize(frames);
         if (sdlRenderer){
             millisecondsEvent.resize(frames);
             millisecondsUpdate.resize(frames);
@@ -370,11 +370,18 @@ namespace sre {
         }
 
         if (ImGui::CollapsingHeader("Performance")){
+            if (sdlRenderer){
+                plotTimings(millisecondsEvent.data(), "Event ms");
+                plotTimings(millisecondsUpdate.data(), "Update ms");
+                plotTimings(millisecondsRender.data(), "Render ms");
+            }
+
+
             float max = 0;
             float sum = 0;
             for (int i=0;i<frames;i++){
                 int idx = (frameCount + i)%frames;
-                float t = milliseconds[idx];
+                float t = stats[idx].drawCalls;
                 data[(-frameCount%frames+idx+frames)%frames] = t;
                 max = std::max(max, t);
                 sum += t;
@@ -384,23 +391,6 @@ namespace sre {
                 avg = sum / std::min(frameCount, frames);
             }
             char res[128];
-            sprintf(res,"Avg time: %4.2f ms\nMax time: %4.2f ms",avg,max);
-
-            ImGui::PlotLines(res,data.data(),frames, 0, "Milliseconds", -1,max*1.2f,ImVec2(ImGui::CalcItemWidth(),150));
-
-            max = 0;
-            sum = 0;
-            for (int i=0;i<frames;i++){
-                int idx = (frameCount + i)%frames;
-                float t = stats[idx].drawCalls;
-                data[(-frameCount%frames+idx+frames)%frames] = t;
-                max = std::max(max, t);
-                sum += t;
-            }
-            avg = 0;
-            if (frameCount > 0){
-                avg = sum / std::min(frameCount, frames);
-            }
             sprintf(res,"Avg: %4.1f\nMax: %4.1f",avg,max);
 
             ImGui::PlotLines(res,data.data(),frames, 0, "Draw calls", -1,max*1.2f,ImVec2(ImGui::CalcItemWidth(),150));
@@ -421,6 +411,8 @@ namespace sre {
             sprintf(res,"Avg: %4.1f\nMax: %4.1f",avg,max);
 
             ImGui::PlotLines(res,data.data(),frames, 0, "State changes", -1,max*1.2f,ImVec2(ImGui::CalcItemWidth(),150));
+
+            plotTimings(millisecondsFrameTime.data(), "Frame-time ms");
         }
         if (ImGui::CollapsingHeader("Memory")){
             float max = 0;
@@ -503,6 +495,26 @@ namespace sre {
         if (auto shaderEditPtr = shaderEdit.lock()){
             editShader(shaderEditPtr.get());
         }
+    }
+
+    void Inspector::plotTimings(float *inputData, const char *title)  {
+        float max = 0;
+        float sum = 0;
+        for (int i=0; i < frames; i++){
+                int idx = (frameCount + i) % frames;
+                float t = inputData[idx];
+                data[(-frameCount % frames + idx + frames) % frames] = t;
+                max = std::__1::max(max, t);
+                sum += t;
+            }
+        float avg = 0;
+        if (frameCount > 0){
+                avg = sum / std::__1::min(frameCount, frames);
+            }
+        char res[128];
+        sprintf(res,"Avg time: %4.2f ms\nMax time: %4.2f ms",avg,max);
+
+        ImGui::PlotLines(res, data.data(), frames, 0, title, -1, max * 1.2f, ImVec2(ImGui::CalcItemWidth(), 150));
     }
 
     void updateErrorMarkers(std::vector<std::string>& errors, TextEditor& textEditor, ShaderType type){
@@ -677,7 +689,7 @@ namespace sre {
         lastTick = tick;
 
         stats[frameCount%frames] = Renderer::instance->getRenderStats();
-        milliseconds[frameCount%frames] = deltaTime;
+        millisecondsFrameTime[frameCount%frames] = deltaTime;
         if (sdlRenderer){
             millisecondsEvent[frameCount%frames] = sdlRenderer->deltaTimeEvent;
             millisecondsUpdate[frameCount%frames] = sdlRenderer->deltaTimeUpdate;

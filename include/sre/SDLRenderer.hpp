@@ -79,6 +79,8 @@ public:
     void stopEventLoop();                                       // The render loop will stop running when the frame is complete.
 
     SDL_Window *getSDLWindow();                                 // Get a pointer to SDL_Window
+
+    static SDLRenderer* instance;                               // Singleton reference to the engine after initialization.
 private:
     void frame(float deltaTimeSec);
     Renderer* r;
