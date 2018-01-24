@@ -39,6 +39,8 @@ namespace sre {
         std::shared_ptr<Shader> unlitSprite;
         std::shared_ptr<Shader> standardParticles;
 
+        long globalShaderCounter = 1;
+
         const std::regex SPECIALIZATION_CONSTANT_PATTERN("(S_[A-Z_0-9]+)");
 
         // From https://stackoverflow.com/a/8473603/420250
@@ -233,6 +235,7 @@ namespace sre {
         shader->name = this->name;
         shader->offset = this->offset;
         shader->shaderSources = this->shaderSources;
+        shader->shaderUniqueId = globalShaderCounter++;
         return std::shared_ptr<Shader>(shader);
     }
 
@@ -430,14 +433,14 @@ namespace sre {
                     }
                 }
                 if (strcmp(name, "g_lightPosType")==0){
-                    if (uniformType == UniformType::Vec4 && size == Renderer::maxSceneLights){
+                    if (uniformType == UniformType::Vec4 && size == Renderer::instance->maxSceneLights){
                         uniformLocationLightPosType = location;
                     } else {
                         LOG_ERROR("Invalid g_lightPosType uniform type. Expected vec4[Renderer::maxSceneLights] - was %s[%i].",c_str(uniformType),size);
                     }
                 }
                 if (strcmp(name, "g_lightColorRange")==0){
-                    if (uniformType == UniformType::Vec4 && size == Renderer::maxSceneLights){
+                    if (uniformType == UniformType::Vec4 && size == Renderer::instance->maxSceneLights){
                         uniformLocationLightColorRange = location;
                     } else {
                         LOG_ERROR("Invalid g_lightPosType uniform type. Expected vec4[Renderer::maxSceneLights] - was %s[%i].",c_str(uniformType),size);
@@ -498,24 +501,25 @@ namespace sre {
     }
 
     bool Shader::setLights(WorldLights* worldLights){
+        int maxSceneLights = Renderer::instance->maxSceneLights;
         if (worldLights == nullptr){
             glUniform4f(uniformLocationAmbientLight, 0,0,0,0);
             const int vec4Elements = 4;
-            float noLight[Renderer::maxSceneLights * vec4Elements];
-            for (int i=0;i<Renderer::maxSceneLights * vec4Elements;i++){
+            float noLight[maxSceneLights * vec4Elements];
+            for (int i=0;i<maxSceneLights * vec4Elements;i++){
                 noLight[i] = 0;
             }
-            glUniform4fv(uniformLocationLightPosType, Renderer::maxSceneLights, noLight);
-            glUniform4fv(uniformLocationLightColorRange, Renderer::maxSceneLights, noLight);
+            glUniform4fv(uniformLocationLightPosType, maxSceneLights, noLight);
+            glUniform4fv(uniformLocationLightColorRange, maxSceneLights, noLight);
             return false;
         }
         if (uniformLocationAmbientLight != -1) {
             glUniform3fv(uniformLocationAmbientLight, 1, glm::value_ptr(worldLights->ambientLight));
         }
         if (uniformLocationLightPosType != -1 && uniformLocationLightColorRange != -1){
-            glm::vec4 lightPosType[Renderer::maxSceneLights];
-            glm::vec4 lightColorRange[Renderer::maxSceneLights];
-            for (int i=0;i<Renderer::maxSceneLights;i++){
+            glm::vec4* lightPosType = new glm::vec4[maxSceneLights];
+            glm::vec4* lightColorRange = new glm::vec4[maxSceneLights];
+            for (int i=0;i<maxSceneLights;i++){
                 auto light = worldLights->getLight(i);
                 if (light == nullptr || light->lightType == LightType::Unused) {
                     lightPosType[i] = glm::vec4(0.0f,0.0f,0.0f, 2);
@@ -531,11 +535,13 @@ namespace sre {
 
             }
             if (uniformLocationLightPosType != -1) {
-                glUniform4fv(uniformLocationLightPosType, Renderer::maxSceneLights, glm::value_ptr(lightPosType[0]));
+                glUniform4fv(uniformLocationLightPosType, maxSceneLights, glm::value_ptr(lightPosType[0]));
             }
             if (uniformLocationLightColorRange != -1) {
-                glUniform4fv(uniformLocationLightColorRange, Renderer::maxSceneLights, glm::value_ptr(lightColorRange[0]));
+                glUniform4fv(uniformLocationLightColorRange, maxSceneLights, glm::value_ptr(lightColorRange[0]));
             }
+            delete [] lightPosType;
+            delete [] lightColorRange;
         }
         return true;
     }
@@ -826,7 +832,7 @@ namespace sre {
         source = pragmaInclude(source, errors, shaderType);
 
 #ifdef EMSCRIPTEN
-        source = Shader::translateToGLSLES(source, type==GL_VERTEX_SHADER);
+        source = Shader::translateToGLSLES(source, shaderType==GL_VERTEX_SHADER);
 #endif
         return source;
     }

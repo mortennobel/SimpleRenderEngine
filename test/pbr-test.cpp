@@ -36,7 +36,6 @@ public:
         return fallback;
     }
 
-
     PBRTest()
     {
         r.setWindowTitle("Physically Based Rendering");
@@ -128,6 +127,7 @@ public:
         renderPass.draw(meshes[meshType],glm::mat4(1), material);
 
         renderGUI();
+        renderPass.finish();
     }
 
     bool loadTexture(std::string label, std::shared_ptr<Texture>& texRef, char* fileLocation){
@@ -143,14 +143,14 @@ public:
     }
 
     void renderGUI(){
-
         ImGui::SetNextWindowPos(ImVec2{0,0}); // set next window position. call before Begin(). use pivot=(0.5f,0.5f) to center on given point, etc.
         ImGui::SetNextWindowSize(ImVec2{800*.3333f,600});          // set next window size. set axis to 0.0f to force an auto-fit on this axis. call before Begin()
         ImGui::Begin("PBR");
         bool updatedMat = false;
         if (ImGui::CollapsingHeader("Material")){
-
-            updatedMat |= ImGui::ColorEdit4("Color", &color.x);
+            auto col4 = color.toLinear();
+            updatedMat |= ImGui::ColorEdit4("Color", &col4.x);
+            color.setFromLinear(col4);
             if (specialization.find("S_NO_BASECOLORMAP") == specialization.end()) {
                 updatedMat |= loadTexture("ColorTex", colorTex, colorTexStr);
             }
@@ -193,7 +193,6 @@ public:
                 bool checked = specialization.find(s) != specialization.end();
                 if (ImGui::Checkbox(s.c_str(), &checked)){
                     if (checked){
-                        std::cout << "Adding "<<s<<std::endl;
                         specialization.insert({s,"1"});
                     } else {
                         specialization.erase(specialization.find(s));
@@ -236,7 +235,7 @@ private:
     float cameraRotateX = 0;
     float cameraRotateY = 0;
     int selection = 0;
-    glm::vec4 color = glm::vec4(1,1,1,1);
+    Color color = {1,1,1,1};
     const static int maxTextSize = 512;
     char colorTexStr[maxTextSize]    = "test_data/BoomBox_baseColor.png";
     char metRoughTexStr[maxTextSize] = "test_data/BoomBox_roughnessMetallic.png";

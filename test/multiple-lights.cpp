@@ -109,7 +109,10 @@ public:
         if (ImGui::TreeNode("Material")){
             ImGui::DragFloat("Specularity", &specularity,1,0,200);
             mat->setSpecularity(specularity);
-            ImGui::ColorEdit3("Color", &(color.x));
+            auto col = color.toLinear();
+            if (ImGui::ColorEdit3("Color", &(col.x))){
+                color.setFromLinear(col);
+            }
             ImGui::TreePop();
         }
     }
@@ -140,7 +143,7 @@ private:
 
     std::shared_ptr<Material> mat;
     float specularity = 20;
-    glm::vec4 color {1,1,1,1};
+    sre::Color color {1,1,1,1};
 
     std::shared_ptr<Mesh> mesh;
 

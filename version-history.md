@@ -1,6 +1,6 @@
 ## Version history
 
- * 0.10.0 Physically based rendering. Profiler renamed to Inspector. Added shader specialization constants..
+ * 1.0.0 Physically based rendering. Profiler renamed to Inspector. Added shader specialization constants.
  * 0.9.23 Add support for geometry and tesselation shaders. Fix MSVC compile error.
  * 0.9.22 OpenVR support (experimental). Queue draw calls (to better support simultaneous renderpasses). Make max scenelight count depends on Renderer::maxSceneLights. Optimize and clarify sprite batch order.
  * 0.9.21 Improved .obj importer.

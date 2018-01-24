@@ -172,7 +172,7 @@ namespace sre {
                                                                // S_OCCLUSIONMAP
                                                                //   Adds Uniforms "occlusionTex" (Texture) and "occlusionStrength" (float)
                                                                // S_VERTEX_COLOR
-                                                               //   Adds vertex color. VertexAttributes "color" vec4. Colors are defined in linear space.
+                                                               //   Adds VertexAttribute "color" vec4 defined in linear space.
 
 
         static std::shared_ptr<Shader> getStandardBlinnPhong(); // Blinn-Phong Light Model. Uses light objects and ambient light set in Renderer.
@@ -186,7 +186,7 @@ namespace sre {
                                                                 //   "uv" vec4
                                                                 // Specializations
                                                                 // S_VERTEX_COLOR
-                                                                //   Adds vertex color. VertexAttributes "color" vec4
+                                                                //   Adds VertexAttribute "color" vec4 defined in linear space.
 
         static std::shared_ptr<Shader> getUnlit();             // Unlit model.
                                                                // Uniforms
@@ -194,7 +194,7 @@ namespace sre {
                                                                //   "tex" shared_ptr<Texture> (default white texture)
                                                                // Specializations
                                                                // S_VERTEX_COLOR
-                                                               //   Adds vertex color. VertexAttributes "color" vec4
+                                                               //   Adds VertexAttribute "color" vec4 defined in linear space.
 
         static std::shared_ptr<Shader> getUnlitSprite();       // UnlitSprite = no depth examples and alpha blending
                                                                // Uniforms
@@ -264,6 +264,7 @@ namespace sre {
         unsigned int shaderProgramId = 0;
         bool depthTest = true;
         bool depthWrite = true;
+        long shaderUniqueId = 0;
         std::string name;
         BlendType blend = BlendType::Disabled;
         glm::vec2 offset = glm::vec2(0,0);
