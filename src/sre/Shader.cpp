@@ -27,6 +27,11 @@
 #include <sre/Log.hpp>
 #include "sre/Renderer.hpp"
 #include "sre/Texture.hpp"
+#include <string>
+#include <sstream>
+#include <vector>
+#include <iterator>
+
 
 using namespace std;
 
@@ -50,6 +55,21 @@ namespace sre {
             return lhs.size() == rhs.size()
                    && std::equal(lhs.begin(), lhs.end(),
                                  rhs.begin());
+        }
+
+        template<typename Out>
+        void split(const std::string &s, char delim, Out result) {
+            std::stringstream ss(s);
+            std::string item;
+            while (std::getline(ss, item, delim)) {
+                *(result++) = item;
+            }
+        }
+
+        std::vector<std::string> split(const std::string &s, char delim) {
+            std::vector<std::string> elems;
+            split(s, delim, std::back_inserter(elems));
+            return elems;
         }
 
         // from http://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring
@@ -82,28 +102,28 @@ namespace sre {
                 return source;
             }
             std::stringstream sstream;
-            auto pch = strtok (const_cast<char *>(source.c_str()), "\n\r"); // note destroys input string
+
             std::regex e ( R"_(#pragma\s+include\s+"([^"]*)")_", std::regex::ECMAScript);
             int lineNumber = 0;
-            while (pch != nullptr)
+            std::vector<std::string> lines = split(source, '\n');
+            for (auto& s : lines)
             {
                 lineNumber++;
-                std::string s (pch);
+
                 std::smatch m;
                 if (std::regex_search (s,m,e)) {
                     std::string match = m[1];
                     auto res = getFileContents(match);
                     if (res == ""){
                         errors.push_back(std::string("0:")+std::to_string(lineNumber)+" cannot find include file "+match+"##"+std::to_string(shaderType));
-                        sstream << pch << "\n";
+                        sstream << s << "\n";
                     } else {
-                        sstream <<  res << "\n";
+                        sstream << res << "\n";
+                        sstream << "#line "<<lineNumber << "\n";
                     }
                 } else {
-                    sstream << pch << "\n";
+                    sstream << s << "\n";
                 }
-
-                pch = strtok (nullptr, "\n\r");
             }
             return sstream.str();
         }
@@ -138,8 +158,7 @@ namespace sre {
                         typeStr = std::string("Unknown error type: ") + std::to_string(type);
                         break;
                 }
-                LOG_ERROR("Shader compile error in %s: %s",typeStr.c_str() ,errorLog.data());
-                std::cout<<source.c_str()<<std::endl;
+                LOG_ERROR("Shader compile error in %s: %s", typeStr.c_str(), errorLog.data());
 
                 errors.push_back(std::string(errorLog.data())+"##"+std::to_string(type));
                 glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
@@ -158,8 +177,8 @@ namespace sre {
                 GLint  logSize;
                 glGetProgramiv(mShaderProgram, GL_INFO_LOG_LENGTH, &logSize);
                 std::vector<char> errorLog((size_t) logSize);
-                glGetProgramInfoLog(mShaderProgram, logSize, NULL, errorLog.data() );
-                errors.push_back(errorLog.data());
+                glGetProgramInfoLog(mShaderProgram, logSize, nullptr, errorLog.data() );
+                errors.emplace_back(errorLog.data());
                 LOG_ERROR("Shader linker error: %s",errorLog.data());
                 return false;
             }
@@ -271,7 +290,8 @@ namespace sre {
         string replace = "#version 140";
         string replaceWith = vertexShader?"#version 100":"#version 100\n#ifdef GL_ES\n"
                 "precision mediump float;\n"
-                "#endif";
+                "#endif\n"
+                "#line 2";
         size_t f = source.find(replace);
         source = source.replace(f, replace.length(), replaceWith);
 
@@ -297,11 +317,10 @@ namespace sre {
         for (std::string line; std::getline(iss, line); )
         {
             regex_search(line, match, regExpSearchShim1);
-            if (match.size() > 0){
+            if (!match.empty()){
                 string samplerType = match[1].str();
                 string samplerName = match[2].str();
                 textureType[samplerName] = samplerType;
-
             }
         }
 
@@ -822,12 +841,12 @@ namespace sre {
     }
 
     std::string Shader::precompile(std::string source, std::vector<std::string>& errors, uint32_t shaderType) {
-        // Insert preprocessor define symbols
-        source = insertPreprocessorDefines(source, specializationConstants, shaderType);
-
         // Replace includes with content
         // for each occurrence of #pragma include replace with substitute
         source = pragmaInclude(source, errors, shaderType);
+
+        // Insert preprocessor define symbols
+        source = insertPreprocessorDefines(source, specializationConstants, shaderType);
 
 #ifdef EMSCRIPTEN
         source = Shader::translateToGLSLES(source, shaderType==GL_VERTEX_SHADER);
@@ -895,18 +914,9 @@ namespace sre {
                                           std::map<std::string, std::string> &specializationConstants,
                                           uint32_t shaderType){
         stringstream ss;
-        for (auto & sc : specializationConstants){
-            ss<<"#define "<<sc.first<<" "<<sc.second<<"\n";
-        }
+
         ss<<"#define SI_LIGHTS "<<Renderer::instance->maxSceneLights<<"\n";
-        if (Renderer::instance->useFramebufferSRGB){
-
-            ss<<"#define SI_FRAMEBUFFER_SRGB 1\n";
-        }
-        if (Renderer::instance->supportTextureSamplerSRGB){
-
-            ss<<"#define SI_TEX_SAMPLER_SRGB 1\n";
-        }
+        // add shader type
         switch (shaderType){
             case GL_FRAGMENT_SHADER:
                 ss<<"#define SI_FRAGMENT 1\n";
@@ -929,15 +939,33 @@ namespace sre {
                 LOG_WARNING("Unknown shader type");
                 break;
         }
+        for (auto & sc : specializationConstants){
+            ss<<"#define "<<sc.first<<" "<<sc.second<<"\n";
+        }
+
+        if (Renderer::instance->useFramebufferSRGB){
+            ss<<"#define SI_FRAMEBUFFER_SRGB 1\n";
+        }
+        if (Renderer::instance->supportTextureSamplerSRGB){
+            ss<<"#define SI_TEX_SAMPLER_SRGB 1\n";
+        }
 
         // If the shader contains any #version or #extension statements, the defines are added after them.
         auto version = static_cast<int>(source.rfind("#version"));
         auto extension = static_cast<int>(source.rfind("#extension"));
         auto last = std::max(version, extension);
         if (last == -1){
+            ss << "#line 1\n";
             return ss.str()+source;
         }
         auto insertPos = source.find('\n', last);
+        int lines = 0;
+        for (int i=0;i<insertPos;i++){
+            if (source.at(i) == '\n'){
+                lines++;
+            }
+        }
+        ss << "#line "<<(lines+1)<<"\n";
         return source.substr(0, insertPos+1) +
                ss.str()+
                source.substr(insertPos+1);
