@@ -14,6 +14,7 @@ echo $FILENAME
 emcc -Iinclude src/imgui/imgui.cpp \
                src/imgui/imgui_draw.cpp \
                src/imgui/imgui_sre.cpp \
+               src/imgui/TextEditor.cpp \
                src/sre/Camera.cpp \
                src/sre/Color.cpp \
                src/sre/Light.cpp \
@@ -42,6 +43,7 @@ echo $FILENAME
 emcc -Iinclude src/imgui/imgui.cpp \
                src/imgui/imgui_draw.cpp \
                src/imgui/imgui_sre.cpp \
+               src/imgui/TextEditor.cpp \
                src/sre/Camera.cpp \
                src/sre/Color.cpp \
                src/sre/Light.cpp \

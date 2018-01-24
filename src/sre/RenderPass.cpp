@@ -259,13 +259,12 @@ namespace sre {
 #endif
     }
 
-    std::vector<glm::vec4> RenderPass::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+    std::vector<Color> RenderPass::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
         assert(mIsFinished);
-        finish();
         if (builder.framebuffer!=nullptr){
             builder.framebuffer->bind();
         }
-        std::vector<glm::vec4> res(width * height);
+        std::vector<Color> res(width * height);
         std::vector<glm::u8vec4> resUnsigned(width * height);
 
         glReadPixels(x,y,width, height, GL_RGBA,GL_UNSIGNED_BYTE,resUnsigned.data());
@@ -274,7 +273,10 @@ namespace sre {
                 res[i][j] = resUnsigned[i][j]/255.0f;
             }
         }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // set default framebuffer
+        if (builder.framebuffer!=nullptr) {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
 
         return res;
     }

@@ -29,7 +29,7 @@ public:
 
         mesh = Mesh::create().withSphere().build();
 
-        for (int i=0;i<Renderer::maxSceneLights;i++){
+        for (int i=0;i<Renderer::instance->maxSceneLights;i++){
             worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,1,1}).withRange(10).build());
         }
         mat = Shader::getStandardBlinnPhong()->createMaterial();
@@ -83,7 +83,7 @@ public:
             ImGui::DragFloat("DebugLightSize", &debugLightSize,0.1f,0,3);
         }
         // Show Label (with invisible window)
-        for (int i=0;i<Renderer::maxSceneLights;i++){
+        for (int i=0;i<Renderer::instance->maxSceneLights;i++){
             auto l = worldLights.getLight(i);
             if (debugLight){
                 drawLight(renderPass,l,debugLightSize);

@@ -1,7 +1,8 @@
 vec4 toLinear(vec4 col){
 #ifndef SI_TEX_SAMPLER_SRGB
+    float gamma = 2.2;
     return vec4 (
-        col.xyz = pow(col.xyz),
+        col.xyz = pow(col.xyz, vec3(gamma)),
         col.w
     );
 #else

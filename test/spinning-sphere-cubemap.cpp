@@ -98,9 +98,11 @@ void main(void)
     }
 
     void drawCross(RenderPass& rp,glm::vec3 p, float size = 0.3f, glm::vec4 color = {1,0,0,1}){
-        rp.drawLines({p-glm::vec3{size,0,0}, p+glm::vec3{size,0,0}},color);
-        rp.drawLines({p-glm::vec3{0,size,0}, p+glm::vec3{0,size,0}},color);
-        rp.drawLines({p-glm::vec3{0,0,size}, p+glm::vec3{0,0,size}},color);
+        Color col;
+        col.setFromLinear(color);
+        rp.drawLines({p-glm::vec3{size,0,0}, p+glm::vec3{size,0,0}},col);
+        rp.drawLines({p-glm::vec3{0,size,0}, p+glm::vec3{0,size,0}},col);
+        rp.drawLines({p-glm::vec3{0,0,size}, p+glm::vec3{0,0,size}},col);
     }
 
     void drawLight(RenderPass rp, Light& l, float size){

@@ -7,8 +7,9 @@
 std::map<std::string, std::string> builtInShaderSource  {
 std::make_pair<std::string,std::string>("sre_utils_incl.glsl",R"(vec4 toLinear(vec4 col){
 #ifndef SI_TEX_SAMPLER_SRGB
+    float gamma = 2.2;
     return vec4 (
-        col.xyz = pow(col.xyz),
+        col.xyz = pow(col.xyz, vec3(gamma)),
         col.w
     );
 #else

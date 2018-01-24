@@ -88,7 +88,8 @@ public:
     }
 
     void updateMaterial(std::shared_ptr<Material>& mat){
-        mat->setColor(glm::vec4(glm::linearRand(0.0f, 1.0f),glm::linearRand(0.0f, 1.0f),glm::linearRand(0.0f, 1.0f), 1)	);
+        Color color (glm::linearRand(0.0f, 1.0f),glm::linearRand(0.0f, 1.0f),glm::linearRand(0.0f, 1.0f));
+        mat->setColor(color);
     }
 
     void cameraGUI(){

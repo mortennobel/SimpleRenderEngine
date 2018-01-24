@@ -17,7 +17,7 @@ using namespace sre;
 class GUIExample {
 public:
     GUIExample()
-    :r{},inspector{300,&r}
+    :r{},inspector{300}
     {
         r.init();
 
