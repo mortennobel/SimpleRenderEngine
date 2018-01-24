@@ -111,7 +111,7 @@ namespace sre {
         void logCurrentCompileInfo(GLuint &shader, GLenum type, vector<string> &errors, std::string source) {
             GLint logSize = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
-            while (logSize > 0){
+            if (logSize > 0){
                 std::vector<char> errorLog((unsigned long) logSize);
                 glGetShaderInfoLog(shader, logSize, &logSize, errorLog.data());
 
@@ -802,16 +802,14 @@ namespace sre {
         std::string source_ = precompile(source, errors, type);
         shader = glCreateShader(type);
         auto stringPtr = source_.c_str();
-        GLint length = (GLint)strlen(stringPtr);
+        auto length = (GLint)strlen(stringPtr);
         glShaderSource(shader, 1, &stringPtr, &length);
         glCompileShader(shader);
         GLint success = 0;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-        if (success == GL_FALSE){
-            logCurrentCompileInfo(shader, type, errors, source_);
-            return false;
-        }
-        return true;
+        logCurrentCompileInfo(shader, type, errors, source_);
+
+        return success == 1;
     }
 
     std::pair<int, int> Shader::getAttibuteType(const std::string &name) {
@@ -876,7 +874,7 @@ namespace sre {
         standardPhong = create()
                 .withSourceFile("standard_blinn_phong_vert.glsl", ShaderType::Vertex)
                 .withSourceFile("standard_blinn_phong_frag.glsl", ShaderType::Fragment)
-                .withName("StandardPhong")
+                .withName("StandardBlinnPhong")
                 .build();
         return standardPhong;
     }
