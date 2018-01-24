@@ -364,7 +364,7 @@ namespace sre {
                    compiled.major,
                    compiled.minor,
                    compiled.patch);
-            ImGui::LabelText("SDL version linked", "%d.%d.%d",
+            ImGui::LabelText("SDL_IMG version linked", "%d.%d.%d",
                              linked.major, linked.minor, linked.patch);
             ImGui::LabelText("IMGUI version", IMGUI_VERSION);
         }
