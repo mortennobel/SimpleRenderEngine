@@ -289,7 +289,6 @@ namespace sre {
     }
 
     void RenderPass::drawInstance(RenderQueueObj& rqObj) {
-        // todo optimize (mesh vbo only need to be bound once)
         for (int i=0;i<rqObj.materials.size();i++){
             auto material_ptr = rqObj.materials[i];
             Mesh* mesh = rqObj.mesh.get();

@@ -45,7 +45,7 @@ public:
     void render(){
         auto renderPass = RenderPass::create()
                 .withCamera(camera)
-                .withClearColor(true, {.3, .3, 1, 1})
+                .withClearColor(true, {.3f, .3f, 1, 1})
                 .build();
 
 

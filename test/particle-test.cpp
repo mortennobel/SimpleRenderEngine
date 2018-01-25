@@ -68,7 +68,7 @@ public:
         auto rp = RenderPass::create()
                 .withCamera(camera)
                 .withWorldLights(worldLights)
-                .withClearColor(true,{0,0,0.3,1})
+                .withClearColor(true,{0.0f,0.0f,0.3f,1})
                 .build();
 
         auto scaleAndRotate = glm::eulerAngleY(-i)*glm::scale(glm::mat4(1),{0.3f,0.3f,0.3f});
