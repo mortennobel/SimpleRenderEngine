@@ -88,7 +88,7 @@ namespace sre {
             ImGui::LabelText("Filtersampling","%s",tex->isFilterSampling()?"true":"false");
             ImGui::LabelText("Mipmapping","%s",tex->isMipmapped()?"true":"false");
             ImGui::LabelText("Transparent","%s",tex->isTransparent()?"true":"false");
-            char* colorSpace;
+            const char* colorSpace;
             if (tex->getSamplerColorSpace() == Texture::SamplerColorspace::Gamma){
                 colorSpace = "Gamma";
             } else {
@@ -376,7 +376,6 @@ namespace sre {
                 plotTimings(millisecondsRender.data(), "Render ms");
             }
 
-
             float max = 0;
             float sum = 0;
             for (int i=0;i<frames;i++){
@@ -391,7 +390,9 @@ namespace sre {
                 avg = sum / std::min(frameCount, frames);
             }
             char res[128];
-            sprintf(res,"Avg: %4.1f\nMax: %4.1f",avg,max);
+            sprintf(res,"Avg: %4.1f\n"
+                        "Max: %4.1f\n"
+                        "Cur: %4.1f",avg,max,data[frames-1]);
 
             ImGui::PlotLines(res,data.data(),frames, 0, "Draw calls", -1,max*1.2f,ImVec2(ImGui::CalcItemWidth(),150));
 
@@ -408,7 +409,10 @@ namespace sre {
             if (frameCount > 0){
                 avg = sum / std::min(frameCount, frames);
             }
-            sprintf(res,"Avg: %4.1f\nMax: %4.1f",avg,max);
+            sprintf(res,"Avg: %4.1f\n"
+                        "Max: %4.1f\n"
+                        "Cur: %4.1f\n"
+                              ,avg,max,data[frames-1]);
 
             ImGui::PlotLines(res,data.data(),frames, 0, "State changes", -1,max*1.2f,ImVec2(ImGui::CalcItemWidth(),150));
 
@@ -429,7 +433,10 @@ namespace sre {
                 avg = sum / std::min(frameCount, frames);
             }
             char res[128];
-            sprintf(res,"Avg: %4.1f MB\nMax: %4.1f MB\nCount: %i",avg,max, r->meshes.size());
+            sprintf(res,"Avg: %4.1f MB\n"
+                        "Max: %4.1f MB\n"
+                        "Cur: %4.1f MB\n"
+                        "Count: %i",avg,max,  data[frames-1],(int)r->meshes.size());
 
             ImGui::PlotLines(res,data.data(),frames, 0, "Mesh MB", -1,max*1.2f,ImVec2(ImGui::CalcItemWidth(),150));
 
@@ -446,7 +453,10 @@ namespace sre {
             if (frameCount > 0){
                 avg = sum / std::min(frameCount, frames);
             }
-            sprintf(res,"Avg: %4.1f MB\nMax: %4.1f MB\nCount: %i",avg,max,r->textures.size());
+            sprintf(res,"Avg: %4.1f MB\n"
+                        "Max: %4.1f MB\n"
+                        "Cur: %4.1f MB\n"
+                        "Count: %i",avg,max, data[frames-1],(int)r->textures.size());
 
             ImGui::PlotLines(res,data.data(),frames, 0, "Texture MB", -1,max*1.2f,ImVec2(ImGui::CalcItemWidth(),150));
         }

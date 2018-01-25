@@ -93,7 +93,7 @@ public:
 
 		ImGui::LabelText("Size", "%d x %d", textures[selection]->getWidth(), textures[selection]->getHeight());
 		ImGui::LabelText("Transparent", "%s", textures[selection]->isTransparent()?"true":"false");
-		char* colorSpace;
+		const char* colorSpace;
 		if (textures[selection]->getSamplerColorSpace() == Texture::SamplerColorspace::Gamma){
 			colorSpace = "Gamma";
 		} else {
