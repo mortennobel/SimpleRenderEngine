@@ -122,7 +122,7 @@ public:
         auto renderPass = RenderPass::create()
                 .withCamera(camera)
                 .withWorldLights(lightCount==0?(&lightsSingle):(&lightsDuo))
-                .withClearColor(true, {.2,.2,.2,1})
+                .withClearColor(true, {.2f,.2f,.2f,1})
                 .build();
         renderPass.draw(meshes[meshType],glm::mat4(1), material);
 

@@ -70,7 +70,7 @@ public:
     void render(){
         auto renderPass = RenderPass::create()
                 .withCamera(camera)
-                .withClearColor(true, {.3, .3, 1, 1})
+                .withClearColor(true, {.3f, .3f, 1, 1})
                 .build();
 
 		ImGui::ListBox("Texture", &selection, filenames.data(), filenames.size());
@@ -93,7 +93,7 @@ public:
 
 		ImGui::LabelText("Size", "%d x %d", textures[selection]->getWidth(), textures[selection]->getHeight());
 		ImGui::LabelText("Transparent", "%s", textures[selection]->isTransparent()?"true":"false");
-		char* colorSpace;
+		const char* colorSpace;
 		if (textures[selection]->getSamplerColorSpace() == Texture::SamplerColorspace::Gamma){
 			colorSpace = "Gamma";
 		} else {

@@ -52,13 +52,13 @@ public:
     void render(){
         auto renderPass = RenderPass::create()
                 .withCamera(camera)
-                .withClearColor(true, {.3, .3, 1, 1})
+                .withClearColor(true, {.3f, .3f, 1, 1})
                 .build();
 
 
 
         static int selectedAtlas = 0;
-        char * atlasNames = "Sprite\0Sprite - nofilter\0circle\0";
+        const char * atlasNames = "Sprite\0Sprite - nofilter\0circle\0";
         ImGui::Combo("Atlas", &selectedAtlas,atlasNames);
 
         auto atlasPtr = selectedAtlas==0?atlas:(selectedAtlas==1?atlas2:atlas3);
@@ -71,8 +71,8 @@ public:
         }
 
         static int selectedSprite = 0;
-        selectedSprite = selectedSprite % names.size();
-        ImGui::Combo("Sprite", &selectedSprite,namesPtr,names.size());
+        selectedSprite = selectedSprite % (int)names.size();
+        ImGui::Combo("Sprite", &selectedSprite,namesPtr,(int)names.size());
         delete namesPtr;
 
         auto sprite = atlasPtr->get(names.at(selectedSprite));
@@ -127,8 +127,8 @@ public:
         std::vector<glm::vec3> lines;
         auto spriteCorners = sprite.getTrimmedCorners();
         for (int i=0;i<4;i++){
-            lines.push_back({spriteCorners[i],0});
-            lines.push_back({spriteCorners[(i+1)%4],0});
+            lines.emplace_back(spriteCorners[i],0);
+            lines.emplace_back(spriteCorners[(i+1)%4],0);
         }
         renderPass.drawLines(lines);
 

@@ -507,20 +507,17 @@ namespace sre {
         if (worldLights == nullptr){
             glUniform4f(uniformLocationAmbientLight, 0,0,0,0);
             const int vec4Elements = 4;
-            float noLight[maxSceneLights * vec4Elements];
-            for (int i=0;i<maxSceneLights * vec4Elements;i++){
-                noLight[i] = 0;
-            }
-            glUniform4fv(uniformLocationLightPosType, maxSceneLights, noLight);
-            glUniform4fv(uniformLocationLightColorRange, maxSceneLights, noLight);
+			std::vector<float> noLight(maxSceneLights * vec4Elements, 0.0f);
+            glUniform4fv(uniformLocationLightPosType, maxSceneLights, noLight.data());
+            glUniform4fv(uniformLocationLightColorRange, maxSceneLights, noLight.data());
             return false;
         }
         if (uniformLocationAmbientLight != -1) {
             glUniform3fv(uniformLocationAmbientLight, 1, glm::value_ptr(worldLights->ambientLight));
         }
         if (uniformLocationLightPosType != -1 && uniformLocationLightColorRange != -1){
-            glm::vec4* lightPosType = new glm::vec4[maxSceneLights];
-            glm::vec4* lightColorRange = new glm::vec4[maxSceneLights];
+			std::vector<glm::vec4> lightPosType(maxSceneLights, glm::vec4(0));
+			std::vector<glm::vec4> lightColorRange(maxSceneLights, glm::vec4(0));
             for (int i=0;i<maxSceneLights;i++){
                 auto light = worldLights->getLight(i);
                 if (light == nullptr || light->lightType == LightType::Unused) {
@@ -542,8 +539,6 @@ namespace sre {
             if (uniformLocationLightColorRange != -1) {
                 glUniform4fv(uniformLocationLightColorRange, maxSceneLights, glm::value_ptr(lightColorRange[0]));
             }
-            delete [] lightPosType;
-            delete [] lightColorRange;
         }
         return true;
     }
