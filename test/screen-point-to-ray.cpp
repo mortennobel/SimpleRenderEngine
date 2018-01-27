@@ -48,15 +48,15 @@ public:
 
         mat1 = Shader::getStandardBlinnPhong()->createMaterial();
         mat1->setColor({1,1,1,1});
-        mat1->setSpecularity(0);
+        mat1->setSpecularity(Color(0,0,0,0));
 
         mat2 = Shader::getStandardBlinnPhong()->createMaterial();
         mat2->setColor({1,0,0,1});
-        mat2->setSpecularity(0);
+        mat2->setSpecularity(Color(0,0,0,0));
 
         matPlane = Shader::getStandardBlinnPhong()->createMaterial();
         matPlane->setColor({1,1,1,1});
-        matPlane->setSpecularity(0);
+        matPlane->setSpecularity(Color(0,0,0,0));
 
         r.mouseEvent = [&](SDL_Event event){
             if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button==SDL_BUTTON_RIGHT){

@@ -107,7 +107,7 @@ public:
         }
 
         if (ImGui::TreeNode("Material")){
-            ImGui::DragFloat("Specularity", &specularity,1,0,200);
+            ImGui::DragFloat4("Specularity", &specularity.r,0.1,0,1);
             mat->setSpecularity(specularity);
             auto col = color.toLinear();
             if (ImGui::ColorEdit3("Color", &(col.x))){
@@ -142,7 +142,7 @@ private:
     Camera camera;
 
     std::shared_ptr<Material> mat;
-    float specularity = 20;
+    Color specularity = Color(1,1,1,20);
     sre::Color color {1,1,1,1};
 
     std::shared_ptr<Mesh> mesh;

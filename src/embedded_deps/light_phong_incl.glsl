@@ -1,9 +1,10 @@
 uniform vec3 g_ambientLight;
 uniform vec4 g_lightPosType[SI_LIGHTS];
 uniform vec4 g_lightColorRange[SI_LIGHTS];
-uniform float specularity;
+uniform vec4 specularity;
 
-vec3 computeLight(vec3 wsPos, vec3 wsCameraPos, vec3 normal){
+vec3 computeLight(vec3 wsPos, vec3 wsCameraPos, vec3 normal, out vec3 specularityOut){
+    specularityOut = vec3(0.0, 0.0, 0.0);
     vec3 lightColor = vec3(0.0,0.0,0.0);
     for (int i=0;i<SI_LIGHTS;i++){
         bool isDirectional = g_lightPosType[i].w == 0.0;
@@ -35,12 +36,12 @@ vec3 computeLight(vec3 wsPos, vec3 wsCameraPos, vec3 normal){
         }
 
         // specular light
-        if (specularity > 0.0){
+        if (specularity.a > 0.0){
             vec3 H = normalize(lightDirection - normalize(wsPos - wsCameraPos));
             float nDotHV = dot(normal, H);
             if (nDotHV > 0.0){
-                float pf = pow(nDotHV, specularity);
-                lightColor += vec3(att * pf); // white specular highlights
+                float pf = pow(nDotHV, specularity.a);
+                specularityOut += specularity.rgb*pf; // white specular highlights
             }
         }
     }

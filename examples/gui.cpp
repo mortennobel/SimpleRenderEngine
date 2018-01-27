@@ -34,7 +34,7 @@ public:
                                       .build());
 
         material = Shader::getStandardBlinnPhong()->createMaterial();
-        material->setSpecularity(20);
+        material->setSpecularity(Color(1,1,1,20));
 
         // connect render callback
         r.frameRender = [&](){

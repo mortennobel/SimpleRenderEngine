@@ -101,11 +101,11 @@ namespace sre {
         return set("color", color);
     }
 
-    float Material::getSpecularity()   {
-        return get<float>("specularity");
+    Color Material::getSpecularity()   {
+        return get<Color>("specularity");
     }
 
-    bool Material::setSpecularity(float specularity) {
+    bool Material::setSpecularity(Color specularity) {
         return set("specularity", specularity);
     }
 

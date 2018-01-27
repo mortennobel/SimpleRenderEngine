@@ -25,7 +25,7 @@ public:
 
         material = Shader::getStandardBlinnPhong()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
-        material->setSpecularity(20.0f);
+        material->setSpecularity(Color(1,1,1,20.0f));
 
         mesh = Mesh::create().withCube().build();
         worldLights.setAmbientLight({0.0,0.0,0.0});
@@ -82,7 +82,7 @@ public:
             }
 
             material->setColor({1.0f,1.0f,1.0f,1.0f});
-            material->setSpecularity(20.0f);
+            material->setSpecularity(Color(1,1,1,20.0f));
         }
         changed = ImGui::Combo("Primitive",&primitive,"Cube\0Sphere\0Quad\0Torus\0");
         if (changed){

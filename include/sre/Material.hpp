@@ -49,9 +49,12 @@ namespace sre {
 
         bool setTexture(std::shared_ptr<sre::Texture> texture);
 
-        float getSpecularity();
+        Color getSpecularity();
 
-        bool setSpecularity(float specularity);
+        bool setSpecularity(Color specularity); // {specular intensity (rgb), Specular exponent (a)}.
+                                                // Specular intensity should be between 0.0 and 1.0
+                                                // Alpha value stores the specular exponent must be above 0.0. Large values gives smaller highlights
+
 
         glm::vec2 getMetallicRoughness();       // The metalness of the material. A value of 1.0 means the material is
         bool setMetallicRoughness(glm::vec2 metallicRoughness);       // a metal. A value of 0.0 means the material is a dielectric. Values in

@@ -28,21 +28,21 @@ using namespace glm;
 namespace {
 
     // trim from start (in place)
-    static inline void ltrim(std::string &s) {
+    inline void ltrim(std::string &s) {
         s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
             return !std::isspace(ch);
         }));
     }
 
-// trim from end (in place)
-    static inline void rtrim(std::string &s) {
+    // trim from end (in place)
+    inline void rtrim(std::string &s) {
         s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
             return !std::isspace(ch);
         }).base(), s.end());
     }
 
     // trim from both ends (in place)
-    static inline void trim(std::string &s) {
+    inline void trim(std::string &s) {
         ltrim(s);
         rtrim(s);
     }
@@ -62,7 +62,7 @@ namespace {
 #endif
 
     // from http://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring
-    string getFileContents(string filename)
+    string getFileContents(const string& filename)
     {
         ifstream in{filename, ios::in | ios::binary};
         if (in)
@@ -361,7 +361,8 @@ namespace {
         auto mat = shader->createMaterial();
 
         mat->setColor(foundMat->diffuseColor);
-        mat->setSpecularity(foundMat->specularCoefficient);
+
+        mat->setSpecularity({foundMat->specularColor.r,foundMat->specularColor.g,foundMat->specularColor.b,foundMat->specularCoefficient});
         auto name = materialName;
         for (auto & map :foundMat->textureMaps){
             if (map.type == ObjTextureMapType::Diffuse){
@@ -399,7 +400,7 @@ std::shared_ptr<sre::Mesh> sre::ModelImporter::importObj(std::string path, std::
         vector<string> tokens;
         while (likeTokensizer.good()) {
             likeTokensizer.getline(buffer2, bufferSize, ' ');
-			int buffer2Length = strlen(buffer2);
+			int buffer2Length = static_cast<int>(strlen(buffer2));
             for (int i=0;i<buffer2Length;i++){
                 if (isspace(buffer2[i])){
                     buffer2[i] = '\0';

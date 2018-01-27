@@ -35,7 +35,7 @@ public:
 
         auto material = Shader::getStandardBlinnPhong()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
-        material->setSpecularity(20.0f);
+        material->setSpecularity(Color(1,1,1,20.0f));
         materials.push_back(material);
 
         mesh = Mesh::create().withCube().build();

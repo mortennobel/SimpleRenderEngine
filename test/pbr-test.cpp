@@ -51,7 +51,7 @@ public:
         normalTex = Texture::create().withWhiteData(2,2).build();
         emissiveTex = Texture::create().withWhiteData(2,2).build();
         occlusionTex = Texture::create().withWhiteData(2,2).build();
-        colorTex =      Texture::create().withFile(colorTexStr    ).build();
+        colorTex     =      Texture::create().withFile(colorTexStr    ).build();
         metToughTex =   Texture::create().withFile(metRoughTexStr )
                 .withSamplerColorspace(Texture::SamplerColorspace::Gamma)
                 .build();
@@ -95,7 +95,6 @@ public:
     }
 
     void updateMaterial(){
-
         material = (pbrShader?Shader::getStandardPBR(): Shader::getStandardBlinnPhong())->createMaterial(specialization);
         material->setColor(color);
         material->setMetallicRoughness(metallicRoughness);
@@ -107,6 +106,7 @@ public:
         material->set("emissiveFactor",emissiveFactor);
         material->set("occlusionTex",occlusionTex);
         material->set("occlusionStrength",occlusionStrength);
+        material->setSpecularity(specularity);
     }
 
     void render(){
@@ -154,8 +154,12 @@ public:
             if (specialization.find("S_NO_BASECOLORMAP") == specialization.end()) {
                 updatedMat |= loadTexture("ColorTex", colorTex, colorTexStr);
             }
-            updatedMat |= ImGui::DragFloat("Metallic", &metallicRoughness.x,0.05f,0,1);
-            updatedMat |= ImGui::DragFloat("Roughness", &metallicRoughness.y,0.05f,0,1);
+            if (pbrShader){
+                updatedMat |= ImGui::DragFloat("Metallic", &metallicRoughness.x,0.05f,0,1);
+                updatedMat |= ImGui::DragFloat("Roughness", &metallicRoughness.y,0.05f,0,1);
+            } else {
+                updatedMat |= ImGui::DragFloat4("Specularity", &specularity.r,0.1f,0,1);
+            }
             if (specialization.find("S_METALROUGHNESSMAP") != specialization.end()) {
                 updatedMat |= loadTexture("MetallicRoughnessTex", metToughTex,metRoughTexStr);
             }
@@ -179,9 +183,11 @@ public:
             if (lightType == 1){
                 updatedLight |=  ImGui::DragFloat("LightDistance",&lightDistance, 0.5f,0.0f,50.0f);
             }
+            updatedLight |= ImGui::DragFloat("Ambient light",&ambientLight, 0.02f,0.0f,1.0f);
             if (updatedLight){
                 updateLight();
             }
+
         }
         if (ImGui::CollapsingHeader("Model")){
             ImGui::Combo("Mesh",&meshType, "Sphere\0Cube\0Torus\0");
@@ -209,13 +215,13 @@ public:
         static Inspector inspector;
         inspector.update();
         inspector.gui();
-
-
     }
 
     void updateLight(){
         lightsSingle.clear();
         lightsDuo.clear();
+        lightsSingle.setAmbientLight({ambientLight,ambientLight,ambientLight});
+        lightsDuo.setAmbientLight({ambientLight,ambientLight,ambientLight});
         bool directional = lightType==0;
         if (directional ){
             lightsSingle.addLight(Light::create().withDirectionalLight(rotatedPosition(-10,-10,1)).withColor({1,1,1}).build());
@@ -252,12 +258,14 @@ private:
     std::shared_ptr<sre::Texture> occlusionTex;
     std::map<std::string,std::string> specialization;
     glm::vec2 metallicRoughness = glm::vec2(0.0,0.5);
+    Color specularity = Color(1,1,1,50);
 
     int meshType = 0;
     std::vector<std::shared_ptr<sre::Mesh>> meshes;
 
     int lightCount = 0;
     float lightDistance = 10;
+    float ambientLight = .1f;
     int lightType = 0;
     WorldLights lightsSingle;
     WorldLights lightsDuo;

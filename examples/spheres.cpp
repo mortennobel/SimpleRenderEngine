@@ -30,11 +30,11 @@ public:
 
         mat1 = Shader::getStandardBlinnPhong()->createMaterial();
         mat1->setColor({1,1,1,1});
-        mat1->setSpecularity(50);
+        mat1->setSpecularity(Color(1,1,1,50));
 
         mat2 = Shader::getUnlit()->createMaterial();
         mat2->setColor({1,1,0,1});
-        mat2->setSpecularity(0);
+        mat2->setSpecularity(Color(0,0,0,0));
 
         r.frameUpdate = [&](float deltaTime){
             update(deltaTime);

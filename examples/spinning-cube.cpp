@@ -25,10 +25,10 @@ public:
 
         materialPhong = Shader::getStandardBlinnPhong()->createMaterial();
         materialPhong->setColor({1.0f,1.0f,1.0f,1.0f});
-        materialPhong->setSpecularity(20.0f);
+        materialPhong->setSpecularity(Color(1,1,1,20.0f));
         material = Shader::getStandardBlinnPhong()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
-        material->setSpecularity(20.0f);
+        material->setSpecularity(Color(1,1,1,20.0f));
 
         mesh = Mesh::create().withCube().build();
         worldLights.setAmbientLight({0.0,0.0,0.0});

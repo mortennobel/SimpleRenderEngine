@@ -143,7 +143,6 @@ namespace sre {
                         break;
                 }
                 LOG_ERROR("Shader compile error in %s: %s", typeStr.c_str(), errorLog.data());
-
                 errors.push_back(std::string(errorLog.data())+"##"+std::to_string(type));
                 glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
             }

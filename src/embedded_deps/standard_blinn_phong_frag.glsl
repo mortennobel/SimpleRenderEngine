@@ -23,15 +23,16 @@ uniform sampler2D tex;
 #pragma include "normalmap_incl.glsl"
 #pragma include "sre_utils_incl.glsl"
 
-void main(void)
+void main()
 {
     vec4 c = color * toLinear(texture(tex, vUV));
 #ifdef S_VERTEX_COLOR
     c = c * vColor;
 #endif
     vec3 normal = getNormal();
-    vec3 l = computeLight(vWsPos, g_cameraPos.xyz, normal);
+    vec3 specularLight = vec3(0.0,0.0,0.0);
+    vec3 l = computeLight(vWsPos, g_cameraPos.xyz, normal, specularLight);
 
-    fragColor = c * vec4(l, 1.0);
+    fragColor = c * vec4(l, 1.0) + vec4(specularLight,0);
     fragColor = toOutput(fragColor);
 }

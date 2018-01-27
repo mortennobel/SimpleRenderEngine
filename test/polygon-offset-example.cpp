@@ -34,7 +34,7 @@ public:
         
         material = Shader::getStandardBlinnPhong()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
-        material->setSpecularity(20.0f);
+        material->setSpecularity(Color(1,1,1,20.0f));
 
         material2 = Shader::create()
                 .withSourceFile("standard_blinn_phong_vert.glsl", ShaderType::Vertex)
@@ -42,7 +42,7 @@ public:
                 .withName("StandardPhongOffset")
                 .withOffset(factor,offset).build()->createMaterial();
         material2->setColor({1.0f,0.0f,0.0f,1.0f});
-        material2->setSpecularity(20.0f);
+        material2->setSpecularity(Color(1,1,1,20.0f));
 
         mesh = Mesh::create().withQuad(100.9999999f).build();
         mesh2 = Mesh::create().withQuad(100.000001f).build();
@@ -78,7 +78,7 @@ public:
                     .withName("StandardPhongOffset")
                     .withOffset(factor,offset).build()->createMaterial();
             material2->setColor({1.0f,0.0f,0.0f,1.0f});
-            material2->setSpecularity(20.0f);
+            material2->setSpecularity(Color(1,1,1,20.0f));
         }
 
         ImGui::Checkbox("Rotate",&rotate);

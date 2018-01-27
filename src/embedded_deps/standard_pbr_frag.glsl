@@ -11,6 +11,7 @@ in vec2 vUV;
 in vec3 vWsPos;
 in vec3 vLightDir[SI_LIGHTS];
 
+uniform vec3 g_ambientLight;
 uniform vec4 g_lightColorRange[SI_LIGHTS];
 uniform vec4 color;
 uniform vec4 metallicRoughness;
@@ -30,11 +31,6 @@ uniform vec4 emissiveFactor;
 #ifdef S_OCCLUSIONMAP
 uniform sampler2D occlusionTex;
 uniform float occlusionStrength;
-#endif
-#ifdef S_IBL
-uniform samplerCube diffuseEnvCube;
-uniform samplerCube specularEnvCube;
-uniform sampler2D brdfLUT;
 #endif
 #ifdef S_VERTEX_COLOR
 in vec4 vColor;
@@ -80,31 +76,6 @@ vec3 diffuse(PBRInfo pbrInputs)
 {
     return pbrInputs.diffuseColor / M_PI;
 }
-
-#ifdef S_IBL
-// Calculation of the lighting contribution from an optional Image Based Light source.
-// Precomputed Environment Maps are required uniform inputs and are computed as outlined in [1].
-// See our README.md on Environment Maps [3] for additional discussion.
-vec3 getIBLContribution(PBRInfo pbrInputs, vec3 n, vec3 reflection)
-{
-    float mipCount = 9.0; // resolution of 512x512
-    float lod = (pbrInputs.perceptualRoughness * mipCount);
-    // retrieve a scale and bias to F0. See [1], Figure 3
-    vec3 brdf = toLinear(texture(brdfLUT, vec2(pbrInputs.NdotV, 1.0 - pbrInputs.perceptualRoughness))).rgb;
-    vec3 diffuseLight = toLinear(texture(diffuseEnvCube, n)).rgb;
-
-#ifdef S_USE_TEX_LOD
-    vec3 specularLight = toLinear(textureLod(specularEnvCube, reflection, lod)).rgb;
-#else
-    vec3 specularLight = toLinear(texture(specularEnvCube, reflection)).rgb;
-#endif
-
-    vec3 diffuse = diffuseLight * pbrInputs.diffuseColor;
-    vec3 specular = specularLight * (pbrInputs.specularColor * brdf.x + brdf.y);
-
-    return diffuse + specular;
-}
-#endif
 
 // This calculates the specular geometric attenuation (aka G()),
 // where rougher material will reflect less light back to the viewer.
@@ -161,6 +132,7 @@ void main(void)
     vec3 f0 = vec3(0.04);
     vec3 diffuseColor = baseColor.rgb * (vec3(1.0) - f0);
     diffuseColor *= 1.0 - metallic;
+
     vec3 specularColor = mix(f0, baseColor.rgb, metallic);
 
     // Compute reflectance.
@@ -171,7 +143,7 @@ void main(void)
     float reflectance90 = clamp(reflectance * 25.0, 0.0, 1.0);
     vec3 specularEnvironmentR0 = specularColor.rgb;
     vec3 specularEnvironmentR90 = vec3(1.0, 1.0, 1.0) * reflectance90;
-    vec3 color = vec3(0.0,0.0,0.0);
+    vec3 color = baseColor.rgb * g_ambientLight;      // non pbr
     vec3 n = getNormal();                             // Normal at surface point
     vec3 v = normalize(g_cameraPos.xyz - vWsPos.xyz); // Vector from surface point to camera
     for (int i=0;i<SI_LIGHTS;i++) {
@@ -211,10 +183,6 @@ void main(void)
         color += NdotL * g_lightColorRange[i].xyz * (diffuseContrib + specContrib);
     }
 
-    // Calculate lighting contribution from image based lighting source (IBL)
-#ifdef S_IBL
-    color += getIBLContribution(pbrInputs, n, reflection);
-#endif
     // Apply optional PBR terms for additional (optional) shading
 #ifdef S_OCCLUSIONMAP
     float ao = texture(occlusionTex, vUV).r;
