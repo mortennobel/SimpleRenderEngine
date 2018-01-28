@@ -37,6 +37,27 @@ class Renderer;
 // and a `frameRender()`.
 class DllExport SDLRenderer {
 public:
+    class InitBuilder {
+    public:
+        ~InitBuilder();
+        InitBuilder& withSdlInitFlags(uint32_t sdlInitFlag);            // Set SDL Init flags (See: https://wiki.libsdl.org/SDL_Init )
+        InitBuilder& withSdlWindowFlags(uint32_t sdlWindowFlags);       // Set SDL Window flags (See: https://wiki.libsdl.org/SDL_WindowFlags )
+        InitBuilder& withVSync(bool vsync);
+        InitBuilder& withGLVersion(int majorVersion, int minorVersion);
+        InitBuilder& withMaxSceneLights(int maxSceneLights);            // Set max amount of concurrent lights
+        void build();
+    private:
+        explicit InitBuilder(SDLRenderer* sdlRenderer);
+        SDLRenderer* sdlRenderer;
+        uint32_t sdlInitFlag = SDL_INIT_EVERYTHING;
+        uint32_t sdlWindowFlags = SDL_WINDOW_ALLOW_HIGHDPI  | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE;
+        bool vsync = true;
+        int glMajorVersion = 3;
+        int glMinorVersion = 3;
+        int maxSceneLights = 4;
+        friend class SDLRenderer;
+    };
+
     SDLRenderer();
     virtual ~SDLRenderer();
 
@@ -52,11 +73,10 @@ public:
     std::function<void(SDL_Event& e)> touchEvent;               // Callback of `SDL_FINGERDOWN`, `SDL_FINGERUP`, `SDL_FINGERMOTION`.
     std::function<void(SDL_Event& e)> otherEvent;               // Invoked if unhandled SDL event
 
-    void init(uint32_t sdlInitFlag = SDL_INIT_EVERYTHING,       // Create the window and the graphics context (instantiates the sre::Renderer). Note that most
-              uint32_t sdlWindowFlags=SDL_WINDOW_ALLOW_HIGHDPI  // other sre classes requires the graphics content to be created before they can be used (e.g. a Shader cannot be
-                                        | SDL_WINDOW_OPENGL     // created before `init()`).
-                                        | SDL_WINDOW_RESIZABLE,
-              bool vsync = true);
+    InitBuilder init();                                         // Create the window and the graphics context (instantiates the sre::Renderer). Note that most
+                                                                // other sre classes requires the graphics content to be created before they can be used (e.g. a Shader cannot be
+                                                                // created before `init()`).
+                                                                // The initialization happens on InitBuilder::build or InitBuilder::~InitBuilder()
 
     void setWindowTitle(std::string title);
     void setWindowSize(glm::ivec2 size);

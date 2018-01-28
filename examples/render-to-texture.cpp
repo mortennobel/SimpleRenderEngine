@@ -27,6 +27,7 @@ public:
         framebuffer = Framebuffer::create().withTexture(texture).build();
 
         materialOffscreen = Shader::getStandardBlinnPhong()->createMaterial();
+        materialOffscreen->setSpecularity({1,1,1,120});
         material = Shader::getStandardBlinnPhong()->createMaterial();
         material->setTexture(texture);
 

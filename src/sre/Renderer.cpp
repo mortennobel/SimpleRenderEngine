@@ -26,8 +26,8 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 namespace sre {
     Renderer* Renderer::instance = nullptr;
 
-    Renderer::Renderer(SDL_Window * window, bool vsync_)
-    :window{window},vsync(vsync_)
+    Renderer::Renderer(SDL_Window * window, bool vsync_, int maxSceneLights)
+    :window{window},vsync(vsync_),maxSceneLights(maxSceneLights)
     {
         if (instance != nullptr){
             LOG_ERROR("Multiple versions of Renderer initialized. Only a single instance is supported.");
@@ -131,5 +131,9 @@ namespace sre {
 
     bool Renderer::usesVSync() {
         return vsync;
+    }
+
+    int Renderer::getMaxSceneLights() {
+        return maxSceneLights;
     }
 }

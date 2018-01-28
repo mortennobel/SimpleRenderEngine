@@ -27,8 +27,9 @@ class SpriteExample {
 public:
     SpriteExample()
     {
-        r.init(SDL_INIT_EVERYTHING,SDL_WINDOW_OPENGL     // created before `init()`).
-               | SDL_WINDOW_RESIZABLE);
+        r.init()
+                .withSdlInitFlags(SDL_INIT_EVERYTHING)
+                .withSdlWindowFlags(SDL_WINDOW_OPENGL);
 
         camera.setWindowCoordinates();
 

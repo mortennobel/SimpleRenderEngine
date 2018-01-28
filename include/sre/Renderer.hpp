@@ -54,10 +54,9 @@ namespace sre {
     ///
     class DllExport Renderer {
     public:
-        explicit Renderer(SDL_Window *window, bool vsync = true);    // SimpleRenderEngine constructor
+        explicit Renderer(SDL_Window *window, bool vsync = true, int maxSceneLights = 4);    // SimpleRenderEngine constructor
                                                             // param window pointer to the SDL window (must be initialized using OpenGL)
         ~Renderer();
-        int maxSceneLights = 4;            // Maximum of scene lights
         static constexpr int sre_version_major = 1;
         static constexpr int sre_version_minor = 0;
         static constexpr int sre_version_point = 0;
@@ -75,7 +74,10 @@ namespace sre {
                                                             // RenderStats only includes data maintained by sre (imgui calls are not included)
 
         static Renderer* instance;                          // Singleton reference to the engine after initialization.
+
+        int getMaxSceneLights();                            // Get maximum amout of scenelights per object
     private:
+        int maxSceneLights = 4;                             // Maximum of scene lights
         SDL_Window *window;
         SDL_GLContext glcontext;
         bool vsync;

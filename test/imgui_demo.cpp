@@ -3088,8 +3088,9 @@ class GUIExample {
 public:
     GUIExample()
     {
-        r.init(SDL_INIT_EVERYTHING,       // Create the window and the graphics context (instantiates the sre::Renderer). Note that most
-               SDL_WINDOW_OPENGL);
+        r.init()
+                .withSdlInitFlags(SDL_INIT_EVERYTHING)
+                .withSdlWindowFlags(SDL_WINDOW_OPENGL);
 
         // connect render callback
         r.frameRender = [&](){

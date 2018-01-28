@@ -196,48 +196,6 @@ namespace sre{
         r->swapWindow();
     }
 
-    void SDLRenderer::init(uint32_t sdlInitFlag,uint32_t sdlWindowFlags, bool vsync) {
-        if (running){
-            LOG_ERROR("SDLRenderer has already been initialized");
-            return;
-        }
-        if (!window){
-#ifdef EMSCRIPTEN
-            SDL_Renderer *renderer = NULL;
-            SDL_CreateWindowAndRenderer(windowWidth, windowHeight, SDL_WINDOW_OPENGL, &window, &renderer);
-#else
-            SDL_Init( sdlInitFlag  );
-            SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-#ifdef SRE_DEBUG_CONTEXT
-			SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-#endif
-        	window = SDL_CreateWindow(windowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight,sdlWindowFlags);
-#endif
-            r = new Renderer(window, vsync);
-
-#ifdef SRE_DEBUG_CONTEXT
-			if (glDebugMessageCallback) {
-				LOG_INFO("Register OpenGL debug callback ");
-
-				std::cout << "Register OpenGL debug callback " << std::endl;
-				glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-				glDebugMessageCallback(openglCallbackFunction, nullptr);
-				GLuint unusedIds = 0;
-				glDebugMessageControl(GL_DONT_CARE,
-					GL_DONT_CARE,
-					GL_DONT_CARE,
-					0,
-					&unusedIds,
-					true);
-				
-			}
-#endif
-        }
-    }
-
     void SDLRenderer::startEventLoop() {
         if (!window){
             LOG_INFO("SDLRenderer::init() not called");
@@ -352,5 +310,84 @@ namespace sre{
 
     bool SDLRenderer::isMouseCursorLocked() {
         return SDL_GetRelativeMouseMode() == SDL_TRUE;
+    }
+
+    SDLRenderer::InitBuilder SDLRenderer::init() {
+        return SDLRenderer::InitBuilder(this);
+    }
+
+    SDLRenderer::InitBuilder::~InitBuilder() {
+        build();
+    }
+
+    SDLRenderer::InitBuilder::InitBuilder(SDLRenderer *sdlRenderer)
+            :sdlRenderer(sdlRenderer) {
+    }
+
+    SDLRenderer::InitBuilder &SDLRenderer::InitBuilder::withSdlInitFlags(uint32_t sdlInitFlag) {
+        this->sdlInitFlag = sdlInitFlag;
+        return *this;
+    }
+
+    SDLRenderer::InitBuilder &SDLRenderer::InitBuilder::withSdlWindowFlags(uint32_t sdlWindowFlags) {
+        this->sdlWindowFlags = sdlWindowFlags;
+        return *this;
+    }
+
+    SDLRenderer::InitBuilder &SDLRenderer::InitBuilder::withVSync(bool vsync) {
+        this->vsync = vsync;
+        return *this;
+    }
+
+    SDLRenderer::InitBuilder &SDLRenderer::InitBuilder::withGLVersion(int majorVersion, int minorVersion) {
+        this->glMajorVersion = majorVersion;
+        this->glMinorVersion = minorVersion;
+        return *this;
+    }
+
+    void SDLRenderer::InitBuilder::build() {
+        if (sdlRenderer->running){
+            return;
+        }
+        if (!sdlRenderer->window){
+#ifdef EMSCRIPTEN
+            SDL_Renderer *renderer = nullptr;
+            SDL_CreateWindowAndRenderer(sdlRenderer->windowWidth, sdlRenderer->windowHeight, SDL_WINDOW_OPENGL, &sdlRenderer->window, &renderer);
+#else
+            SDL_Init( sdlInitFlag  );
+            SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glMajorVersion);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glMinorVersion);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+#ifdef SRE_DEBUG_CONTEXT
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+#endif
+            sdlRenderer->window = SDL_CreateWindow(sdlRenderer->windowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, sdlRenderer->windowWidth, sdlRenderer->windowHeight,sdlWindowFlags);
+#endif
+            sdlRenderer->r = new Renderer(sdlRenderer->window, vsync, maxSceneLights);
+
+#ifdef SRE_DEBUG_CONTEXT
+            if (glDebugMessageCallback) {
+				LOG_INFO("Register OpenGL debug callback ");
+
+				std::cout << "Register OpenGL debug callback " << std::endl;
+				glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+				glDebugMessageCallback(openglCallbackFunction, nullptr);
+				GLuint unusedIds = 0;
+				glDebugMessageControl(GL_DONT_CARE,
+					GL_DONT_CARE,
+					GL_DONT_CARE,
+					0,
+					&unusedIds,
+					true);
+
+			}
+#endif
+        }
+    }
+
+    SDLRenderer::InitBuilder &SDLRenderer::InitBuilder::withMaxSceneLights(int maxSceneLights) {
+        this->maxSceneLights = maxSceneLights;
+        return *this;
     }
 }
