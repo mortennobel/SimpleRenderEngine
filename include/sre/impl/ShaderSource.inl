@@ -84,36 +84,23 @@ void main(void) {
     vUV = uv;
 })"),
 std::make_pair<std::string,std::string>("light_phong_incl.glsl",R"(uniform vec3 g_ambientLight;
-uniform vec4 g_lightPosType[SI_LIGHTS];
+in vec4 vLightDir[SI_LIGHTS];
+#ifdef GL_ES
+uniform highp vec4 g_lightColorRange[SI_LIGHTS];
+#else
 uniform vec4 g_lightColorRange[SI_LIGHTS];
+#endif
 uniform vec4 specularity;
 
 vec3 computeLight(vec3 wsPos, vec3 wsCameraPos, vec3 normal, out vec3 specularityOut){
     specularityOut = vec3(0.0, 0.0, 0.0);
     vec3 lightColor = vec3(0.0,0.0,0.0);
     for (int i=0;i<SI_LIGHTS;i++){
-        bool isDirectional = g_lightPosType[i].w == 0.0;
-        bool isPoint       = g_lightPosType[i].w == 1.0;
-        vec3 lightDirection;
-        float att = 1.0;
-        if (isDirectional){
-            lightDirection = g_lightPosType[i].xyz;
-        } else if (isPoint) {
-            vec3 lightVector = g_lightPosType[i].xyz - wsPos;
-            float lightVectorLength = length(lightVector);
-            float lightRange = g_lightColorRange[i].w;
-            lightDirection = lightVector / lightVectorLength; // compute normalized lightDirection (using length)
-            if (lightRange <= 0.0){
-                att = 1.0;
-            } else if (lightVectorLength >= lightRange){
-                att = 0.0;
-            } else {
-                att = pow(1.0 - lightVectorLength / lightRange,1.5); // non physical range based attenuation
-            }
-        } else {
+        float att = vLightDir[i].w;
+        if (att <= 0.0){
             continue;
         }
-
+        vec3 lightDirection = normalize(vLightDir[i].xyz);
         // diffuse light
         float thisDiffuse = max(0.0,dot(lightDirection, normal));
         if (thisDiffuse > 0.0){
@@ -122,11 +109,11 @@ vec3 computeLight(vec3 wsPos, vec3 wsCameraPos, vec3 normal, out vec3 specularit
 
         // specular light
         if (specularity.a > 0.0){
-            vec3 H = normalize(lightDirection - normalize(wsPos - wsCameraPos));
+            vec3 H = normalize(lightDirection + normalize(wsCameraPos - wsPos));
             float nDotHV = dot(normal, H);
             if (nDotHV > 0.0){
                 float pf = pow(nDotHV, specularity.a);
-                specularityOut += specularity.rgb*pf; // white specular highlights
+                specularityOut += specularity.rgb * pf * att; // white specular highlights
             }
         }
     }
@@ -243,10 +230,14 @@ in vec3 vNormal;
 #endif
 in vec2 vUV;
 in vec3 vWsPos;
-in vec3 vLightDir[SI_LIGHTS];
+in vec4 vLightDir[SI_LIGHTS];
 
 uniform vec3 g_ambientLight;
+#ifdef GL_ES
+uniform highp vec4 g_lightColorRange[SI_LIGHTS];
+#else
 uniform vec4 g_lightColorRange[SI_LIGHTS];
+#endif
 uniform vec4 color;
 uniform vec4 metallicRoughness;
 uniform vec4 g_cameraPos;
@@ -381,7 +372,12 @@ void main(void)
     vec3 n = getNormal();                             // Normal at surface point
     vec3 v = normalize(g_cameraPos.xyz - vWsPos.xyz); // Vector from surface point to camera
     for (int i=0;i<SI_LIGHTS;i++) {
-        vec3 l = normalize(vLightDir[i]);                 // Vector from surface point to light
+        float attenuation = vLightDir[i].w;
+        if (attenuation <= 0.0){
+            continue;
+        }
+
+        vec3 l = normalize(vLightDir[i].xyz);                 // Vector from surface point to light
         vec3 h = normalize(l+v);                          // Half vector between both l and v
         vec3 reflection = -normalize(reflect(v, n));
 
@@ -414,7 +410,7 @@ void main(void)
         // Calculation of analytical lighting contribution
         vec3 diffuseContrib = (1.0 - F) * diffuse(pbrInputs);
         vec3 specContrib = F * G * D / (4.0 * NdotL * NdotV);
-        color += NdotL * g_lightColorRange[i].xyz * (diffuseContrib + specContrib);
+        color += attenuation * NdotL * g_lightColorRange[i].xyz * (diffuseContrib + specContrib);
     }
 
     // Apply optional PBR terms for additional (optional) shading
@@ -444,7 +440,7 @@ in vec4 color;
 out vec4 vColor;
 #endif
 out vec2 vUV;
-out vec3 vLightDir[SI_LIGHTS];
+out vec4 vLightDir[SI_LIGHTS];
 out vec3 vWsPos;
 
 uniform mat4 g_model;
@@ -452,6 +448,7 @@ uniform mat4 g_view;
 uniform mat4 g_projection;
 uniform mat3 g_model_it;
 uniform vec4 g_lightPosType[SI_LIGHTS];
+uniform vec4 g_lightColorRange[SI_LIGHTS];
 
 #pragma include "normalmap_incl.glsl"
 
@@ -469,12 +466,21 @@ void main(void) {
     for (int i=0;i<SI_LIGHTS;i++){
         bool isDirectional = g_lightPosType[i].w == 0.0;
         bool isPoint       = g_lightPosType[i].w == 1.0;
-        vec3 lightDirection;
         float att = 1.0;
         if (isDirectional){
-            vLightDir[i] = g_lightPosType[i].xyz;
+            vLightDir[i] = vec4(g_lightPosType[i].xyz, 1.0);
         } else if (isPoint) {
-            vLightDir[i] = normalize(g_lightPosType[i].xyz - vWsPos);
+            vec3 dir = g_lightPosType[i].xyz - vWsPos;
+            float dirLength = length(dir);
+            float att = 0.0;
+            if (g_lightColorRange[i].w == 0.0){
+                att = 1.0;
+            } else if (dirLength < g_lightColorRange[i].w) {
+                att = pow(1.0 - (dirLength / g_lightColorRange[i].w), 1.5); // non physical range based attenuation
+            }
+            vLightDir[i] = vec4(dir / dirLength, att);
+        } else {
+            vLightDir[i] = vec4(0.0, 0.0, 0.0, 0.0);
         }
     }
 #ifdef S_VERTEX_COLOR
@@ -535,11 +541,14 @@ out vec3 vWsPos;
 in vec4 color;
 out vec4 vColor;
 #endif
+out vec4 vLightDir[SI_LIGHTS];
 
 uniform mat4 g_model;
 uniform mat4 g_view;
 uniform mat4 g_projection;
 uniform mat3 g_model_it;
+uniform vec4 g_lightPosType[SI_LIGHTS];
+uniform vec4 g_lightColorRange[SI_LIGHTS];
 
 #pragma include "normalmap_incl.glsl"
 
@@ -552,7 +561,27 @@ void main(void) {
     vNormal = normalize(g_model_it * normal);
 #endif
     vUV = uv.xy;
-    vWsPos = vWsPos.xyz;
+    vWsPos = wsPos.xyz;
+    for (int i=0;i<SI_LIGHTS;i++){
+        bool isDirectional = g_lightPosType[i].w == 0.0;
+        bool isPoint       = g_lightPosType[i].w == 1.0;
+        float att = 1.0;
+        if (isDirectional){
+            vLightDir[i] = vec4(g_lightPosType[i].xyz, 1.0);
+        } else if (isPoint) {
+            vec3 dir = g_lightPosType[i].xyz - vWsPos;
+            float dirLength = length(dir);
+            float att = 0.0;
+            if (g_lightColorRange[i].w == 0.0){
+                att = 1.0;
+            } else if (dirLength < g_lightColorRange[i].w) {
+                att = pow(1.0 - (dirLength / g_lightColorRange[i].w), 1.5); // non physical range based attenuation
+            }
+            vLightDir[i] = vec4(dir / dirLength, att);
+        } else {
+            vLightDir[i] = vec4(0.0, 0.0, 0.0, 0.0);
+        }
+    }
 #ifdef S_VERTEX_COLOR
     vColor = color;
 #endif

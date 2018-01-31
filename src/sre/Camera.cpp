@@ -108,7 +108,7 @@ namespace sre {
         glm::vec3 translation;
         glm::vec3 skew;
         glm::vec4 perspective;
-        glm::decompose	(glm::inverse(viewTransform),
+        glm::decompose(glm::inverse(viewTransform),
                 scale,
                 orientation,
                 translation,
@@ -123,7 +123,7 @@ namespace sre {
         glm::vec3 translation;
         glm::vec3 skew;
         glm::vec4 perspective;
-        glm::decompose	(glm::inverse(viewTransform),
+        glm::decompose(glm::inverse(viewTransform),
                            scale,
                            orientation,
                            translation,

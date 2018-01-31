@@ -1,34 +1,21 @@
 uniform vec3 g_ambientLight;
-uniform vec4 g_lightPosType[SI_LIGHTS];
+in vec4 vLightDir[SI_LIGHTS];
+#ifdef GL_ES
+uniform highp vec4 g_lightColorRange[SI_LIGHTS];
+#else
 uniform vec4 g_lightColorRange[SI_LIGHTS];
+#endif
 uniform vec4 specularity;
 
 vec3 computeLight(vec3 wsPos, vec3 wsCameraPos, vec3 normal, out vec3 specularityOut){
     specularityOut = vec3(0.0, 0.0, 0.0);
     vec3 lightColor = vec3(0.0,0.0,0.0);
     for (int i=0;i<SI_LIGHTS;i++){
-        bool isDirectional = g_lightPosType[i].w == 0.0;
-        bool isPoint       = g_lightPosType[i].w == 1.0;
-        vec3 lightDirection;
-        float att = 1.0;
-        if (isDirectional){
-            lightDirection = g_lightPosType[i].xyz;
-        } else if (isPoint) {
-            vec3 lightVector = g_lightPosType[i].xyz - wsPos;
-            float lightVectorLength = length(lightVector);
-            float lightRange = g_lightColorRange[i].w;
-            lightDirection = lightVector / lightVectorLength; // compute normalized lightDirection (using length)
-            if (lightRange <= 0.0){
-                att = 1.0;
-            } else if (lightVectorLength >= lightRange){
-                att = 0.0;
-            } else {
-                att = pow(1.0 - lightVectorLength / lightRange,1.5); // non physical range based attenuation
-            }
-        } else {
+        float att = vLightDir[i].w;
+        if (att <= 0.0){
             continue;
         }
-
+        vec3 lightDirection = normalize(vLightDir[i].xyz);
         // diffuse light
         float thisDiffuse = max(0.0,dot(lightDirection, normal));
         if (thisDiffuse > 0.0){
@@ -37,11 +24,11 @@ vec3 computeLight(vec3 wsPos, vec3 wsCameraPos, vec3 normal, out vec3 specularit
 
         // specular light
         if (specularity.a > 0.0){
-            vec3 H = normalize(lightDirection - normalize(wsPos - wsCameraPos));
+            vec3 H = normalize(lightDirection + normalize(wsCameraPos - wsPos));
             float nDotHV = dot(normal, H);
             if (nDotHV > 0.0){
                 float pf = pow(nDotHV, specularity.a);
-                specularityOut += specularity.rgb*pf; // white specular highlights
+                specularityOut += specularity.rgb * pf * att; // white specular highlights
             }
         }
     }
