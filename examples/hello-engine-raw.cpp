@@ -6,11 +6,6 @@
 using namespace sre;
 using namespace std;
 
-void handleEvents(){
-    SDL_Event e; //Handle events on queue
-    while( SDL_PollEvent( &e ) != 0 )
-    {}
-}
 
 int main() {
     SDL_Window *window;
@@ -20,12 +15,13 @@ int main() {
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
     window = SDL_CreateWindow("Hello Engine",SDL_WINDOWPOS_UNDEFINED,SDL_WINDOWPOS_UNDEFINED,640,480,SDL_WINDOW_OPENGL);
     Renderer r{window};
-    handleEvents();
+    SDL_Event e;
+    while( SDL_PollEvent( &e ) != 0 ); // clear event queue
     RenderPass rp = RenderPass::create().build();
     rp.drawLines({{0,0,0},{1,1,1}});
     rp.finish();
     r.swapWindow();
-    handleEvents();
+    while( SDL_PollEvent( &e ) != 0 ); // clear event queue
     SDL_Delay(10000);
     SDL_DestroyWindow(window);
     SDL_Quit();

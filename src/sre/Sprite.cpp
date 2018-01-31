@@ -13,8 +13,10 @@
 #include "sre/Log.hpp"
 
 
-sre::Sprite::Sprite(glm::ivec2 spritePos, glm::ivec2 spriteSize, glm::vec2 spriteAnchor, Texture* texture)
-:spritePos(spritePos),spriteSize(spriteSize),spriteAnchor(spriteAnchor),texture(texture)
+sre::Sprite::Sprite(glm::ivec2 spritePos, glm::ivec2 spriteSize,glm::ivec2 spriteSourcePos,
+                    glm::ivec2 spriteSourceSize, glm::vec2  spriteAnchor, Texture* texture)
+:spritePos(spritePos),spriteSize(spriteSize),spriteSourcePos(spriteSourcePos),spriteSourceSize(spriteSourceSize),
+ spriteAnchor(spriteAnchor),texture(texture)
 {
     order.globalOrder = 0;
     order.details.texture = (uint32_t)texture->textureId;
@@ -91,6 +93,8 @@ const glm::vec2 &sre::Sprite::getSpriteAnchor() const {
 sre::Sprite::Sprite()
 :spritePos{0,0},
  spriteSize{0,0},
+ spriteSourcePos{0,0},
+ spriteSourceSize{0,0},
  spriteAnchor{0,0},
  texture{nullptr}
 {
@@ -104,6 +108,8 @@ sre::Sprite::Sprite(const Sprite &s)
          color(s.color),
          spritePos(s.spritePos),
          spriteSize(s.spriteSize),
+         spriteSourcePos(s.spriteSourcePos),
+         spriteSourceSize(s.spriteSourceSize),
          spriteAnchor(s.spriteAnchor),
          texture(s.texture)
 {
@@ -111,10 +117,10 @@ sre::Sprite::Sprite(const Sprite &s)
 }
 
 std::array<glm::vec2, 4> sre::Sprite::getTrimmedCorners() {
-    float x0 = 0 - spriteAnchor.x * spriteSize.x;
-    float x1 = spriteSize.x - spriteAnchor.x * spriteSize.x;
-    float y0 = 0 - spriteAnchor.y * spriteSize.y;
-    float y1 = spriteSize.y - spriteAnchor.y * spriteSize.y;
+    float x0 = spriteSourcePos.x - spriteAnchor.x * spriteSourceSize.x;
+    float x1 = x0 + spriteSize.x;
+    float y0 = spriteSourcePos.y - spriteAnchor.y * spriteSourceSize.y;
+    float y1 = y0 + spriteSize.y;
 
     std::array<glm::vec2, 4> res;
     res[0] = {x1,y0};

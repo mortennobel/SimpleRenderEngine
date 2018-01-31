@@ -139,8 +139,6 @@ private:
     WorldLights worldLights;
 };
 
-
-
 int main() {
     new GUIExample();
 

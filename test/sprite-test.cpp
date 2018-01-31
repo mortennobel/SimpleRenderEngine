@@ -43,11 +43,32 @@ public:
 
         atlas3 = SpriteAtlas::create("test_data/circle-slices-cropped.json","test_data/circle-slices-cropped.png");
 
+        circle = Mesh::create().withSphere(32,64,512/2).build();
+
+        quad = Mesh::create().withName("Tex mesh") .withPositions({{0,0,0}}).withUVs({{0,0,0,0}}).build();
+        material = Shader::create()
+                .withSourceFile("unlit_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("unlit_frag.glsl", ShaderType::Fragment)
+                .withBlend(BlendType::AlphaBlending)
+                .build()->createMaterial();
+        material2 = Shader::getUnlit()->createMaterial();
+        updateQuad(quad, atlas->getTexture());
+
         r.frameRender = [&](){
             render();
         };
 
         r.startEventLoop();
+    }
+
+    void updateQuad(std::shared_ptr<Mesh> mesh, std::shared_ptr<Texture> tex){
+        int w = tex->getWidth();
+        int h = tex->getHeight();
+        mesh->update()
+                .withPositions({{0,0,0},{w/2,0,0},{w/2,h/2,0},  {0,0,0}, {w/2,h/2,0}, {0,h/2,0}})
+                .withUVs({{0,0,0,0},{1,0,0,0},{1,1,0,0},  {0,0,0,0}, {1,1,0,0}, {0,1,0,0}})
+                .build();
+        material->setTexture(tex);
     }
 
     void render(){
@@ -60,7 +81,10 @@ public:
 
         static int selectedAtlas = 0;
         const char * atlasNames = "Sprite\0Sprite - nofilter\0circle\0";
-        ImGui::Combo("Atlas", &selectedAtlas,atlasNames);
+        if (ImGui::Combo("Atlas", &selectedAtlas,atlasNames)){
+            auto atlasPtr = selectedAtlas==0?atlas:(selectedAtlas==1?atlas2:atlas3);
+            updateQuad(quad, atlasPtr->getTexture());
+        }
 
         auto atlasPtr = selectedAtlas==0?atlas:(selectedAtlas==1?atlas2:atlas3);
 
@@ -79,7 +103,7 @@ public:
         auto sprite = atlasPtr->get(names.at(selectedSprite));
         static glm::vec4 color (1,1,1,1);
         static glm::vec2 scale(1,1);
-        static glm::vec2 position(100,300);
+        static glm::vec2 position(300,300);
         static float rotation = 0;
         static glm::bvec2 flip = {false,false};
         static bool inspectorEnabled = false;
@@ -103,16 +127,11 @@ public:
         sprite.setFlip(flip);
         sprite.setOrderInBatch(spriteIndex1);
 
-        auto sprite2 = atlas2->get(atlas2->getNames().at(selectedSprite%atlas2->getNames().size()));
 
-        sprite2.setColor(color);
-        sprite2.setScale(scale);
-        sprite2.setPosition(glm::vec2{300, 300});
-        sprite2.setRotation(rotation);
-        sprite2.setFlip(flip);
-        sprite2.setOrderInBatch(spriteIndex2);
 
-        std::vector<Sprite> sprites{{sprite,sprite2}};
+        renderPass.draw(circle,glm::translate(glm::vec3(position.x,position.y,0))*glm::scale(glm::vec3(1,1,1/1000.0)), material2);
+        //renderPass.draw(quad,glm::mat4(1), material);
+        std::vector<Sprite> sprites{{sprite}};
         auto sb = useAddSprites?
                   SpriteBatch::create()
                           .addSprites(sprites.begin(), sprites.end())
@@ -120,10 +139,9 @@ public:
                                :
                   SpriteBatch::create()
                 .addSprite(sprite)
-                .addSprite(sprite2)
                 .build();
-        renderPass.draw(sb);
 
+        renderPass.draw(sb);
 
         std::vector<glm::vec3> lines;
         auto spriteCorners = sprite.getTrimmedCorners();
@@ -143,6 +161,9 @@ private:
     std::shared_ptr<SpriteAtlas> atlas;
     std::shared_ptr<SpriteAtlas> atlas2;
     std::shared_ptr<SpriteAtlas> atlas3;
+    std::shared_ptr<Mesh> quad;
+    std::shared_ptr<Material> material;
+    std::shared_ptr<Material> material2;
     int spriteIndex1 = 0;
     int spriteIndex2 = 0;
     SDLRenderer r;
@@ -150,6 +171,8 @@ private:
     bool useSameAtlas = false;
     bool useAddSprites = false;
     std::shared_ptr<SpriteBatch> world;
+
+    std::shared_ptr<Mesh> circle;
 };
 
 int main() {
