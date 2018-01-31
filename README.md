@@ -12,8 +12,7 @@ sre provides:
  * Texture support (JPEG, PNG, Raw)
  * Cube map support
  * Mesh support (with custom vertex attributes)
- * Shaders (unlit, specular, alpha blending, and custom shaders)
- * Light and shading
+ * Shaders (PBR, Blinn-Phong, unlit, alpha blending, and custom shaders)
  * Enforces efficient use of OpenGL
  * Forward rendering
  * Full C++14 support
@@ -44,6 +43,8 @@ API documentation is defined in header files.
  
  * https://www.libsdl.org Simple Direct Layer 2.x 
  * https://www.libsdl.org/projects/SDL_image/ Simple Direct Layer Image 2.x
- * http://glm.g-truc.net/ OpenGL Mathematics
+ * http://glm.g-truc.net/ OpenGL Mathematics (bundled)
  * https://www.opengl.org/registry/ OpenGL Registry
- * https://github.com/ocornut/imgui ImGui 1.52
+ * https://github.com/ocornut/imgui ImGui 1.53 (bundled)
+ * https://github.com/BalazsJako/ImGuiColorTextEdit ImGuiColorTextEdit (bundled)
+ 

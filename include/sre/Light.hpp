@@ -10,6 +10,7 @@
 #include "glm/glm.hpp"
 #include "LightType.hpp"
 #include "sre/impl/CPPShim.hpp"
+#include "sre/Color.hpp"
 
 #include "sre/impl/Export.hpp"
 
@@ -22,10 +23,10 @@ namespace sre {
         class DllExport LightBuilder {
         public:
             ~LightBuilder();
-            LightBuilder& withPointLight(glm::vec3 position);           // Using point light with a worldspace position
-            LightBuilder& withDirectionalLight(glm::vec3 direction);    // Using directional light with a worldspace direction
-            LightBuilder& withColor(glm::vec3 color);                   // light color - note intensity can extend 1.0
-            LightBuilder& withRange(float range);                       // range only valid using point light
+            LightBuilder& withPointLight(glm::vec3 position);               // Using point light with a worldspace position
+            LightBuilder& withDirectionalLight(glm::vec3 direction);        // Using directional light with a worldspace direction
+            LightBuilder& withColor(Color color, float intensity = 1.0);// light color - note intensity can extend 1.0
+            LightBuilder& withRange(float range);                           // range only valid using point light
             Light build();
         private:
             LightBuilder();

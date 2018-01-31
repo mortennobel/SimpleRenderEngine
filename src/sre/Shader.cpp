@@ -7,81 +7,148 @@
 
 #include "sre/Shader.hpp"
 #include "sre/Material.hpp"
+#include "sre/impl/ShaderSource.inl"
 
-#include "sre/impl/GL.hpp"
-#include <iostream>
+#include <fstream>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/string_cast.hpp>
-#include <string>
 #include <regex>
-#include <vector>
-#include <map>
-#include <sstream>
-#include <utility>
 #include <sre/Log.hpp>
 #include "sre/Renderer.hpp"
-#include "sre/Texture.hpp"
+
+
+using namespace std;
 
 namespace sre {
     // anonymous (file local) namespace
     namespace {
         std::shared_ptr<Shader> standard;
+        std::shared_ptr<Shader> standardPhong;
         std::shared_ptr<Shader> unlit;
         std::shared_ptr<Shader> unlitSprite;
         std::shared_ptr<Shader> standardParticles;
 
-        void logCurrentCompileException(GLuint shader, GLenum type) {
+        long globalShaderCounter = 1;
+
+        const std::regex SPECIALIZATION_CONSTANT_PATTERN("(S_[A-Z_0-9]+)");
+
+        // From https://stackoverflow.com/a/8473603/420250
+        template <typename Map>
+        bool map_compare (Map const &lhs, Map const &rhs) {
+            // No predicate needed because there is operator== for pairs already.
+            return lhs.size() == rhs.size()
+                   && std::equal(lhs.begin(), lhs.end(),
+                                 rhs.begin());
+        }
+
+        template<typename Out>
+        void split(const std::string &s, char delim, Out result) {
+            std::stringstream ss(s);
+            std::string item;
+            while (std::getline(ss, item, delim)) {
+                *(result++) = item;
+            }
+        }
+
+        std::vector<std::string> split(const std::string &s, char delim) {
+            std::vector<std::string> elems;
+            split(s, delim, std::back_inserter(elems));
+            return elems;
+        }
+
+        // from http://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring
+        string getFileContents(string filename)
+        {
+            ifstream in{filename, ios::in | ios::binary};
+            if (in && in.is_open())
+            {
+                std::string contents;
+                in.seekg(0, std::ios::end);
+                auto size = in.tellg();
+                if (size>0){
+                    contents.resize((string::size_type)size);
+                    in.seekg(0, std::ios::beg);
+                    in.read(&contents[0], contents.size());
+                }
+                in.close();
+                return contents;
+            }
+            auto res = builtInShaderSource.find(filename);
+            if (res != builtInShaderSource.end()){
+                return res->second;
+            }
+            LOG_ERROR("Cannot find shader source %s", filename.c_str());
+            return "";
+        }
+
+        std::string pragmaInclude(std::string source, std::vector<std::string>& errors, uint32_t shaderType){
+            if (source.find("#pragma include")==-1) {
+                return source;
+            }
+            std::stringstream sstream;
+
+            std::regex e ( R"_(#pragma\s+include\s+"([^"]*)")_", std::regex::ECMAScript);
+            int lineNumber = 0;
+            std::vector<std::string> lines = split(source, '\n');
+            for (auto& s : lines)
+            {
+                lineNumber++;
+
+                std::smatch m;
+                if (std::regex_search (s,m,e)) {
+                    std::string match = m[1];
+                    auto res = getFileContents(match);
+                    if (res == ""){
+                        errors.push_back(std::string("0:")+std::to_string(lineNumber)+" cannot find include file "+match+"##"+std::to_string(shaderType));
+                        sstream << s << "\n";
+                    } else {
+                        sstream << res << "\n";
+                        sstream << "#line "<<lineNumber << "\n";
+                    }
+                } else {
+                    sstream << s << "\n";
+                }
+            }
+            return sstream.str();
+        }
+
+        void logCurrentCompileInfo(GLuint &shader, GLenum type, vector<string> &errors, std::string source) {
             GLint logSize = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
+            if (logSize > 0){
+                std::vector<char> errorLog((unsigned long) logSize);
+                glGetShaderInfoLog(shader, logSize, &logSize, errorLog.data());
 
-            std::vector<char> errorLog((unsigned long) logSize);
-            glGetShaderInfoLog(shader, logSize, &logSize, errorLog.data());
-
-            std::string typeStr;
-            switch (type){
-                case GL_FRAGMENT_SHADER:
-                    typeStr = "Fragment shader";
-                    break;
-                case GL_VERTEX_SHADER:
-                    typeStr = "Vertex shader";
-                    break;
-#ifndef EMSCRIPTEN
-                case GL_GEOMETRY_SHADER:
-                    typeStr = "Geometry shader";
-                    break;
-                case GL_TESS_CONTROL_SHADER:
-                    typeStr = "Tessellation control shader";
-                    break;
-                case GL_TESS_EVALUATION_SHADER:
-                    typeStr = "Tessellation eval shader";
-                    break;
-#endif
-                default:
-                    typeStr = std::string("Unknown error type: ") + std::to_string(type);
-                    break;
+                std::string typeStr;
+                switch (type){
+                    case GL_FRAGMENT_SHADER:
+                        typeStr = "Fragment shader";
+                        break;
+                    case GL_VERTEX_SHADER:
+                        typeStr = "Vertex shader";
+                        break;
+    #ifndef EMSCRIPTEN
+                    case GL_GEOMETRY_SHADER:
+                        typeStr = "Geometry shader";
+                        break;
+                    case GL_TESS_CONTROL_SHADER:
+                        typeStr = "Tessellation control shader";
+                        break;
+                    case GL_TESS_EVALUATION_SHADER:
+                        typeStr = "Tessellation eval shader";
+                        break;
+    #endif
+                    default:
+                        typeStr = std::string("Unknown error type: ") + std::to_string(type);
+                        break;
+                }
+                LOG_ERROR("Shader compile error in %s: %s", typeStr.c_str(), errorLog.data());
+                errors.push_back(std::string(errorLog.data())+"##"+std::to_string(type));
+                glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
             }
-            LOG_ERROR("Shader compile error in %s: %s",typeStr.c_str() ,errorLog.data());
         }
 
-        bool compileShader(std::string& source, GLenum type, GLuint& shader){
-#ifdef EMSCRIPTEN
-            source = Shader::translateToGLSLES(source, type==GL_VERTEX_SHADER);
-#endif
-            shader = glCreateShader(type);
-            auto stringPtr = source.c_str();
-            GLint length = (GLint)strlen(stringPtr);
-            glShaderSource(shader, 1, &stringPtr, &length);
-            glCompileShader(shader);
-            GLint success = 0;
-            glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-            if (success == GL_FALSE){
-                logCurrentCompileException(shader, type);
-                return false;
-            }
-            return true;
-        }
-
-        bool linkProgram(GLuint mShaderProgram){
+        bool linkProgram(GLuint mShaderProgram, std::vector<std::string>& errors){
 #ifndef EMSCRIPTEN
             glBindFragDataLocation(mShaderProgram, 0, "fragColor");
 #endif
@@ -93,7 +160,8 @@ namespace sre {
                 GLint  logSize;
                 glGetProgramiv(mShaderProgram, GL_INFO_LOG_LENGTH, &logSize);
                 std::vector<char> errorLog((size_t) logSize);
-                glGetProgramInfoLog(mShaderProgram, logSize, NULL, errorLog.data() );
+                glGetProgramInfoLog(mShaderProgram, logSize, nullptr, errorLog.data() );
+                errors.emplace_back(errorLog.data());
                 LOG_ERROR("Shader linker error: %s",errorLog.data());
                 return false;
             }
@@ -141,25 +209,36 @@ namespace sre {
     }
 
     std::shared_ptr<Shader> Shader::ShaderBuilder::build() {
-        for (auto& e : shaderSources){
-            e.second = std::regex_replace(e.second, std::regex("SCENE_LIGHTS"), std::to_string(Renderer::maxSceneLights));
-        }
+        std::vector<std::string> errors;
+        return build(errors);
+    }
 
-        if (name.length()==0){
-            name = "Unnamed shader";
+    std::shared_ptr<Shader> Shader::ShaderBuilder::build(std::vector<std::string>& errors) {
+        std::shared_ptr<Shader> shader;
+        if (updateShader){
+            shader = updateShader->shared_from_this();
+        } else {
+            if (name.length()==0){
+                name = "Unnamed shader";
+            }
+            shader = std::shared_ptr<Shader>(new Shader());
+            shader->specializationConstants = this->specializationConstants;
         }
-        auto res = new Shader();
-        bool compileSuccess = res->build(shaderSources);
+        bool compileSuccess = shader->build(shaderSources, errors);
         if (!compileSuccess){
-            delete res;
-            return std::shared_ptr<Shader>();
+            if (!updateShader) {
+                shader.reset();
+            }
+            return shader;
         }
-        res->depthTest = this->depthTest;
-        res->depthWrite = this->depthWrite;
-        res->blend = this->blend;
-        res->name = this->name;
-        res->offset = this->offset;
-        return std::shared_ptr<Shader>(res);
+        shader->depthTest = this->depthTest;
+        shader->depthWrite = this->depthWrite;
+        shader->blend = this->blend;
+        shader->name = this->name;
+        shader->offset = this->offset;
+        shader->shaderSources = this->shaderSources;
+        shader->shaderUniqueId = globalShaderCounter++;
+        return std::shared_ptr<Shader>(shader);
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withName(const std::string& name) {
@@ -172,12 +251,19 @@ namespace sre {
         return *this;
     }
 
-    Shader::ShaderBuilder & Shader::ShaderBuilder::withSourceString(const std::string &shaderSource, ShaderType shaderSources) {
-        this->shaderSources[shaderSources] = shaderSource;
+    Shader::ShaderBuilder & Shader::ShaderBuilder::withSourceString(const std::string &shaderSource, ShaderType shaderType) {
+        this->shaderSources[shaderType] = {
+            ResourceType::Memory,
+            shaderSource
+        };
         return *this;
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceFile(const std::string &shaderFile, ShaderType shaderType) {
+        this->shaderSources[shaderType] = {
+            ResourceType::File,
+            shaderFile
+        };
         return *this;
     }
 
@@ -187,7 +273,8 @@ namespace sre {
         string replace = "#version 140";
         string replaceWith = vertexShader?"#version 100":"#version 100\n#ifdef GL_ES\n"
                 "precision mediump float;\n"
-                "#endif";
+                "#endif\n"
+                "#line 2";
         size_t f = source.find(replace);
         source = source.replace(f, replace.length(), replaceWith);
 
@@ -213,11 +300,10 @@ namespace sre {
         for (std::string line; std::getline(iss, line); )
         {
             regex_search(line, match, regExpSearchShim1);
-            if (match.size() > 0){
+            if (!match.empty()){
                 string samplerType = match[1].str();
                 string samplerName = match[2].str();
                 textureType[samplerName] = samplerType;
-
             }
         }
 
@@ -232,11 +318,13 @@ namespace sre {
         uniformLocationModel = -1;
         uniformLocationView = -1;
         uniformLocationProjection = -1;
-        uniformLocationNormal = -1;
+        uniformLocationModelViewInverseTranspose = -1;
+		uniformLocationModelInverseTranspose = -1;
         uniformLocationViewport = -1;
         uniformLocationAmbientLight = -1;
         uniformLocationLightPosType = -1;
         uniformLocationLightColorRange = -1;
+        uniformLocationCameraPosition = -1;
         uniforms.clear();
         GLint uniformCount;
         glGetProgramiv(shaderProgramId,GL_ACTIVE_UNIFORMS,&uniformCount);
@@ -279,7 +367,6 @@ namespace sre {
                 case GL_SAMPLER_CUBE:
                     uniformType = UniformType::TextureCube;
                     break;
-
                 default:
                 LOG_ERROR("Unsupported shader type %s name %s",type,name);
             }
@@ -319,18 +406,25 @@ namespace sre {
                         LOG_ERROR("Invalid g_projection uniform type. Expected mat4 - was %s.",c_str(uniformType));
                     }
                 }
-                if (strcmp(name, "g_normal")==0){
+                if (strcmp(name, "g_model_it")==0){
                     if (uniformType == UniformType::Mat3){
-                        uniformLocationNormal = location;
+                        uniformLocationModelInverseTranspose = location;
                     } else {
-                        LOG_ERROR("Invalid g_normal uniform type. Expected mat3 - was %s.",c_str(uniformType));
+                        LOG_ERROR("Invalid g_model_it uniform type. Expected mat3 - was %s.",c_str(uniformType));
+                    }
+                }
+                if (strcmp(name, "g_model_view_it")==0){
+                    if (uniformType == UniformType::Mat3){
+                        uniformLocationModelViewInverseTranspose = location;
+                    } else {
+                        LOG_ERROR("Invalid g_model_view_it uniform type. Expected mat3 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_viewport")==0){
                     if (uniformType == UniformType::Vec4){
                         uniformLocationViewport = location;
                     } else {
-                        LOG_ERROR("Invalid g_normal uniform type. Expected vec4 - was %s.",c_str(uniformType));
+                        LOG_ERROR("Invalid g_viewport uniform type. Expected vec4 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_ambientLight")==0){
@@ -341,19 +435,27 @@ namespace sre {
                     }
                 }
                 if (strcmp(name, "g_lightPosType")==0){
-                    if (uniformType == UniformType::Vec4 && size == Renderer::maxSceneLights){
+                    if (uniformType == UniformType::Vec4 && size == Renderer::instance->maxSceneLights){
                         uniformLocationLightPosType = location;
                     } else {
                         LOG_ERROR("Invalid g_lightPosType uniform type. Expected vec4[Renderer::maxSceneLights] - was %s[%i].",c_str(uniformType),size);
                     }
                 }
                 if (strcmp(name, "g_lightColorRange")==0){
-                    if (uniformType == UniformType::Vec4 && size == Renderer::maxSceneLights){
+                    if (uniformType == UniformType::Vec4 && size == Renderer::instance->maxSceneLights){
                         uniformLocationLightColorRange = location;
                     } else {
                         LOG_ERROR("Invalid g_lightPosType uniform type. Expected vec4[Renderer::maxSceneLights] - was %s[%i].",c_str(uniformType),size);
                     }
                 }
+                if (strcmp(name, "g_cameraPos")==0){
+                    if (uniformType == UniformType::Vec4){
+                        uniformLocationCameraPosition = location;
+                    } else {
+                        LOG_ERROR("Invalid g_cameraPos uniform type. Expected vec4 - was %s[%i].",c_str(uniformType),size);
+                    }
+                }
+
             }
         }
 
@@ -384,7 +486,6 @@ namespace sre {
         if (! Renderer::instance ){
             LOG_FATAL("Cannot instantiate sre::Shader before sre::Renderer is created.");
         }
-        shaderProgramId = glCreateProgram();
         Renderer::instance->renderStats.shaderCount++;
 
         Renderer::instance->shaders.emplace_back(this);
@@ -401,24 +502,23 @@ namespace sre {
         }
     }
 
-    bool Shader::setLights(WorldLights* worldLights, glm::mat4 viewTransform){
-        if (worldLights==nullptr){
+    bool Shader::setLights(WorldLights* worldLights){
+        int maxSceneLights = Renderer::instance->maxSceneLights;
+        if (worldLights == nullptr){
             glUniform4f(uniformLocationAmbientLight, 0,0,0,0);
-            static float noLight[Renderer::maxSceneLights*4];
-            for (int i=0;i<Renderer::maxSceneLights*4;i++){
-                noLight[i] = 0;
-            }
-            glUniform4fv(uniformLocationLightPosType, Renderer::maxSceneLights, noLight);
-            glUniform4fv(uniformLocationLightColorRange, Renderer::maxSceneLights, noLight);
+            const int vec4Elements = 4;
+			std::vector<float> noLight(maxSceneLights * vec4Elements, 0.0f);
+            glUniform4fv(uniformLocationLightPosType, maxSceneLights, noLight.data());
+            glUniform4fv(uniformLocationLightColorRange, maxSceneLights, noLight.data());
             return false;
         }
         if (uniformLocationAmbientLight != -1) {
             glUniform3fv(uniformLocationAmbientLight, 1, glm::value_ptr(worldLights->ambientLight));
         }
         if (uniformLocationLightPosType != -1 && uniformLocationLightColorRange != -1){
-            glm::vec4 lightPosType[Renderer::maxSceneLights];
-            glm::vec4 lightColorRange[Renderer::maxSceneLights];
-            for (int i=0;i<Renderer::maxSceneLights;i++){
+			std::vector<glm::vec4> lightPosType(maxSceneLights, glm::vec4(0));
+			std::vector<glm::vec4> lightColorRange(maxSceneLights, glm::vec4(0));
+            for (int i=0;i<maxSceneLights;i++){
                 auto light = worldLights->getLight(i);
                 if (light == nullptr || light->lightType == LightType::Unused) {
                     lightPosType[i] = glm::vec4(0.0f,0.0f,0.0f, 2);
@@ -426,18 +526,18 @@ namespace sre {
                 } else if (light->lightType == LightType::Point) {
                     lightPosType[i] = glm::vec4(light->position, 1);
                 } else if (light->lightType == LightType::Directional) {
-                    lightPosType[i] = glm::vec4(light->direction, 0);
+                    lightPosType[i] = glm::vec4(glm::normalize(light->direction), 0);
                 }
                 // transform to eye space
-                lightPosType[i] = viewTransform * lightPosType[i];
+                lightPosType[i] = lightPosType[i];
                 lightColorRange[i] = glm::vec4(light->color, light->range);
 
             }
             if (uniformLocationLightPosType != -1) {
-                glUniform4fv(uniformLocationLightPosType, Renderer::maxSceneLights, glm::value_ptr(lightPosType[0]));
+                glUniform4fv(uniformLocationLightPosType, maxSceneLights, glm::value_ptr(lightPosType[0]));
             }
             if (uniformLocationLightColorRange != -1) {
-                glUniform4fv(uniformLocationLightColorRange, Renderer::maxSceneLights, glm::value_ptr(lightColorRange[0]));
+                glUniform4fv(uniformLocationLightColorRange, maxSceneLights, glm::value_ptr(lightColorRange[0]));
             }
         }
         return true;
@@ -502,7 +602,8 @@ namespace sre {
         }
 
         unlit = create()
-                .withSourceUnlit()
+                .withSourceFile("unlit_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("unlit_frag.glsl", ShaderType::Fragment)
                 .withName("Unlit")
                 .build();
         return unlit;
@@ -514,7 +615,8 @@ namespace sre {
         }
 
         unlitSprite =  create()
-                .withSourceUnlitSprite()
+                .withSourceFile("sprite_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("sprite_frag.glsl", ShaderType::Fragment)
                 .withBlend(BlendType::AlphaBlending)
                 .withDepthTest(false)
                 .withName("Unlit Sprite")
@@ -522,12 +624,17 @@ namespace sre {
         return unlitSprite;
     }
 
-    std::shared_ptr<Shader> Shader::getStandard() {
+    std::shared_ptr<Shader> Shader::getStandard(){
+        return getStandardBlinnPhong();
+    }
+
+    std::shared_ptr<Shader> Shader::getStandardPBR(){
         if (standard != nullptr){
             return standard;
         }
         standard = create()
-                .withSourceStandard()
+                .withSourceFile("standard_pbr_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("standard_pbr_frag.glsl", ShaderType::Fragment)
                 .withName("Standard")
                 .build();
         return standard;
@@ -545,13 +652,17 @@ namespace sre {
 		return u;
     }
 
+    // The particle size used in this shader depends on the height of the screensize (to make the particles resolution independent):
+    // for perspective projection, the size of particles are defined in screenspace size at the distance of 1.0 on a viewport of height 600.
+    // for orthographic projection, the size of particles are defined in screenspace size on a viewport of height 600.
     std::shared_ptr<Shader> Shader::getStandardParticles() {
         if (standardParticles != nullptr){
             return standardParticles;
         }
 
         standardParticles = create()
-                .withSourceStandardParticles()
+                .withSourceFile("particles_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("particles_frag.glsl", ShaderType::Fragment)
                 .withBlend(BlendType::AdditiveBlending)
                 .withDepthWrite(false)
                 .withName("Standard Particles")
@@ -563,46 +674,34 @@ namespace sre {
         return Shader::ShaderBuilder();
     }
 
-    bool Shader::build(std::map<ShaderType,std::string> shaderSources) {
+    bool Shader::build(std::map<ShaderType,Resource> shaderSources, std::vector<std::string>& errors) {
+        unsigned int oldShaderProgramId = shaderProgramId;
+        shaderProgramId = glCreateProgram();
+        assert(shaderProgramId != 0);
         for (ShaderType i=ShaderType::Vertex;i<ShaderType::NumberOfShaderTypes;i = (ShaderType )((int)i+1)) {
             auto shaderSourcesIter = shaderSources.find(i);
             if (shaderSourcesIter!=shaderSources.end()){
                 GLuint s;
-                GLenum shader;
-                switch (i){
-                    case ShaderType::Vertex:
-                        shader = GL_VERTEX_SHADER;
-                        break;
-                    case ShaderType::Fragment:
-                        shader = GL_FRAGMENT_SHADER;
-                        break;
-#ifndef EMSCRIPTEN
-                    case ShaderType::Geometry:
-                        shader = GL_GEOMETRY_SHADER;
-                        break;
-                    case ShaderType::TessellationEvaluation:
-                        shader = GL_TESS_EVALUATION_SHADER ;
-                        break;
-                    case ShaderType::TessellationControl:
-                        shader = GL_TESS_CONTROL_SHADER;
-                        break;
-#endif
-                    default:
-                        LOG_ERROR("Invalid shader type. Was %d",(int)i);
-                        break;
-                }
+                GLenum shader = to_id(i);
 
-                bool res = compileShader(shaderSourcesIter->second, shader, s);
+                bool res = compileShader(shaderSourcesIter->second, shader, s, errors);
                 if (!res){
+                    glDeleteProgram( shaderProgramId );
+                    shaderProgramId = oldShaderProgramId;
                     return false;
                 }
                 glAttachShader(shaderProgramId,  s);
             }
         }
 
-        bool linked = linkProgram(shaderProgramId);
+        bool linked = linkProgram(shaderProgramId, errors);
         if (!linked){
+            glDeleteProgram( shaderProgramId );
+            shaderProgramId = oldShaderProgramId;
             return false;
+        }
+        if (oldShaderProgramId != 0){
+            glDeleteProgram( oldShaderProgramId );
         }
         updateUniformsAndAttributes();
         return true;
@@ -650,12 +749,64 @@ namespace sre {
         return valid;
     }
 
-    std::shared_ptr<Material> Shader::createMaterial() {
+    std::shared_ptr<Material> Shader::createMaterial(std::map<std::string,std::string> specializationConstants) {
+        if (parent){
+            return parent->createMaterial(std::move(specializationConstants));
+        }
+        if (!specializationConstants.empty()){
+            for (auto & s : specializations){
+                if (auto ptr = s.lock()){
+                    if (map_compare(specializationConstants, ptr->specializationConstants)){
+                        return std::shared_ptr<Material>(new Material(ptr));
+                    }
+                }
+            }
+            // no specialization shader found
+            auto res =  Shader::ShaderBuilder();
+            res.depthTest = this->depthTest;
+            res.depthWrite = this->depthWrite;
+            res.blend = this->blend;
+            res.name = this->name;
+            res.offset = this->offset;
+            res.shaderSources = this->shaderSources;
+            res.specializationConstants = specializationConstants;
+            auto specializedShader = res.build();
+            if (specializedShader == nullptr){
+                LOG_WARNING("Cannot create specialized shader. Using shader without specialization.");
+                return std::shared_ptr<Material>(new Material(shared_from_this()));
+            }
+            specializedShader->parent = shared_from_this();
+            specializations.push_back(std::weak_ptr<Shader>(specializedShader));
+            return std::shared_ptr<Material>(new Material(specializedShader));
+        }
         return std::shared_ptr<Material>(new Material(shared_from_this()));
     }
 
     const std::string& Shader::getName() {
         return name;
+    }
+
+    std::string Shader::getSource(Shader::Resource &resource) {
+        std::string source = resource.value;
+        if (resource.resourceType==ResourceType::File){
+            source = getFileContents(source);
+        }
+        return source;
+    }
+
+    bool Shader::compileShader(Resource& resource, GLenum type, GLuint& shader, std::vector<std::string>& errors){
+        auto source = getSource(resource);
+        std::string source_ = precompile(source, errors, type);
+        shader = glCreateShader(type);
+        auto stringPtr = source_.c_str();
+        auto length = (GLint)strlen(stringPtr);
+        glShaderSource(shader, 1, &stringPtr, &length);
+        glCompileShader(shader);
+        GLint success = 0;
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+        logCurrentCompileInfo(shader, type, errors, source_);
+
+        return success == 1;
     }
 
     std::pair<int, int> Shader::getAttibuteType(const std::string &name) {
@@ -667,6 +818,64 @@ namespace sre {
         return offset;
     }
 
+    std::string Shader::precompile(std::string source, std::vector<std::string>& errors, uint32_t shaderType) {
+        // Replace includes with content
+        // for each occurrence of #pragma include replace with substitute
+        source = pragmaInclude(source, errors, shaderType);
+
+        // Insert preprocessor define symbols
+        source = insertPreprocessorDefines(source, specializationConstants, shaderType);
+
+#ifdef EMSCRIPTEN
+        source = Shader::translateToGLSLES(source, shaderType==GL_VERTEX_SHADER);
+#endif
+        return source;
+    }
+
+    Shader::ShaderBuilder Shader::update() {
+        auto res =  Shader::ShaderBuilder(this);
+        res.depthTest = this->depthTest;
+        res.depthWrite = this->depthWrite;
+        res.blend = this->blend;
+        res.name = this->name;
+        res.offset = this->offset;
+        res.shaderSources = this->shaderSources;
+        return res;
+    }
+
+    std::map<std::string,std::string> Shader::getCurrentSpecializationConstants() {
+        return specializationConstants;
+    }
+
+    std::set<std::string> Shader::getAllSpecializationConstants() {
+        if (parent){
+            return parent->getAllSpecializationConstants();
+        }
+        std::set<string> res;
+        for (auto& source : shaderSources){
+            string s = getSource(source.second);
+            std::smatch m;
+            while (std::regex_search(s, m, SPECIALIZATION_CONSTANT_PATTERN)) {
+                std::string match = m.str();
+                res.insert(match);
+                s = m.suffix();
+            }
+        }
+        return res;
+    }
+
+    std::shared_ptr<Shader> Shader::getStandardBlinnPhong() {
+        if (standardPhong != nullptr){
+            return standardPhong;
+        }
+        standardPhong = create()
+                .withSourceFile("standard_blinn_phong_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("standard_blinn_phong_frag.glsl", ShaderType::Fragment)
+                .withName("StandardBlinnPhong")
+                .build();
+        return standardPhong;
+    }
+
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSource(const std::string& vertexShader, const std::string& fragmentShader) {
         withSourceString(vertexShader, ShaderType::Vertex);
         withSourceString(fragmentShader, ShaderType::Fragment);
@@ -674,311 +883,97 @@ namespace sre {
         return *this;
     }
 
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceStandard() {
-
-        auto vertexShaderStr = R"(#version 140
-in vec3 position;
-in vec3 normal;
-in vec4 uv;
-out vec3 vNormal;
-out vec2 vUV;
-out vec3 vEyePos;
-
-uniform mat4 g_model;
-uniform mat4 g_view;
-uniform mat4 g_projection;
-uniform mat3 g_normal;
-
-void main(void) {
-    vec4 eyePos = g_view * g_model * vec4(position,1.0);
-    gl_Position = g_projection * eyePos;
-    vNormal = normalize(g_normal * normal);
-    vUV = uv.xy;
-    vEyePos = eyePos.xyz;
-}
-)";
-        auto fragmentShaderStr = R"(#version 140
-out vec4 fragColor;
-in vec3 vNormal;
-in vec2 vUV;
-in vec3 vEyePos;
-
-uniform vec3 g_ambientLight;
-uniform vec4 color;
-uniform sampler2D tex;
-
-uniform vec4 g_lightPosType[SCENE_LIGHTS];
-uniform vec4 g_lightColorRange[SCENE_LIGHTS];
-uniform float specularity;
-
-vec3 computeLight(){
-    vec3 lightColor = vec3(0.0,0.0,0.0);
-    vec3 normal = normalize(vNormal);
-    for (int i=0;i<SCENE_LIGHTS;i++){
-        bool isDirectional = g_lightPosType[i].w == 0.0;
-        bool isPoint       = g_lightPosType[i].w == 1.0;
-        vec3 lightDirection;
-        float att = 1.0;
-        if (isDirectional){
-            lightDirection = g_lightPosType[i].xyz;
-        } else if (isPoint) {
-            vec3 lightVector = g_lightPosType[i].xyz - vEyePos;
-            float lightVectorLength = length(lightVector);
-            float lightRange = g_lightColorRange[i].w;
-            lightDirection = lightVector / lightVectorLength; // compute normalized lightDirection (using length)
-            if (lightRange <= 0.0){
-                att = 1.0;
-            } else if (lightVectorLength >= lightRange){
-                att = 0.0;
-            } else {
-                att = pow(1.0 - lightVectorLength / lightRange,1.5); // non physical range based attenuation
-            }
-        } else {
-            continue;
-        }
-
-        // diffuse light
-        float thisDiffuse = max(0.0,dot(lightDirection, normal));
-        if (thisDiffuse > 0.0){
-           lightColor += (att * thisDiffuse) * g_lightColorRange[i].xyz;
-        }
-
-        // specular light
-        if (specularity > 0.0){
-            vec3 H = normalize(lightDirection - normalize(vEyePos));
-            float nDotHV = dot(normal, H);
-            if (nDotHV > 0.0){
-                float pf = pow(nDotHV, specularity);
-                lightColor += vec3(att * pf); // white specular highlights
-            }
-        }
-    }
-    lightColor = max(g_ambientLight.xyz, lightColor);
-
-    return lightColor;
-}
-
-void main(void)
-{
-    vec4 c = color * texture(tex, vUV);
-
-    vec3 l = computeLight();
-
-    fragColor = c * vec4(l, 1.0);
-}
-)";
-        withSourceString(vertexShaderStr, ShaderType::Vertex);
-        withSourceString(fragmentShaderStr, ShaderType::Fragment);
-        return *this;
+    Shader::ShaderBuilder::ShaderBuilder(Shader *shader)
+    :updateShader(shader)
+    {
     }
 
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceUnlit() {
-        auto vertexShaderStr = R"(#version 140
-in vec3 position;
-in vec3 normal;
-in vec4 uv;
-out vec2 vUV;
+    std::string Shader::insertPreprocessorDefines(std::string source,
+                                          std::map<std::string, std::string> &specializationConstants,
+                                          uint32_t shaderType){
+        stringstream ss;
 
-uniform mat4 g_model;
-uniform mat4 g_view;
-uniform mat4 g_projection;
-
-void main(void) {
-    gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
-    vUV = uv.xy;
-}
-)";
-        auto fragmentShaderStr = R"(#version 140
-out vec4 fragColor;
-in vec2 vUV;
-
-uniform vec4 color;
-uniform sampler2D tex;
-
-void main(void)
-{
-    fragColor = color * texture(tex, vUV);
-}
-)";
-        withSourceString(vertexShaderStr, ShaderType::Vertex);
-        withSourceString(fragmentShaderStr, ShaderType::Fragment);
-
-        return *this;
-    }
-
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceUnlitSprite() {
-        auto vertexShaderStr = R"(#version 140
-        in vec3 position;
-        in vec4 uv;
-        in vec4 color;
-        out vec2 vUV;
-        out vec4 vColor;
-
-        uniform mat4 g_model;
-        uniform mat4 g_view;
-        uniform mat4 g_projection;
-
-        void main(void) {
-            gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
-            vUV = uv.xy;
-            vColor = color;
-        }
-        )";
-        auto fragmentShaderStr = R"(#version 140
-        out vec4 fragColor;
-        in vec2 vUV;
-        in vec4 vColor;
-
-        uniform sampler2D tex;
-
-        void main(void)
-        {
-            fragColor = vColor * texture(tex, vUV);
-        }
-        )";
-
-        withSourceString(vertexShaderStr, ShaderType::Vertex);
-        withSourceString(fragmentShaderStr, ShaderType::Fragment);
-
-        return *this;
-    }
-
-    // The particle size used in this shader depends on the height of the screensize (to make the particles resolution independent):
-    // for perspective projection, the size of particles are defined in screenspace size at the distance of 1.0 on a viewport of height 600.
-    // for orthographic projection, the size of particles are defined in screenspace size on a viewport of height 600.
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceStandardParticles() {
-        auto vertexShaderStr = R"(#version 140
-in vec3 position;
-in float particleSize;
-in vec4 uv;
-in vec4 color;
-out mat3 vUVMat;
-out vec4 vColor;
-out vec3 uvSize;
-
-uniform mat4 g_model;
-uniform mat4 g_view;
-uniform mat4 g_projection;
-uniform vec4 g_viewport;
-
-mat3 translate(vec2 p){
- return mat3(1.0,0.0,0.0,0.0,1.0,0.0,p.x,p.y,1.0);
-}
-
-mat3 rotate(float rad){
-  float s = sin(rad);
-  float c = cos(rad);
- return mat3(c,s,0.0,-s,c,0.0,0.0,0.0,1.0);
-}
-
-mat3 scale(float s){
-  return mat3(s,0.0,0.0,0.0,s,0.0,0.0,0.0,1.0);
-}
-
-void main(void) {
-    vec4 pos = vec4( position, 1.0);
-    vec4 eyeSpacePos = g_view * g_model * pos;
-    gl_Position = g_projection * eyeSpacePos;
-    if (g_projection[2][3] != 0.0){ // if perspective projection
-        gl_PointSize = (g_viewport.y / 600.0) * particleSize * 1.0 / -eyeSpacePos.z;
-    } else {
-        gl_PointSize = particleSize*(g_viewport.y / 600.0);
-    }
-
-    vUVMat = translate(uv.xy)*scale(uv.z) * translate(vec2(0.5,0.5))*rotate(uv.w) * translate(vec2(-0.5,-0.5));
-    vColor = color;
-    uvSize = uv.xyz;
-}
-)";
-        auto fragmentShaderStr = R"(#version 140
-out vec4 fragColor;
-in mat3 vUVMat;
-in vec3 uvSize;
-in vec4 vColor;
-#ifdef GL_ES
-uniform precision highp vec4 g_viewport;
-else
-uniform vec4 g_viewport;
+        ss<<"#define SI_LIGHTS "<<Renderer::instance->maxSceneLights<<"\n";
+        // add shader type
+        switch (shaderType){
+            case GL_FRAGMENT_SHADER:
+                ss<<"#define SI_FRAGMENT 1\n";
+                break;
+            case GL_VERTEX_SHADER:
+                ss<<"#define SI_VERTEX 1\n";
+                break;
+#ifndef EMSCRIPTEN
+            case GL_GEOMETRY_SHADER:
+                ss<<"#define SI_GEOMETRY 1\n";
+                break;
+            case GL_TESS_CONTROL_SHADER:
+                ss<<"#define SI_TESS_CTRL 1\n";
+                break;
+            case GL_TESS_EVALUATION_SHADER:
+                ss<<"#define SI_TESS_EVAL 1\n";
+                break;
 #endif
+            default:
+                LOG_WARNING("Unknown shader type");
+                break;
+        }
+        for (auto & sc : specializationConstants){
+            ss<<"#define "<<sc.first<<" "<<sc.second<<"\n";
+        }
 
+        if (Renderer::instance->getRenderInfo().useFramebufferSRGB){
+            ss<<"#define SI_FRAMEBUFFER_SRGB 1\n";
+        }
+        if (Renderer::instance->getRenderInfo().supportTextureSamplerSRGB){
+            ss<<"#define SI_TEX_SAMPLER_SRGB 1\n";
+        }
 
-uniform sampler2D tex;
-
-void main(void)
-{
-    vec2 uv = (vUVMat * vec3(gl_PointCoord,1.0)).xy;
-
-    if (uv != clamp(uv, uvSize.xy, uvSize.xy + uvSize.zz)){
-        discard;
-    }
-    vec4 c = vColor * texture(tex, uv);
-    fragColor = c;
-}
-)";
-        withSourceString(vertexShaderStr, ShaderType::Vertex);
-        withSourceString(fragmentShaderStr, ShaderType::Fragment);
-
-        return *this;
-    }
-
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceDebugUV() {
-        auto vertexShaderStr = R"(#version 140
-in vec3 position;
-in vec4 uv;
-out vec2 vUV;
-
-uniform mat4 g_model;
-uniform mat4 g_view;
-uniform mat4 g_projection;
-
-void main(void) {
-    gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
-    vUV = uv.xy;
-}
-)";
-        auto fragmentShaderStr = R"(#version 140
-in vec2 vUV;
-out vec4 fragColor;
-
-void main(void)
-{
-    fragColor = vec4(vUV,0.0,1.0);
-}
-)";
-        withSourceString(vertexShaderStr, ShaderType::Vertex);
-        withSourceString(fragmentShaderStr, ShaderType::Fragment);
-
-        return *this;
+        // If the shader contains any #version or #extension statements, the defines are added after them.
+        auto version = static_cast<int>(source.rfind("#version"));
+        auto extension = static_cast<int>(source.rfind("#extension"));
+        auto last = std::max(version, extension);
+        if (last == -1){
+            ss << "#line 1\n";
+            return ss.str()+source;
+        }
+        auto insertPos = source.find('\n', last);
+        int lines = 0;
+        for (int i=0;i<insertPos;i++){
+            if (source.at(i) == '\n'){
+                lines++;
+            }
+        }
+        ss << "#line "<<(lines+1)<<"\n";
+        return source.substr(0, insertPos+1) +
+               ss.str()+
+               source.substr(insertPos+1);
     }
 
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceDebugNormals() {
-        auto vertexShaderStr = R"(#version 140
-in vec3 position;
-in vec3 normal;
-out vec3 vNormal;
-
-uniform mat4 g_model;
-uniform mat4 g_view;
-uniform mat4 g_projection;
-uniform mat3 g_normal;
-
-void main(void) {
-    gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
-    vNormal = g_normal * normal;
-}
-)";
-        auto fragmentShaderStr = R"(#version 140
-out vec4 fragColor;
-in vec3 vNormal;
-
-void main(void)
-{
-    fragColor = vec4(vNormal*0.5+0.5,1.0);
-}
-)";
-        withSourceString(vertexShaderStr, ShaderType::Vertex);
-        withSourceString(fragmentShaderStr, ShaderType::Fragment);
-
-        return *this;
+    uint32_t to_id(ShaderType st) {
+        uint32_t shader;
+        switch (st){
+            case ShaderType::Vertex:
+                shader = GL_VERTEX_SHADER;
+                break;
+            case ShaderType::Fragment:
+                shader = GL_FRAGMENT_SHADER;
+                break;
+#ifndef EMSCRIPTEN
+            case ShaderType::Geometry:
+                shader = GL_GEOMETRY_SHADER;
+                break;
+            case ShaderType::TessellationEvaluation:
+                shader = GL_TESS_EVALUATION_SHADER ;
+                break;
+            case ShaderType::TessellationControl:
+                shader = GL_TESS_CONTROL_SHADER;
+                break;
+#endif
+            default:
+                shader = GL_VERTEX_SHADER;
+                LOG_ERROR("Invalid shader type. Was %d",(int)st);
+                break;
+        }
+        return shader;
     }
 }

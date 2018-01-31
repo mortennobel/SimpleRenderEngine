@@ -18,7 +18,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <sre/SpriteAtlas.hpp>
-#include <sre/Profiler.hpp>
+#include <sre/Inspector.hpp>
 
 
 using namespace sre;
@@ -54,7 +54,11 @@ public:
 		}
 
 		mesh = Mesh::create().withCube().build();
-		material = Shader::create().withSourceUnlit().withBlend(BlendType::AlphaBlending).build()->createMaterial();
+		material = Shader::create()
+				.withSourceFile("unlit_vert.glsl", ShaderType::Vertex)
+				.withSourceFile("unlit_frag.glsl", ShaderType::Fragment)
+				.withBlend(BlendType::AlphaBlending)
+				.build()->createMaterial();
 		
         r.frameRender = [&](){
             render();
@@ -66,7 +70,7 @@ public:
     void render(){
         auto renderPass = RenderPass::create()
                 .withCamera(camera)
-                .withClearColor(true, {.3, .3, 1, 1})
+                .withClearColor(true, {.3f, .3f, 1, 1})
                 .build();
 
 		ImGui::ListBox("Texture", &selection, filenames.data(), filenames.size());
@@ -89,7 +93,14 @@ public:
 
 		ImGui::LabelText("Size", "%d x %d", textures[selection]->getWidth(), textures[selection]->getHeight());
 		ImGui::LabelText("Transparent", "%s", textures[selection]->isTransparent()?"true":"false");
-		
+		const char* colorSpace;
+		if (textures[selection]->getSamplerColorSpace() == Texture::SamplerColorspace::Gamma){
+			colorSpace = "Gamma";
+		} else {
+			colorSpace = "Linear";
+		}
+		ImGui::LabelText("Colorspace", "%s", colorSpace);
+
 		material->setTexture(textures[selection]);
 		renderPass.draw(mesh, glm::mat4(1), material);
     }

@@ -12,12 +12,15 @@
 #include "sre/WorldLights.hpp"
 #include "sre/imgui_sre.hpp"
 #include "sre/impl/Export.hpp"
-
+#include "sre/impl/GL.hpp"
 #include "sre/impl/CPPShim.hpp"
+
 #include <string>
 #include <memory>
 #include <vector>
 #include <map>
+#include <set>
+
 
 namespace sre {
 
@@ -46,6 +49,8 @@ namespace sre {
         NumberOfShaderTypes
     };
 
+    uint32_t to_id(ShaderType st);
+
     const char* c_str(UniformType u);
 
     struct DllExport Uniform {
@@ -62,6 +67,13 @@ namespace sre {
      *
      * There is the following premade shaders:
      * - Shader::getStandard()
+     *    - Shades the mesh using the Phong light model, and uses the current light states and camera states as well as
+     *      the color and texture parameters
+     *    - Parameters:
+     *      - color (vec4) (default white)
+     *      - tex (shared_ptr<Texture>) (default white texture)
+     *      - specular (float) (default 0.0) (means no specular)
+     * - Shader::getStandardPhong()
      *    - Shades the mesh using the Phong light model, and uses the current light states and camera states as well as
      *      the color and texture parameters
      *    - Parameters:
@@ -86,8 +98,25 @@ namespace sre {
      *   Shaders have two kinds of uniforms variables:
      *     - Global uniforms (prefixed with 'g_' which is automatically set by the engine)
      *     - Material uniform (without 'g_' prefix). Which are exposed to materials.
+     *
+     *   Shaders can be specialized using specialization constants, which is a list of key-value pairs, used to define
+     *   special behavior of shaders. Specialization constants (key-values) are translated to preprocessor symbols in
+     *   the shader code.
+     *   Using specialized shaders is useful for performance reasons - only enabling features that the shader needs. But
+     *   creating a specialized shader (as well as creating shaders in general) may caurse performance issues and should
+     *   avoid during realtime rendering.
+     *   Specialization constants must start start with 'S_' and must consist of capital letters, digits and underscore.
      */
     class DllExport Shader : public std::enable_shared_from_this<Shader> {
+        enum class ResourceType{
+            File,
+            Memory
+        };
+
+        struct Resource{
+            ResourceType resourceType;
+            std::string value;
+        };
     public:
 
         class DllExport ShaderBuilder {
@@ -97,44 +126,75 @@ namespace sre {
                                       const std::string& fragmentShaderGLSL);
             ShaderBuilder& withSourceString(const std::string& shaderSource, ShaderType shaderType);
             ShaderBuilder& withSourceFile(const std::string& shaderFile, ShaderType shaderType);
-            ShaderBuilder& withSourceStandard();
-            ShaderBuilder& withSourceUnlit();
-            ShaderBuilder& withSourceUnlitSprite();
-            ShaderBuilder& withSourceStandardParticles();
-            ShaderBuilder& withSourceDebugUV();
-            ShaderBuilder& withSourceDebugNormals();
             ShaderBuilder& withOffset(float factor,float units);  // set the scale and units used to calculate depth values (note for WebGL1.0/OpenGL ES 2.0 only affects polygon fill)
             ShaderBuilder& withDepthTest(bool enable);
             ShaderBuilder& withDepthWrite(bool enable);
             ShaderBuilder& withBlend(BlendType blendType);
             ShaderBuilder& withName(const std::string& name);
+            std::shared_ptr<Shader> build(std::vector<std::string>& errors);
             std::shared_ptr<Shader> build();
-        private:
-            ShaderBuilder() = default;
             ShaderBuilder(const ShaderBuilder&) = default;
-            std::map<ShaderType,std::string> shaderSources;
+        private:
+            ShaderBuilder(Shader* shader);
+            ShaderBuilder() = default;
+            std::map<ShaderType, Resource> shaderSources;
+            std::map<std::string,std::string> specializationConstants;
             bool depthTest = true;
             bool depthWrite = true;
             glm::vec2 offset = {0,0};
             std::string name;
+            Shader *updateShader = nullptr;
             BlendType blend = BlendType::Disabled;
             friend class Shader;
         };
 
-        static std::shared_ptr<Shader> getStandard();          // Phong Light Model. Uses light objects and ambient light set in Renderer.
+        DEPRECATED("Use getStandardPBR or getStandardBlinnPhong")
+        static std::shared_ptr<Shader> getStandard();
+
+        static std::shared_ptr<Shader> getStandardPBR();       // Phong Light Model. Uses light objects and ambient light set in Renderer.
                                                                // Uniforms
                                                                //   "color" vec4 (default (1,1,1,1))
                                                                //   "tex" shared_ptr<Texture> (default white texture)
-                                                               // "specularity" float (default 0 = no specularity)
+                                                               //   "metallicRoughness" vec4 (default 0,0) x = metallic, y = roughness
                                                                // VertexAttributes
                                                                //   "position" vec3
                                                                //   "normal" vec3
                                                                //   "uv" vec4
+                                                               // Specializations
+                                                               // S_METALROUGHNESSMAP
+                                                               //   Adds Uniforms "mrTex" (Texture). rg-channel used for metallic and roughness
+                                                               // S_TANGENTS
+                                                               //   Adds VertexAttribute "tangent" vec4. Used for normal maps. Otherwise compute using
+                                                               // S_NORMALMAP
+                                                               //   Adds Uniforms "normalTex" (Texture) and "normalScale" (float)
+                                                               // S_EMISSIVEMAP
+                                                               //   Adds Uniforms "emissiveTex" (Texture) and "emissiveFactor" (vec4)
+                                                               // S_OCCLUSIONMAP
+                                                               //   Adds Uniforms "occlusionTex" (Texture) and "occlusionStrength" (float)
+                                                               // S_VERTEX_COLOR
+                                                               //   Adds VertexAttribute "color" vec4 defined in linear space.
+
+
+        static std::shared_ptr<Shader> getStandardBlinnPhong(); // Blinn-Phong Light Model. Uses light objects and ambient light set in Renderer.
+                                                                // Uniforms
+                                                                //   "color" vec4 (default (1,1,1,1))
+                                                                //   "tex" shared_ptr<Texture> (default white texture)
+                                                                // "specularity" float (default 0 = no specularity)
+                                                                // VertexAttributes
+                                                                //   "position" vec3
+                                                                //   "normal" vec3
+                                                                //   "uv" vec4
+                                                                // Specializations
+                                                                // S_VERTEX_COLOR
+                                                                //   Adds VertexAttribute "color" vec4 defined in linear space.
 
         static std::shared_ptr<Shader> getUnlit();             // Unlit model.
                                                                // Uniforms
                                                                //   "color" vec4 (default (1,1,1,1))
                                                                //   "tex" shared_ptr<Texture> (default white texture)
+                                                               // Specializations
+                                                               // S_VERTEX_COLOR
+                                                               //   Adds VertexAttribute "color" vec4 defined in linear space.
 
         static std::shared_ptr<Shader> getUnlitSprite();       // UnlitSprite = no depth examples and alpha blending
                                                                // Uniforms
@@ -151,10 +211,11 @@ namespace sre {
                                                                // Expects a mesh with topology = Points
 
         static ShaderBuilder create();
+        ShaderBuilder update();                                // Update the shader using the builder pattern. (Must end with build()).
 
         ~Shader();
 
-        std::shared_ptr<Material> createMaterial();
+        std::shared_ptr<Material> createMaterial(std::map<std::string,std::string> specializationConstants = {});
 
         Uniform getUniformType(const std::string &name);
 
@@ -177,21 +238,38 @@ namespace sre {
         // This method should be used for debug purpose only
         bool validateMesh(Mesh* mesh, std::string & info);
 
+        std::map<std::string,std::string> getCurrentSpecializationConstants();
+
+        std::set<std::string> getAllSpecializationConstants();
     private:
-        bool setLights(WorldLights* worldLights, glm::mat4 viewTransform);
+        std::string precompile(std::string source, std::vector<std::string>& errors, uint32_t shaderType);
+        std::string insertPreprocessorDefines(std::string source,
+                                              std::map<std::string, std::string> &specializationConstants,
+                                              uint32_t shaderType);
+
+        bool setLights(WorldLights* worldLights);
 
         Shader();
 
-        bool build(std::map<ShaderType,std::string> shaderSources);
+        std::map<std::string,std::string> specializationConstants = {};
 
+        std::shared_ptr<Shader> parent = nullptr;
+        std::vector<std::weak_ptr<Shader>> specializations;
+
+        bool build(std::map<ShaderType,Resource> shaderSources, std::vector<std::string>& errors);
+        static std::string getSource(Resource& resource);
+        bool compileShader(Resource& resource, GLenum type, GLuint& shader, std::vector<std::string>& errors);
         void bind();
 
-        unsigned int shaderProgramId;
+        unsigned int shaderProgramId = 0;
         bool depthTest = true;
         bool depthWrite = true;
+        long shaderUniqueId = 0;
         std::string name;
         BlendType blend = BlendType::Disabled;
         glm::vec2 offset = glm::vec2(0,0);
+
+        std::map<ShaderType, Resource> shaderSources;
 
         std::vector<Uniform> uniforms;
 
@@ -207,15 +285,18 @@ namespace sre {
         friend class Mesh;
         friend class Material;
         friend class RenderPass;
+        friend class Inspector;
 
         int uniformLocationModel;
         int uniformLocationView;
         int uniformLocationProjection;
-        int uniformLocationNormal;
+        int uniformLocationModelInverseTranspose;
+        int uniformLocationModelViewInverseTranspose;
         int uniformLocationViewport;
         int uniformLocationAmbientLight;
         int uniformLocationLightPosType;
         int uniformLocationLightColorRange;
+        int uniformLocationCameraPosition;
 
     public:
         static std::string translateToGLSLES(std::string source, bool vertexShader);

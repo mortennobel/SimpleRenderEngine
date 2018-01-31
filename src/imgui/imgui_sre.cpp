@@ -15,6 +15,7 @@
 // SDL,GL3W
 #include <SDL.h>
 #include <SDL_syswm.h>
+#include <sre/Renderer.hpp>
 
 #include "sre/impl/GL.hpp"
 
@@ -215,6 +216,7 @@ bool ImGui_SRE_ProcessEvent(SDL_Event *event)
             io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
             io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
             return true;
+            return true;
         }
     }
     return false;
@@ -273,16 +275,37 @@ bool ImGui_SRE_CreateDeviceObjects()
                     "	gl_Position = ProjMtx * vec4(Position.xy,0.0,1.0);\n"
                     "}\n";
 
-    const GLchar* fragment_shader =
-            "#version 140\n"
-                    "uniform sampler2D Texture;\n"
-                    "in vec2 Frag_UV;\n"
-                    "in vec4 Frag_Color;\n"
-                    "out vec4 fragColor;\n"
-                    "void main()\n"
-                    "{\n"
-                    "	fragColor = Frag_Color * texture( Texture, Frag_UV.st);\n"
-                    "}\n";
+    std::stringstream ss;
+    ss << "#version 140\n";
+    ss << "uniform sampler2D Texture;\n";
+    ss << "in vec2 Frag_UV;\n";
+    ss << "in vec4 Frag_Color;\n";
+    ss << "out vec4 fragColor;\n";
+    ss << "vec4 toLinear(vec4 col){\n"
+            "    float gamma = 2.2;\n"
+            "    return vec4 (\n"
+            "        col.xyz = pow(col.xyz, vec3(gamma)),\n"
+            "        col.w\n"
+            "    );\n"
+            "}\n";
+    ss << "vec4 toOutput(vec4 colorLinear){\n"
+            "    float gamma = 2.2;\n"
+            "    return vec4(pow(colorLinear.xyz,vec3(1.0/gamma)), colorLinear.a); // gamma correction\n"
+            "}\n";
+    ss << "void main()\n";
+    ss << "{\n";
+    if (Renderer::instance->getRenderInfo().supportTextureSamplerSRGB){
+        ss << "	fragColor = Frag_Color * texture( Texture, Frag_UV.st);\n";
+    } else {
+        ss << "	fragColor = Frag_Color * toLinear(texture( Texture, Frag_UV.st));\n";
+    }
+    if (!Renderer::instance->getRenderInfo().useFramebufferSRGB){
+        ss << "	fragColor = toOutput(fragColor);\n";
+    }
+    ss << "}\n";
+    std::string fragment_shader = ss.str();
+    auto fragment_shader_c = fragment_shader.c_str();
+
 
     g_ShaderHandle = glCreateProgram();
     g_VertHandle = glCreateShader(GL_VERTEX_SHADER);
@@ -298,7 +321,7 @@ bool ImGui_SRE_CreateDeviceObjects()
     glShaderSource(g_FragHandle, 1, &fsp, 0);
 #else
     glShaderSource(g_VertHandle, 1, &vertex_shader, 0);
-    glShaderSource(g_FragHandle, 1, &fragment_shader, 0);
+    glShaderSource(g_FragHandle, 1, &fragment_shader_c, 0);
 #endif
     glCompileShader(g_VertHandle);
     glCompileShader(g_FragHandle);

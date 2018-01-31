@@ -18,7 +18,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <sre/SpriteAtlas.hpp>
-#include <sre/Profiler.hpp>
+#include <sre/Inspector.hpp>
 
 
 using namespace sre;
@@ -45,7 +45,7 @@ public:
     void render(){
         auto renderPass = RenderPass::create()
                 .withCamera(camera)
-                .withClearColor(true, {.3, .3, 1, 1})
+                .withClearColor(true, {.3f, .3f, 1, 1})
                 .build();
 
 
@@ -113,7 +113,7 @@ public:
             renderPass.draw(sb);
 
             std::vector<glm::vec3> lines;
-            auto spriteCorners = sprite.getCorners();
+            auto spriteCorners = sprite.getTrimmedCorners();
             for (int i=0;i<4;i++){
                 lines.push_back({spriteCorners[i],0});
                 lines.push_back({spriteCorners[(i+1)%4],0});

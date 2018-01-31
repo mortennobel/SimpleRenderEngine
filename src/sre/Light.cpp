@@ -39,8 +39,8 @@ namespace sre{
         return *this;
     }
 
-    Light::LightBuilder& Light::LightBuilder::withColor(glm::vec3 color) {
-        light->color = color;
+    Light::LightBuilder& Light::LightBuilder::withColor(Color color, float intensity) {
+        light->color = glm::vec3(color.toLinear()) * intensity;
         return *this;
     }
 
@@ -57,5 +57,4 @@ namespace sre{
     Light::LightBuilder::~LightBuilder() {
         delete light;
     }
-
 }

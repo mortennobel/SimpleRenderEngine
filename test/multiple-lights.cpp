@@ -20,7 +20,7 @@
 using namespace sre;
 
 class MultipleLightsExample {
-    public:
+public:
     MultipleLightsExample (){
         r.init();
 
@@ -29,10 +29,10 @@ class MultipleLightsExample {
 
         mesh = Mesh::create().withSphere().build();
 
-        for (int i=0;i<Renderer::maxSceneLights;i++){
-            worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,0,0}).withRange(10).build());
+        for (int i=0;i<Renderer::instance->getMaxSceneLights();i++){
+            worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,1,1}).withRange(10).build());
         }
-        mat = Shader::getStandard()->createMaterial();
+        mat = Shader::getStandardBlinnPhong()->createMaterial();
         r.frameUpdate = [&](float deltaTime){
             update(deltaTime);
         };
@@ -41,7 +41,6 @@ class MultipleLightsExample {
         };
         r.startEventLoop();
     }
-
 
     void update(float deltaTime) {
         mat->setSpecularity(specularity);
@@ -84,7 +83,7 @@ class MultipleLightsExample {
             ImGui::DragFloat("DebugLightSize", &debugLightSize,0.1f,0,3);
         }
         // Show Label (with invisible window)
-        for (int i=0;i<Renderer::maxSceneLights;i++){
+        for (int i=0;i<Renderer::instance->getMaxSceneLights();i++){
             auto l = worldLights.getLight(i);
             if (debugLight){
                 drawLight(renderPass,l,debugLightSize);
@@ -108,9 +107,12 @@ class MultipleLightsExample {
         }
 
         if (ImGui::TreeNode("Material")){
-            ImGui::DragFloat("Specularity", &specularity,1,0,200);
+            ImGui::DragFloat4("Specularity", &specularity.r,0.1,0,1);
             mat->setSpecularity(specularity);
-            ImGui::ColorEdit3("Color", &(color.x));
+            auto col = color.toLinear();
+            if (ImGui::ColorEdit3("Color", &(col.x))){
+                color.setFromLinear(col);
+            }
             ImGui::TreePop();
         }
     }
@@ -132,16 +134,16 @@ class MultipleLightsExample {
         }
     }
 
-    private:
-        SDLRenderer r;
+private:
+    SDLRenderer r;
     glm::vec3 eye{0,0,5};
     glm::vec3 at{0,0,0};
     glm::vec3 up{0,1,0};
     Camera camera;
 
     std::shared_ptr<Material> mat;
-    float specularity = 20;
-    glm::vec4 color {1,1,1,1};
+    Color specularity = Color(1,1,1,20);
+    sre::Color color {1,1,1,1};
 
     std::shared_ptr<Mesh> mesh;
 
@@ -160,4 +162,3 @@ int main() {
 
     return 0;
 }
-

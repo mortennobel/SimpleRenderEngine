@@ -8,6 +8,7 @@
 #pragma once
 
 #include "sre/Camera.hpp"
+#include "sre/Color.hpp"
 #include "sre/Mesh.hpp"
 #include "sre/Material.hpp"
 #include "sre/WorldLights.hpp"
@@ -36,7 +37,7 @@ namespace sre {
             RenderPassBuilder& withCamera(const Camera& camera);
             RenderPassBuilder& withWorldLights(WorldLights* worldLights);
 
-            RenderPassBuilder& withClearColor(bool enabled = true,glm::vec4 color = {0,0,0,1});    // Set the clear color.
+            RenderPassBuilder& withClearColor(bool enabled = true,Color color = {0,0,0,1});    // Set the clear color.
                                                                                                    // Default enabled with the color value {0.0,0.0,0.0,1.0}
 
             RenderPassBuilder& withClearDepth(bool enabled = true, float value = 1);               // Set the clear depth. Value is clamped between [0.0;1.0]
@@ -84,7 +85,7 @@ namespace sre {
 
 
         void drawLines(const std::vector<glm::vec3> &verts,             // Draws worldspace lines.
-                       glm::vec4 color = {1.0f, 1.0f, 1.0f, 1.0f},      // Note that this member function is not expected
+                       Color color = {1.0f, 1.0f, 1.0f, 1.0f},      // Note that this member function is not expected
                        MeshTopology meshTopology = MeshTopology::Lines);// to perform as efficient as draw()
 
         void draw(std::shared_ptr<Mesh>& mesh,                          // Draws a mesh using the given transform and material.
@@ -101,8 +102,8 @@ namespace sre {
         void draw(std::shared_ptr<SpriteBatch>&& spriteBatch,           // Draws a spriteBatch using modelTransform
                   glm::mat4 modelTransform = glm::mat4(1));             // using a model-to-world transformation
 
-        std::vector<glm::vec4> readPixels(unsigned int x,               // Reads pixel(s) from the current framebuffer
-                                          unsigned int y,               // The defined rectable must be within the size of the current framebuffer
+        std::vector<Color> readPixels(unsigned int x,               // Reads pixel(s) from the current framebuffer
+                                          unsigned int y,               // The defined rectangle must be within the size of the current framebuffer
                                           unsigned int width = 1,       // This function must be called after finish has been explicit called on the renderPass
                                           unsigned int height = 1);
 

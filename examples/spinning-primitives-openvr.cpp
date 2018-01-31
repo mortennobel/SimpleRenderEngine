@@ -53,16 +53,21 @@ public:
         r.frameRender = [&](){
             render();
         };
-		if (Renderer::instance->getVR() == nullptr){
+		vr = VR::create(VRType::OpenVR);
+		if (vr.get() == nullptr){
 			LOG_ERROR("Cannot initialize VR");
 			return;
 		}
-		Renderer::instance->getVR()->renderVR = [&](RenderPass& renderPass, bool left)
+		vr->renderVR = [&](std::shared_ptr<sre::Framebuffer> fb, sre::Camera cam, bool leftEye)
 		{
+			auto renderPass = RenderPass::create()
+					.withFramebuffer(fb)
+					.withCamera(cam)
+					.build();
 			render(renderPass);
 		};
-		Renderer::instance->getVR()->lookAt(eye, at, up);
-        r.startEventLoop();
+		vr->lookAt(eye, at, up);
+        r.startEventLoop(vr);
     }
 
     void render(){
@@ -77,13 +82,13 @@ public:
 		if (!lookAt){
 			ImGui::DragFloat3("Position", &position.x, 0.1f);
 			ImGui::DragFloat3("Rotation", &rotation.x,0.05f);
-			Renderer::instance->getVR()->setViewTransform(glm::inverse( glm::translate(position)*glm::eulerAngleYXZ(rotation.y, rotation.x, rotation.z)));
+			vr->setViewTransform(glm::inverse( glm::translate(position)*glm::eulerAngleYXZ(rotation.y, rotation.x, rotation.z)));
 		} else {
 			ImGui::DragFloat3("Eye", &eye.x);
 			ImGui::DragFloat3("At", &at.x);
-			Renderer::instance->getVR()->lookAt(eye, at, up);
+			vr->lookAt(eye, at, up);
 		}
-		Renderer::instance->getVR()->debugGUI();
+		vr->debugGUI();
         i++;
     }
 
@@ -108,6 +113,7 @@ private:
 	glm::vec3 eye = { 0,0,6 };
 	glm::vec3 at  = { 0,0,0 };
 	glm::vec3 up  = { 0,1,0 };
+	std::shared_ptr<sre::VR> vr;
     SDLRenderer r;
     Camera camera;
     std::shared_ptr<Material> material;

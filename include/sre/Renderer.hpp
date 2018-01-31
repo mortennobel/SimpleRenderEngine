@@ -54,13 +54,18 @@ namespace sre {
     ///
     class DllExport Renderer {
     public:
-        explicit Renderer(SDL_Window *window, bool vsync = true);    // SimpleRenderEngine constructor
+        struct RenderInfo{
+            bool useFramebufferSRGB = false;
+            bool supportTextureSamplerSRGB = false;
+            std::string graphicsAPIVersion;
+            std::string graphicsAPIVendor;
+        };
+        explicit Renderer(SDL_Window *window, bool vsync = true, int maxSceneLights = 4);    // SimpleRenderEngine constructor
                                                             // param window pointer to the SDL window (must be initialized using OpenGL)
         ~Renderer();
-        static constexpr int maxSceneLights = 4;            // Maximum of scene lights
-        static constexpr int sre_version_major = 0;
-        static constexpr int sre_version_minor = 9;
-        static constexpr int sre_version_point = 23;
+        static constexpr int sre_version_major = 1;
+        static constexpr int sre_version_minor = 0;
+        static constexpr int sre_version_point = 0;
 
         glm::ivec2 getWindowSize();                         // Return the current size of the window
 
@@ -76,8 +81,11 @@ namespace sre {
 
         static Renderer* instance;                          // Singleton reference to the engine after initialization.
 
-		VR* getVR();										// Get pointer to VR (if any)
+        int getMaxSceneLights();                            // Get maximum amout of scenelights per object
+
+        const RenderInfo& getRenderInfo();                  // Get info about the renderer
     private:
+        int maxSceneLights = 4;                             // Maximum of scene lights
         SDL_Window *window;
         SDL_GLContext glcontext;
         bool vsync;
@@ -92,16 +100,19 @@ namespace sre {
         std::vector<Texture*> textures;
         std::vector<SpriteAtlas*> spriteAtlases;
 
+        RenderInfo renderInfo;
+
 		VR* vr = nullptr;
 
         friend class Mesh;
         friend class Mesh::MeshBuilder;
         friend class Shader;
         friend class Shader;
+        friend class Material;
         friend class Texture;
         friend class Framebuffer;
         friend class RenderPass;
-        friend class Profiler;
+        friend class Inspector;
         friend class SpriteAtlas;
 		friend class VR;
         friend class RenderPass::RenderPassBuilder;

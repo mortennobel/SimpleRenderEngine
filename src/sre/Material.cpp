@@ -8,6 +8,7 @@
 #include "sre/Material.hpp"
 #include "sre/impl/GL.hpp"
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtc/color_space.hpp>
 #include "sre/Renderer.hpp"
 #include "sre/Log.hpp"
 
@@ -17,7 +18,7 @@ namespace sre {
     Material::Material(std::shared_ptr<Shader> shader)
     :shader{nullptr}
     {
-        setShader(shader);
+        setShader(std::move(shader));
         name = "Undefined material";
     }
 
@@ -26,10 +27,11 @@ namespace sre {
 
     void Material::bind(){
         unsigned int textureSlot = 0;
-        for (auto t : textureValues) {
+        for (const auto & t : textureValues) {
             glActiveTexture(GL_TEXTURE0 + textureSlot);
             glBindTexture(t.value->target, t.value->textureId);
             glUniform1i(t.id, textureSlot);
+            textureSlot++;
         }
         for (auto t : vectorValues) {
             glUniform4fv(t.id, 1, glm::value_ptr(t.value));
@@ -51,7 +53,6 @@ namespace sre {
         floatValues.clear();
 
         for (auto & u : shader->uniforms){
-
             switch (u.type){
                 case UniformType::Vec4:
                 {
@@ -92,19 +93,19 @@ namespace sre {
         }
     }
 
-    glm::vec4 Material::getColor()   {
-        return get<glm::vec4>("color");
+    Color Material::getColor()   {
+        return get<Color>("color");
     }
 
-    bool Material::setColor(const glm::vec4 &color) {
+    bool Material::setColor(const Color &color) {
         return set("color", color);
     }
 
-    float Material::getSpecularity()   {
-        return get<float>("specularity");
+    Color Material::getSpecularity()   {
+        return get<Color>("specularity");
     }
 
-    bool Material::setSpecularity(float specularity) {
+    bool Material::setSpecularity(Color specularity) {
         return set("specularity", specularity);
     }
 
@@ -135,6 +136,19 @@ namespace sre {
         return false;
     }
 
+    bool Material::set(std::string uniformName, Color value){
+        auto type = shader->getUniformType(uniformName);
+        for (auto & v : vectorValues){
+            if (v.id==type.id){
+                v.value = value.toLinear();
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+
     bool Material::set(std::string uniformName, float value){
         auto type = shader->getUniformType(uniformName);
         for (auto & v : floatValues){
@@ -155,5 +169,22 @@ namespace sre {
             }
         }
         return false;
+    }
+
+    std::shared_ptr<sre::Texture> Material::getMetallicRoughnessTexture() {
+        return get<std::shared_ptr<sre::Texture>>("mrTex");
+    }
+
+    bool Material::setMetallicRoughnessTexture(std::shared_ptr<sre::Texture> texture) {
+        return set("mrTex",texture);
+
+    }
+
+    glm::vec2 Material::getMetallicRoughness() {
+        return (glm::vec2)get<glm::vec4>("metallicRoughness");
+    }
+
+    bool Material::setMetallicRoughness(glm::vec2 metallicRoughness) {
+        return set("metallicRoughness",glm::vec4(metallicRoughness,0,0));
     }
 }

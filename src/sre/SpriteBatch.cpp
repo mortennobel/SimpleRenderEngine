@@ -57,7 +57,7 @@ namespace sre{
             }
             lastTexture = s.texture;
 
-            auto corners = s.getCorners();
+            auto corners = s.getTrimmedCorners();
             auto cornerUvs = s.getUVs();
 
             uint16_t idx = (uint16_t)vertices.size();

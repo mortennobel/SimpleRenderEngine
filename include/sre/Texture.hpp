@@ -16,6 +16,8 @@
 #include "sre/Framebuffer.hpp"
 #include "sre/Shader.hpp"
 
+class SDL_Surface;
+
 namespace sre{
 
     class RenderPass;
@@ -36,7 +38,7 @@ namespace sre{
      */
 class DllExport Texture : public std::enable_shared_from_this<Texture> {
 public:
-    enum class TextureCubemapSide{
+    enum class CubemapSide{
         PositiveX,
         NegativeX,
         PositiveY,
@@ -44,32 +46,55 @@ public:
         PositiveZ,
         NegativeZ
     };
+
+
+    enum class SamplerColorspace {
+        Linear,             // Convert values from gamma space to linear space, when gamma correction is enabled. Default behavior.
+        Gamma               // Sampler performs no gamma convertions. This is useful for e.g. normal textures where no gamma correction must be performed
+    };
+
     class DllExport TextureBuilder {
     public:
         ~TextureBuilder();
         TextureBuilder& withGenerateMipmaps(bool enable);
         TextureBuilder& withFilterSampling(bool enable);                                    // if true texture sampling is filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
         TextureBuilder& withWrappedTextureCoordinates(bool enable);
-        TextureBuilder& withFileCubemap(std::string filename, TextureCubemapSide side);     // Must define a cubemap for each side
+        TextureBuilder& withFileCubemap(std::string filename, CubemapSide side);     // Must define a cubemap for each side
         TextureBuilder& withFile(std::string filename);                                     // Currently only PNG files supported
         TextureBuilder& withRGBData(const char* data, int width, int height);               // data may be null (for a uninitialized texture)
         TextureBuilder& withRGBAData(const char* data, int width, int height);              // data may be null (for a uninitialized texture)
         TextureBuilder& withWhiteData(int width=2, int height=2);
+        TextureBuilder& withSamplerColorspace(SamplerColorspace samplerColorspace);
         TextureBuilder& withWhiteCubemapData(int width=2, int height=2);
         TextureBuilder& withName(const std::string& name);
+        TextureBuilder& withDumpDebug();                                                    // Output debug info on build
         std::shared_ptr<Texture> build();
     private:
         TextureBuilder();
         TextureBuilder(const TextureBuilder&) = default;
-        int width = -1;
-        int height = -1;
+
+        struct TextureDefinition {
+            int width = -1;
+            int height = -1;
+            bool transparent;
+            int bytesPerPixel;
+            uint32_t format;
+            std::string resourcename;
+            std::vector<char> data;
+            void dumpDebug();
+        };
+
         std::string name;
 		bool transparent;
         bool generateMipmaps = false;
         bool filterSampling = true;                                                         // true = linear/trilinear sampling, false = point sampling
         bool wrapTextureCoordinates = true;
+        bool dumpDebug = false;
+        SamplerColorspace samplerColorspace = SamplerColorspace::Linear;
         uint32_t target = 0;
         unsigned int textureId = 0;
+
+        std::map<uint32_t, TextureDefinition> textureTypeData;
 
         friend class Texture;
         friend class RenderPass;
@@ -92,7 +117,7 @@ public:
     bool isCubemap();                                                                       // is cubemap texture
     bool isMipmapped();                                                                     // has texture mipmapped enabled
 	bool isTransparent();																	// Does texture has alpha channel
-
+    SamplerColorspace getSamplerColorSpace();
     const std::string& getName();                                                           // name of the string
 
     int getDataSize();                                                                      // get size of the texture in bytes on GPU
@@ -100,12 +125,15 @@ private:
     Texture(unsigned int textureId, int width, int height, uint32_t target, std::string string);
     void updateTextureSampler(bool filterSampling, bool wrapTextureCoordinates);
     void invokeGenerateMipmap();
+    static GLenum getFormat(SDL_Surface *image);
+    static std::vector<char> loadFileFromMemory(const char* data, int dataSize, GLenum& format, bool & alpha,int& width, int& height, int& bytesPerPixel, bool invertY = true);
     int width;
     int height;
     uint32_t target;
     bool generateMipmap;
 	bool transparent;
     std::string name;
+    SamplerColorspace samplerColorspace;
     bool filterSampling = true; // true = linear/trilinear sampling, false = point sampling
     bool wrapTextureCoordinates = true;
     unsigned int textureId;
@@ -113,8 +141,7 @@ private:
     friend class Material;
     friend class Framebuffer;
     friend class RenderPass;
-    friend class Profiler;
-    friend class sre::Framebuffer::FrameBufferBuilder;
+    friend class Inspector;
     friend class VR;
     friend class Sprite;
 };

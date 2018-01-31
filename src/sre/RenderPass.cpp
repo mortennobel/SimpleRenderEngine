@@ -19,6 +19,8 @@
 #include <sre/Renderer.hpp>
 #include <imgui_internal.h>
 #include <glm/gtc/type_precision.hpp>
+#include <glm/gtc/color_space.hpp>
+
 namespace sre {
     RenderPass::RenderPassBuilder RenderPass::create() {
         return RenderPass::RenderPassBuilder(&Renderer::instance->renderStats);
@@ -44,9 +46,15 @@ namespace sre {
         return *this;
     }
 
-    RenderPass::RenderPassBuilder &RenderPass::RenderPassBuilder::withClearColor(bool enabled, glm::vec4 color) {
+    RenderPass::RenderPassBuilder &RenderPass::RenderPassBuilder::withClearColor(bool enabled, Color color) {
+        if (Renderer::instance->getRenderInfo().useFramebufferSRGB){
+            auto col3 = glm::convertSRGBToLinear(glm::vec3(color.r, color.g, color.b));
+            this->clearColorValue = glm::vec4(col3, color.a);
+        } else {
+            this->clearColorValue = glm::vec4(color.r, color.g, color.b, color.a);
+        }
         this->clearColor = enabled;
-        this->clearColorValue = color;
+
         return *this;
     }
 
@@ -123,9 +131,13 @@ namespace sre {
 			if (shader->uniformLocationModel != -1){
                 glUniformMatrix4fv(shader->uniformLocationModel, 1, GL_FALSE, glm::value_ptr(modelTransform));
             }
-            if (shader->uniformLocationNormal != -1){
+            if (shader->uniformLocationModelViewInverseTranspose != -1){
                 auto normalMatrix = transpose(inverse(((glm::mat3)builder.camera.getViewTransform()) * ((glm::mat3)modelTransform)));
-				glUniformMatrix3fv(shader->uniformLocationNormal, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+				glUniformMatrix3fv(shader->uniformLocationModelViewInverseTranspose, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+            }
+            if (shader->uniformLocationModelInverseTranspose != -1){
+                auto normalMatrix = transpose(inverse((glm::mat3)modelTransform));
+				glUniformMatrix3fv(shader->uniformLocationModelInverseTranspose, 1, GL_FALSE, glm::value_ptr(normalMatrix));
             }
         } else {
             builder.renderStats->stateChangesShader++;
@@ -140,19 +152,27 @@ namespace sre {
             if (shader->uniformLocationProjection != -1) {
                 glUniformMatrix4fv(shader->uniformLocationProjection, 1, GL_FALSE, glm::value_ptr(projection));
             }
-            if (shader->uniformLocationNormal != -1) {
+            if (shader->uniformLocationModelViewInverseTranspose != -1) {
                 auto normalMatrix = transpose(inverse(((glm::mat3)builder.camera.getViewTransform()) * ((glm::mat3)modelTransform)));
-                glUniformMatrix3fv(shader->uniformLocationNormal, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+                glUniformMatrix3fv(shader->uniformLocationModelViewInverseTranspose, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+            }
+            if (shader->uniformLocationModelInverseTranspose != -1) {
+                auto normalMatrix = transpose(inverse((glm::mat3)modelTransform));
+                glUniformMatrix3fv(shader->uniformLocationModelInverseTranspose, 1, GL_FALSE, glm::value_ptr(normalMatrix));
             }
             if (shader->uniformLocationViewport != -1) {
                 glm::vec4 viewport((float)viewportSize.x,(float)viewportSize.y,(float)viewportOffset.x,(float)viewportOffset.y);
                 glUniform4fv(shader->uniformLocationViewport, 1, glm::value_ptr(viewport));
             }
-            shader->setLights(builder.worldLights, builder.camera.getViewTransform());
+            if (shader->uniformLocationCameraPosition != -1) {
+                glm::vec4 cameraPos = glm::vec4(this->builder.camera.getPosition(),1.0f);
+                glUniform4fv(shader->uniformLocationCameraPosition, 1, glm::value_ptr(cameraPos));
+            }
+            shader->setLights(builder.worldLights);
         }
     }
 
-    void RenderPass::drawLines(const std::vector<glm::vec3> &verts, glm::vec4 color, MeshTopology meshTopology) {
+    void RenderPass::drawLines(const std::vector<glm::vec3> &verts, Color color, MeshTopology meshTopology) {
         assert(!mIsFinished && "RenderPass is finished. Can no longer be modified.");
 
         // Keep a shared mesh and material
@@ -214,7 +234,7 @@ namespace sre {
 
 
 
-        projection = builder.camera.getProjectionTransform(windowSize);
+        projection = builder.camera.getProjectionTransform(viewportSize);
 
         for (auto & rqObj : renderQueue){
             drawInstance(rqObj);
@@ -239,13 +259,12 @@ namespace sre {
 #endif
     }
 
-    std::vector<glm::vec4> RenderPass::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
+    std::vector<Color> RenderPass::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
         assert(mIsFinished);
-        finish();
         if (builder.framebuffer!=nullptr){
             builder.framebuffer->bind();
         }
-        std::vector<glm::vec4> res(width * height);
+        std::vector<Color> res(width * height);
         std::vector<glm::u8vec4> resUnsigned(width * height);
 
         glReadPixels(x,y,width, height, GL_RGBA,GL_UNSIGNED_BYTE,resUnsigned.data());
@@ -254,7 +273,10 @@ namespace sre {
                 res[i][j] = resUnsigned[i][j]/255.0f;
             }
         }
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // set default framebuffer
+        if (builder.framebuffer!=nullptr) {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        }
 
         return res;
     }
@@ -267,7 +289,6 @@ namespace sre {
     }
 
     void RenderPass::drawInstance(RenderQueueObj& rqObj) {
-        // todo optimize (mesh vbo only need to be bound once)
         for (int i=0;i<rqObj.materials.size();i++){
             auto material_ptr = rqObj.materials[i];
             Mesh* mesh = rqObj.mesh.get();

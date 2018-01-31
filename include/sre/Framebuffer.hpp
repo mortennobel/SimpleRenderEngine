@@ -10,6 +10,7 @@
 #include <vector>
 #include <string>
 #include "glm/glm.hpp"
+#include "Texture.hpp"
 
 
 namespace sre {
@@ -61,6 +62,8 @@ namespace sre {
         glm::uvec2 size;
         friend class RenderPass;
     };
+
+
 }
 
 

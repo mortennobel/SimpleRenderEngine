@@ -16,10 +16,10 @@ public:
     CustomMeshLayoutExample(){
         r.init();
 
-        std::vector<glm::vec4> positions({
-                                                 {0, 1,0,1},
-                                                 {0, 0,0,1},
-                                                 {1, 0,0,1}
+        std::vector<glm::vec3> positions({
+                                                 {0, 1,0},
+                                                 {0, 0,0},
+                                                 {1, 0,0}
                                          });
         std::vector<glm::vec4> colors({
                                               {1, 0,0,1},
@@ -29,7 +29,7 @@ public:
                                       });
 
         mesh = Mesh::create()
-                .withAttribute("posxyzw",positions)
+                .withPositions(positions)
                 .withAttribute("color",colors)
                 .build();
 
@@ -57,10 +57,7 @@ void main(void)
 }
 )";
 
-        mat1 = Shader::create()
-                .withSourceString(vertexShaderSource,ShaderType::Vertex)
-                .withSourceString(fragmentShaderSource,ShaderType::Fragment)
-                .build()->createMaterial();
+        mat1 = Shader::getUnlit()->createMaterial({{"S_VERTEX_COLOR","1"}});
 
         r.frameRender = [&](){
             render();

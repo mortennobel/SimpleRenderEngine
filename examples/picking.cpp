@@ -26,7 +26,7 @@ public:
             if (i==3){
                 mat[i]->setColor({1,1,0,1});
             } else {
-                glm::vec4 color(0,0,0,1);
+                Color color(0,0,0,1);
                 color[i] = 1;
                 mat[i]->setColor(color);
             }
@@ -82,18 +82,19 @@ public:
         drawTopTextAndColor(pixelValue);
         renderPass.finish();
         auto pixelValues = renderPass.readPixels(mouseX, mouseY);           // read pixel values from defualt framebuffer (before gui is rendered)
+
         pixelValue = pixelValues[0];
     }
 
-    void drawTopTextAndColor(glm::vec4 color){
+    void drawTopTextAndColor(sre::Color color){
         auto size = Renderer::instance->getWindowSize();
         ImVec2 imSize(size.x, 50.0f);
         ImVec2 imPos(0, 0);
         ImGui::SetNextWindowSize(imSize);                                   // imgui window size should have same width as SDL window size
         ImGui::SetNextWindowPos(imPos);
-        ImGui::Begin("",nullptr,ImGuiWindowFlags_NoInputs|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoTitleBar);
+        ImGui::Begin("",nullptr,ImGuiWindowFlags_NoInputs|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoScrollbar);
 
-        ImGui::ColorEdit4("Selected color",&color.x,ImGuiColorEditFlags_NoInputs);
+        ImGui::ColorEdit4("Selected color",&color.r, ImGuiColorEditFlags_NoInputs);
         ImGui::TextWrapped("Mouse pos %i %i",mouseX, mouseY);
         ImGui::End();
     }
@@ -102,7 +103,7 @@ private:
     Camera camera;
     std::shared_ptr<Material> mat[4];
     std::shared_ptr<Mesh> mesh[4];
-    glm::vec4 pixelValue;
+    Color pixelValue;
     int i=0;
     int mouseX;
     int mouseY;

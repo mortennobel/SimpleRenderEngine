@@ -6,6 +6,7 @@
  */
 
 #include "sre/ModelImporter.hpp"
+#include "sre/Color.hpp"
 #include <algorithm>
 #include <fstream>
 #include <string>
@@ -27,21 +28,21 @@ using namespace glm;
 namespace {
 
     // trim from start (in place)
-    static inline void ltrim(std::string &s) {
+    inline void ltrim(std::string &s) {
         s.erase(s.begin(), std::find_if(s.begin(), s.end(), [](int ch) {
             return !std::isspace(ch);
         }));
     }
 
-// trim from end (in place)
-    static inline void rtrim(std::string &s) {
+    // trim from end (in place)
+    inline void rtrim(std::string &s) {
         s.erase(std::find_if(s.rbegin(), s.rend(), [](int ch) {
             return !std::isspace(ch);
         }).base(), s.end());
     }
 
     // trim from both ends (in place)
-    static inline void trim(std::string &s) {
+    inline void trim(std::string &s) {
         ltrim(s);
         rtrim(s);
     }
@@ -61,7 +62,7 @@ namespace {
 #endif
 
     // from http://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring
-    string getFileContents(string filename)
+    string getFileContents(const string& filename)
     {
         ifstream in{filename, ios::in | ios::binary};
         if (in)
@@ -78,6 +79,7 @@ namespace {
             return contents;
         }
         LOG_ERROR("Error reading %s. Error code: %i",filename.c_str(), errno);
+        return "";
     }
 
     std::string concat(std::vector<std::string> v, int from){
@@ -131,6 +133,16 @@ namespace {
 
     vec3 toVec3(vector<string> &tokens){
         vec3 res{0,0,0};
+        for (int i=0;i<3;i++){
+            if (i+1 < tokens.size()){
+                res[i] = (float)atof(tokens[i+1].c_str());
+            }
+        }
+        return res;
+    }
+
+    sre::Color toColorRGB(vector<string> &tokens){
+        sre::Color res{0,0,0};
         for (int i=0;i<3;i++){
             if (i+1 < tokens.size()){
                 res[i] = (float)atof(tokens[i+1].c_str());
@@ -197,9 +209,9 @@ namespace {
 
     struct ObjMaterial {
         std::string name;
-        glm::vec3 ambientColor; // Ka
-        glm::vec3 diffuseColor; // Kd
-        glm::vec3 specularColor; // Ks
+        sre::Color ambientColor; // Ka
+        sre::Color diffuseColor; // Kd
+        sre::Color specularColor; // Ks
         float specularCoefficient; // Ns
         float transparent; // d or Tr
         std::vector<ObjIlluminationMode> illuminationModes;
@@ -257,7 +269,7 @@ namespace {
                 continue;
             }
             if (tokens[0] == "newmtl"){
-                vec3 zero{0,0,0};
+                sre::Color zero{0,0,0};
                 auto name = concat(tokens,1);
                 ObjMaterial material{replaceAll(name,"\r",""),zero,zero,zero,50,1};
                 materials.push_back(material);
@@ -267,11 +279,11 @@ namespace {
                 }
                 ObjMaterial & currentMat = materials.back();
                 if (tokens[0] == "Ka"){
-                    currentMat.ambientColor = toVec3(tokens);
+                    currentMat.ambientColor = toColorRGB(tokens);
                 } else if (tokens[0] == "Kd"){
-                    currentMat.diffuseColor = toVec3(tokens);
+                    currentMat.diffuseColor = toColorRGB(tokens);
                 } else if (tokens[0] == "Ks"){
-                    currentMat.specularColor = toVec3(tokens);
+                    currentMat.specularColor = toColorRGB(tokens);
                 } else if (tokens[0] == "d"){
                     currentMat.transparent = (float)atof(tokens[1].c_str());
                 } else if (tokens[0] == "illum"){
@@ -329,7 +341,7 @@ namespace {
 
     shared_ptr<sre::Material> createMaterial(const std::string& materialName, const std::vector<ObjMaterial>& matVector, std::string path) {
         if (matVector.empty()){
-            auto shader = sre::Shader::getStandard();
+            auto shader = sre::Shader::getStandardBlinnPhong();
             auto mat = shader->createMaterial();
             return mat;
         }
@@ -345,11 +357,12 @@ namespace {
             LOG_WARNING("Could not find material ",materialName.c_str());
             foundMat = matVector.data();
         }
-        auto shader = sre::Shader::getStandard();
+        auto shader = sre::Shader::getStandardBlinnPhong();
         auto mat = shader->createMaterial();
 
-        mat->setColor({foundMat->diffuseColor,1.0});
-        mat->setSpecularity(foundMat->specularCoefficient);
+        mat->setColor(foundMat->diffuseColor);
+
+        mat->setSpecularity({foundMat->specularColor.r,foundMat->specularColor.g,foundMat->specularColor.b,foundMat->specularCoefficient});
         auto name = materialName;
         for (auto & map :foundMat->textureMaps){
             if (map.type == ObjTextureMapType::Diffuse){
@@ -387,7 +400,7 @@ std::shared_ptr<sre::Mesh> sre::ModelImporter::importObj(std::string path, std::
         vector<string> tokens;
         while (likeTokensizer.good()) {
             likeTokensizer.getline(buffer2, bufferSize, ' ');
-			int buffer2Length = strlen(buffer2);
+			int buffer2Length = static_cast<int>(strlen(buffer2));
             for (int i=0;i<buffer2Length;i++){
                 if (isspace(buffer2[i])){
                     buffer2[i] = '\0';

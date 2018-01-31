@@ -10,6 +10,7 @@
 #include "sre/Shader.hpp"
 #include "sre/Texture.hpp"
 #include "glm/glm.hpp"
+#include "sre/Color.hpp"
 
 #include <string>
 #include <map>
@@ -40,21 +41,45 @@ namespace sre {
         void setName(const std::string &name);
 
         // uniform parameters
-        glm::vec4 getColor();
+        Color getColor();
 
-        bool setColor(const glm::vec4 &color);
-
-        float getSpecularity();
-
-        bool setSpecularity(float specularity);
+        bool setColor(const Color &color);
 
         std::shared_ptr<sre::Texture> getTexture();
 
         bool setTexture(std::shared_ptr<sre::Texture> texture);
 
+        Color getSpecularity();
+
+        bool setSpecularity(Color specularity); // {specular intensity (rgb), Specular exponent (a)}.
+                                                // Specular intensity should be between 0.0 and 1.0
+                                                // Alpha value stores the specular exponent must be above 0.0. Large values gives smaller highlights
+
+
+        glm::vec2 getMetallicRoughness();       // The metalness of the material. A value of 1.0 means the material is
+        bool setMetallicRoughness(glm::vec2 metallicRoughness);       // a metal. A value of 0.0 means the material is a dielectric. Values in
+                                                // between are for blending between metals and dielectrics such as dirty
+                                                // metallic surfaces. This value is linear. If a metallicRoughnessTexture
+                                                // is specified, this value is multiplied with the metallic texel values.
+                                                // (Source https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness)
+                                                // The roughness of the material. A value of 1.0 means the material is
+                                                // completely rough. A value of 0.0 means the material is completely smooth.
+                                                //  This value is linear. If a metallicRoughnessTexture is specified,
+                                                // this value is multiplied with the roughness texel values.
+                                                // (Source https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness)
+
+        std::shared_ptr<sre::Texture> getMetallicRoughnessTexture();
+        bool setMetallicRoughnessTexture(std::shared_ptr<sre::Texture> texture);
+                                                // The metallic-roughness texture. The metalness values are sampled from
+                                                // the B channel. The roughness values are sampled from the G channel.
+                                                // These values are linear. If other channels are present (R or A), they
+                                                // are ignored for metallic-roughness calculations.
+                                                // (Source https://github.com/KhronosGroup/glTF/tree/master/specification/2.0#reference-pbrmetallicroughness)
+
         bool set(std::string uniformName, glm::vec4 value);
         bool set(std::string uniformName, float value);
         bool set(std::string uniformName, std::shared_ptr<sre::Texture>);
+        bool set(std::string uniformName, Color value);
 
         template<typename T>
         inline T get(std::string uniformName);
@@ -96,26 +121,39 @@ namespace sre {
     template<>
     inline glm::vec4 Material::get(std::string uniformName)  {
         auto t = shader->getUniformType(uniformName.c_str());
-        if (t.type != UniformType::Vec4){
-            return glm::vec4(0,0,0,0);
-        }
-        for (auto & tv : vectorValues){
-            if (tv.id == t.id){
-                return tv.value;
+        if (t.type == UniformType::Vec4){
+            for (auto & tv : vectorValues){
+                if (tv.id == t.id){
+                    return tv.value;
+                }
             }
         }
         return glm::vec4(0,0,0,0);
     }
 
     template<>
+    inline Color Material::get(std::string uniformName)  {
+        auto t = shader->getUniformType(uniformName.c_str());
+        if (t.type == UniformType::Vec4){
+            for (auto & tv : vectorValues){
+                if (tv.id == t.id){
+                    Color value;
+                    value.setFromLinear(tv.value);
+                    return value;
+                }
+            }
+        }
+        return {0,0,0,0};
+    }
+
+    template<>
     inline float Material::get(std::string uniformName) {
         auto t = shader->getUniformType(uniformName.c_str());
-        if (t.type != UniformType::Vec4){
-            return 0.0f;
-        }
-        for (auto & tv : floatValues){
-            if (tv.id == t.id){
-                return tv.value;
+        if (t.type == UniformType::Float) {
+            for (auto &tv : floatValues) {
+                if (tv.id == t.id) {
+                    return tv.value;
+                }
             }
         }
         return 0.0f;

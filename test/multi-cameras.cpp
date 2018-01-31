@@ -11,7 +11,7 @@
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <sre/Profiler.hpp>
+#include <sre/Inspector.hpp>
 
 
 using namespace sre;
@@ -28,9 +28,9 @@ public:
         camera2.setPerspectiveProjection(60,0.1,100);
         camera2.setViewport({0,0.8},{0.2,0.2});
 
-        material = Shader::getStandard()->createMaterial();
+        material = Shader::getStandardBlinnPhong()->createMaterial();
         material->setColor({1.0f,1.0f,1.0f,1.0f});
-        material->setSpecularity(20.0f);
+        material->setSpecularity(Color(.5,.5,.5,20.0f));
 
         mesh = Mesh::create().withCube().build();
         worldLights.setAmbientLight({0.5,0.5,0.5});
@@ -82,7 +82,7 @@ public:
         ImGui::LabelText("GetPos","%f %f %f", pos.x, pos.y, pos.z);
         ImGui::LabelText("GetRot","%f %f %f", rot.x, rot.y, rot.z);
 
-        // static Profiler prof;
+        // static Inspector prof;
         // prof.update();
         // prof.gui(true);
 

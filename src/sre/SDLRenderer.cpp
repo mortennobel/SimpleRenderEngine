@@ -79,13 +79,11 @@ void GLAPIENTRY openglCallbackFunction(GLenum source,
 
 namespace sre{
 
-
+    SDLRenderer* SDLRenderer::instance = nullptr;
 #ifdef EMSCRIPTEN
-    static SDLRenderer* sdlInstance = nullptr;
-
     struct SDLRendererInternal{
         static void update(float f){
-            sdlInstance->frame(f);
+            SDLRenderer::instance->frame(f);
         }
     };
 
@@ -111,22 +109,26 @@ namespace sre{
      otherEvent([](SDL_Event&){}),
      windowTitle( std::string("SimpleRenderEngine ")+std::to_string(Renderer::sre_version_major)+"."+std::to_string(Renderer::sre_version_minor )+"."+std::to_string(Renderer::sre_version_point))
     {
-#ifdef EMSCRIPTEN
-        sdlInstance = this;
-#endif
+
+        instance = this;
+
     }
 
     SDLRenderer::~SDLRenderer() {
         delete r;
         r = nullptr;
-#ifdef EMSCRIPTEN
-        sdlInstance = nullptr;
-#endif
+
+        instance = nullptr;
+
         SDL_DestroyWindow(window);
         SDL_Quit();
     }
 
     void SDLRenderer::frame(float deltaTimeSec){
+        typedef std::chrono::high_resolution_clock Clock;
+        using MilliSeconds = std::chrono::duration<float, std::chrono::milliseconds::period>;
+        auto lastTick = Clock::now();
+
         SDL_Event e;
         //Handle events on queue
         while( SDL_PollEvent( &e ) != 0 )
@@ -173,61 +175,25 @@ namespace sre{
                     break;
             }
         }
-
+        {   // time meassure
+            auto tick = Clock::now();
+            deltaTimeEvent = std::chrono::duration_cast<MilliSeconds>(tick - lastTick).count();
+            lastTick = tick;
+        }
         frameUpdate(deltaTimeSec);
+        {   // time meassure
+            auto tick = Clock::now();
+            deltaTimeUpdate = std::chrono::duration_cast<MilliSeconds>(tick - lastTick).count();
+            lastTick = tick;
+        }
         frameRender();
+        {   // time meassure
+            auto tick = Clock::now();
+            deltaTimeRender = std::chrono::duration_cast<MilliSeconds>(tick - lastTick).count();
+            lastTick = tick;
+        }
 
         r->swapWindow();
-    }
-
-    void SDLRenderer::init(uint32_t sdlInitFlag,uint32_t sdlWindowFlags, bool vsync) {
-        if (running){
-            return;
-        }
-        if (!window){
-#ifdef EMSCRIPTEN
-            SDL_Renderer *renderer = NULL;
-            SDL_CreateWindowAndRenderer(windowWidth, windowHeight, SDL_WINDOW_OPENGL, &window, &renderer);
-#else
-            SDL_Init( sdlInitFlag  );
-            SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-#ifdef SRE_DEBUG_CONTEXT
-			SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
-#endif
-        	window = SDL_CreateWindow(windowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, windowWidth, windowHeight,sdlWindowFlags);
-#endif
-            r = new Renderer(window, vsync);
-
-#ifdef SRE_DEBUG_CONTEXT
-			if (glDebugMessageCallback) {
-				//GLenum err = glewInit();
-				//if (GLEW_OK != err)
-				{
-					/* Problem: glewInit failed, something is seriously wrong. */
-					LOG_INFO("Register OpenGL debug callback ");
-
-					std::cout << "Register OpenGL debug callback " << std::endl;
-					glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
-					glDebugMessageCallback(openglCallbackFunction, nullptr);
-					GLuint unusedIds = 0;
-					glDebugMessageControl(GL_DONT_CARE,
-						GL_DONT_CARE,
-						GL_DONT_CARE,
-						0,
-						&unusedIds,
-						true);
-				}
-				//else
-				//	LOG_INFO("glDebugMessageCallback not available");
-			}
-#endif
-#ifndef EMSCRIPTEN
-            glEnable(GL_FRAMEBUFFER_SRGB);
-#endif
-        }
     }
 
     void SDLRenderer::startEventLoop() {
@@ -243,13 +209,9 @@ namespace sre{
         using FpSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
         auto lastTick = Clock::now();
         float deltaTime = 0;
-		VR* vr = r->getVR();
+
         while (running){
-			if (vr)
-			{
-				vr->render();
-			}
-            frame(deltaTime);
+			frame(deltaTime);
 
             auto tick = Clock::now();
             deltaTime = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
@@ -265,6 +227,28 @@ namespace sre{
             lastTick = tick;
         }
 #endif
+    }
+
+    void SDLRenderer::startEventLoop(std::shared_ptr<VR> vr) {
+        if (!window){
+            LOG_INFO("SDLRenderer::init() not called");
+        }
+
+        running = true;
+
+        typedef std::chrono::high_resolution_clock Clock;
+        using FpSeconds = std::chrono::duration<float, std::chrono::seconds::period>;
+        auto lastTick = Clock::now();
+        float deltaTime = 0;
+
+        while (running){
+            vr->render();
+			frame(deltaTime);
+
+            auto tick = Clock::now();
+            deltaTime = std::chrono::duration_cast<FpSeconds>(tick - lastTick).count();
+            lastTick = tick;
+        }
     }
 
     void SDLRenderer::stopEventLoop() {
@@ -326,5 +310,84 @@ namespace sre{
 
     bool SDLRenderer::isMouseCursorLocked() {
         return SDL_GetRelativeMouseMode() == SDL_TRUE;
+    }
+
+    SDLRenderer::InitBuilder SDLRenderer::init() {
+        return SDLRenderer::InitBuilder(this);
+    }
+
+    SDLRenderer::InitBuilder::~InitBuilder() {
+        build();
+    }
+
+    SDLRenderer::InitBuilder::InitBuilder(SDLRenderer *sdlRenderer)
+            :sdlRenderer(sdlRenderer) {
+    }
+
+    SDLRenderer::InitBuilder &SDLRenderer::InitBuilder::withSdlInitFlags(uint32_t sdlInitFlag) {
+        this->sdlInitFlag = sdlInitFlag;
+        return *this;
+    }
+
+    SDLRenderer::InitBuilder &SDLRenderer::InitBuilder::withSdlWindowFlags(uint32_t sdlWindowFlags) {
+        this->sdlWindowFlags = sdlWindowFlags;
+        return *this;
+    }
+
+    SDLRenderer::InitBuilder &SDLRenderer::InitBuilder::withVSync(bool vsync) {
+        this->vsync = vsync;
+        return *this;
+    }
+
+    SDLRenderer::InitBuilder &SDLRenderer::InitBuilder::withGLVersion(int majorVersion, int minorVersion) {
+        this->glMajorVersion = majorVersion;
+        this->glMinorVersion = minorVersion;
+        return *this;
+    }
+
+    void SDLRenderer::InitBuilder::build() {
+        if (sdlRenderer->running){
+            return;
+        }
+        if (!sdlRenderer->window){
+#ifdef EMSCRIPTEN
+            SDL_Renderer *renderer = nullptr;
+            SDL_CreateWindowAndRenderer(sdlRenderer->windowWidth, sdlRenderer->windowHeight, SDL_WINDOW_OPENGL, &sdlRenderer->window, &renderer);
+#else
+            SDL_Init( sdlInitFlag  );
+            SDL_GL_SetAttribute(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, glMajorVersion);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, glMinorVersion);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+#ifdef SRE_DEBUG_CONTEXT
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
+#endif
+            sdlRenderer->window = SDL_CreateWindow(sdlRenderer->windowTitle.c_str(), SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, sdlRenderer->windowWidth, sdlRenderer->windowHeight,sdlWindowFlags);
+#endif
+            sdlRenderer->r = new Renderer(sdlRenderer->window, vsync, maxSceneLights);
+
+#ifdef SRE_DEBUG_CONTEXT
+            if (glDebugMessageCallback) {
+				LOG_INFO("Register OpenGL debug callback ");
+
+				std::cout << "Register OpenGL debug callback " << std::endl;
+				glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS);
+				glDebugMessageCallback(openglCallbackFunction, nullptr);
+				GLuint unusedIds = 0;
+				glDebugMessageControl(GL_DONT_CARE,
+					GL_DONT_CARE,
+					GL_DONT_CARE,
+					0,
+					&unusedIds,
+					true);
+
+			}
+#endif
+        }
+    }
+
+    SDLRenderer::InitBuilder &SDLRenderer::InitBuilder::withMaxSceneLights(int maxSceneLights) {
+        this->maxSceneLights = maxSceneLights;
+        return *this;
     }
 }

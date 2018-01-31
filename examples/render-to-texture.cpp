@@ -9,7 +9,7 @@
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-#include <sre/Profiler.hpp>
+#include <sre/Inspector.hpp>
 
 
 using namespace sre;
@@ -26,8 +26,9 @@ public:
 
         framebuffer = Framebuffer::create().withTexture(texture).build();
 
-        materialOffscreen = Shader::getStandard()->createMaterial();
-        material = Shader::getStandard()->createMaterial();
+        materialOffscreen = Shader::getStandardBlinnPhong()->createMaterial();
+        materialOffscreen->setSpecularity({1,1,1,120});
+        material = Shader::getStandardBlinnPhong()->createMaterial();
         material->setTexture(texture);
 
         mesh = Mesh::create().withCube().build();
@@ -63,7 +64,7 @@ public:
 
         renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), material);
                                                                         // The offscreen texture is used in material
-        // static Profiler prof;
+        // static Inspector prof;
         // prof.update();
         // prof.gui(true);
 

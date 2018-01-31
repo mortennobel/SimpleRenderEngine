@@ -46,12 +46,13 @@ public:
 
     const glm::vec2 &getSpriteAnchor() const;   // anchor (relative to spriteSize)
 
-    std::array<glm::vec2,4> getCorners();       // return the position of the sprite
+    std::array<glm::vec2,4> getTrimmedCorners();       // return the position of the trimmed sprite
 
     std::array<glm::vec2,4> getUVs();
 
 private:
-    Sprite(glm::ivec2 spritePos, glm::ivec2 spriteSize,glm::vec2  spriteAnchor, Texture* texture);
+    Sprite(glm::ivec2 spritePos, glm::ivec2 spriteSize,glm::ivec2 spriteSourcePos,
+        glm::ivec2 spriteSourceSize, glm::vec2  spriteAnchor, Texture* texture);
 
     float rotation    = 0;
     glm::vec2 position= {0.0f,0.0f};
@@ -69,11 +70,13 @@ private:
 
     glm::ivec2 spritePos;
     glm::ivec2 spriteSize;
+    glm::ivec2 spriteSourcePos;
+    glm::ivec2 spriteSourceSize;
     glm::vec2  spriteAnchor;
     Texture* texture;
     friend class SpriteAtlas;
     friend class SpriteBatch;
-    friend class Profiler;
+    friend class Inspector;
 };
 
 }

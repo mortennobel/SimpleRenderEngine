@@ -10,6 +10,7 @@
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtx/transform.hpp>
 
 
 using namespace sre;
@@ -22,12 +23,12 @@ public:
         camera.lookAt({0,0,3},{0,0,0},{0,1,0});
         camera.setPerspectiveProjection(60,0.1,100);
 
-        material = Shader::getStandard()->createMaterial();
-        material->setColor({1.0f,1.0f,1.0f,1.0f});
-        material->setSpecularity(20.0f);
+        materialPhong = Shader::getStandardBlinnPhong()->createMaterial();
+        materialPhong->setColor({1.0f,1.0f,1.0f,1.0f});
+        materialPhong->setSpecularity(Color(.5,.5,.5,180.0f));
 
         mesh = Mesh::create().withCube().build();
-        worldLights.setAmbientLight({0.5,0.5,0.5});
+        worldLights.setAmbientLight({0.0,0.0,0.0});
         worldLights.addLight(Light::create().withPointLight({0, 3,0}).withColor({1,0,0}).withRange(20).build());
         worldLights.addLight(Light::create().withPointLight({3, 0,0}).withColor({0,1,0}).withRange(20).build());
         worldLights.addLight(Light::create().withPointLight({0,-3,0}).withColor({0,0,1}).withRange(20).build());
@@ -46,7 +47,7 @@ public:
                 .withWorldLights(&worldLights)
                 .withClearColor(true, {1, 0, 0, 1})
                 .build();
-        renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), material);
+        renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i*0.1f)), materialPhong);
         i++;
     }
 private:
@@ -54,7 +55,7 @@ private:
     Camera camera;
     WorldLights worldLights;
     std::shared_ptr<Mesh> mesh;
-    std::shared_ptr<Material> material;
+    std::shared_ptr<Material> materialPhong;
     int i=0;
 };
 

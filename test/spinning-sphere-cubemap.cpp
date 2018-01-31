@@ -35,7 +35,7 @@ out vec3 vNormal;
 uniform mat4 g_model;
 uniform mat4 g_view;
 uniform mat4 g_projection;
-uniform mat3 g_normal;
+uniform mat3 g_model_view_it;
 
 void main(void) {
     gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
@@ -59,12 +59,12 @@ void main(void)
                 .build();
         material = shader->createMaterial();
         tex = Texture::create()
-                .withFileCubemap("test_data/cube-posx.png", Texture::TextureCubemapSide::PositiveX)
-                .withFileCubemap("test_data/cube-negx.png", Texture::TextureCubemapSide::NegativeX)
-                .withFileCubemap("test_data/cube-posy.png", Texture::TextureCubemapSide::PositiveY)
-                .withFileCubemap("test_data/cube-negy.png", Texture::TextureCubemapSide::NegativeY)
-                .withFileCubemap("test_data/cube-posz.png", Texture::TextureCubemapSide::PositiveZ)
-                .withFileCubemap("test_data/cube-negz.png", Texture::TextureCubemapSide::NegativeZ)
+                .withFileCubemap("test_data/cube-posx.png", Texture::CubemapSide::PositiveX)
+                .withFileCubemap("test_data/cube-negx.png", Texture::CubemapSide::NegativeX)
+                .withFileCubemap("test_data/cube-posy.png", Texture::CubemapSide::PositiveY)
+                .withFileCubemap("test_data/cube-negy.png", Texture::CubemapSide::NegativeY)
+                .withFileCubemap("test_data/cube-posz.png", Texture::CubemapSide::PositiveZ)
+                .withFileCubemap("test_data/cube-negz.png", Texture::CubemapSide::NegativeZ)
                 .build();
 
         material->setTexture(tex);
@@ -98,9 +98,11 @@ void main(void)
     }
 
     void drawCross(RenderPass& rp,glm::vec3 p, float size = 0.3f, glm::vec4 color = {1,0,0,1}){
-        rp.drawLines({p-glm::vec3{size,0,0}, p+glm::vec3{size,0,0}},color);
-        rp.drawLines({p-glm::vec3{0,size,0}, p+glm::vec3{0,size,0}},color);
-        rp.drawLines({p-glm::vec3{0,0,size}, p+glm::vec3{0,0,size}},color);
+        Color col;
+        col.setFromLinear(color);
+        rp.drawLines({p-glm::vec3{size,0,0}, p+glm::vec3{size,0,0}},col);
+        rp.drawLines({p-glm::vec3{0,size,0}, p+glm::vec3{0,size,0}},col);
+        rp.drawLines({p-glm::vec3{0,0,size}, p+glm::vec3{0,0,size}},col);
     }
 
     void drawLight(RenderPass rp, Light& l, float size){

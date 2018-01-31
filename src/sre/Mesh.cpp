@@ -22,14 +22,14 @@
 namespace sre {
     uint16_t Mesh::meshIdCount = 0;
 
-    Mesh::Mesh(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology, std::string name,RenderStats& renderStats)
+    Mesh::Mesh(std::map<std::string,std::vector<float>>&& attributesFloat,std::map<std::string,std::vector<glm::vec2>>&& attributesVec2, std::map<std::string,std::vector<glm::vec3>>&& attributesVec3,std::map<std::string,std::vector<glm::vec4>>&& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>&& attributesIVec4, std::vector<std::vector<uint16_t>> &&indices, std::vector<MeshTopology> meshTopology, std::string name,RenderStats& renderStats)
     {
         meshId = meshIdCount++;
         if ( Renderer::instance == nullptr){
             LOG_FATAL("Cannot instantiate sre::Mesh before sre::Renderer is created.");
         }
         glGenBuffers(1, &vertexBufferId);
-        update(attributesFloat, attributesVec2, attributesVec3,attributesVec4,attributesIVec4, indices, meshTopology,name,renderStats);
+        update(std::move(attributesFloat), std::move(attributesVec2), std::move(attributesVec3),std::move(attributesVec4),std::move(attributesIVec4), std::move(indices), meshTopology,name,renderStats);
         Renderer::instance->meshes.emplace_back(this);
     }
 
@@ -46,7 +46,7 @@ namespace sre {
 
 #ifndef EMSCRIPTEN
         for (auto arrayObj : shaderToVertexArrayObject) {
-            glDeleteVertexArrays(1, &(arrayObj.second));
+            glDeleteVertexArrays(1, &(arrayObj.second.vaoID));
         }
 #endif
         glDeleteBuffers(1, &vertexBufferId);
@@ -57,15 +57,19 @@ namespace sre {
     void Mesh::bind(Shader* shader) {
 #ifndef EMSCRIPTEN
         auto res = shaderToVertexArrayObject.find(shader->shaderProgramId);
-        if (res != shaderToVertexArrayObject.end()) {
-            GLuint vao = res->second;
+        if (res != shaderToVertexArrayObject.end() && res->second.shaderId == shader->shaderUniqueId) {
+            GLuint vao = res->second.vaoID;
             glBindVertexArray(vao);
         } else {
             GLuint index;
-            glGenVertexArrays(1, &index);
+            if (res != shaderToVertexArrayObject.end()){
+                index = res->second.vaoID;
+            } else {
+                glGenVertexArrays(1, &index);
+            }
             glBindVertexArray(index);
             setVertexAttributePointers(shader);
-            shaderToVertexArrayObject[shader->shaderProgramId] = index;
+            shaderToVertexArrayObject[shader->shaderProgramId] = {shader->shaderUniqueId, index};
         }
 #else
         setVertexAttributePointers(shader);
@@ -87,99 +91,30 @@ namespace sre {
         return vertexCount;
     }
 
-    void Mesh::update(std::map<std::string,std::vector<float>>& attributesFloat,std::map<std::string,std::vector<glm::vec2>>& attributesVec2, std::map<std::string,std::vector<glm::vec3>>& attributesVec3,std::map<std::string,std::vector<glm::vec4>>& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>& attributesIVec4, const std::vector<std::vector<uint16_t>> &indices, std::vector<MeshTopology> meshTopology,std::string name,RenderStats& renderStats) {
+    void Mesh::update(std::map<std::string,std::vector<float>>&& attributesFloat,std::map<std::string,std::vector<glm::vec2>>&& attributesVec2, std::map<std::string,std::vector<glm::vec3>>&& attributesVec3,std::map<std::string,std::vector<glm::vec4>>&& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>&& attributesIVec4, std::vector<std::vector<uint16_t>> &&indices, std::vector<MeshTopology> meshTopology,std::string name,RenderStats& renderStats) {
         this->meshTopology = meshTopology;
         this->name = name;
         meshId = meshIdCount++;
 
         vertexCount = 0;
-        totalBytesPerVertex = 0;
         dataSize = 0;
-        std::vector<int> offset;
 
 #ifndef EMSCRIPTEN
         for (auto arrayObj : shaderToVertexArrayObject){
-            glDeleteVertexArrays(1, &(arrayObj.second));
+            glDeleteVertexArrays(1, &(arrayObj.second.vaoID));
         }
         shaderToVertexArrayObject.clear();
 #endif
         attributeByName.clear();
 
-        // enforced std140 layout rules ( https://learnopengl.com/#!Advanced-OpenGL/Advanced-GLSL )
-        // the order is vec3, vec4, ivec4, vec2, float
-        for (auto & pair : attributesVec3){
-            vertexCount = std::max(vertexCount, (int)pair.second.size());
-            offset.push_back(totalBytesPerVertex);
-            attributeByName[pair.first] = {totalBytesPerVertex, 3, GL_FLOAT, GL_FLOAT_VEC3};
-            totalBytesPerVertex += sizeof(glm::vec4); // note use vec4 size
-        }
-        for (auto & pair : attributesVec4){
-            vertexCount = std::max(vertexCount, (int)pair.second.size());
-            offset.push_back(totalBytesPerVertex);
-            attributeByName[pair.first] = {totalBytesPerVertex, 4, GL_FLOAT, GL_FLOAT_VEC4};
-            totalBytesPerVertex += sizeof(glm::vec4);
-        }
-        for (auto & pair : attributesIVec4){
-            vertexCount = std::max(vertexCount, (int)pair.second.size());
-            offset.push_back(totalBytesPerVertex);
-            attributeByName[pair.first] = {totalBytesPerVertex, 4,GL_INT, GL_INT_VEC4};
-            totalBytesPerVertex += sizeof(glm::i32vec4);
-        }
-        for (auto & pair : attributesVec2){
-            vertexCount = std::max(vertexCount, (int)pair.second.size());
-            offset.push_back(totalBytesPerVertex);
-            attributeByName[pair.first] = {totalBytesPerVertex, 2, GL_FLOAT,GL_FLOAT_VEC2};
-            totalBytesPerVertex += sizeof(glm::vec2);
-        }
-        for (auto & pair : attributesFloat){
-            vertexCount = std::max(vertexCount, (int)pair.second.size());
-            offset.push_back(totalBytesPerVertex);
-            attributeByName[pair.first] = {totalBytesPerVertex, 1, GL_FLOAT, GL_FLOAT};
-            totalBytesPerVertex += sizeof(float);
-        }
-        // add final padding (make vertex align with vec4)
-        if (totalBytesPerVertex%(sizeof(float)*4) != 0) {
-            totalBytesPerVertex += sizeof(float)*4 - totalBytesPerVertex%(sizeof(float)*4);
-        }
-        std::vector<float> interleavedData((vertexCount * totalBytesPerVertex) / sizeof(float), 0);
-        const char * dataPtr = (char*) interleavedData.data();
+        this->indices         = std::move(indices);
+        this->attributesFloat = std::move(attributesFloat);
+        this->attributesVec2  = std::move(attributesVec2);
+        this->attributesVec3  = std::move(attributesVec3);
+        this->attributesVec4  = std::move(attributesVec4);
+        this->attributesIVec4 = std::move(attributesIVec4);
 
-        // add data (copy each element into interleaved buffer)
-        for (auto & pair : attributesVec3){
-            auto& offsetBytes = attributeByName[pair.first];
-            for (int i=0;i<pair.second.size();i++){
-                glm::vec3 * locationPtr = (glm::vec3 *) (dataPtr + (totalBytesPerVertex * i) + offsetBytes.offset);
-                *locationPtr = pair.second[i];
-            }
-        }
-        for (auto & pair : attributesVec4){
-            auto& offsetBytes = attributeByName[pair.first];
-            for (int i=0;i<pair.second.size();i++) {
-                glm::vec4 * locationPtr = (glm::vec4 *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
-                *locationPtr = pair.second[i];
-            }
-        }
-        for (auto & pair : attributesIVec4){
-            auto& offsetBytes = attributeByName[pair.first];
-            for (int i=0;i<pair.second.size();i++) {
-                glm::i32vec4 * locationPtr = (glm::i32vec4 *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
-                *locationPtr = pair.second[i];
-            }
-        }
-        for (auto & pair : attributesVec2){
-            auto& offsetBytes = attributeByName[pair.first];
-            for (int i=0;i<pair.second.size();i++) {
-                glm::vec2 * locationPtr = (glm::vec2 *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
-                *locationPtr = pair.second[i];
-            }
-        }
-        for (auto & pair : attributesFloat){
-            auto& offsetBytes = attributeByName[pair.first];
-            for (int i=0;i<pair.second.size();i++) {
-                float * locationPtr = (float *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
-                *locationPtr = pair.second[i];
-            }
-        }
+        auto interleavedData = getInterleavedData();
 
 #ifndef EMSCRIPTEN
         glBindVertexArray(0);
@@ -187,8 +122,8 @@ namespace sre {
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float)*interleavedData.size(), interleavedData.data(), GL_STATIC_DRAW);
 
-        if (!indices.empty()){
-            for (int i=0;i<indices.size();i++){
+        if (!this->indices.empty()){
+            for (int i=0;i<this->indices.size();i++){
                 unsigned int eBufferId;
                 if (i >= elementBufferId.size()){
                     glGenBuffers(1, &eBufferId);
@@ -197,18 +132,11 @@ namespace sre {
                     eBufferId = elementBufferId[i];
                 }
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eBufferId);
-                GLsizeiptr indicesSize = indices[i].size()*sizeof(uint16_t);
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, indices[i].data(), GL_STATIC_DRAW);
+                GLsizeiptr indicesSize = this->indices[i].size()*sizeof(uint16_t);
+                glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, this->indices[i].data(), GL_STATIC_DRAW);
                 dataSize += indicesSize;
             }
         }
-
-        this->indices = std::move(indices);
-        this->attributesFloat = std::move(attributesFloat);
-        this->attributesVec2  = std::move(attributesVec2);
-        this->attributesVec3  = std::move(attributesVec3);
-        this->attributesVec4  = std::move(attributesVec4);
-        this->attributesIVec4 = std::move(attributesIVec4);
 
         boundsMinMax[0] = glm::vec3{std::numeric_limits<float>::max()};
         boundsMinMax[1] = glm::vec3{-std::numeric_limits<float>::max()};
@@ -219,7 +147,7 @@ namespace sre {
                 boundsMinMax[1] = glm::max(boundsMinMax[1], v);
             }
         }
-        dataSize = totalBytesPerVertex*vertexCount;
+        dataSize = totalBytesPerVertex * vertexCount;
 
         renderStats.meshBytes += dataSize;
         renderStats.meshBytesAllocated += dataSize;
@@ -389,6 +317,96 @@ namespace sre {
         return indices.at(indexSet).size();
     }
 
+    std::vector<glm::vec4> Mesh::getTangents() {
+        std::vector<glm::vec4> res;
+        auto ref = attributesVec4.find("tangent");
+        if (ref != attributesVec4.end()){
+            res = ref->second;
+        }
+        return res;
+    }
+
+    std::vector<float> Mesh::getInterleavedData() {
+        totalBytesPerVertex = 0;
+        std::vector<int> offset;
+        // enforced std140 layout rules ( https://learnopengl.com/#!Advanced-OpenGL/Advanced-GLSL )
+        // the order is vec3, vec4, ivec4, vec2, float
+        for (auto & pair : attributesVec3){
+            vertexCount = std::max(vertexCount, (int)pair.second.size());
+            offset.push_back(totalBytesPerVertex);
+            attributeByName[pair.first] = {totalBytesPerVertex, 3, GL_FLOAT, GL_FLOAT_VEC3};
+            totalBytesPerVertex += sizeof(glm::vec4); // note use vec4 size
+        }
+        for (auto & pair : attributesVec4){
+            vertexCount = std::max(vertexCount, (int)pair.second.size());
+            offset.push_back(totalBytesPerVertex);
+            attributeByName[pair.first] = {totalBytesPerVertex, 4, GL_FLOAT, GL_FLOAT_VEC4};
+            totalBytesPerVertex += sizeof(glm::vec4);
+        }
+        for (auto & pair : attributesIVec4){
+            vertexCount = std::max(vertexCount, (int)pair.second.size());
+            offset.push_back(totalBytesPerVertex);
+            attributeByName[pair.first] = {totalBytesPerVertex, 4,GL_INT, GL_INT_VEC4};
+            totalBytesPerVertex += sizeof(glm::i32vec4);
+        }
+        for (auto & pair : attributesVec2){
+            vertexCount = std::max(vertexCount, (int)pair.second.size());
+            offset.push_back(totalBytesPerVertex);
+            attributeByName[pair.first] = {totalBytesPerVertex, 2, GL_FLOAT,GL_FLOAT_VEC2};
+            totalBytesPerVertex += sizeof(glm::vec2);
+        }
+        for (auto & pair : attributesFloat){
+            vertexCount = std::max(vertexCount, (int)pair.second.size());
+            offset.push_back(totalBytesPerVertex);
+            attributeByName[pair.first] = {totalBytesPerVertex, 1, GL_FLOAT, GL_FLOAT};
+            totalBytesPerVertex += sizeof(float);
+        }
+        // add final padding (make vertex align with vec4)
+        if (totalBytesPerVertex%(sizeof(float)*4) != 0) {
+            totalBytesPerVertex += sizeof(float)*4 - totalBytesPerVertex%(sizeof(float)*4);
+        }
+        std::vector<float> interleavedData((vertexCount * totalBytesPerVertex) / sizeof(float), 0);
+        const char * dataPtr = (char*) interleavedData.data();
+
+        // add data (copy each element into interleaved buffer)
+        for (auto & pair : attributesVec3){
+            auto& offsetBytes = attributeByName[pair.first];
+            for (int i=0;i<pair.second.size();i++){
+                glm::vec3 * locationPtr = (glm::vec3 *) (dataPtr + (totalBytesPerVertex * i) + offsetBytes.offset);
+                *locationPtr = pair.second[i];
+            }
+        }
+        for (auto & pair : attributesVec4){
+            auto& offsetBytes = attributeByName[pair.first];
+            for (int i=0;i<pair.second.size();i++) {
+                glm::vec4 * locationPtr = (glm::vec4 *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
+                *locationPtr = pair.second[i];
+            }
+        }
+        for (auto & pair : attributesIVec4){
+            auto& offsetBytes = attributeByName[pair.first];
+            for (int i=0;i<pair.second.size();i++) {
+                glm::i32vec4 * locationPtr = (glm::i32vec4 *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
+                *locationPtr = pair.second[i];
+            }
+        }
+        for (auto & pair : attributesVec2){
+            auto& offsetBytes = attributeByName[pair.first];
+            for (int i=0;i<pair.second.size();i++) {
+                glm::vec2 * locationPtr = (glm::vec2 *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
+                *locationPtr = pair.second[i];
+            }
+        }
+        for (auto & pair : attributesFloat){
+            auto& offsetBytes = attributeByName[pair.first];
+            for (int i=0;i<pair.second.size();i++) {
+                float * locationPtr = (float *) (dataPtr + totalBytesPerVertex * i + offsetBytes.offset);
+                *locationPtr = pair.second[i];
+            }
+        }
+        return interleavedData;
+    }
+
     Mesh::MeshBuilder &Mesh::MeshBuilder::withPositions(const std::vector<glm::vec3> &vertexPositions) {
         withAttribute("position", vertexPositions);
         return *this;
@@ -406,6 +424,11 @@ namespace sre {
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withColors(const std::vector<glm::vec4> &colors) {
         withAttribute("color", colors);
+        return *this;
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withTangents(const std::vector<glm::vec4> &tangent) {
+        withAttribute("tangent", tangent);
         return *this;
     }
 
@@ -445,13 +468,13 @@ namespace sre {
 
         if (updateMesh != nullptr){
             renderStats.meshBytes -= updateMesh->getDataSize();
-            updateMesh->update(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology,name,renderStats);
+            updateMesh->update(std::move(this->attributesFloat), std::move(this->attributesVec2), std::move(this->attributesVec3), std::move(this->attributesVec4), std::move(this->attributesIVec4), std::move(indices), meshTopology,name,renderStats);
 
 
             return updateMesh->shared_from_this();
         }
 
-        auto res = new Mesh(this->attributesFloat, this->attributesVec2, this->attributesVec3, this->attributesVec4, this->attributesIVec4, indices, meshTopology,name,renderStats);
+        auto res = new Mesh(std::move(this->attributesFloat), std::move(this->attributesVec2), std::move(this->attributesVec3), std::move(this->attributesVec4), std::move(this->attributesIVec4), std::move(indices), meshTopology,name,renderStats);
         renderStats.meshCount++;
 
         return std::shared_ptr<Mesh>(res);
@@ -471,6 +494,7 @@ namespace sre {
         size_t vertexCount = (size_t) ((stacks + 1) * (slices+1));
         vector<vec3> vertices{vertexCount};
         vector<vec3> normals{vertexCount};
+        vector<vec4> tangents{vertexCount};
         vector<vec4> uvs{vertexCount};
 
         int index = 0;
@@ -487,7 +511,9 @@ namespace sre {
                             sinLat1,
                             sinLong * cosLat1};
                 vec3 normal = (vec3)normalize(normalD);
+                vec4 tangent = vec4((vec3)normalize(dvec3(cos(longitude+glm::half_pi<double>()),0, sin(longitude+glm::half_pi<double>()))),1);
                 normals[index] = normal;
+                tangents[index] = tangent;
                 uvs[index] = vec4{1 - i /(float) slices, j /(float) stacks,0,0};
                 vertices[index] = normal * radius;
                 index++;
@@ -495,6 +521,7 @@ namespace sre {
         }
         vector<vec3> finalPosition;
         vector<vec3> finalNormals;
+        vector<vec4> finalTangents;
         vector<vec4> finalUVs;
         // create indices
         for (int j = 0; j < stacks; j++) {
@@ -515,6 +542,7 @@ namespace sre {
                     index = o[1] * (slices+1)  + o[0];
                     finalPosition.push_back(vertices[index]);
                     finalNormals.push_back(normals[index]);
+                    finalTangents.push_back(tangents[index]);
                     finalUVs.push_back(uvs[index]);
                 }
 
@@ -523,6 +551,7 @@ namespace sre {
 
         withPositions(finalPosition);
         withNormals(finalNormals);
+        withTangents(finalTangents);
         withUVs(finalUVs);
         withMeshTopology(MeshTopology::Triangles);
 
@@ -543,17 +572,18 @@ namespace sre {
         size_t vertexCount = (size_t) ((segmentsC + 1) * (segmentsA+1));
         vector<vec3> vertices{vertexCount};
         vector<vec3> normals{vertexCount};
+        vector<vec4> tangents{vertexCount};
         vector<vec4> uvs{vertexCount};
 
         int index = 0;
 
         // create vertices
         for (unsigned short j = 0; j <= segmentsC; j++) {
+            // outer circle
+            float u = glm::two_pi<float>() * j/(float)segmentsC;
+            auto t = vec4((vec3)normalize(dvec3(cos(u+glm::half_pi<double>()),sin(u+glm::half_pi<double>()),0)),1);
             for (int i = 0; i <= segmentsA; i++) {
-
-                //vec3 normal = (vec3)normalize(normalD);
-                //normals[index] = normal;
-                float u = glm::two_pi<float>() * j/(float)segmentsC;
+                // inner circle
                 float v = glm::two_pi<float>() * i/(float)segmentsA;
                 glm::vec3 pos {
                         (radiusC+radiusA*cos(v))*cos(u),
@@ -565,14 +595,21 @@ namespace sre {
                         (radiusC+(radiusA*2)*cos(v))*sin(u),
                         (radiusA*2)*sin(v)
                 };
+                glm::vec3 tangent {
+                        (radiusC+radiusA*cos(v))*cos(u),
+                        (radiusC+radiusA*cos(v))*sin(u),
+                        radiusA*sin(v)
+                };
                 uvs[index] = vec4{1 - j /(float) segmentsC, i /(float) segmentsA,0,0};
                 vertices[index] = pos;
                 normals[index] = glm::normalize(posOuter - pos);
+                tangents[index] = t;
                 index++;
             }
         }
         vector<vec3> finalPosition;
         vector<vec3> finalNormals;
+        vector<vec4> finalTangents;
         vector<vec4> finalUVs;
         // create indices
         for (int j = 0; j < segmentsC; j++) {
@@ -593,6 +630,7 @@ namespace sre {
                     index = o[1] * (segmentsA+1)  + o[0];
                     finalPosition.push_back(vertices[index]);
                     finalNormals.push_back(normals[index]);
+                    finalTangents.push_back(tangents[index]);
                     finalUVs.push_back(uvs[index]);
                 }
 
@@ -601,6 +639,7 @@ namespace sre {
 
         withPositions(finalPosition);
         withNormals(finalNormals);
+        withTangents(finalTangents);
         withUVs(finalUVs);
         withMeshTopology(MeshTopology::Triangles);
 
@@ -696,9 +735,49 @@ namespace sre {
                                      vec3{0, -1, 0},
                              });
 
+        vector<vec4> tangents({
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{0, 0, -1,1},
+                                     vec4{0, 0, -1,1},
+                                     vec4{0, 0, -1,1},
+                                     vec4{0, 0, -1,1},
+                                     vec4{0, 0, -1,1},
+                                     vec4{0, 0, -1,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{0, 0,  1,1},
+                                     vec4{0, 0,  1,1},
+                                     vec4{0, 0,  1,1},
+                                     vec4{0, 0,  1,1},
+                                     vec4{0, 0,  1,1},
+                                     vec4{0, 0,  1,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{1, 0,  0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                                     vec4{-1, 0, 0,1},
+                             });
+
         withPositions(positions);
         withNormals(normals);
         withUVs(uvs);
+        withTangents(tangents);
         withMeshTopology(MeshTopology::Triangles);
 
         return *this;
@@ -723,6 +802,12 @@ namespace sre {
                                                glm::vec3{0, 0, 1},
                                                glm::vec3{0, 0, 1}
                                        });
+        std::vector<glm::vec4> tangents({
+                                               glm::vec4{1, 0,0, 1},
+                                               glm::vec4{1, 0,0, 1},
+                                               glm::vec4{1, 0,0, 1},
+                                               glm::vec4{1, 0,0, 1}
+                                       });
         std::vector<glm::vec4> uvs({
                                            glm::vec4{1, 0,0,0},
                                            glm::vec4{1, 1,0,0},
@@ -735,6 +820,7 @@ namespace sre {
         };
         withPositions(vertices);
         withNormals(normals);
+        withTangents(tangents);
         withUVs(uvs);
         withIndices(indices);
         withMeshTopology(MeshTopology::Triangles);

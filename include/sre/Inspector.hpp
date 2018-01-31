@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <chrono>
+#include <memory>
 #include "sre/RenderStats.hpp"
 #include "sre/Framebuffer.hpp"
 #include "sre/WorldLights.hpp"
@@ -26,13 +27,13 @@ namespace sre {
     class SDLRenderer;
 
     /**
-     * The profiler measures resources used by SimpleRenderEngine.
-     * Profiler.update() records the current state and must be called each frame.
-     * Profiler.gui() draws gui. Must be called within a RenderPass with GUI enabled.
+     * The inspector measures resources used by SimpleRenderEngine.
+     * Inspector.update() records the current state and must be called each frame.
+     * Inspector.gui() draws gui. Must be called within a RenderPass with GUI enabled.
      */
-    class Profiler {
+    class Inspector {
     public:
-        explicit Profiler(int frames = 300, SDLRenderer *sdlRenderer = nullptr);
+        explicit Inspector(int frames = 300);
 
         void update();                  // must be called each in the beginning of each frame to capture data
         void gui(bool useWindow = true);// called when gui should be shown
@@ -45,7 +46,11 @@ namespace sre {
         std::shared_ptr<Framebuffer> framebuffer;
         int frames;
         int frameCount;
-        std::vector<float> milliseconds;
+        std::weak_ptr<Shader> shaderEdit;
+        std::vector<float> millisecondsFrameTime;
+        std::vector<float> millisecondsEvent;
+        std::vector<float> millisecondsUpdate;
+        std::vector<float> millisecondsRender;
         std::vector<RenderStats> stats;
 
         std::vector<float> data;
@@ -53,7 +58,6 @@ namespace sre {
         float time;
 
         std::chrono::time_point<std::chrono::high_resolution_clock> lastTick;
-        SDLRenderer *sdlRenderer;
 
         void showMesh(Mesh *mesh);
 
@@ -62,12 +66,17 @@ namespace sre {
         void showTexture(Texture *tex);
 
         void showSpriteAtlas(SpriteAtlas *pAtlas);
+        void editShader(Shader* shader);
 
         WorldLights worldLights;
 
         void initFramebuffer();
 
         const float previewSize = 100;
+
+        void plotTimings(float *inputData, const char *title);
     };
 
+    DEPRECATED("Use Inspector instead")
+    typedef Inspector Profiler;
 }

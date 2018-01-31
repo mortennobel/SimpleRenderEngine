@@ -54,18 +54,44 @@ std::shared_ptr<SpriteAtlas> SpriteAtlas::create(std::string jsonFile, std::shar
         string name = spriteElement.get("filename").get<string>();
         // "frame": {"x":154,"y":86,"w":92,"h":44},
         // "pivot": {"x":0.5,"y":0.5}
-        int x = (int)spriteElement.get("frame").get("x").get<double>();
-        int y = (int)spriteElement.get("frame").get("y").get<double>();
+        // "trimmed": true,
+        // "rotated": false, // rotated sprites not supported
+        // "spriteSourceSize": {"x":121,"y":94,"w":117,"h":131},
+        // "sourceSize": {"w":256,"h":257},
+        glm::ivec2 pos;
+        glm::ivec2 size;
+        glm::ivec2 sourcePos;
+        glm::ivec2 sourceSize;
 
-        int w = (int)spriteElement.get("frame").get("w").get<double>();
-        int h = (int)spriteElement.get("frame").get("h").get<double>();
-        y = texture->getHeight()-y-h;
-        float px = (float)spriteElement.get("pivot").get("x").get<double>();
-        float py = (float)spriteElement.get("pivot").get("y").get<double>();
-        if (flipAnchorY){
-            py = 1.0f - py;
+        glm::vec2 pivot;
+        pos.x = (int)spriteElement.get("frame").get("x").get<double>();
+        pos.y = (int)spriteElement.get("frame").get("y").get<double>();
+
+        size.x = (int)spriteElement.get("frame").get("w").get<double>();
+        size.y = (int)spriteElement.get("frame").get("h").get<double>();
+
+        if (spriteElement.contains("rotated") && spriteElement.get("rotated").get<bool>()){
+            LOG_ERROR("Rotated sprites not supported: %s", jsonFile.c_str());
         }
-        Sprite sprite({x,y},{w,h},{px,py},texture.get());
+
+        if (spriteElement.contains("trimmed") && spriteElement.get("trimmed").get<bool>()){
+            sourcePos.x = (int)spriteElement.get("spriteSourceSize").get("x").get<double>();
+            sourcePos.y = (int)spriteElement.get("spriteSourceSize").get("y").get<double>();
+            sourceSize.x = (int)spriteElement.get("sourceSize").get("w").get<double>();
+            sourceSize.y = (int)spriteElement.get("sourceSize").get("h").get<double>();
+            float spriteHeight = (int)spriteElement.get("spriteSourceSize").get("h").get<double>();
+            sourcePos.y = sourceSize.y - sourcePos.y - spriteHeight;
+        } else {
+            sourcePos = {0,0};
+            sourceSize = size;
+        }
+        pos.y = texture->getHeight()-pos.y-size.y;
+        pivot.x = (float)spriteElement.get("pivot").get("x").get<double>();
+        pivot.y = (float)spriteElement.get("pivot").get("y").get<double>();
+        if (flipAnchorY){
+            pivot.y = 1.0f - pivot.y;
+        }
+        Sprite sprite(pos,size,sourcePos,sourceSize,pivot,texture.get());
         sprites.emplace(std::pair<std::string, Sprite>(name, std::move(sprite)));
     }
     return std::shared_ptr<SpriteAtlas>(new SpriteAtlas(std::move(sprites), texture, jsonFile));
@@ -99,7 +125,7 @@ Sprite SpriteAtlas::get(std::string name) {
             size.x = texture->getWidth();
             size.y = texture->getHeight();
         }
-        Sprite sprite(pos,size,pivot,texture.get());
+        Sprite sprite(pos,size,{0,0},size,pivot,texture.get());
         sprites.emplace(std::pair<std::string, Sprite>(name, std::move(sprite)));
 
         return std::shared_ptr<SpriteAtlas>(new SpriteAtlas(std::move(sprites), texture, name+"_atlas"));

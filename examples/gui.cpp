@@ -4,7 +4,7 @@
 
 #include "sre/Texture.hpp"
 #include "sre/Renderer.hpp"
-#include "sre/Profiler.hpp"
+#include "sre/Inspector.hpp"
 #include "sre/Material.hpp"
 
 #include <glm/gtx/euler_angles.hpp>
@@ -17,7 +17,7 @@ using namespace sre;
 class GUIExample {
 public:
     GUIExample()
-    :r{},profiler{300,&r}
+    :r{},inspector{300}
     {
         r.init();
 
@@ -33,8 +33,8 @@ public:
                                       .withRange(50)
                                       .build());
 
-        material = Shader::getStandard()->createMaterial();
-        material->setSpecularity(20);
+        material = Shader::getStandardBlinnPhong()->createMaterial();
+        material->setSpecularity(Color(1,1,1,20));
 
         // connect render callback
         r.frameRender = [&](){
@@ -69,14 +69,16 @@ public:
 
         // Show Label (with invisible window)
         ImGui::SetNextWindowPos(ImVec2(100,000));
-        ImGui::Begin("#TestLabel",&open,ImVec2(500,100),0,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs);
+        ImGui::SetNextWindowSize(ImVec2(500,100));
+        ImGui::Begin("#TestLabel",&open,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs);
         ImGui::Text("Hello, world!");
         ImGui::End();
 
         // Show Button (with invisible window)
         // Note window may disappear behind other windows
         ImGui::SetNextWindowPos(ImVec2(200,100));
-        ImGui::Begin("#Button",&open,ImVec2(100,25),0,ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoScrollbar);
+        ImGui::SetNextWindowSize(ImVec2(100,25));
+        ImGui::Begin("#Button",&open,ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoScrollbar);
         if (ImGui::Button("Click me")){
             std::cout << "Clicked"<<std::endl;
         }
@@ -115,20 +117,20 @@ public:
         // 2. Show another simple window, this time using an explicit Begin/End pair
         if(show_another_window)
         {
-            ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiSetCond_FirstUseEver);
+            ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiCond_FirstUseEver);
             ImGui::Begin("Another Window", &show_another_window);
             ImGui::Text("Hello");
 
 
             ImGui::End();
         }
-        profiler.update();
-        profiler.gui();
+        inspector.update();
+        inspector.gui();
     }
 private:
     SDLRenderer r;
     glm::vec2 rotation;
-    Profiler profiler;
+    Inspector inspector;
     bool show_another_window = false;
     ImVec4 clear_color = ImColor(114, 144, 154);
     std::shared_ptr<Mesh> mesh;
@@ -136,8 +138,6 @@ private:
     Camera camera;
     WorldLights worldLights;
 };
-
-
 
 int main() {
     new GUIExample();

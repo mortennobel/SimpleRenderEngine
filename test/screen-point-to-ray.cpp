@@ -46,17 +46,17 @@ public:
                                      .build());
 
 
-        mat1 = Shader::getStandard()->createMaterial();
+        mat1 = Shader::getStandardBlinnPhong()->createMaterial();
         mat1->setColor({1,1,1,1});
-        mat1->setSpecularity(0);
+        mat1->setSpecularity(Color(0,0,0,0));
 
-        mat2 = Shader::getStandard()->createMaterial();
+        mat2 = Shader::getStandardBlinnPhong()->createMaterial();
         mat2->setColor({1,0,0,1});
-        mat2->setSpecularity(0);
+        mat2->setSpecularity(Color(0,0,0,0));
 
-        matPlane = Shader::getStandard()->createMaterial();
+        matPlane = Shader::getStandardBlinnPhong()->createMaterial();
         matPlane->setColor({1,1,1,1});
-        matPlane->setSpecularity(0);
+        matPlane->setSpecularity(Color(0,0,0,0));
 
         r.mouseEvent = [&](SDL_Event event){
             if (event.type == SDL_MOUSEBUTTONDOWN && event.button.button==SDL_BUTTON_RIGHT){
@@ -88,7 +88,8 @@ public:
     }
 
     void updateMaterial(std::shared_ptr<Material>& mat){
-        mat->setColor(glm::vec4(glm::linearRand(0.0f, 1.0f),glm::linearRand(0.0f, 1.0f),glm::linearRand(0.0f, 1.0f), 1)	);
+        Color color (glm::linearRand(0.0f, 1.0f),glm::linearRand(0.0f, 1.0f),glm::linearRand(0.0f, 1.0f));
+        mat->setColor(color);
     }
 
     void cameraGUI(){

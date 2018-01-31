@@ -26,8 +26,8 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 namespace sre {
     Renderer* Renderer::instance = nullptr;
 
-    Renderer::Renderer(SDL_Window * window, bool vsync_)
-    :window{window},vsync(vsync_)
+    Renderer::Renderer(SDL_Window * window, bool vsync_, int maxSceneLights)
+    :window{window},vsync(vsync_),maxSceneLights(maxSceneLights)
     {
         if (instance != nullptr){
             LOG_ERROR("Multiple versions of Renderer initialized. Only a single instance is supported.");
@@ -38,13 +38,18 @@ namespace sre {
 		instance = this;
 
         
-#ifndef EMSCRIPTEN
+#ifdef EMSCRIPTEN
+        vsync = true; // WebGL uses vsync like approach
+        renderInfo.useFramebufferSRGB = false;
+        renderInfo.supportTextureSamplerSRGB = false;
+#else
         glcontext = SDL_GL_CreateContext(window);
         if (vsync){
             vsync = SDL_GL_SetSwapInterval(1) == 0; // return 0 is success
         }
-#else
-        vsync = true; // WebGL uses vsync like approach
+        renderInfo.useFramebufferSRGB = true;
+        renderInfo.supportTextureSamplerSRGB = true;
+        glEnable(GL_FRAMEBUFFER_SRGB);
 #endif
 #if defined(_WIN32)
 		glewExperimental = GL_TRUE;
@@ -63,15 +68,10 @@ namespace sre {
 			LOG_FATAL("Error initializing OpenGL using GLEW: %s",glewGetErrorString(err));
 		}
 #endif
-
-		std::string version = (char*)glGetString(GL_VERSION);
-        LOG_INFO("OpenGL version %s",glGetString(GL_VERSION) );
-        LOG_INFO("sre version %i.%i.%i",sre_version_major,sre_version_minor ,sre_version_point  );
-
-
-#ifdef SRE_OPENVR
-		vr = new VR();
-#endif
+        renderInfo.graphicsAPIVersion = (char*)glGetString(GL_VERSION);
+        renderInfo.graphicsAPIVendor = (char*)glGetString(GL_VENDOR);
+        LOG_INFO("OpenGL version %s",renderInfo.graphicsAPIVersion.c_str() );
+        LOG_INFO("sre version %i.%i.%i", sre_version_major, sre_version_minor , sre_version_point);
 
         // setup opengl context
         glEnable(GL_DEPTH_TEST);
@@ -83,7 +83,7 @@ namespace sre {
 #ifndef GL_POINT_SPRITE
 #define GL_POINT_SPRITE 0x8861
 #endif // !GL_POINT_SPRITE
-		if (version.find_first_of("3.1") == 0){
+		if (renderInfo.graphicsAPIVersion.find_first_of("3.1") == 0){
 			glEnable(GL_POINT_SPRITE);
 		}
 
@@ -98,7 +98,6 @@ namespace sre {
     }
 
     void Renderer::swapWindow() {
-
         renderStatsLast = renderStats;
         renderStats.frame++;
         renderStats.meshBytesAllocated=0;
@@ -134,8 +133,11 @@ namespace sre {
         return vsync;
     }
 
-	VR* Renderer::getVR()
-    {
-		return vr;
+    int Renderer::getMaxSceneLights() {
+        return maxSceneLights;
+    }
+
+    const Renderer::RenderInfo &Renderer::getRenderInfo() {
+        return renderInfo;
     }
 }

@@ -31,9 +31,9 @@ public:
 
         camera.lookAt({0,0,3},{0,0,0},{0,1,0});
         camera.setPerspectiveProjection(60,0.1,100);
-        defaultMat  = Shader::getStandard()->createMaterial();
+        defaultMat  = Shader::getStandardBlinnPhong()->createMaterial();
         particleMat = Shader::getStandardParticles()->createMaterial();
-        defaultMat->setSpecularity(20.0f);
+        defaultMat->setSpecularity(Color(1,1,1,20.0f));
         particleMat->setTexture(Texture::getSphereTexture());
 
         particleMesh = createParticles();
@@ -68,7 +68,7 @@ public:
         auto rp = RenderPass::create()
                 .withCamera(camera)
                 .withWorldLights(worldLights)
-                .withClearColor(true,{0,0,0.3,1})
+                .withClearColor(true,{0.0f,0.0f,0.3f,1})
                 .build();
 
         auto scaleAndRotate = glm::eulerAngleY(-i)*glm::scale(glm::mat4(1),{0.3f,0.3f,0.3f});
