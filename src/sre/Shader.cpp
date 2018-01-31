@@ -90,6 +90,7 @@ namespace sre {
             std::regex e ( R"_(#pragma\s+include\s+"([^"]*)")_", std::regex::ECMAScript);
             int lineNumber = 0;
             std::vector<std::string> lines = split(source, '\n');
+            int includes = 0;
             for (auto& s : lines)
             {
                 lineNumber++;
@@ -102,6 +103,8 @@ namespace sre {
                         errors.push_back(std::string("0:")+std::to_string(lineNumber)+" cannot find include file "+match+"##"+std::to_string(shaderType));
                         sstream << s << "\n";
                     } else {
+                        includes++;
+                        sstream << "#line "<<(includes*10000+1) <<"\n";
                         sstream << res << "\n";
                         sstream << "#line "<<lineNumber << "\n";
                     }

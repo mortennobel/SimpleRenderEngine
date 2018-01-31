@@ -9,10 +9,14 @@ in vec3 vNormal;
 #endif
 in vec2 vUV;
 in vec3 vWsPos;
-in vec3 vLightDir[SI_LIGHTS];
+in vec4 vLightDir[SI_LIGHTS];
 
 uniform vec3 g_ambientLight;
+#ifdef GL_ES
+uniform highp vec4 g_lightColorRange[SI_LIGHTS];
+#else
 uniform vec4 g_lightColorRange[SI_LIGHTS];
+#endif
 uniform vec4 color;
 uniform vec4 metallicRoughness;
 uniform vec4 g_cameraPos;
@@ -147,7 +151,12 @@ void main(void)
     vec3 n = getNormal();                             // Normal at surface point
     vec3 v = normalize(g_cameraPos.xyz - vWsPos.xyz); // Vector from surface point to camera
     for (int i=0;i<SI_LIGHTS;i++) {
-        vec3 l = normalize(vLightDir[i]);                 // Vector from surface point to light
+        float attenuation = vLightDir[i].w;
+        if (attenuation <= 0.0){
+            continue;
+        }
+
+        vec3 l = normalize(vLightDir[i].xyz);                 // Vector from surface point to light
         vec3 h = normalize(l+v);                          // Half vector between both l and v
         vec3 reflection = -normalize(reflect(v, n));
 
@@ -180,7 +189,7 @@ void main(void)
         // Calculation of analytical lighting contribution
         vec3 diffuseContrib = (1.0 - F) * diffuse(pbrInputs);
         vec3 specContrib = F * G * D / (4.0 * NdotL * NdotV);
-        color += NdotL * g_lightColorRange[i].xyz * (diffuseContrib + specContrib);
+        color += attenuation * NdotL * g_lightColorRange[i].xyz * (diffuseContrib + specContrib);
     }
 
     // Apply optional PBR terms for additional (optional) shading

@@ -20,11 +20,11 @@ sre provides:
  * GUI rendering (using Dear ImGui)
  * Emscripten support (allows cross compiling to HTML 5 + WebGL)
  * VR support
+ * Bump mapping
 
 To keep sre as simple and flexible as possible the following features are not a part of sre:
  * Scenegraphs
  * Deferred rendering
- * Bump mapping
  * Shadowmap support
  * Dynamic particle systems
 
