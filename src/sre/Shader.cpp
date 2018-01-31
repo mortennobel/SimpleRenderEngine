@@ -921,10 +921,10 @@ namespace sre {
             ss<<"#define "<<sc.first<<" "<<sc.second<<"\n";
         }
 
-        if (Renderer::instance->useFramebufferSRGB){
+        if (Renderer::instance->getRenderInfo().useFramebufferSRGB){
             ss<<"#define SI_FRAMEBUFFER_SRGB 1\n";
         }
-        if (Renderer::instance->supportTextureSamplerSRGB){
+        if (Renderer::instance->getRenderInfo().supportTextureSamplerSRGB){
             ss<<"#define SI_TEX_SAMPLER_SRGB 1\n";
         }
 

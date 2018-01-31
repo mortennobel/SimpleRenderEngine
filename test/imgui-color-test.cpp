@@ -15,17 +15,17 @@
 
 using namespace sre;
 
-class SpinningCubeExample {
+class ImGuiColorTest {
 public:
-    SpinningCubeExample(){
+    ImGuiColorTest(){
         r.init();
 
         camera.lookAt({0,0,3},{0,0,0},{0,1,0});
         camera.setPerspectiveProjection(60,0.1,100);
 
-        materialPhong = Shader::getStandardBlinnPhong()->createMaterial();
-        materialPhong->setColor({1.0f,1.0f,1.0f,1.0f});
-        materialPhong->setSpecularity(Color(.5,.5,.5,180.0f));
+
+        material = Shader::getUnlit()->createMaterial();
+        material->setColor(color);
 
         mesh = Mesh::create().withCube().build();
         worldLights.setAmbientLight({0.0,0.0,0.0});
@@ -47,7 +47,14 @@ public:
                 .withWorldLights(&worldLights)
                 .withClearColor(true, {1, 0, 0, 1})
                 .build();
-        renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i*0.1f)), materialPhong);
+
+        renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i*0.1f))*glm::translate(glm::vec3{0,-1,0}), material);
+        auto linearColor = color.toLinear();
+        bool changed = ImGui::ColorEdit4("Color", &(linearColor.x));
+        if (changed){
+            color.setFromLinear(linearColor);
+            material->setColor(color);
+        }
         i++;
     }
 private:
@@ -55,11 +62,13 @@ private:
     Camera camera;
     WorldLights worldLights;
     std::shared_ptr<Mesh> mesh;
-    std::shared_ptr<Material> materialPhong;
+    Color color = {1.0f,1.0f,1.0f,1.0f};
+
+    std::shared_ptr<Material> material;
     int i=0;
 };
 
 int main() {
-    new SpinningCubeExample();
+    new ImGuiColorTest();
     return 0;
 }

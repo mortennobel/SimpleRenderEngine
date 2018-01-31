@@ -40,14 +40,15 @@ namespace sre {
         
 #ifdef EMSCRIPTEN
         vsync = true; // WebGL uses vsync like approach
-        useFramebufferSRGB = false;
+        renderInfo.useFramebufferSRGB = false;
+        renderInfo.supportTextureSamplerSRGB = false;
 #else
         glcontext = SDL_GL_CreateContext(window);
         if (vsync){
             vsync = SDL_GL_SetSwapInterval(1) == 0; // return 0 is success
         }
-        useFramebufferSRGB = true;
-        supportTextureSamplerSRGB = true;
+        renderInfo.useFramebufferSRGB = true;
+        renderInfo.supportTextureSamplerSRGB = true;
         glEnable(GL_FRAMEBUFFER_SRGB);
 #endif
 #if defined(_WIN32)
@@ -67,9 +68,9 @@ namespace sre {
 			LOG_FATAL("Error initializing OpenGL using GLEW: %s",glewGetErrorString(err));
 		}
 #endif
-
-		std::string version = (char*)glGetString(GL_VERSION);
-        LOG_INFO("OpenGL version %s",glGetString(GL_VERSION) );
+        renderInfo.graphicsAPIVersion = (char*)glGetString(GL_VERSION);
+        renderInfo.graphicsAPIVendor = (char*)glGetString(GL_VENDOR);
+        LOG_INFO("OpenGL version %s",renderInfo.graphicsAPIVersion.c_str() );
         LOG_INFO("sre version %i.%i.%i", sre_version_major, sre_version_minor , sre_version_point);
 
         // setup opengl context
@@ -82,7 +83,7 @@ namespace sre {
 #ifndef GL_POINT_SPRITE
 #define GL_POINT_SPRITE 0x8861
 #endif // !GL_POINT_SPRITE
-		if (version.find_first_of("3.1") == 0){
+		if (renderInfo.graphicsAPIVersion.find_first_of("3.1") == 0){
 			glEnable(GL_POINT_SPRITE);
 		}
 
@@ -97,7 +98,6 @@ namespace sre {
     }
 
     void Renderer::swapWindow() {
-
         renderStatsLast = renderStats;
         renderStats.frame++;
         renderStats.meshBytesAllocated=0;
@@ -135,5 +135,9 @@ namespace sre {
 
     int Renderer::getMaxSceneLights() {
         return maxSceneLights;
+    }
+
+    const Renderer::RenderInfo &Renderer::getRenderInfo() {
+        return renderInfo;
     }
 }

@@ -37,7 +37,7 @@ emcc -Iinclude src/imgui/imgui.cpp \
                -O2 -std=c++14 -s FORCE_FILESYSTEM=1 -s TOTAL_MEMORY=33554432 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' --preload-file examples_data -s USE_SDL=2 -o html/$FILENAME.html
 done
 
-for FILENAME in pbr-test custom-mesh-layout-default-values imgui_demo multi-cameras multiple-lights particle-sprite particle-test polygon-offset-example spinning-sphere-cubemap sprite-test static_vertex_attribute texture-test
+for FILENAME in imgui-color-test pbr-test custom-mesh-layout-default-values imgui_demo multi-cameras multiple-lights particle-sprite particle-test polygon-offset-example spinning-sphere-cubemap sprite-test static_vertex_attribute texture-test
 do
 echo $FILENAME
 emcc -Iinclude src/imgui/imgui.cpp \

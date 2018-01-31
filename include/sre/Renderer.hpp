@@ -54,6 +54,12 @@ namespace sre {
     ///
     class DllExport Renderer {
     public:
+        struct RenderInfo{
+            bool useFramebufferSRGB = false;
+            bool supportTextureSamplerSRGB = false;
+            std::string graphicsAPIVersion;
+            std::string graphicsAPIVendor;
+        };
         explicit Renderer(SDL_Window *window, bool vsync = true, int maxSceneLights = 4);    // SimpleRenderEngine constructor
                                                             // param window pointer to the SDL window (must be initialized using OpenGL)
         ~Renderer();
@@ -76,6 +82,8 @@ namespace sre {
         static Renderer* instance;                          // Singleton reference to the engine after initialization.
 
         int getMaxSceneLights();                            // Get maximum amout of scenelights per object
+
+        const RenderInfo& getRenderInfo();                  // Get info about the renderer
     private:
         int maxSceneLights = 4;                             // Maximum of scene lights
         SDL_Window *window;
@@ -92,8 +100,7 @@ namespace sre {
         std::vector<Texture*> textures;
         std::vector<SpriteAtlas*> spriteAtlases;
 
-        bool useFramebufferSRGB = false;
-        bool supportTextureSamplerSRGB = false;
+        RenderInfo renderInfo;
 
 		VR* vr = nullptr;
 

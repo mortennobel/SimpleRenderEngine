@@ -47,7 +47,7 @@ namespace sre {
     }
 
     RenderPass::RenderPassBuilder &RenderPass::RenderPassBuilder::withClearColor(bool enabled, Color color) {
-        if (Renderer::instance->useFramebufferSRGB){
+        if (Renderer::instance->getRenderInfo().useFramebufferSRGB){
             auto col3 = glm::convertSRGBToLinear(glm::vec3(color.r, color.g, color.b));
             this->clearColorValue = glm::vec4(col3, color.a);
         } else {
