@@ -22,7 +22,8 @@ using namespace std;
 namespace sre {
     // anonymous (file local) namespace
     namespace {
-        std::shared_ptr<Shader> standard;
+        std::shared_ptr<Shader> standardPBR;
+        std::shared_ptr<Shader> standardBlinnPhong;
         std::shared_ptr<Shader> standardPhong;
         std::shared_ptr<Shader> unlit;
         std::shared_ptr<Shader> unlitSprite;
@@ -112,7 +113,7 @@ namespace sre {
             return sstream.str();
         }
 
-        void logCurrentCompileInfo(GLuint &shader, GLenum type, vector<string> &errors, std::string source) {
+        void logCurrentCompileInfo(GLuint &shader, GLenum type, vector<string> &errors, std::string source, const std::string name) {
             GLint logSize = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
             if (logSize > 0){
@@ -142,7 +143,7 @@ namespace sre {
                         typeStr = std::string("Unknown error type: ") + std::to_string(type);
                         break;
                 }
-                LOG_ERROR("Shader compile error in %s: %s", typeStr.c_str(), errorLog.data());
+                LOG_ERROR("Shader compile error in %s (%s): %s", name.c_str(), typeStr.c_str(), errorLog.data());
                 errors.push_back(std::string(errorLog.data())+"##"+std::to_string(type));
                 glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
             }
@@ -629,15 +630,15 @@ namespace sre {
     }
 
     std::shared_ptr<Shader> Shader::getStandardPBR(){
-        if (standard != nullptr){
-            return standard;
+        if (standardPBR != nullptr){
+            return standardPBR;
         }
-        standard = create()
+        standardPBR = create()
                 .withSourceFile("standard_pbr_vert.glsl", ShaderType::Vertex)
                 .withSourceFile("standard_pbr_frag.glsl", ShaderType::Fragment)
                 .withName("Standard")
                 .build();
-        return standard;
+        return standardPBR;
     }
 
     Uniform Shader::getUniformType(const std::string &name) {
@@ -804,7 +805,8 @@ namespace sre {
         glCompileShader(shader);
         GLint success = 0;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-        logCurrentCompileInfo(shader, type, errors, source_);
+
+        logCurrentCompileInfo(shader, type, errors, source_, resource.value);
 
         return success == 1;
     }
@@ -865,16 +867,28 @@ namespace sre {
     }
 
     std::shared_ptr<Shader> Shader::getStandardBlinnPhong() {
-        if (standardPhong != nullptr){
-            return standardPhong;
+        if (standardBlinnPhong != nullptr){
+            return standardBlinnPhong;
         }
-        standardPhong = create()
+        standardBlinnPhong = create()
                 .withSourceFile("standard_blinn_phong_vert.glsl", ShaderType::Vertex)
                 .withSourceFile("standard_blinn_phong_frag.glsl", ShaderType::Fragment)
                 .withName("StandardBlinnPhong")
                 .build();
+        return standardBlinnPhong;
+    }
+    std::shared_ptr<Shader> Shader::getStandardPhong() {
+        if (standardPhong != nullptr){
+            return standardPhong;
+        }
+        standardPhong = create()
+                .withSourceFile("standard_phong_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("standard_phong_frag.glsl", ShaderType::Fragment)
+                .withName("StandardPhong")
+                .build();
         return standardPhong;
     }
+
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSource(const std::string& vertexShader, const std::string& fragmentShader) {
         withSourceString(vertexShader, ShaderType::Vertex);
