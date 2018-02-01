@@ -10,8 +10,8 @@
 #include <cstdarg>
 
 namespace sre{
-    constexpr int maxErrorSize = 255;
-    char errorMsg[255];
+    constexpr int maxErrorSize = 1024;
+    char errorMsg[maxErrorSize];
     std::function<void(const char * function,const char * file, int line,LogType, std::string)> Log::logHandler = [](const char * function,const char * file, int line, LogType type, std::string msg){
         switch (type){
             case LogType::Verbose:

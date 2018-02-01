@@ -34,7 +34,9 @@ public:
         for (int i=0;i<Renderer::instance->getMaxSceneLights();i++){
             worldLights.addLight(Light::create().withPointLight({0, 2,1}).withColor({1,1,1}).withRange(10).build());
         }
-        mat = Shader::getStandardBlinnPhong()->createMaterial();
+        mat[0] = Shader::getStandardBlinnPhong()->createMaterial();
+        mat[1] = Shader::getStandardPhong()->createMaterial();
+        mat[2] = Shader::getStandardPBR()->createMaterial();
         r.frameUpdate = [&](float deltaTime){
             update(deltaTime);
         };
@@ -45,8 +47,8 @@ public:
     }
 
     void update(float deltaTime) {
-        mat->setSpecularity(specularity);
-        mat->setColor(color);
+        mat[selectedMaterial]->setSpecularity(specularity);
+        mat[selectedMaterial]->setColor(color);
 
         time += deltaTime;
         if (animatedObject){
@@ -63,7 +65,7 @@ public:
         drawCross(renderPass,{-2,-2,-2});
 
 
-        renderPass.draw(drawSphere?meshSphere:meshCube, glm::eulerAngleY(rot), mat);
+        renderPass.draw(drawSphere?meshSphere:meshCube, glm::eulerAngleY(rot), mat[selectedMaterial]);
 
         ImGui::DragFloat3("Camera",&eye.x);
         ImGui::Checkbox("AnimatedLight",&animatedLight);
@@ -117,16 +119,16 @@ public:
         }
 
         if (ImGui::TreeNode("Material")){
-            if (ImGui::Checkbox("BlinnPhong",&useBlinnPhong)){
-                mat = useBlinnPhong?Shader::getStandardBlinnPhong()->createMaterial() : Shader::getStandardPBR()->createMaterial();
-            }
-            if (useBlinnPhong){
+            char* options = "BlinnPhong\0Phong\0PBR\0";
+            ImGui::Combo("Shader",&selectedMaterial,options);
+
+            if (selectedMaterial<2){
                 ImGui::DragFloat4("Specularity", &specularity.r,0.1,0,1);
-                mat->setSpecularity(specularity);
+                mat[selectedMaterial]->setSpecularity(specularity);
             } else {
                 ImGui::DragFloat("Metallic", &metalRoughness.x,0.1,0,1);
                 ImGui::DragFloat("Roughness", &metalRoughness.y,0.1,0,1);
-                mat->setMetallicRoughness(metalRoughness);
+                mat[selectedMaterial]->setMetallicRoughness(metalRoughness);
             }
             auto col = color.toLinear();
             if (ImGui::ColorEdit3("Color", &(col.x))){
@@ -164,10 +166,10 @@ private:
     glm::vec3 at{0,0,0};
     glm::vec3 up{0,1,0};
     Camera camera;
+    int selectedMaterial = 0;
+    std::shared_ptr<Material> mat[3];
 
-    std::shared_ptr<Material> mat;
-    bool useBlinnPhong = true;
-    glm::vec2 metalRoughness;
+    glm::vec2 metalRoughness = {.5,.5};
     Color specularity = Color(1,1,1,20);
     sre::Color color {1,1,1,1};
 

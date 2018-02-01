@@ -31,7 +31,7 @@ void main()
 #endif
     vec3 normal = getNormal();
     vec3 specularLight = vec3(0.0,0.0,0.0);
-    vec3 l = computeLightBlinnPhong(vWsPos, g_cameraPos.xyz, normal, specularLight);
+    vec3 l = computeLightPhong(vWsPos, g_cameraPos.xyz, normal, specularLight);
 
     fragColor = c * vec4(l, 1.0) + vec4(specularLight,0);
     fragColor = toOutput(fragColor);
