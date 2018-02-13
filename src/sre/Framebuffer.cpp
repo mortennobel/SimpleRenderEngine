@@ -13,7 +13,12 @@
 
 namespace sre{
     Framebuffer::FrameBufferBuilder & Framebuffer::FrameBufferBuilder::withTexture(std::shared_ptr<Texture> texture) {
-        this->size = {texture->getWidth(), texture->getHeight()};
+        auto s = glm::uvec2{texture->getWidth(), texture->getHeight()};
+        if (!textures.empty()){
+            assert(this->size == s);
+        } else {
+            this->size = s;
+        }
         textures.push_back(texture);
         return *this;
     }
@@ -124,7 +129,7 @@ namespace sre{
 #ifdef GL_ES_VERSION_2_0
                 GL_DEPTH_COMPONENT16
 #else
-                              GL_DEPTH_COMPONENT32
+                GL_DEPTH_COMPONENT32
 #endif
                 , size.x, size.y);
 

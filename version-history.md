@@ -1,5 +1,6 @@
 ## Version history
 
+ * 1.0.3 Add RenderPass.blit().
  * 1.0.2 Add Phong shader. Improve light (PBR and Blinn-Phong).
  * 1.0.1 Improve specular highlight for Blinn-Phong. Add attenuation to PBR.
  * 1.0.0 Physically based rendering. Profiler renamed to Inspector. Added shader specialization constants. Trimmed sprites.
