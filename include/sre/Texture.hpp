@@ -59,6 +59,7 @@ public:
         F32,                // 32 bit float
         I24_STENCIL8,       // 24 bit integer 8 bit stencil
         F32_STENCIL8,       // 32 bit float 8 bit stencil
+        STENCIL8,           // 8 bit stencil
         None
     };
 

@@ -319,8 +319,13 @@ namespace sre {
             } else if (depthPrecision == DepthPrecision::F32_STENCIL8){
                 internalFormat = GL_DEPTH32F_STENCIL8;
                 format = GL_DEPTH_STENCIL;
-            } else {
+            } else if (depthPrecision == DepthPrecision::F32){
                 internalFormat = GL_DEPTH_COMPONENT32F;
+            } else if (depthPrecision == DepthPrecision::STENCIL8){
+                internalFormat = GL_STENCIL_INDEX8;
+                format = GL_STENCIL_INDEX;
+            } else {
+                assert(false);
             }
             GLint border = 0;
             GLenum type = GL_UNSIGNED_BYTE;
