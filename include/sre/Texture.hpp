@@ -52,6 +52,15 @@ public:
         Linear,             // Convert values from gamma space to linear space, when gamma correction is enabled. Default behavior.
         Gamma               // Sampler performs no gamma convertions. This is useful for e.g. normal textures where no gamma correction must be performed
     };
+    enum class DepthPrecision {
+        I16,                // 16 bit integer
+        I24,                // 24 bit integer
+        I32,                // 32 bit integer
+        F32,                // 32 bit float
+        I24_STENCIL8,       // 24 bit integer 8 bit stencil
+        F32_STENCIL8,       // 32 bit float 8 bit stencil
+        None
+    };
 
     class DllExport TextureBuilder {
     public:
@@ -59,13 +68,14 @@ public:
         TextureBuilder& withGenerateMipmaps(bool enable);
         TextureBuilder& withFilterSampling(bool enable);                                    // if true texture sampling is filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
         TextureBuilder& withWrappedTextureCoordinates(bool enable);
-        TextureBuilder& withFileCubemap(std::string filename, CubemapSide side);     // Must define a cubemap for each side
+        TextureBuilder& withFileCubemap(std::string filename, CubemapSide side);            // Must define a cubemap for each side
         TextureBuilder& withFile(std::string filename);                                     // Currently only PNG files supported
         TextureBuilder& withRGBData(const char* data, int width, int height);               // data may be null (for a uninitialized texture)
         TextureBuilder& withRGBAData(const char* data, int width, int height);              // data may be null (for a uninitialized texture)
         TextureBuilder& withWhiteData(int width=2, int height=2);
         TextureBuilder& withSamplerColorspace(SamplerColorspace samplerColorspace);
         TextureBuilder& withWhiteCubemapData(int width=2, int height=2);
+        TextureBuilder& withDepth(int width, int height, DepthPrecision precision=DepthPrecision::I16); // Creates a depth texture.
         TextureBuilder& withName(const std::string& name);
         TextureBuilder& withDumpDebug();                                                    // Output debug info on build
         std::shared_ptr<Texture> build();
@@ -83,7 +93,7 @@ public:
             std::vector<char> data;
             void dumpDebug();
         };
-
+        DepthPrecision depthPrecision = DepthPrecision::None;
         std::string name;
 		bool transparent;
         bool generateMipmaps = false;
@@ -121,6 +131,8 @@ public:
     const std::string& getName();                                                           // name of the string
 
     int getDataSize();                                                                      // get size of the texture in bytes on GPU
+    bool isDepthTexture();
+    DepthPrecision getDepthPrecision();
 private:
     Texture(unsigned int textureId, int width, int height, uint32_t target, std::string string);
     void updateTextureSampler(bool filterSampling, bool wrapTextureCoordinates);
@@ -132,6 +144,7 @@ private:
     uint32_t target;
     bool generateMipmap;
 	bool transparent;
+    DepthPrecision depthPrecision = DepthPrecision::None;
     std::string name;
     SamplerColorspace samplerColorspace;
     bool filterSampling = true; // true = linear/trilinear sampling, false = point sampling
