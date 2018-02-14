@@ -98,7 +98,7 @@ public:
         static int selectedSprite = 0;
         selectedSprite = selectedSprite % (int)names.size();
         ImGui::Combo("Sprite", &selectedSprite,namesPtr,(int)names.size());
-        delete namesPtr;
+        delete[] namesPtr;
 
         auto sprite = atlasPtr->get(names.at(selectedSprite));
         static glm::vec4 color (1,1,1,1);

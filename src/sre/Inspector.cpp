@@ -59,6 +59,8 @@ namespace sre {
                     typeStr = "ivec4";
                     break;
 #endif
+                default:
+                    typeStr = "invalid";
             }
             return typeStr;
         }
@@ -85,6 +87,34 @@ namespace sre {
 
             ImGui::LabelText("Size","%ix%i",tex->getWidth(),tex->getHeight());
             ImGui::LabelText("Cubemap","%s",tex->isCubemap()?"true":"false");
+            const char* depthStr;
+            switch (tex->getDepthPrecision()){
+                case Texture::DepthPrecision::I16:                // 16 bit integer
+                    depthStr = "16 bit";
+                    break;
+                case Texture::DepthPrecision::I24:                // 24 bit integer
+                    depthStr = "24 bit";
+                    break;
+                case Texture::DepthPrecision::I32:                // 32 bit integer
+                    depthStr = "32 bit";
+                    break;
+                case Texture::DepthPrecision::F32:                // 32 bit float
+                    depthStr = "32 bit float";
+                    break;
+                case Texture::DepthPrecision::I24_STENCIL8:       // 24 bit integer 8 bit stencil
+                    depthStr = "24 bit + 8 bit stencil";
+                    break;
+                case Texture::DepthPrecision::F32_STENCIL8:       // 32 bit float 8 bit stencil
+                    depthStr = "32 bit float + 8 bit stencil";
+                    break;
+                case Texture::DepthPrecision::STENCIL8:           // 8 bit stencil
+                    depthStr = "8 bit stencil";
+                    break;
+                case Texture::DepthPrecision::None:
+                    depthStr = "None";
+                    break;
+            }
+            ImGui::LabelText("Depth",depthStr);
             ImGui::LabelText("Filtersampling","%s",tex->isFilterSampling()?"true":"false");
             ImGui::LabelText("Mipmapping","%s",tex->isMipmapped()?"true":"false");
             ImGui::LabelText("Transparent","%s",tex->isTransparent()?"true":"false");
@@ -112,7 +142,7 @@ namespace sre {
             ImGui::LabelText("Mesh size", "%.2f MB", mesh->getDataSize()/(1000*1000.0f));
             if (ImGui::TreeNode("Vertex attributes")){
                 auto attributeNames = mesh->getAttributeNames();
-                for (auto a : attributeNames) {
+                for (auto & a : attributeNames) {
                     auto type = mesh->getType(a);
                     std::string typeStr = glEnumToString(type.first);
                     typeStr = appendSize(typeStr, type.second);
@@ -177,7 +207,7 @@ namespace sre {
             camera.setPerspectiveProjection(60,0.1,10);
             camera.lookAt({0,0,4},{0,0,0},{0,1,0});
             auto offscreenTexture = getTmpTexture();
-            framebuffer->setTexture(offscreenTexture);
+            framebuffer->setColorTexture(offscreenTexture);
 
             auto renderToTexturePass = RenderPass::create()
                  .withCamera(camera)
@@ -276,7 +306,7 @@ namespace sre {
             camera.setPerspectiveProjection(60,0.1,10);
             camera.lookAt({0,0,4},{0,0,0},{0,1,0});
             auto offscreenTexture = getTmpTexture();
-            framebuffer->setTexture(offscreenTexture);
+            framebuffer->setColorTexture(offscreenTexture);
             auto renderToTexturePass = RenderPass::create()
                     .withCamera(camera)
                     .withWorldLights(&worldLights)
@@ -747,7 +777,7 @@ namespace sre {
 
     void Inspector::initFramebuffer() {
         if (framebuffer == nullptr){
-            framebuffer = Framebuffer::create().withTexture(getTmpTexture()).withName("SRE Inspector Framebufferobject").build();
+            framebuffer = Framebuffer::create().withColorTexture(getTmpTexture()).withName("SRE Inspector Framebufferobject").build();
             usedTextures = 0; // reset usedTextures count to avoid an extra texture to be created
             worldLights.setAmbientLight({0.2,0.2,0.2});
             auto light = Light::create().withPointLight({0,0,4}).build();

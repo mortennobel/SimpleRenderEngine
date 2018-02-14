@@ -20,8 +20,11 @@
 #include <imgui_internal.h>
 #include <glm/gtc/type_precision.hpp>
 #include <glm/gtc/color_space.hpp>
+#include <glm/gtx/transform.hpp>
+
 
 namespace sre {
+
     RenderPass::RenderPassBuilder RenderPass::create() {
         return RenderPass::RenderPassBuilder(&Renderer::instance->renderStats);
     }
@@ -343,5 +346,27 @@ namespace sre {
 
     bool RenderPass::isFinished() {
         return mIsFinished;
+    }
+
+    void RenderPass::blit(std::shared_ptr<Texture> texture, glm::mat4 transformation) {
+        auto material = Shader::getBlit()->createMaterial();
+        material->setTexture(texture);
+        blit(material, transformation);
+    }
+
+    void RenderPass::blit(std::shared_ptr<Material> material, glm::mat4 transformation) {
+        static std::shared_ptr<Mesh> mesh;
+        static bool once = [](){
+            mesh = Mesh::create().withQuad().build();
+            // always render
+            float m = std::numeric_limits<float>::max();
+            std::array<glm::vec3,2> minMax;
+            minMax[0] = glm::vec3{-m};
+            minMax[1] = glm::vec3{m};
+            mesh->setBoundsMinMax(minMax);
+            return true;
+        } ();
+
+        draw(mesh, transformation, material);
     }
 }

@@ -6,25 +6,26 @@
 #include "sre/Renderer.hpp"
 #include "sre/Material.hpp"
 #include "sre/SDLRenderer.hpp"
+#include "sre/impl/GL.hpp"
 
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <sre/Inspector.hpp>
 
-
 using namespace sre;
 
-class RenderToTextureExample {
+class RenderDepth {
 public:
-    RenderToTextureExample(){
+    RenderDepth(){
         r.init();
 
         camera.lookAt({0,0,3},{0,0,0},{0,1,0});
-        camera.setPerspectiveProjection(60,0.1,100);
+        camera.setPerspectiveProjection(60,1.5f,3.5f);
 
+        depthTexture = Texture::create().withDepth(1024,1024, Texture::DepthPrecision::I16).build();
         texture = Texture::create().withRGBData(nullptr, 1024,1024).build();
-
         framebuffer = Framebuffer::create().withColorTexture(texture).build();
+        framebufferDepth = Framebuffer::create().withDepthTexture(depthTexture).build();
 
         materialOffscreen = Shader::getStandardBlinnPhong()->createMaterial();
         materialOffscreen->setSpecularity({1,1,1,120});
@@ -42,18 +43,16 @@ public:
     }
 
     void render(){
-
+        static bool useDepthTex = false;
         auto renderToTexturePass = RenderPass::create()                 // Create a renderpass which writes to the texture using a framebuffer
                 .withCamera(camera)
                 .withWorldLights(&worldLights)
-                .withFramebuffer(framebuffer)
+                .withFramebuffer(useDepthTex?framebufferDepth:framebuffer)
                 .withClearColor(true, {0, 1, 1, 0})
                 .withGUI(false)
                 .build();
 
         renderToTexturePass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), materialOffscreen);
-
-
 
         auto renderPass = RenderPass::create()                          // Create a renderpass which writes to the screen.
                 .withCamera(camera)
@@ -62,11 +61,21 @@ public:
                 .withGUI(true)
                 .build();
 
-        renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), material);
-                                                                        // The offscreen texture is used in material
-        // static Inspector prof;
-        // prof.update();
-        // prof.gui(true);
+        static bool useBlit = false;
+
+        ImGui::Checkbox("Use blit",&useBlit);
+        ImGui::Checkbox("Use depth tex",&useDepthTex);
+        if (useBlit){
+            renderPass.blit(useDepthTex?depthTexture:texture);
+        } else {
+            material->setTexture(useDepthTex?depthTexture:texture);
+            renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), material);
+        }
+
+        // The offscreen texture is used in material
+        static Inspector prof;
+        prof.update();
+        prof.gui(true);
 
         i++;
     }
@@ -78,11 +87,13 @@ private:
     std::shared_ptr<Material> materialOffscreen;
     std::shared_ptr<Material> material;
     std::shared_ptr<Texture> texture;
+    std::shared_ptr<Texture> depthTexture;
     std::shared_ptr<Framebuffer> framebuffer;
+    std::shared_ptr<Framebuffer> framebufferDepth;
     int i=0;
 };
 
 int main() {
-    new RenderToTextureExample();
+    new RenderDepth();
     return 0;
 }

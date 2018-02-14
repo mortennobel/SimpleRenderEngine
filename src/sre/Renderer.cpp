@@ -83,7 +83,7 @@ namespace sre {
 #ifndef GL_POINT_SPRITE
 #define GL_POINT_SPRITE 0x8861
 #endif // !GL_POINT_SPRITE
-		if (renderInfo.graphicsAPIVersion.find_first_of("3.1") == 0){
+		if (renderInfo.graphicsAPIVersion.find("3.1") == 0){
 			glEnable(GL_POINT_SPRITE);
 		}
 
