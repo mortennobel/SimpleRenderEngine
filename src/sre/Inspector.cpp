@@ -85,6 +85,34 @@ namespace sre {
 
             ImGui::LabelText("Size","%ix%i",tex->getWidth(),tex->getHeight());
             ImGui::LabelText("Cubemap","%s",tex->isCubemap()?"true":"false");
+            char* depthStr;
+            switch (tex->getDepthPrecision()){
+                case Texture::DepthPrecision::I16:                // 16 bit integer
+                    depthStr = "16 bit";
+                    break;
+                case Texture::DepthPrecision::I24:                // 24 bit integer
+                    depthStr = "24 bit";
+                    break;
+                case Texture::DepthPrecision::I32:                // 32 bit integer
+                    depthStr = "32 bit";
+                    break;
+                case Texture::DepthPrecision::F32:                // 32 bit float
+                    depthStr = "32 bit float";
+                    break;
+                case Texture::DepthPrecision::I24_STENCIL8:       // 24 bit integer 8 bit stencil
+                    depthStr = "24 bit + 8 bit stencil";
+                    break;
+                case Texture::DepthPrecision::F32_STENCIL8:       // 32 bit float 8 bit stencil
+                    depthStr = "32 bit float + 8 bit stencil";
+                    break;
+                case Texture::DepthPrecision::STENCIL8:           // 8 bit stencil
+                    depthStr = "8 bit stencil";
+                    break;
+                case Texture::DepthPrecision::None:
+                    depthStr = "None";
+                    break;
+            }
+            ImGui::LabelText("Depth",depthStr);
             ImGui::LabelText("Filtersampling","%s",tex->isFilterSampling()?"true":"false");
             ImGui::LabelText("Mipmapping","%s",tex->isMipmapped()?"true":"false");
             ImGui::LabelText("Transparent","%s",tex->isTransparent()?"true":"false");
