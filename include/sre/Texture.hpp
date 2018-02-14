@@ -16,6 +16,10 @@
 #include "sre/Framebuffer.hpp"
 #include "sre/Shader.hpp"
 
+#ifdef None // Fix Linux compile issue
+#undef None 
+#endif
+
 class SDL_Surface;
 
 namespace sre{
@@ -47,11 +51,11 @@ public:
         NegativeZ
     };
 
-
     enum class SamplerColorspace {
         Linear,             // Convert values from gamma space to linear space, when gamma correction is enabled. Default behavior.
         Gamma               // Sampler performs no gamma convertions. This is useful for e.g. normal textures where no gamma correction must be performed
     };
+
     enum class DepthPrecision {
         I16,                // 16 bit integer
         I24,                // 24 bit integer
