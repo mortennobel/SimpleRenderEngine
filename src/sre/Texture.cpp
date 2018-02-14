@@ -304,6 +304,9 @@ namespace sre {
         std::map<uint32_t, TextureDefinition>::iterator val;
         TextureDefinition* textureDefPtr;
         if (depthPrecision != DepthPrecision::None){
+#ifdef EMSCRIPTEN
+            LOG_FATAL("Depth texture not supported");
+#else
             this->target = GL_TEXTURE_2D;
             GLint internalFormat;
             GLint format = GL_DEPTH_COMPONENT;
@@ -334,6 +337,7 @@ namespace sre {
             textureDefPtr = &td->second;
             glTexImage2D(target, 0, internalFormat, textureDefPtr->width,
                          textureDefPtr->height, border, format, type, nullptr);
+#endif
         } else if ((val = textureTypeData.find(GL_TEXTURE_2D)) != textureTypeData.end()){
             auto& textureDef = val->second;
             textureDefPtr = &textureDef;

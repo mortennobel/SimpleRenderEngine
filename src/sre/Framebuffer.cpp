@@ -62,11 +62,15 @@ namespace sre{
     }
 
     int Framebuffer::getMaximumColorAttachments() {
+#ifdef EMSCRIPTEN
+        return 1;
+#else
         GLint maxAttach = 0;
         glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxAttach);
         GLint maxDrawBuf = 0;
         glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuf);
         return std::min(maxAttach, maxDrawBuf);
+#endif
     }
 
     const std::string& Framebuffer::getName() {
@@ -98,6 +102,9 @@ namespace sre{
                 for (unsigned i=0;i<textures.size();i++){
                     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, textures[i]->textureId, 0);
                 }
+            }
+            if (depthTexture){
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture->textureId, 0);
             }
             dirty = false;
         }
@@ -165,11 +172,8 @@ namespace sre{
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, textures[i]->textureId, 0);
             drawBuffers.push_back(GL_COLOR_ATTACHMENT0+i);
         }
-        glBindRenderbuffer(GL_RENDERBUFFER, 0);
+        
         if (depthTexture){
-            glBindTexture(GL_TEXTURE_2D, depthTexture->textureId);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture->textureId, 0);
         } else {
             glGenRenderbuffers(1,&framebuffer->renderBufferDepth); // Create a renderbuffer object
@@ -184,15 +188,16 @@ namespace sre{
 
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
                                   size.x, size.y);
+            glBindRenderbuffer(GL_RENDERBUFFER, 0);
             // attach the renderbuffer to depth attachment point
             glFramebufferRenderbuffer(GL_FRAMEBUFFER,
                                       GL_DEPTH_ATTACHMENT,
                                       GL_RENDERBUFFER,
                                       framebuffer->renderBufferDepth);
         }
-
+#ifndef EMSCRIPTEN
         glDrawBuffers(drawBuffers.size(), drawBuffers.data());
-
+#endif
         // Check if FBO is configured correctly
         checkStatus();
         framebuffer->textures = textures;
