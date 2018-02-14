@@ -10,6 +10,7 @@
 #include "sre/impl/GL.hpp"
 
 #include "sre/Log.hpp"
+#include <algorithm>
 
 namespace sre{
     Framebuffer::FrameBufferBuilder& Framebuffer::FrameBufferBuilder::withTexture(std::shared_ptr<Texture> texture) {
