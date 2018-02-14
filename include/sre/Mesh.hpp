@@ -47,7 +47,7 @@ namespace sre {
             // primitives
             MeshBuilder& withSphere(int stacks = 16, int slices = 32, float radius = 1);        // Creates a sphere mesh including UV coordinates, positions and normals
             MeshBuilder& withCube(float length = 1);                                            // Creates a cube including UV coordinates, positions and normals
-            MeshBuilder& withQuad(float size=1);                                                // Creates a quad z,y = [-size;size] and z=0, UV=[0;1], normals=(0,0,1)
+            MeshBuilder& withQuad(float size=1);                                                // Creates a quad x,y = [-size;size] and z=0, UV=[0;1], normals=(0,0,1)
             MeshBuilder& withTorus(int segmentsC = 24, int segmentsA = 24, float radiusC = 1, float radiusA = .25);
                                                                                                 // Creates a torus in xy plane. C is in the outer (large) circle, A is the sweeping circle.
             // raw data
@@ -112,6 +112,7 @@ namespace sre {
         std::vector<std::string> getAttributeNames();               // Names of the vertex attributes
 
         std::array<glm::vec3,2> getBoundsMinMax();                  // get the local axis aligned bounding box (AABB)
+        void setBoundsMinMax(const std::array<glm::vec3,2>& minMax);// set the local axis aligned bounding box (AABB)
 
         const std::string& getName();                               // Return the mesh name
 

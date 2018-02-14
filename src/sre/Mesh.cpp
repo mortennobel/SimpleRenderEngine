@@ -407,6 +407,10 @@ namespace sre {
         return interleavedData;
     }
 
+    void Mesh::setBoundsMinMax(const std::array<glm::vec3,2>& minMax) {
+        boundsMinMax = minMax;
+    }
+
     Mesh::MeshBuilder &Mesh::MeshBuilder::withPositions(const std::vector<glm::vec3> &vertexPositions) {
         withAttribute("position", vertexPositions);
         return *this;

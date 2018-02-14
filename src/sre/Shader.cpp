@@ -26,6 +26,7 @@ namespace sre {
         std::shared_ptr<Shader> standardBlinnPhong;
         std::shared_ptr<Shader> standardPhong;
         std::shared_ptr<Shader> unlit;
+        std::shared_ptr<Shader> blit;
         std::shared_ptr<Shader> unlitSprite;
         std::shared_ptr<Shader> standardParticles;
 
@@ -611,6 +612,19 @@ namespace sre {
                 .withName("Unlit")
                 .build();
         return unlit;
+    }
+
+    std::shared_ptr<Shader> Shader::getBlit() {
+        if (blit != nullptr){
+            return blit;
+        }
+
+        blit = create()
+                .withSourceFile("blit_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("blit_frag.glsl", ShaderType::Fragment)
+                .withName("Blit")
+                .build();
+        return blit;
     }
 
     std::shared_ptr<Shader> Shader::getUnlitSprite() {

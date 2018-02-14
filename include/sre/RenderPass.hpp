@@ -102,6 +102,12 @@ namespace sre {
         void draw(std::shared_ptr<SpriteBatch>&& spriteBatch,           // Draws a spriteBatch using modelTransform
                   glm::mat4 modelTransform = glm::mat4(1));             // using a model-to-world transformation
 
+        void blit(std::shared_ptr<Texture> texture,                     // Render texture to screen
+                  glm::mat4 transformation = glm::mat4(1.0f));
+
+        void blit(std::shared_ptr<Material> material,                   // Render material to screen
+                  glm::mat4 transformation = glm::mat4(1.0f));
+
         std::vector<Color> readPixels(unsigned int x,               // Reads pixel(s) from the current framebuffer
                                           unsigned int y,               // The defined rectangle must be within the size of the current framebuffer
                                           unsigned int width = 1,       // This function must be called after finish has been explicit called on the renderPass
@@ -124,7 +130,6 @@ namespace sre {
 
         void drawInstance(RenderQueueObj& rqObj);                       // perform the actual rendering
 
-
         RenderPass::RenderPassBuilder builder;
         explicit RenderPass(RenderPass::RenderPassBuilder& builder);
 
@@ -140,6 +145,4 @@ namespace sre {
 
         friend class Renderer;
     };
-
-
 }
