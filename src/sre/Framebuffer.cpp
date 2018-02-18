@@ -11,6 +11,7 @@
 
 #include "sre/Log.hpp"
 #include <algorithm>
+#include <sre/Renderer.hpp>
 
 namespace sre{
     Framebuffer::FrameBufferBuilder& Framebuffer::FrameBufferBuilder::withTexture(std::shared_ptr<Texture> texture) {
@@ -49,9 +50,13 @@ namespace sre{
     Framebuffer::Framebuffer(std::string name)
     :name(name)
     {
+        auto r = Renderer::instance;
+        r->framebufferObjects.push_back(this);
     }
 
     Framebuffer::~Framebuffer() {
+        auto r = Renderer::instance;
+        r->framebufferObjects.erase(std::remove(r->framebufferObjects.begin(), r->framebufferObjects.end(), this));
         if (renderBufferDepth != 0){
             glDeleteRenderbuffers(1, &renderBufferDepth);
         }
@@ -66,11 +71,25 @@ namespace sre{
 #ifdef EMSCRIPTEN
         return 1;
 #else
-        GLint maxAttach = 0;
-        glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxAttach);
-        GLint maxDrawBuf = 0;
-        glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuf);
-        return std::min(maxAttach, maxDrawBuf);
+        static int maxColorBuffers;
+        static bool once = [&](){
+            static GLint maxAttach = 0;
+            static GLint maxDrawBuf = 0;
+            glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxAttach);
+            glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuf);
+            maxColorBuffers = std::min(maxAttach, maxDrawBuf);
+            return true;
+        } ();
+
+        return maxColorBuffers;
+#endif
+    }
+
+    int Framebuffer::getMaximumDepthAttachments() {
+#ifdef EMSCRIPTEN
+        return 0;
+#else
+        return 1;
 #endif
     }
 

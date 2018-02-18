@@ -51,6 +51,7 @@ namespace sre {
 
         static FrameBufferBuilder create();
 
+        static int getMaximumDepthAttachments();
         static int getMaximumColorAttachments();
 
         DEPRECATED("Use setColorTexture() instead")
@@ -59,7 +60,6 @@ namespace sre {
         void setDepthTexture(std::shared_ptr<Texture> tex);
 
         const std::string& getName();
-
     private:
         void bind();
         bool dirty = true;
@@ -72,9 +72,6 @@ namespace sre {
         glm::uvec2 size;
         friend class RenderPass;
     };
-
-
-
 }
 
 

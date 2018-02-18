@@ -24,8 +24,14 @@ public:
 
         depthTexture = Texture::create().withDepth(1024,1024, Texture::DepthPrecision::I16).build();
         texture = Texture::create().withRGBData(nullptr, 1024,1024).build();
-        framebuffer = Framebuffer::create().withColorTexture(texture).build();
-        framebufferDepth = Framebuffer::create().withDepthTexture(depthTexture).build();
+        framebuffer = Framebuffer::create()
+                .withColorTexture(texture)
+                .withName("Render to color texture")
+                .build();
+        framebufferDepth = Framebuffer::create()
+                .withName("Render to depth texture")
+                .withDepthTexture(depthTexture)
+                .build();
 
         materialOffscreen = Shader::getStandardBlinnPhong()->createMaterial();
         materialOffscreen->setSpecularity({1,1,1,120});
