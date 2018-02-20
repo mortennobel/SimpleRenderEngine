@@ -348,9 +348,26 @@ namespace sre {
         return "Unknown";
 }
 
-    void showFramebufferObject(Framebuffer* fbo){
+    void Inspector::showFramebufferObject(Framebuffer* fbo){
         std::string s = fbo->getName()+"##"+std::to_string((int64_t)fbo);
         if (ImGui::TreeNode(s.c_str())){
+            char name[128];
+            sprintf(name, "Color textures %i",fbo->textures.size());
+            if (ImGui::TreeNode(name)){
+                for (auto & t : fbo->textures){
+                    showTexture(t.get());
+                }
+                ImGui::TreePop();
+            }
+
+            sprintf(name, "Depth textures %i",fbo->depthTexture.get()?1:0);
+            if (ImGui::TreeNode(name) && fbo->depthTexture.get()){
+                showTexture(fbo->depthTexture.get());
+                ImGui::TreePop();
+            }
+            if (!fbo->depthTexture.get()){
+                ImGui::LabelText("RenderBuffer Depth","%s",fbo->renderBufferDepth?"true":"false");
+            }
             ImGui::TreePop();
         }
     }

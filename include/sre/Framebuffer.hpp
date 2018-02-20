@@ -71,6 +71,7 @@ namespace sre {
         std::string name;
         glm::uvec2 size;
         friend class RenderPass;
+        friend class Inspector;
     };
 }
 

@@ -221,6 +221,7 @@ namespace sre{
         // Check if FBO is configured correctly
         checkStatus();
         framebuffer->textures = textures;
+        framebuffer->depthTexture = depthTexture;
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         return std::shared_ptr<Framebuffer>(framebuffer);

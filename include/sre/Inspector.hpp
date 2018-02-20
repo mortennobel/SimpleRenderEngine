@@ -60,7 +60,7 @@ namespace sre {
         std::chrono::time_point<std::chrono::high_resolution_clock> lastTick;
 
         void showMesh(Mesh *mesh);
-
+        void showFramebufferObject(Framebuffer* fbo);
         void showShader(Shader *shader);
 
         void showTexture(Texture *tex);
