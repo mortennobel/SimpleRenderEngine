@@ -391,11 +391,13 @@ namespace sre {
             ImGui::LabelText("Drawable size", "%ix%i",r->getDrawableSize().x,r->getDrawableSize().y);
             ImGui::LabelText("VSync", "%s", r->usesVSync()?"true":"false");
 
-            char* version = (char*)glGetString(GL_VERSION);
-            ImGui::LabelText("OpenGL version",version);
+            ImGui::LabelText("OpenGL version","%s (%i.%i%s)",
+                             renderInfo().graphicsAPIVersion.c_str(),
+                             renderInfo().graphicsAPIVersionMajor,
+                             renderInfo().graphicsAPIVersionMinor,
+                             renderInfo().graphicsAPIVersionES?" ES":"");
 
-            char* vendor = (char*)glGetString(GL_VENDOR);
-            ImGui::LabelText("OpenGL vendor", vendor);
+            ImGui::LabelText("OpenGL vendor", renderInfo().graphicsAPIVendor.c_str());
 
             SDL_version compiled;
             SDL_version linked;

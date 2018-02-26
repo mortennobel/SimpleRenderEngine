@@ -44,36 +44,36 @@ namespace sre {
             r->meshes.erase(std::remove(r->meshes.begin(), r->meshes.end(), this));
         }
 
-#ifndef EMSCRIPTEN
-        for (auto arrayObj : shaderToVertexArrayObject) {
-            glDeleteVertexArrays(1, &(arrayObj.second.vaoID));
+        if (renderInfo().graphicsAPIVersionMajor >= 3) {
+            for (auto arrayObj : shaderToVertexArrayObject) {
+                glDeleteVertexArrays(1, &(arrayObj.second.vaoID));
+            }
         }
-#endif
         glDeleteBuffers(1, &vertexBufferId);
         glDeleteBuffers((GLsizei)elementBufferId.size(), elementBufferId.data());
 
     }
 
     void Mesh::bind(Shader* shader) {
-#ifndef EMSCRIPTEN
-        auto res = shaderToVertexArrayObject.find(shader->shaderProgramId);
-        if (res != shaderToVertexArrayObject.end() && res->second.shaderId == shader->shaderUniqueId) {
-            GLuint vao = res->second.vaoID;
-            glBindVertexArray(vao);
-        } else {
-            GLuint index;
-            if (res != shaderToVertexArrayObject.end()){
-                index = res->second.vaoID;
+        if (renderInfo().graphicsAPIVersionMajor >= 3) {
+            auto res = shaderToVertexArrayObject.find(shader->shaderProgramId);
+            if (res != shaderToVertexArrayObject.end() && res->second.shaderId == shader->shaderUniqueId) {
+                GLuint vao = res->second.vaoID;
+                glBindVertexArray(vao);
             } else {
-                glGenVertexArrays(1, &index);
+                GLuint index;
+                if (res != shaderToVertexArrayObject.end()){
+                    index = res->second.vaoID;
+                } else {
+                    glGenVertexArrays(1, &index);
+                }
+                glBindVertexArray(index);
+                setVertexAttributePointers(shader);
+                shaderToVertexArrayObject[shader->shaderProgramId] = {shader->shaderUniqueId, index};
             }
-            glBindVertexArray(index);
+        } else {
             setVertexAttributePointers(shader);
-            shaderToVertexArrayObject[shader->shaderProgramId] = {shader->shaderUniqueId, index};
         }
-#else
-        setVertexAttributePointers(shader);
-#endif
     }
     void Mesh::bindIndexSet(int indexSet){
         if (indices.empty()){
@@ -99,12 +99,12 @@ namespace sre {
         vertexCount = 0;
         dataSize = 0;
 
-#ifndef EMSCRIPTEN
-        for (auto arrayObj : shaderToVertexArrayObject){
-            glDeleteVertexArrays(1, &(arrayObj.second.vaoID));
+        if (renderInfo().graphicsAPIVersionMajor >= 3) {
+            for (auto arrayObj : shaderToVertexArrayObject){
+                glDeleteVertexArrays(1, &(arrayObj.second.vaoID));
+            }
+            shaderToVertexArrayObject.clear();
         }
-        shaderToVertexArrayObject.clear();
-#endif
         attributeByName.clear();
 
         this->indices         = std::move(indices);
@@ -116,9 +116,9 @@ namespace sre {
 
         auto interleavedData = getInterleavedData();
 
-#ifndef EMSCRIPTEN
-        glBindVertexArray(0);
-#endif
+        if (renderInfo().graphicsAPIVersionMajor >= 3) {
+            glBindVertexArray(0);
+        }
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float)*interleavedData.size(), interleavedData.data(), GL_STATIC_DRAW);
 
@@ -165,9 +165,7 @@ namespace sre {
             // todo - add support float - vecX
             bool equalType = attributeFoundInMesh && (shaderAttribute.second.type == meshAttribute->second.attributeType ||
                     (shaderAttribute.second.type >= GL_FLOAT_VEC2 && shaderAttribute.second.type <= GL_FLOAT_VEC4 && shaderAttribute.second.type>= meshAttribute->second.attributeType)
-#ifndef EMSCRIPTEN
                     || (shaderAttribute.second.type >= GL_INT_VEC2 && shaderAttribute.second.type <= GL_INT_VEC4 && shaderAttribute.second.type>= meshAttribute->second.attributeType)
-#endif
                                                      );
             if (attributeFoundInMesh &&  equalType && shaderAttribute.second.arraySize == 1) {
 				glEnableVertexAttribArray(shaderAttribute.second.position);
@@ -178,20 +176,9 @@ namespace sre {
 				glDisableVertexAttribArray(shaderAttribute.second.position);
 				static const float a[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
                 switch (shaderAttribute.second.type) {
-#ifndef EMSCRIPTEN
 				case GL_INT_VEC4:
 					glVertexAttribI4iv(shaderAttribute.second.position, (GLint*)a);
 					break;
-				case GL_INT_VEC3:
-					glVertexAttribI3iv(shaderAttribute.second.position, (GLint*)a);
-					break;
-				case GL_INT_VEC2:
-					glVertexAttribI2iv(shaderAttribute.second.position, (GLint*)a);
-					break;
-				case GL_INT:
-					glVertexAttribI1iv(shaderAttribute.second.position, (GLint*)a);
-					break;
-#endif
 				case GL_FLOAT_VEC4:
 					glVertexAttrib4fv(shaderAttribute.second.position, a);
 					break;

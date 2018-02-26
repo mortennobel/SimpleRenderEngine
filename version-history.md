@@ -1,5 +1,6 @@
 ## Version history
 
+ * 1.0.4 WebGL 2 support. Fix WebGL shader warnings. 
  * 1.0.3 Add RenderPass.blit(). Add depth/stencil as Texture type and add support for depth attachment in Framebuffer.
  * 1.0.2 Add Phong shader. Improve light (PBR and Blinn-Phong).
  * 1.0.1 Improve specular highlight for Blinn-Phong. Add attenuation to PBR.

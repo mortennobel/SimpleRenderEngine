@@ -60,23 +60,31 @@ void ImGui_ImplSdlGL3_RenderDrawLists(ImDrawData* draw_data)
     glActiveTexture(GL_TEXTURE0);
     GLint last_program; glGetIntegerv(GL_CURRENT_PROGRAM, &last_program);
     GLint last_texture; glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
-#ifndef EMSCRIPTEN
-    GLint last_sampler; glGetIntegerv(GL_SAMPLER_BINDING, &last_sampler);
-#endif
+    GLint last_sampler;
+    if (renderInfo().graphicsAPIVersionMajor >= 3) {
+        glGetIntegerv(GL_SAMPLER_BINDING, &last_sampler);
+    }
     GLint last_array_buffer; glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last_array_buffer);
     GLint last_element_array_buffer; glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last_element_array_buffer);
 
     GLint last_viewport[4]; glGetIntegerv(GL_VIEWPORT, last_viewport);
     GLint last_scissor_box[4]; glGetIntegerv(GL_SCISSOR_BOX, last_scissor_box);
-#ifndef EMSCRIPTEN
-    GLint last_polygon_mode[2]; glGetIntegerv(GL_POLYGON_MODE, last_polygon_mode);
-    GLint last_vertex_array; glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
-    GLenum last_blend_src_rgb; glGetIntegerv(GL_BLEND_SRC_RGB, (GLint*)&last_blend_src_rgb);
-    GLenum last_blend_dst_rgb; glGetIntegerv(GL_BLEND_DST_RGB, (GLint*)&last_blend_dst_rgb);
-
-    GLenum last_blend_src_alpha; glGetIntegerv(GL_BLEND_SRC_ALPHA, (GLint*)&last_blend_src_alpha);
-    GLenum last_blend_dst_alpha; glGetIntegerv(GL_BLEND_DST_ALPHA, (GLint*)&last_blend_dst_alpha);
+    GLint last_polygon_mode[2];
+    GLint last_vertex_array;
+    GLenum last_blend_src_rgb;
+    GLenum last_blend_dst_rgb;
+    GLenum last_blend_src_alpha;
+    GLenum last_blend_dst_alpha;
+    if (renderInfo().graphicsAPIVersionMajor >= 3) {
+#ifndef GL_ES_VERSION_2_0
+        glGetIntegerv(GL_POLYGON_MODE, last_polygon_mode);
 #endif
+        glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
+        glGetIntegerv(GL_BLEND_SRC_RGB, (GLint *) &last_blend_src_rgb);
+        glGetIntegerv(GL_BLEND_DST_RGB, (GLint *) &last_blend_dst_rgb);
+        glGetIntegerv(GL_BLEND_SRC_ALPHA, (GLint *) &last_blend_src_alpha);
+        glGetIntegerv(GL_BLEND_DST_ALPHA, (GLint *) &last_blend_dst_alpha);
+    }
     GLint last_blend_equation_rgb; glGetIntegerv(GL_BLEND_EQUATION_RGB, &last_blend_equation_rgb);
     GLint last_blend_equation_alpha; glGetIntegerv(GL_BLEND_EQUATION_ALPHA, &last_blend_equation_alpha);
 
@@ -92,7 +100,7 @@ void ImGui_ImplSdlGL3_RenderDrawLists(ImDrawData* draw_data)
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_SCISSOR_TEST);
-#ifndef EMSCRIPTEN
+#ifndef GL_ES_VERSION_2_0
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif
     glActiveTexture(GL_TEXTURE0);
@@ -109,11 +117,11 @@ void ImGui_ImplSdlGL3_RenderDrawLists(ImDrawData* draw_data)
     glUseProgram(g_ShaderHandle);
     glUniform1i(g_AttribLocationTex, 0);
     glUniformMatrix4fv(g_AttribLocationProjMtx, 1, GL_FALSE, &ortho_projection[0][0]);
-#ifndef EMSCRIPTEN
-    glBindVertexArray(g_VaoHandle);
-#else
-    setupVertexAttribPointer();
-#endif
+    if (renderInfo().graphicsAPIVersionMajor >= 3) {
+        glBindVertexArray(g_VaoHandle);
+    } else {
+        setupVertexAttribPointer();
+    }
 
     for (int n = 0; n < draw_data->CmdListsCount; n++)
     {
@@ -148,23 +156,23 @@ void ImGui_ImplSdlGL3_RenderDrawLists(ImDrawData* draw_data)
     glUseProgram(last_program);
     glActiveTexture(last_active_texture);
     glBindTexture(GL_TEXTURE_2D, last_texture);
-#ifndef EMSCRIPTEN
-    glBindSampler(0, last_sampler);
-#endif
-#ifndef EMSCRIPTEN
-    glBindVertexArray(last_vertex_array);
-#endif
+    if (renderInfo().graphicsAPIVersionMajor >= 3) {
+
+        glBindSampler(0, last_sampler);
+        glBindVertexArray(last_vertex_array);
+
+    }
     glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, last_element_array_buffer);
-#ifndef EMSCRIPTEN
-    glBlendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);
-    glBlendFuncSeparate(last_blend_src_rgb, last_blend_dst_rgb, last_blend_src_alpha, last_blend_dst_alpha);
-#endif
+    if (renderInfo().graphicsAPIVersionMajor >= 3) {
+        glBlendEquationSeparate(last_blend_equation_rgb, last_blend_equation_alpha);
+        glBlendFuncSeparate(last_blend_src_rgb, last_blend_dst_rgb, last_blend_src_alpha, last_blend_dst_alpha);
+    }
     if (last_enable_blend) glEnable(GL_BLEND); else glDisable(GL_BLEND);
     if (last_enable_cull_face) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
     if (last_enable_depth_test) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST);
     if (last_enable_scissor_test) glEnable(GL_SCISSOR_TEST); else glDisable(GL_SCISSOR_TEST);
-#ifndef EMSCRIPTEN
+#ifndef GL_ES_VERSION_2_0
     glPolygonMode(GL_FRONT_AND_BACK, last_polygon_mode[0]);
 #endif
     glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
@@ -237,9 +245,9 @@ void ImGui_ImplSdlGL3_CreateFontsTexture()
     glBindTexture(GL_TEXTURE_2D, g_FontTexture);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-#ifndef EMSCRIPTEN
-    glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-#endif
+    if (renderInfo().graphicsAPIVersionMajor >= 3) {
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+    }
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
     // Store our identifier
@@ -257,9 +265,9 @@ bool ImGui_SRE_CreateDeviceObjects()
     GLint last_texture, last_array_buffer, last_vertex_array;
     glGetIntegerv(GL_TEXTURE_BINDING_2D, &last_texture);
     glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last_array_buffer);
-#ifndef EMSCRIPTEN
-    glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
-#endif
+    if (renderInfo().graphicsAPIVersionMajor >= 3) {
+        glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
+    }
     const GLchar *vertex_shader =
             "#version 140\n"
                     "uniform mat4 ProjMtx;\n"
@@ -294,12 +302,12 @@ bool ImGui_SRE_CreateDeviceObjects()
             "}\n";
     ss << "void main()\n";
     ss << "{\n";
-    if (Renderer::instance->getRenderInfo().supportTextureSamplerSRGB){
+    if (renderInfo().supportTextureSamplerSRGB){
         ss << "	fragColor = Frag_Color * texture( Texture, Frag_UV.st);\n";
     } else {
         ss << "	fragColor = Frag_Color * toLinear(texture( Texture, Frag_UV.st));\n";
     }
-    if (!Renderer::instance->getRenderInfo().useFramebufferSRGB){
+    if (renderInfo().useFramebufferSRGB){
         ss << "	fragColor = toOutput(fragColor);\n";
     }
     ss << "}\n";
@@ -310,7 +318,7 @@ bool ImGui_SRE_CreateDeviceObjects()
     g_ShaderHandle = glCreateProgram();
     g_VertHandle = glCreateShader(GL_VERTEX_SHADER);
     g_FragHandle = glCreateShader(GL_FRAGMENT_SHADER);
-#ifdef EMSCRIPTEN
+    if (renderInfo().graphicsAPIVersionES) {
     std::string vs = vertex_shader;
     std::string fs = fragment_shader;
     vs = sre::Shader::translateToGLSLES(vs, true);
@@ -319,10 +327,10 @@ bool ImGui_SRE_CreateDeviceObjects()
     auto fsp = fs.c_str();
     glShaderSource(g_VertHandle, 1, &vsp, 0);
     glShaderSource(g_FragHandle, 1, &fsp, 0);
-#else
+    } else {
     glShaderSource(g_VertHandle, 1, &vertex_shader, 0);
     glShaderSource(g_FragHandle, 1, &fragment_shader_c, 0);
-#endif
+    }
     glCompileShader(g_VertHandle);
     glCompileShader(g_FragHandle);
     glAttachShader(g_ShaderHandle, g_VertHandle);
@@ -337,10 +345,10 @@ bool ImGui_SRE_CreateDeviceObjects()
 
     glGenBuffers(1, &g_VboHandle);
     glGenBuffers(1, &g_ElementsHandle);
-#ifndef EMSCRIPTEN
-    glGenVertexArrays(1, &g_VaoHandle);
-    glBindVertexArray(g_VaoHandle);
-#endif
+    if (renderInfo().graphicsAPIVersionMajor >= 3) {
+        glGenVertexArrays(1, &g_VaoHandle);
+        glBindVertexArray(g_VaoHandle);
+    }
     glBindBuffer(GL_ARRAY_BUFFER, g_VboHandle);
     glEnableVertexAttribArray(g_AttribLocationPosition);
     glEnableVertexAttribArray(g_AttribLocationUV);
@@ -353,17 +361,17 @@ bool ImGui_SRE_CreateDeviceObjects()
     // Restore modified GL state
     glBindTexture(GL_TEXTURE_2D, last_texture);
     glBindBuffer(GL_ARRAY_BUFFER, last_array_buffer);
-#ifndef EMSCRIPTEN
-    glBindVertexArray(last_vertex_array);
-#endif
+    if (renderInfo().graphicsAPIVersionMajor >= 3) {
+        glBindVertexArray(last_vertex_array);
+    }
     return true;
 }
 
 void    ImGui_SRE_InvalidateDeviceObjects()
 {
-#ifndef EMSCRIPTEN
-    if (g_VaoHandle) glDeleteVertexArrays(1, &g_VaoHandle);
-#endif
+    if (renderInfo().graphicsAPIVersionMajor >= 3) {
+        if (g_VaoHandle) glDeleteVertexArrays(1, &g_VaoHandle);
+    }
     if (g_VboHandle) glDeleteBuffers(1, &g_VboHandle);
     if (g_ElementsHandle) glDeleteBuffers(1, &g_ElementsHandle);
     g_VaoHandle = g_VboHandle = g_ElementsHandle = 0;

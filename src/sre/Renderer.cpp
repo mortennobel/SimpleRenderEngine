@@ -23,8 +23,17 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 
 #include "sre/impl/GL.hpp"
 
+#ifdef EMSCRIPTEN
+#include "emscripten.h"
+#endif
+
 namespace sre {
     Renderer* Renderer::instance = nullptr;
+    RenderInfo renderInfo_;
+
+    const RenderInfo& renderInfo(){
+        return renderInfo_;
+    }
 
     Renderer::Renderer(SDL_Window * window, bool vsync_, int maxSceneLights)
     :window{window},vsync(vsync_),maxSceneLights(maxSceneLights)
@@ -37,19 +46,44 @@ namespace sre {
 		instance = this;
 
         glcontext = SDL_GL_CreateContext(window);
+        renderInfo_.graphicsAPIVersion = (char*)glGetString(GL_VERSION);
 #ifdef EMSCRIPTEN
+
+
+        bool isWebGL1 = strcmp((const char*)renderInfo_.graphicsAPIVersion.c_str(), "WebGL 1") != -1;
+        if (isWebGL1){
+            const char* embeddedCode =
+                "window.WebGL2RenderingContext = window.WebGL2RenderingContext || window.WebGLRenderingContext;\n"
+                "window.WebGLQuery = window.WebGLQuery || function(){};"
+                "window.WebGLSampler = window.WebGLSampler || function(){};"
+                "window.WebGLSync = window.WebGLSync || function(){};"
+                "window.WebGLTransformFeedback = window.WebGLTransformFeedback || function(){};"
+                "window.WebGLVertexArrayObject = window.WebGLVertexArrayObject || function(){};";
+            emscripten_run_script(embeddedCode);
+        }
         vsync = true; // WebGL uses vsync like approach
-        renderInfo.useFramebufferSRGB = false;
-        renderInfo.supportTextureSamplerSRGB = false;
+        renderInfo_.graphicsAPIVersionES = true;
+        if (renderInfo_.graphicsAPIVersion.find("WebGL 1.0") != std::string::npos){
+            renderInfo_.graphicsAPIVersionMajor = 2;
+            renderInfo_.graphicsAPIVersionMinor = 0;
+        } else {
+            renderInfo_.graphicsAPIVersionMajor = 3;
+            renderInfo_.graphicsAPIVersionMinor = 0;
+        }
+        renderInfo_.useFramebufferSRGB = renderInfo_.graphicsAPIVersionMajor <= 2 ? false:true;
+        renderInfo_.supportTextureSamplerSRGB = renderInfo_.graphicsAPIVersionMajor <= 2 ? false:true;
 #else
         if (vsync){
             vsync = SDL_GL_SetSwapInterval(1) == 0; // return 0 is success
         }
-        renderInfo.useFramebufferSRGB = true;
-        renderInfo.supportTextureSamplerSRGB = true;
+        renderInfo_.useFramebufferSRGB = true;
+        renderInfo_.graphicsAPIVersionES = false;
+        renderInfo_.supportTextureSamplerSRGB = true;
         glEnable(GL_FRAMEBUFFER_SRGB);
+        glGetIntegerv(GL_MAJOR_VERSION,&renderInfo_.graphicsAPIVersionMajor);
+        glGetIntegerv(GL_MINOR_VERSION,&renderInfo_.graphicsAPIVersionMinor);
 #endif
-#if defined(_WIN32)
+#if defined(_WIN32) || defined(__LINUX__)
 		glewExperimental = GL_TRUE;
 		GLenum err = glewInit();
 		if (GLEW_OK != err)
@@ -57,18 +91,12 @@ namespace sre {
 			/* Problem: glewInit failed, something is seriously wrong. */
 			LOG_FATAL("Error initializing OpenGL using GLEW: %s",glewGetErrorString(err));
 		}
-#elif defined __LINUX__
-        glewExperimental = GL_TRUE;
-        GLenum err = glewInit();
-		if (GLEW_OK != err)
-		{
-			/* Problem: glewInit failed, something is seriously wrong. */
-			LOG_FATAL("Error initializing OpenGL using GLEW: %s",glewGetErrorString(err));
-		}
 #endif
-        renderInfo.graphicsAPIVersion = (char*)glGetString(GL_VERSION);
-        renderInfo.graphicsAPIVendor = (char*)glGetString(GL_VENDOR);
-        LOG_INFO("OpenGL version %s",renderInfo.graphicsAPIVersion.c_str() );
+
+
+        renderInfo_.graphicsAPIVendor = (char*)glGetString(GL_VENDOR);
+
+        LOG_INFO("OpenGL version %s (%i.%i)",renderInfo_.graphicsAPIVersion.c_str(), renderInfo_.graphicsAPIVersionMajor,renderInfo_.graphicsAPIVersionMinor);
         LOG_INFO("sre version %i.%i.%i", sre_version_major, sre_version_minor , sre_version_point);
 
         // setup opengl context
@@ -81,7 +109,8 @@ namespace sre {
 #ifndef GL_POINT_SPRITE
 #define GL_POINT_SPRITE 0x8861
 #endif // !GL_POINT_SPRITE
-		if (renderInfo.graphicsAPIVersion.find("3.1") == 0){
+
+		if (!renderInfo_.graphicsAPIVersionES && (renderInfo_.graphicsAPIVersionMajor == 3 && renderInfo_.graphicsAPIVersionMinor<=1)){
 			glEnable(GL_POINT_SPRITE);
 		}
 
@@ -138,7 +167,7 @@ namespace sre {
         return maxSceneLights;
     }
 
-    const Renderer::RenderInfo &Renderer::getRenderInfo() {
-        return renderInfo;
+    const RenderInfo &Renderer::getRenderInfo() {
+        return renderInfo_;
     }
 }

@@ -165,9 +165,9 @@ namespace sre {
             if (linked == GL_FALSE) {
                 GLint  logSize;
                 glGetProgramiv(mShaderProgram, GL_INFO_LOG_LENGTH, &logSize);
-                std::vector<char> errorLog((size_t) logSize);
-                glGetProgramInfoLog(mShaderProgram, logSize, nullptr, errorLog.data() );
-                if (errorLog.size() > 1){ // log size of 1 is empty, since it includes \0
+                if (logSize > 1){ // log size of 1 is empty, since it includes \0
+                    std::vector<char> errorLog((size_t) logSize);
+                    glGetProgramInfoLog(mShaderProgram, logSize, nullptr, errorLog.data() );
                     errors.emplace_back(errorLog.data());
                     LOG_ERROR("Shader linker error: %s",errorLog.data());
                 }
@@ -598,13 +598,13 @@ namespace sre {
         }
         if (offset.x == 0 && offset.y==0){
             glDisable(GL_POLYGON_OFFSET_FILL);
-#ifndef EMSCRIPTEN
+#ifndef GL_ES_VERSION_2_0
             glDisable(GL_POLYGON_OFFSET_LINE);
             glDisable(GL_POLYGON_OFFSET_POINT);
 #endif
         } else {
             glEnable(GL_POLYGON_OFFSET_FILL);
-#ifndef EMSCRIPTEN
+#ifndef GL_ES_VERSION_2_0
             glEnable(GL_POLYGON_OFFSET_LINE);
             glEnable(GL_POLYGON_OFFSET_POINT);
 #endif
@@ -868,9 +868,9 @@ namespace sre {
         // Insert preprocessor define symbols
         source = insertPreprocessorDefines(source, specializationConstants, shaderType);
 
-#ifdef EMSCRIPTEN
-        source = Shader::translateToGLSLES(source, shaderType==GL_VERTEX_SHADER);
-#endif
+        if (renderInfo().graphicsAPIVersionES) {
+            source = Shader::translateToGLSLES(source, shaderType == GL_VERTEX_SHADER, renderInfo().graphicsAPIVersionMajor<=2?100:300);
+        }
         return source;
     }
 
@@ -975,10 +975,10 @@ namespace sre {
             ss<<"#define "<<sc.first<<" "<<sc.second<<"\n";
         }
 
-        if (Renderer::instance->getRenderInfo().useFramebufferSRGB){
+        if (renderInfo().useFramebufferSRGB){
             ss<<"#define SI_FRAMEBUFFER_SRGB 1\n";
         }
-        if (Renderer::instance->getRenderInfo().supportTextureSamplerSRGB){
+        if (renderInfo().supportTextureSamplerSRGB){
             ss<<"#define SI_TEX_SAMPLER_SRGB 1\n";
         }
 

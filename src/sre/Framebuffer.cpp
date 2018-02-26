@@ -68,9 +68,9 @@ namespace sre{
     }
 
     int Framebuffer::getMaximumColorAttachments() {
-#ifdef EMSCRIPTEN
-        return 1;
-#else
+        if (renderInfo().graphicsAPIVersionES && renderInfo().graphicsAPIVersionMajor<= 2){
+            return 1;
+        }
         static int maxColorBuffers;
         static bool once = [&](){
             static GLint maxAttach = 0;
@@ -82,15 +82,14 @@ namespace sre{
         } ();
 
         return maxColorBuffers;
-#endif
     }
 
     int Framebuffer::getMaximumDepthAttachments() {
-#ifdef EMSCRIPTEN
-        return 0;
-#else
-        return 1;
-#endif
+        if (renderInfo().graphicsAPIVersionES && renderInfo().graphicsAPIVersionMajor <= 2){
+            return 0;
+        } else {
+            return 1;
+        }
     }
 
     const std::string& Framebuffer::getName() {
@@ -199,11 +198,7 @@ namespace sre{
             glGenRenderbuffers(1,&framebuffer->renderBufferDepth); // Create a renderbuffer object
             glBindRenderbuffer(GL_RENDERBUFFER, framebuffer->renderBufferDepth);
             glRenderbufferStorage(GL_RENDERBUFFER,
-    #ifdef GL_ES_VERSION_2_0
-                    GL_DEPTH_COMPONENT16
-    #else
-                                  GL_DEPTH_COMPONENT32
-    #endif
+                                  renderInfo().graphicsAPIVersionMinor<=2?GL_DEPTH_COMPONENT16:GL_DEPTH_COMPONENT24
                     , size.x, size.y);
 
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
@@ -215,9 +210,9 @@ namespace sre{
                                       GL_RENDERBUFFER,
                                       framebuffer->renderBufferDepth);
         }
-#ifndef EMSCRIPTEN
-        glDrawBuffers(drawBuffers.size(), drawBuffers.data());
-#endif
+        if (!renderInfo().graphicsAPIVersionES || renderInfo().graphicsAPIVersionMajor>=3){
+            glDrawBuffers((GLsizei)drawBuffers.size(), drawBuffers.data());
+        }
         // Check if FBO is configured correctly
         checkStatus();
         framebuffer->textures = textures;
