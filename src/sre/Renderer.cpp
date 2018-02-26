@@ -33,17 +33,15 @@ namespace sre {
             LOG_ERROR("Multiple versions of Renderer initialized. Only a single instance is supported.");
         }
 
-        // initialize ImGUI
-        ImGui_SRE_Init(window);
+
 		instance = this;
 
-        
+        glcontext = SDL_GL_CreateContext(window);
 #ifdef EMSCRIPTEN
         vsync = true; // WebGL uses vsync like approach
         renderInfo.useFramebufferSRGB = false;
         renderInfo.supportTextureSamplerSRGB = false;
 #else
-        glcontext = SDL_GL_CreateContext(window);
         if (vsync){
             vsync = SDL_GL_SetSwapInterval(1) == 0; // return 0 is success
         }
@@ -86,6 +84,9 @@ namespace sre {
 		if (renderInfo.graphicsAPIVersion.find("3.1") == 0){
 			glEnable(GL_POINT_SPRITE);
 		}
+
+        // initialize ImGUI
+        ImGui_SRE_Init(window);
 
         // reset render stats
         renderStatsLast = renderStats;
