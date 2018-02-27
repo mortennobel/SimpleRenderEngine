@@ -70,8 +70,8 @@ namespace sre {
             renderInfo_.graphicsAPIVersionMajor = 3;
             renderInfo_.graphicsAPIVersionMinor = 0;
         }
-        renderInfo_.useFramebufferSRGB = renderInfo_.graphicsAPIVersionMajor <= 2 ? false:true;
-        renderInfo_.supportTextureSamplerSRGB = renderInfo_.graphicsAPIVersionMajor <= 2 ? false:true;
+        renderInfo_.useFramebufferSRGB = false;
+        renderInfo_.supportTextureSamplerSRGB = false;
 #else
         if (vsync){
             vsync = SDL_GL_SetSwapInterval(1) == 0; // return 0 is success
