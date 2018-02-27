@@ -101,7 +101,7 @@ namespace sre {
                 if (std::regex_search (s,m,e)) {
                     std::string match = m[1];
                     auto res = getFileContents(match);
-                    if (res == ""){
+                    if (res.empty()){
                         errors.push_back(std::string("0:")+std::to_string(lineNumber)+" cannot find include file "+match+"##"+std::to_string(shaderType));
                         sstream << s << "\n";
                     } else {
@@ -120,7 +120,7 @@ namespace sre {
         void logCurrentCompileInfo(GLuint &shader, GLenum type, vector<string> &errors, std::string source, const std::string name) {
             GLint logSize = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
-            if (logSize > 0){
+            if (logSize > 1){ // log size of 1 is empty, since it includes \0
                 std::vector<char> errorLog((unsigned long) logSize);
                 glGetShaderInfoLog(shader, logSize, &logSize, errorLog.data());
 
@@ -132,7 +132,7 @@ namespace sre {
                     case GL_VERTEX_SHADER:
                         typeStr = "Vertex shader";
                         break;
-    #ifndef EMSCRIPTEN
+#ifndef EMSCRIPTEN
                     case GL_GEOMETRY_SHADER:
                         typeStr = "Geometry shader";
                         break;
@@ -142,14 +142,15 @@ namespace sre {
                     case GL_TESS_EVALUATION_SHADER:
                         typeStr = "Tessellation eval shader";
                         break;
-    #endif
+#endif
                     default:
                         typeStr = std::string("Unknown error type: ") + std::to_string(type);
                         break;
                 }
+
                 LOG_ERROR("Shader compile error in %s (%s): %s", name.c_str(), typeStr.c_str(), errorLog.data());
                 errors.push_back(std::string(errorLog.data())+"##"+std::to_string(type));
-                glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
+
             }
         }
 
@@ -164,10 +165,12 @@ namespace sre {
             if (linked == GL_FALSE) {
                 GLint  logSize;
                 glGetProgramiv(mShaderProgram, GL_INFO_LOG_LENGTH, &logSize);
-                std::vector<char> errorLog((size_t) logSize);
-                glGetProgramInfoLog(mShaderProgram, logSize, nullptr, errorLog.data() );
-                errors.emplace_back(errorLog.data());
-                LOG_ERROR("Shader linker error: %s",errorLog.data());
+                if (logSize > 1){ // log size of 1 is empty, since it includes \0
+                    std::vector<char> errorLog((size_t) logSize);
+                    glGetProgramInfoLog(mShaderProgram, logSize, nullptr, errorLog.data() );
+                    errors.emplace_back(errorLog.data());
+                    LOG_ERROR("Shader linker error: %s",errorLog.data());
+                }
                 return false;
             }
             return true;
@@ -272,49 +275,69 @@ namespace sre {
         return *this;
     }
 
-    std::string Shader::translateToGLSLES(std::string source, bool vertexShader) {
+    std::string Shader::translateToGLSLES(std::string source, bool vertexShader, int version) {
         using namespace std;
-
         string replace = "#version 140";
-        string replaceWith = vertexShader?"#version 100":"#version 100\n#ifdef GL_ES\n"
-                "precision mediump float;\n"
-                "#endif\n"
-                "#line 2";
+        string replaceWith = string("#version ")+std::to_string(version);
+        if (version >100){
+            replaceWith += " es";
+        }
+
         size_t f = source.find(replace);
         source = source.replace(f, replace.length(), replaceWith);
-
-        // replace textures
-        if (vertexShader){
-            regex regExpSearchShim3 { R"(\n\s*out\b)"};
-            source = regex_replace(source, regExpSearchShim3, "\nvarying");
-            regex regExpSearchShim4 { R"(\n\s*in\b)"};
-            source = regex_replace(source, regExpSearchShim4, "\nattribute");
-        } else {
-            regex regExpSearchShim2 { R"(\bfragColor\b)"};
-            source = regex_replace(source, regExpSearchShim2, "gl_FragColor");
-            regex regExpSearchShim3 { R"(\n\s*out\b)"};
-            source = regex_replace(source, regExpSearchShim3, "\n// out");
-            regex regExpSearchShim4 { R"(\n\s*in\b)"};
-            source = regex_replace(source, regExpSearchShim4, "\nvarying");
-        }
-
-        regex regExpSearchShim1 { R"(\s*uniform\s+sampler([\w]*)\s+([\w_]*)\s*;.*)"};
-        istringstream iss(source);
-        map<string,string> textureType;
-        smatch match;
-        for (std::string line; std::getline(iss, line); )
-        {
-            regex_search(line, match, regExpSearchShim1);
-            if (!match.empty()){
-                string samplerType = match[1].str();
-                string samplerName = match[2].str();
-                textureType[samplerName] = samplerType;
+        if (!vertexShader){
+            auto extension = source.rfind("#extension");
+            // insert precision after extensions
+            long insertPrecisionPos = string::npos;
+            if (extension != string::npos){
+                insertPrecisionPos = source.find('\n',extension);
+            } else {
+                insertPrecisionPos = source.find('\n');
             }
+            if (insertPrecisionPos == string::npos){
+                LOG_ERROR("insertPrecisionPos invalid");
+                insertPrecisionPos = 0;
+            }
+            source = source.substr(0, insertPrecisionPos)+
+                     "\n"+
+                     "precision mediump float;\n"+
+                     "#line 2"+
+                     source.substr(insertPrecisionPos);
         }
+        if (version == 100){
+            // replace textures
+            if (vertexShader){
+                regex regExpSearchShim3 { R"(\n\s*out\b)"};
+                source = regex_replace(source, regExpSearchShim3, "\nvarying");
+                regex regExpSearchShim4 { R"(\n\s*in\b)"};
+                source = regex_replace(source, regExpSearchShim4, "\nattribute");
+            } else {
+                regex regExpSearchShim2 { R"(\bfragColor\b)"};
+                source = regex_replace(source, regExpSearchShim2, "gl_FragColor");
+                regex regExpSearchShim3 { R"(\n\s*out\b)"};
+                source = regex_replace(source, regExpSearchShim3, "\n// out");
+                regex regExpSearchShim4 { R"(\n\s*in\b)"};
+                source = regex_replace(source, regExpSearchShim4, "\nvarying");
+            }
 
-        for (auto val : textureType){
-            regex regExpSearchShim4 { string{R"(texture\s*\(\s*)"}+val.first+"\\s*," };
-            source = regex_replace(source, regExpSearchShim4, string{"texture"}+val.second+"("+val.first+",");
+            regex regExpSearchShim1 { R"(\s*uniform\s+sampler([\w]*)\s+([\w_]*)\s*;.*)"};
+            istringstream iss(source);
+            map<string,string> textureType;
+            smatch match;
+            for (std::string line; std::getline(iss, line); )
+            {
+                regex_search(line, match, regExpSearchShim1);
+                if (!match.empty()){
+                    string samplerType = match[1].str();
+                    string samplerName = match[2].str();
+                    textureType[samplerName] = samplerType;
+                }
+            }
+
+            for (auto val : textureType){
+                regex regExpSearchShim4 { string{R"(texture\s*\(\s*)"}+val.first+"\\s*," };
+                source = regex_replace(source, regExpSearchShim4, string{"texture"}+val.second+"("+val.first+",");
+            }
         }
         return source;
     }
@@ -575,13 +598,13 @@ namespace sre {
         }
         if (offset.x == 0 && offset.y==0){
             glDisable(GL_POLYGON_OFFSET_FILL);
-#ifndef EMSCRIPTEN
+#ifndef GL_ES_VERSION_2_0
             glDisable(GL_POLYGON_OFFSET_LINE);
             glDisable(GL_POLYGON_OFFSET_POINT);
 #endif
         } else {
             glEnable(GL_POLYGON_OFFSET_FILL);
-#ifndef EMSCRIPTEN
+#ifndef GL_ES_VERSION_2_0
             glEnable(GL_POLYGON_OFFSET_LINE);
             glEnable(GL_POLYGON_OFFSET_POINT);
 #endif
@@ -845,9 +868,9 @@ namespace sre {
         // Insert preprocessor define symbols
         source = insertPreprocessorDefines(source, specializationConstants, shaderType);
 
-#ifdef EMSCRIPTEN
-        source = Shader::translateToGLSLES(source, shaderType==GL_VERTEX_SHADER);
-#endif
+        if (renderInfo().graphicsAPIVersionES) {
+            source = Shader::translateToGLSLES(source, shaderType == GL_VERTEX_SHADER, renderInfo().graphicsAPIVersionMajor<=2?100:300);
+        }
         return source;
     }
 
@@ -952,10 +975,10 @@ namespace sre {
             ss<<"#define "<<sc.first<<" "<<sc.second<<"\n";
         }
 
-        if (Renderer::instance->getRenderInfo().useFramebufferSRGB){
+        if (renderInfo().useFramebufferSRGB){
             ss<<"#define SI_FRAMEBUFFER_SRGB 1\n";
         }
-        if (Renderer::instance->getRenderInfo().supportTextureSamplerSRGB){
+        if (renderInfo().supportTextureSamplerSRGB){
             ss<<"#define SI_TEX_SAMPLER_SRGB 1\n";
         }
 

@@ -11,6 +11,7 @@
 
 #include "sre/Log.hpp"
 #include <algorithm>
+#include <sre/Renderer.hpp>
 
 namespace sre{
     Framebuffer::FrameBufferBuilder& Framebuffer::FrameBufferBuilder::withTexture(std::shared_ptr<Texture> texture) {
@@ -49,9 +50,13 @@ namespace sre{
     Framebuffer::Framebuffer(std::string name)
     :name(name)
     {
+        auto r = Renderer::instance;
+        r->framebufferObjects.push_back(this);
     }
 
     Framebuffer::~Framebuffer() {
+        auto r = Renderer::instance;
+        r->framebufferObjects.erase(std::remove(r->framebufferObjects.begin(), r->framebufferObjects.end(), this));
         if (renderBufferDepth != 0){
             glDeleteRenderbuffers(1, &renderBufferDepth);
         }
@@ -63,15 +68,28 @@ namespace sre{
     }
 
     int Framebuffer::getMaximumColorAttachments() {
-#ifdef EMSCRIPTEN
-        return 1;
-#else
-        GLint maxAttach = 0;
-        glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxAttach);
-        GLint maxDrawBuf = 0;
-        glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuf);
-        return std::min(maxAttach, maxDrawBuf);
-#endif
+        if (renderInfo().graphicsAPIVersionES && renderInfo().graphicsAPIVersionMajor<= 2){
+            return 1;
+        }
+        static int maxColorBuffers;
+        static bool once = [&](){
+            static GLint maxAttach = 0;
+            static GLint maxDrawBuf = 0;
+            glGetIntegerv(GL_MAX_COLOR_ATTACHMENTS, &maxAttach);
+            glGetIntegerv(GL_MAX_DRAW_BUFFERS, &maxDrawBuf);
+            maxColorBuffers = std::min(maxAttach, maxDrawBuf);
+            return true;
+        } ();
+
+        return maxColorBuffers;
+    }
+
+    int Framebuffer::getMaximumDepthAttachments() {
+        if (renderInfo().graphicsAPIVersionES && renderInfo().graphicsAPIVersionMajor <= 2){
+            return 0;
+        } else {
+            return 1;
+        }
     }
 
     const std::string& Framebuffer::getName() {
@@ -180,11 +198,7 @@ namespace sre{
             glGenRenderbuffers(1,&framebuffer->renderBufferDepth); // Create a renderbuffer object
             glBindRenderbuffer(GL_RENDERBUFFER, framebuffer->renderBufferDepth);
             glRenderbufferStorage(GL_RENDERBUFFER,
-    #ifdef GL_ES_VERSION_2_0
-                    GL_DEPTH_COMPONENT16
-    #else
-                                  GL_DEPTH_COMPONENT32
-    #endif
+                                  renderInfo().graphicsAPIVersionMinor<=2?GL_DEPTH_COMPONENT16:GL_DEPTH_COMPONENT24
                     , size.x, size.y);
 
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
@@ -196,12 +210,13 @@ namespace sre{
                                       GL_RENDERBUFFER,
                                       framebuffer->renderBufferDepth);
         }
-#ifndef EMSCRIPTEN
-        glDrawBuffers(drawBuffers.size(), drawBuffers.data());
-#endif
+        if (!renderInfo().graphicsAPIVersionES || renderInfo().graphicsAPIVersionMajor>=3){
+            glDrawBuffers((GLsizei)drawBuffers.size(), drawBuffers.data());
+        }
         // Check if FBO is configured correctly
         checkStatus();
         framebuffer->textures = textures;
+        framebuffer->depthTexture = depthTexture;
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
         return std::shared_ptr<Framebuffer>(framebuffer);

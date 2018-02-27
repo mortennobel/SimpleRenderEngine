@@ -29,6 +29,18 @@ namespace sre {
     class Shader;
 	class VR;
 
+    struct RenderInfo{
+        bool useFramebufferSRGB = false;
+        bool supportTextureSamplerSRGB = false;
+        int graphicsAPIVersionMajor;            // For WebGL uses OpenGL ES api version (WebGL 1.0 = OpenGL ES 2.0)
+        int graphicsAPIVersionMinor;
+        bool graphicsAPIVersionES;
+        std::string graphicsAPIVersion;
+        std::string graphicsAPIVendor;
+    };
+
+    const RenderInfo& renderInfo();
+
     /// Maintains shared states for rendering.
     /// An object of Renderer must be created once after the SDL_Window has been initialized.
     /// After initialization this object can be referenced using the static field Renderer::instance;
@@ -54,18 +66,12 @@ namespace sre {
     ///
     class DllExport Renderer {
     public:
-        struct RenderInfo{
-            bool useFramebufferSRGB = false;
-            bool supportTextureSamplerSRGB = false;
-            std::string graphicsAPIVersion;
-            std::string graphicsAPIVendor;
-        };
         explicit Renderer(SDL_Window *window, bool vsync = true, int maxSceneLights = 4);    // SimpleRenderEngine constructor
                                                             // param window pointer to the SDL window (must be initialized using OpenGL)
         ~Renderer();
         static constexpr int sre_version_major = 1;
         static constexpr int sre_version_minor = 0;
-        static constexpr int sre_version_point = 3;
+        static constexpr int sre_version_point = 4;
 
         glm::ivec2 getWindowSize();                         // Return the current size of the window
 
@@ -83,6 +89,7 @@ namespace sre {
 
         int getMaxSceneLights();                            // Get maximum amout of scenelights per object
 
+        DEPRECATED("Use sre::renderInfo() instead of getRenderInfo()")
         const RenderInfo& getRenderInfo();                  // Get info about the renderer
     private:
         int maxSceneLights = 4;                             // Maximum of scene lights
@@ -99,8 +106,6 @@ namespace sre {
         std::vector<Shader*> shaders;
         std::vector<Texture*> textures;
         std::vector<SpriteAtlas*> spriteAtlases;
-
-        RenderInfo renderInfo;
 
 		VR* vr = nullptr;
 

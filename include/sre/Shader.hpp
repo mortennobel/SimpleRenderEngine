@@ -305,7 +305,6 @@ namespace sre {
         int uniformLocationCameraPosition;
 
     public:
-        static std::string translateToGLSLES(std::string source, bool vertexShader);
-
+        static std::string translateToGLSLES(std::string source, bool vertexShader, int version = 100);
     };
 }

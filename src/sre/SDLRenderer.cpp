@@ -80,7 +80,7 @@ void GLAPIENTRY openglCallbackFunction(GLenum source,
 namespace sre{
 
     SDLRenderer* SDLRenderer::instance = nullptr;
-#ifdef EMSCRIPTEN
+
     struct SDLRendererInternal{
         static void update(float f){
             SDLRenderer::instance->frame(f);
@@ -96,7 +96,6 @@ namespace sre{
         lastTick = tick;
         SDLRendererInternal::update(deltaTime);
     }
-#endif
 
     SDLRenderer::SDLRenderer()
     :frameUpdate ([](float){}),
