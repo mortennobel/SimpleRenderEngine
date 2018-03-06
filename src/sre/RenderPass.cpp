@@ -22,6 +22,7 @@
 #include <glm/gtc/color_space.hpp>
 #include <glm/gtx/transform.hpp>
 
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 namespace sre {
 
@@ -317,7 +318,7 @@ namespace sre {
                 auto offsetCount = mesh->elementBufferOffsetCount[i];
 
                 GLsizei indexCount = offsetCount.second;
-                glDrawElements((GLenum) mesh->getMeshTopology(i), indexCount, GL_UNSIGNED_SHORT, (void*)offsetCount.first);
+                glDrawElements((GLenum) mesh->getMeshTopology(i), indexCount, GL_UNSIGNED_SHORT, BUFFER_OFFSET(offsetCount.first));
             }
         }
     }
