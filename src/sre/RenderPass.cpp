@@ -314,10 +314,10 @@ namespace sre {
             if (mesh->getIndexSets() == 0){
                 glDrawArrays((GLenum) mesh->getMeshTopology(), 0, mesh->getVertexCount());
             } else {
-                mesh->bindIndexSet(i);
+                auto offsetCount = mesh->elementBufferOffsetCount[i];
 
-                GLsizei indexCount = mesh->getIndicesSize(i);
-                glDrawElements((GLenum) mesh->getMeshTopology(i), indexCount, GL_UNSIGNED_SHORT, nullptr);
+                GLsizei indexCount = offsetCount.second;
+                glDrawElements((GLenum) mesh->getMeshTopology(i), indexCount, GL_UNSIGNED_SHORT, (void*)offsetCount.first);
             }
         }
     }

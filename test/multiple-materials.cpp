@@ -45,7 +45,7 @@ public:
         mesh = Mesh::create()
                 .withCube()
                 .withIndices(indicesFirst, MeshTopology::Triangles,0)
-                .withIndices(indicesLast, MeshTopology::Triangles,1)
+                .withIndices(indicesLast, MeshTopology::Triangles, 1)
                 .build();
         worldLights.setAmbientLight({0.0,0.0,0.0});
         worldLights.addLight(Light::create().withPointLight({0, 3,0}).withColor({1,1,1}).withRange(20).build());
@@ -67,7 +67,6 @@ public:
                 .withClearColor(true, {1, 0, 0, 1})
                 .build();
         renderPass.draw(mesh, glm::eulerAngleX(glm::radians((float)i*0.3f))*glm::eulerAngleY(glm::radians((float)i*0.1f)), materials);
-
         renderPass.draw(meshSingle, glm::translate(glm::vec3{-1.5,-1.5,0})*glm::eulerAngleY(glm::radians((float)i*0.1f))*glm::scale(glm::vec3{0.1,0.1,0.1}), materialPhongGreen);
         i++;
     }

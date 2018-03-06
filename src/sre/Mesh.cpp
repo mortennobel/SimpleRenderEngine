@@ -29,7 +29,15 @@ namespace sre {
             LOG_FATAL("Cannot instantiate sre::Mesh before sre::Renderer is created.");
         }
         glGenBuffers(1, &vertexBufferId);
-        update(std::move(attributesFloat), std::move(attributesVec2), std::move(attributesVec3),std::move(attributesVec4),std::move(attributesIVec4), std::move(indices), meshTopology,name,renderStats);
+        update(std::move(attributesFloat),
+               std::move(attributesVec2),
+               std::move(attributesVec3),
+               std::move(attributesVec4),
+               std::move(attributesIVec4),
+               std::move(indices),
+               meshTopology,
+               name,
+               renderStats);
         Renderer::instance->meshes.emplace_back(this);
     }
 
@@ -50,8 +58,9 @@ namespace sre {
             }
         }
         glDeleteBuffers(1, &vertexBufferId);
-        glDeleteBuffers((GLsizei)elementBufferId.size(), elementBufferId.data());
-
+        if (elementBufferId != 0){
+            glDeleteBuffers(1, &elementBufferId);
+        }
     }
 
     void Mesh::bind(Shader* shader) {
@@ -70,17 +79,15 @@ namespace sre {
                 glBindVertexArray(index);
                 setVertexAttributePointers(shader);
                 shaderToVertexArrayObject[shader->shaderProgramId] = {shader->shaderUniqueId, index};
+                bindIndexSet();
             }
         } else {
             setVertexAttributePointers(shader);
+            bindIndexSet();
         }
     }
-    void Mesh::bindIndexSet(int indexSet){
-        if (indices.empty()){
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        } else {
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferId[indexSet]);
-        }
+    void Mesh::bindIndexSet(){
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferId);
     }
 
     MeshTopology Mesh::getMeshTopology(int indexSet) {
@@ -122,20 +129,33 @@ namespace sre {
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float)*interleavedData.size(), interleavedData.data(), GL_STATIC_DRAW);
 
-        if (!this->indices.empty()){
-            for (int i=0;i<this->indices.size();i++){
-                unsigned int eBufferId;
-                if (i >= elementBufferId.size()){
-                    glGenBuffers(1, &eBufferId);
-                    elementBufferId.push_back(eBufferId);
-                } else {
-                    eBufferId = elementBufferId[i];
-                }
-                glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, eBufferId);
-                GLsizeiptr indicesSize = this->indices[i].size()*sizeof(uint16_t);
-                glBufferData(GL_ELEMENT_ARRAY_BUFFER, indicesSize, this->indices[i].data(), GL_STATIC_DRAW);
-                dataSize += indicesSize;
+        elementBufferOffsetCount.clear();
+        if (this->indices.empty()){
+            if (elementBufferId != 0){
+                glDeleteBuffers(1, &elementBufferId);
+                elementBufferId = 0;
             }
+        } else {
+            if (elementBufferId == 0){
+                glGenBuffers(1, &elementBufferId);
+            }
+            size_t totalCount = 0;
+            for (int i=0;i<this->indices.size();i++) {
+                totalCount += this->indices[i].size();
+            }
+            std::vector<uint16_t> concatenatedIndices;
+            concatenatedIndices.reserve(totalCount);
+            int offset = 0;
+            for (int i=0;i<this->indices.size();i++) {
+                size_t dataSize = this->indices[i].size()*sizeof(uint16_t);
+                concatenatedIndices.insert(concatenatedIndices.end(), this->indices[i].begin(), this->indices[i].end());
+                elementBufferOffsetCount.emplace_back(offset, this->indices[i].size());
+                offset += dataSize;
+            }
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferId);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, offset, concatenatedIndices.data(), GL_STATIC_DRAW);
+
+            this->dataSize += offset;
         }
 
         boundsMinMax[0] = glm::vec3{std::numeric_limits<float>::max()};
