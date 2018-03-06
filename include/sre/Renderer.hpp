@@ -1,7 +1,7 @@
 /*
  *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
- *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
 
@@ -71,7 +71,7 @@ namespace sre {
         ~Renderer();
         static constexpr int sre_version_major = 1;
         static constexpr int sre_version_minor = 0;
-        static constexpr int sre_version_point = 5;
+        static constexpr int sre_version_point = 6;
 
         glm::ivec2 getWindowSize();                         // Return the current size of the window
 

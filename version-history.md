@@ -1,5 +1,6 @@
 ## Version history
 
+ * 1.0.6  
  * 1.0.5 Improve indexed mesh performance. 
  * 1.0.4 WebGL 2 support. Fix WebGL shader warnings. 
  * 1.0.3 Add RenderPass.blit(). Add depth/stencil as Texture type and add support for depth attachment in Framebuffer.
