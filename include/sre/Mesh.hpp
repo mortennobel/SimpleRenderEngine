@@ -144,7 +144,8 @@ namespace sre {
             unsigned int vaoID;
         };
         std::map<unsigned int, VAOBinding> shaderToVertexArrayObject;
-        std::vector<unsigned int> elementBufferId;
+        unsigned int elementBufferId = 0;
+        std::vector<std::pair<int,int>> elementBufferOffsetCount;
         int vertexCount;
         int dataSize;
         std::string name;
@@ -160,7 +161,7 @@ namespace sre {
         std::array<glm::vec3,2> boundsMinMax;
 
         void bind(Shader* shader);
-        void bindIndexSet(int indexSet);
+        void bindIndexSet();
 
         friend class RenderPass;
         friend class Inspector;
