@@ -719,30 +719,41 @@ namespace sre {
         unsigned int oldShaderProgramId = shaderProgramId;
         shaderProgramId = glCreateProgram();
         assert(shaderProgramId != 0);
+        std::vector<GLuint> shaders;
+
+        auto cleanupShaders = [&](){
+            for (auto id : shaders){
+                glDeleteShader(id);
+            }
+        };
+
         for (ShaderType i=ShaderType::Vertex;i<ShaderType::NumberOfShaderTypes;i = (ShaderType )((int)i+1)) {
             auto shaderSourcesIter = shaderSources.find(i);
-            if (shaderSourcesIter!=shaderSources.end()){
+            if (shaderSourcesIter!=shaderSources.end()) {
                 GLuint s;
                 GLenum shader = to_id(i);
-
                 bool res = compileShader(shaderSourcesIter->second, shader, s, errors);
-                if (!res){
+                if (!res) {
+                    cleanupShaders();
                     glDeleteProgram( shaderProgramId );
                     shaderProgramId = oldShaderProgramId;
                     return false;
+                } else {
+                    shaders.push_back(s);
                 }
                 glAttachShader(shaderProgramId,  s);
             }
         }
 
         bool linked = linkProgram(shaderProgramId, errors);
-        if (!linked){
+        cleanupShaders();
+        if (!linked) {
             glDeleteProgram( shaderProgramId );
-            shaderProgramId = oldShaderProgramId;
+            shaderProgramId = oldShaderProgramId; // revert to old shader
             return false;
         }
         if (oldShaderProgramId != 0){
-            glDeleteProgram( oldShaderProgramId );
+            glDeleteProgram( oldShaderProgramId ); // delete old shader if any
         }
         updateUniformsAndAttributes();
         return true;
