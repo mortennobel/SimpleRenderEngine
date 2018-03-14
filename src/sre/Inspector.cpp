@@ -181,8 +181,21 @@ namespace sre {
                         auto offset = att.second.offset;
                         auto offsetStr = std::to_string(offset);
                         ImGui::LabelText("offset", offsetStr.c_str());
+                        static int vertexOffset = 0;
+                        if (ImGui::Button("<<")){
+                            vertexOffset = 0;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("<")){
+                            vertexOffset = std::max(0,vertexOffset-5);
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button(">")){
+                            vertexOffset = std::min(vertexOffset+5,mesh->vertexCount-(mesh->vertexCount%5));
+                        }
+
                         if (dataType == GL_INT){
-                            for (int j=0;j<std::min(5,mesh->vertexCount); j++){
+                            for (int j=vertexOffset;j<std::min(vertexOffset+5,mesh->vertexCount); j++){
                                 std::string value = "";
                                 for (int i=0;i<att.second.elementCount;i++){
                                     float* data = &interleavedData[att.second.offset/sizeof(float)+i + (j*mesh->totalBytesPerVertex)/sizeof(float)];
@@ -194,7 +207,7 @@ namespace sre {
                                 ImGui::LabelText(label.c_str(), value.c_str());
                             }
                         } else {
-                            for (int j=0;j<std::min(5,mesh->vertexCount); j++){
+                            for (int j=vertexOffset;j<std::min(vertexOffset+5,mesh->vertexCount); j++){
                                 std::string value = "";
                                 for (int i=0;i<att.second.elementCount;i++){
                                     float data = interleavedData[att.second.offset/sizeof(float)+i + (j*mesh->totalBytesPerVertex)/sizeof(float)];
