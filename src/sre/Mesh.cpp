@@ -418,6 +418,10 @@ namespace sre {
         boundsMinMax = minMax;
     }
 
+    bool Mesh::hasAttribute(std::string name) {
+        return attributeByName.find(name) != attributeByName.end();
+    }
+
     Mesh::MeshBuilder &Mesh::MeshBuilder::withPositions(const std::vector<glm::vec3> &vertexPositions) {
         withAttribute("position", vertexPositions);
         return *this;

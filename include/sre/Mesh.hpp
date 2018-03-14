@@ -165,6 +165,8 @@ namespace sre {
 
         friend class RenderPass;
         friend class Inspector;
+
+        bool hasAttribute(std::string name);
     };
 
     template<>

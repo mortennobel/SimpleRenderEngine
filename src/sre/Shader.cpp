@@ -380,6 +380,9 @@ namespace sre {
                 case GL_FLOAT_VEC4:
                     uniformType = UniformType::Vec4;
                     break;
+                case GL_INT_VEC4:
+                    uniformType = UniformType::IVec4;
+                    break;
                 case GL_INT:
                     uniformType = UniformType::Int;
                     break;
