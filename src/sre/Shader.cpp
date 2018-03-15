@@ -32,8 +32,6 @@ namespace sre {
 
         long globalShaderCounter = 1;
 
-        const std::regex SPECIALIZATION_CONSTANT_PATTERN("(S_[A-Z_0-9]+)");
-
         // From https://stackoverflow.com/a/8473603/420250
         template <typename Map>
         bool map_compare (Map const &lhs, Map const &rhs) {
@@ -599,15 +597,18 @@ namespace sre {
                 LOG_ERROR("Invalid blend value - was %i",(int)blend);
                 break;
         }
+        auto& info = renderInfo();
         if (offset.x == 0 && offset.y==0){
             glDisable(GL_POLYGON_OFFSET_FILL);
 #ifndef GL_ES_VERSION_2_0
+            // GL_POLYGON_OFFSET_LINE and GL_POLYGON_OFFSET_POINT nor defined in ES 2.x or ES 3.x
             glDisable(GL_POLYGON_OFFSET_LINE);
             glDisable(GL_POLYGON_OFFSET_POINT);
 #endif
         } else {
             glEnable(GL_POLYGON_OFFSET_FILL);
 #ifndef GL_ES_VERSION_2_0
+            // GL_POLYGON_OFFSET_LINE and GL_POLYGON_OFFSET_POINT nor defined in ES 2.x or ES 3.x
             glEnable(GL_POLYGON_OFFSET_LINE);
             glEnable(GL_POLYGON_OFFSET_POINT);
 #endif
@@ -907,6 +908,7 @@ namespace sre {
         if (parent){
             return parent->getAllSpecializationConstants();
         }
+        static std::regex SPECIALIZATION_CONSTANT_PATTERN("(S_[A-Z_0-9]+)");
         std::set<string> res;
         for (auto& source : shaderSources){
             string s = getSource(source.second);

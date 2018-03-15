@@ -189,7 +189,11 @@ namespace sre {
                                                      );
             if (attributeFoundInMesh &&  equalType && shaderAttribute.second.arraySize == 1) {
 				glEnableVertexAttribArray(shaderAttribute.second.position);
-                glVertexAttribPointer(shaderAttribute.second.position, meshAttribute->second.elementCount, meshAttribute->second.dataType, GL_FALSE, totalBytesPerVertex, BUFFER_OFFSET(meshAttribute->second.offset));
+                if ((shaderAttribute.second.type >= GL_INT_VEC2 && shaderAttribute.second.type <= GL_INT_VEC4 && shaderAttribute.second.type>= meshAttribute->second.attributeType)){
+                    glVertexAttribIPointer(shaderAttribute.second.position, meshAttribute->second.elementCount, meshAttribute->second.dataType, totalBytesPerVertex, BUFFER_OFFSET(meshAttribute->second.offset));
+                } else {
+                    glVertexAttribPointer(shaderAttribute.second.position, meshAttribute->second.elementCount, meshAttribute->second.dataType, GL_FALSE, totalBytesPerVertex, BUFFER_OFFSET(meshAttribute->second.offset));
+                }
                 vertexAttribArray++;
             } else {
 				assert(shaderAttribute.second.arraySize == 1 && "Constant vertex attributes not supported as arrays");
@@ -865,7 +869,16 @@ namespace sre {
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withAttribute(std::string name, const std::vector<glm::ivec4> &values) {
-        if (updateMesh != nullptr && attributesIVec4.find(name) == attributesIVec4.end()){
+        auto& info = renderInfo();
+        if (info.graphicsAPIVersionES && info.graphicsAPIVersionMajor <= 2){
+            LOG_INFO("Converting attribute %s to vec4. ES %i Version %i",name.c_str(),info.graphicsAPIVersionES,info.graphicsAPIVersionMajor);
+            std::vector<glm::vec4> convertedVec4(values.size(), glm::vec4(0));
+            for (int i=0;i<convertedVec4.size();i++){
+                convertedVec4[i] = values[i];
+            }
+            withAttribute(name, convertedVec4);
+        }
+        else if (updateMesh != nullptr && attributesIVec4.find(name) == attributesIVec4.end()){
             LOG_ERROR("Cannot change mesh structure. %s dis not exist in the original mesh as a ivec4.",name.c_str());
         } else {
             attributesIVec4[name] = values;

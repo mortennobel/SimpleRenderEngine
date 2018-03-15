@@ -36,7 +36,11 @@ public:
                 .build();
 
         std::string vertexShaderSource =  R"(#version 140
+#if defined(GL_ES) && __VERSION__ == 100
+in vec4 posxyzw;
+#else
 in ivec4 posxyzw;
+#endif
 in vec4 color;
 out vec4 vColor;
 
