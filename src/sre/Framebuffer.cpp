@@ -198,7 +198,7 @@ namespace sre{
             glGenRenderbuffers(1,&framebuffer->renderBufferDepth); // Create a renderbuffer object
             glBindRenderbuffer(GL_RENDERBUFFER, framebuffer->renderBufferDepth);
             glRenderbufferStorage(GL_RENDERBUFFER,
-                                  renderInfo().graphicsAPIVersionMinor<=2?GL_DEPTH_COMPONENT16:GL_DEPTH_COMPONENT24
+                                  renderInfo().graphicsAPIVersionMajor<=2?GL_DEPTH_COMPONENT16:GL_DEPTH_COMPONENT24
                     , size.x, size.y);
 
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
