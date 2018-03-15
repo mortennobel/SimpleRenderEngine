@@ -78,7 +78,9 @@ namespace sre {
 
         bool set(std::string uniformName, glm::vec4 value);
         bool set(std::string uniformName, float value);
-        bool set(std::string uniformName, std::shared_ptr<sre::Texture>);
+        bool set(std::string uniformName, std::shared_ptr<sre::Texture> value);
+        bool set(std::string uniformName, std::shared_ptr<std::vector<glm::mat3>> value);
+        bool set(std::string uniformName, std::shared_ptr<std::vector<glm::mat4>> value);
         bool set(std::string uniformName, Color value);
 
         template<typename T>
@@ -98,6 +100,8 @@ namespace sre {
 
         std::vector<Uniform<std::shared_ptr<sre::Texture>>> textureValues;
         std::vector<Uniform<glm::vec4>> vectorValues;
+        std::vector<Uniform<std::shared_ptr<std::vector<glm::mat4>>>> mat4Values;
+        std::vector<Uniform<std::shared_ptr<std::vector<glm::mat3>>>> mat3Values;
         std::vector<Uniform<float>> floatValues;
 
         friend class Shader;
