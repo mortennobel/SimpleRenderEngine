@@ -101,6 +101,8 @@ public:
     SDL_Window *getSDLWindow();                                 // Get a pointer to SDL_Window
 
     static SDLRenderer* instance;                               // Singleton reference to the engine after initialization.
+
+    glm::vec3 getLastFrameStats();                              // Returns delta time for last frame wrt event, update and render
 private:
     void frame(float deltaTimeSec);
     Renderer* r;

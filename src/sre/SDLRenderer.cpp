@@ -315,6 +315,12 @@ namespace sre{
         return SDLRenderer::InitBuilder(this);
     }
 
+    glm::vec3 SDLRenderer::getLastFrameStats() {
+        return {
+                deltaTimeEvent,deltaTimeUpdate,deltaTimeRender
+        };
+    }
+
     SDLRenderer::InitBuilder::~InitBuilder() {
         build();
     }
