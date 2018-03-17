@@ -1,7 +1,7 @@
 /*
  *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
- *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
 
@@ -35,6 +35,7 @@ namespace sre {
         Mat4,
         Vec3,
         Vec4,
+        IVec4,
         Texture,
         TextureCube,
         Invalid

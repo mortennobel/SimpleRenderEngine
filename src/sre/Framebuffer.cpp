@@ -1,7 +1,7 @@
 /*
  *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
- *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
 
@@ -198,7 +198,7 @@ namespace sre{
             glGenRenderbuffers(1,&framebuffer->renderBufferDepth); // Create a renderbuffer object
             glBindRenderbuffer(GL_RENDERBUFFER, framebuffer->renderBufferDepth);
             glRenderbufferStorage(GL_RENDERBUFFER,
-                                  renderInfo().graphicsAPIVersionMinor<=2?GL_DEPTH_COMPONENT16:GL_DEPTH_COMPONENT24
+                                  renderInfo().graphicsAPIVersionMajor<=2?GL_DEPTH_COMPONENT16:GL_DEPTH_COMPONENT24
                     , size.x, size.y);
 
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,

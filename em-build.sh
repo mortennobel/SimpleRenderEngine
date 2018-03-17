@@ -8,7 +8,7 @@ fi
 
 source ${EMSDK}/emsdk_env.sh
 
-for FILENAME in multiple-materials multiple-lights imgui-color-test pbr-test custom-mesh-layout-default-values imgui_demo multi-cameras particle-sprite particle-test polygon-offset-example spinning-sphere-cubemap sprite-test static_vertex_attribute texture-test
+for FILENAME in benchmark64k-heavy matrix-uniforms custom-mesh-layout-ints multiple-materials multiple-lights imgui-color-test pbr-test custom-mesh-layout-default-values imgui_demo multi-cameras particle-sprite particle-test polygon-offset-example spinning-sphere-cubemap sprite-test static_vertex_attribute texture-test
 do
 echo $FILENAME
 emcc -Iinclude src/imgui/imgui.cpp \

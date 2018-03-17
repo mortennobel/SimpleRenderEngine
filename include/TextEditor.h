@@ -11,7 +11,7 @@
 #include "imgui.h"
 
 /**
- * https://github.com/BalazsJako/ImGuiColorTextEdit
+ * https://github.com/BalazsJako/ImGuiColorTextEdit (commit 6c69c306da0afb6c0b7ea51ec504aa0aae348aad)
  *
  * MIT License
  *

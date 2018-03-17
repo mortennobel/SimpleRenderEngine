@@ -1,3 +1,10 @@
+/*
+ *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
+ *
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
+ *  License: MIT
+ */
+
 #include "sre/VR.hpp"
 #include "sre/Log.hpp"
 #include <glm/gtc/type_ptr.hpp>

@@ -1,7 +1,7 @@
 /*
  *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
- *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
 
@@ -313,6 +313,12 @@ namespace sre{
 
     SDLRenderer::InitBuilder SDLRenderer::init() {
         return SDLRenderer::InitBuilder(this);
+    }
+
+    glm::vec3 SDLRenderer::getLastFrameStats() {
+        return {
+                deltaTimeEvent,deltaTimeUpdate,deltaTimeRender
+        };
     }
 
     SDLRenderer::InitBuilder::~InitBuilder() {

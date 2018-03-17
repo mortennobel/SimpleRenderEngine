@@ -1,7 +1,7 @@
 /*
  *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
- *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
 
@@ -31,8 +31,6 @@ namespace sre {
         std::shared_ptr<Shader> standardParticles;
 
         long globalShaderCounter = 1;
-
-        const std::regex SPECIALIZATION_CONSTANT_PATTERN("(S_[A-Z_0-9]+)");
 
         // From https://stackoverflow.com/a/8473603/420250
         template <typename Map>
@@ -380,6 +378,9 @@ namespace sre {
                 case GL_FLOAT_VEC4:
                     uniformType = UniformType::Vec4;
                     break;
+                case GL_INT_VEC4:
+                    uniformType = UniformType::IVec4;
+                    break;
                 case GL_INT:
                     uniformType = UniformType::Int;
                     break;
@@ -596,15 +597,18 @@ namespace sre {
                 LOG_ERROR("Invalid blend value - was %i",(int)blend);
                 break;
         }
+        auto& info = renderInfo();
         if (offset.x == 0 && offset.y==0){
             glDisable(GL_POLYGON_OFFSET_FILL);
 #ifndef GL_ES_VERSION_2_0
+            // GL_POLYGON_OFFSET_LINE and GL_POLYGON_OFFSET_POINT nor defined in ES 2.x or ES 3.x
             glDisable(GL_POLYGON_OFFSET_LINE);
             glDisable(GL_POLYGON_OFFSET_POINT);
 #endif
         } else {
             glEnable(GL_POLYGON_OFFSET_FILL);
 #ifndef GL_ES_VERSION_2_0
+            // GL_POLYGON_OFFSET_LINE and GL_POLYGON_OFFSET_POINT nor defined in ES 2.x or ES 3.x
             glEnable(GL_POLYGON_OFFSET_LINE);
             glEnable(GL_POLYGON_OFFSET_POINT);
 #endif
@@ -719,30 +723,41 @@ namespace sre {
         unsigned int oldShaderProgramId = shaderProgramId;
         shaderProgramId = glCreateProgram();
         assert(shaderProgramId != 0);
+        std::vector<GLuint> shaders;
+
+        auto cleanupShaders = [&](){
+            for (auto id : shaders){
+                glDeleteShader(id);
+            }
+        };
+
         for (ShaderType i=ShaderType::Vertex;i<ShaderType::NumberOfShaderTypes;i = (ShaderType )((int)i+1)) {
             auto shaderSourcesIter = shaderSources.find(i);
-            if (shaderSourcesIter!=shaderSources.end()){
+            if (shaderSourcesIter!=shaderSources.end()) {
                 GLuint s;
                 GLenum shader = to_id(i);
-
                 bool res = compileShader(shaderSourcesIter->second, shader, s, errors);
-                if (!res){
+                if (!res) {
+                    cleanupShaders();
                     glDeleteProgram( shaderProgramId );
                     shaderProgramId = oldShaderProgramId;
                     return false;
+                } else {
+                    shaders.push_back(s);
                 }
                 glAttachShader(shaderProgramId,  s);
             }
         }
 
         bool linked = linkProgram(shaderProgramId, errors);
-        if (!linked){
+        cleanupShaders();
+        if (!linked) {
             glDeleteProgram( shaderProgramId );
-            shaderProgramId = oldShaderProgramId;
+            shaderProgramId = oldShaderProgramId; // revert to old shader
             return false;
         }
         if (oldShaderProgramId != 0){
-            glDeleteProgram( oldShaderProgramId );
+            glDeleteProgram( oldShaderProgramId ); // delete old shader if any
         }
         updateUniformsAndAttributes();
         return true;
@@ -893,6 +908,7 @@ namespace sre {
         if (parent){
             return parent->getAllSpecializationConstants();
         }
+        static std::regex SPECIALIZATION_CONSTANT_PATTERN("(S_[A-Z_0-9]+)");
         std::set<string> res;
         for (auto& source : shaderSources){
             string s = getSource(source.second);

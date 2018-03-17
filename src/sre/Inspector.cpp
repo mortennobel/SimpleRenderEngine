@@ -1,7 +1,7 @@
 /*
  *  SimpleRenderEngine (https://github.com/mortennobel/SimpleRenderEngine)
  *
- *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergnesen.com/ )
+ *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
 #include "sre/Inspector.hpp"
@@ -39,6 +39,9 @@ namespace sre {
                 case GL_FLOAT:
                     typeStr = "float";
                     break;
+                case GL_INT:
+                    typeStr = "int";
+                    break;
                 case GL_FLOAT_VEC2:
                     typeStr = "vec2";
                     break;
@@ -54,11 +57,9 @@ namespace sre {
                 case GL_FLOAT_MAT3:
                     typeStr = "mat3";
                     break;
-#ifndef EMSCRIPTEN
                 case GL_INT_VEC4:
                     typeStr = "ivec4";
                     break;
-#endif
                 default:
                     typeStr = "invalid";
             }
@@ -146,7 +147,7 @@ namespace sre {
                     auto type = mesh->getType(a);
                     std::string typeStr = glEnumToString(type.first);
                     typeStr = appendSize(typeStr, type.second);
-                    ImGui::LabelText(a.c_str(), typeStr.c_str());
+                    ImGui::LabelText(a.c_str(), "%s (%i)",typeStr.c_str(),type.first);
                 }
                 ImGui::TreePop();
             }
@@ -180,16 +181,42 @@ namespace sre {
                         auto offset = att.second.offset;
                         auto offsetStr = std::to_string(offset);
                         ImGui::LabelText("offset", offsetStr.c_str());
+                        static int vertexOffset = 0;
+                        if (ImGui::Button("<<")){
+                            vertexOffset = 0;
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("<")){
+                            vertexOffset = std::max(0,vertexOffset-5);
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button(">")){
+                            vertexOffset = std::min(vertexOffset+5,mesh->vertexCount-(mesh->vertexCount%5));
+                        }
 
-                        for (int j=0;j<std::min(5,mesh->vertexCount); j++){
-                            std::string value = "";
-                            for (int i=0;i<att.second.elementCount;i++){
-                                float data = interleavedData[att.second.offset/sizeof(float)+i + (j*mesh->totalBytesPerVertex)/sizeof(float)];
-                                value += std::to_string(data)+" ";
+                        if (dataType == GL_INT){
+                            for (int j=vertexOffset;j<std::min(vertexOffset+5,mesh->vertexCount); j++){
+                                std::string value = "";
+                                for (int i=0;i<att.second.elementCount;i++){
+                                    float* data = &interleavedData[att.second.offset/sizeof(float)+i + (j*mesh->totalBytesPerVertex)/sizeof(float)];
+                                    int* dataInt = reinterpret_cast<int*>(data);
+                                    value += std::to_string(*dataInt)+" ";
+                                }
+                                std::string label = "Value ";
+                                label+= std::to_string(j);
+                                ImGui::LabelText(label.c_str(), value.c_str());
                             }
-                            std::string label = "Value ";
-                            label+= std::to_string(j);
-                            ImGui::LabelText(label.c_str(), value.c_str());
+                        } else {
+                            for (int j=vertexOffset;j<std::min(vertexOffset+5,mesh->vertexCount); j++){
+                                std::string value = "";
+                                for (int i=0;i<att.second.elementCount;i++){
+                                    float data = interleavedData[att.second.offset/sizeof(float)+i + (j*mesh->totalBytesPerVertex)/sizeof(float)];
+                                    value += std::to_string(data)+" ";
+                                }
+                                std::string label = "Value ";
+                                label+= std::to_string(j);
+                                ImGui::LabelText(label.c_str(), value.c_str());
+                            }
                         }
 
                         ImGui::TreePop();
@@ -201,42 +228,46 @@ namespace sre {
                 ImGui::TreePop();
 
             }
-            initFramebuffer();
+            if (mesh->hasAttribute("position")){
+                initFramebuffer();
 
-            Camera camera;
-            camera.setPerspectiveProjection(60,0.1,10);
-            camera.lookAt({0,0,4},{0,0,0},{0,1,0});
-            auto offscreenTexture = getTmpTexture();
-            framebuffer->setColorTexture(offscreenTexture);
+                Camera camera;
+                camera.setPerspectiveProjection(60,0.1,10);
+                camera.lookAt({0,0,4},{0,0,0},{0,1,0});
+                auto offscreenTexture = getTmpTexture();
+                framebuffer->setColorTexture(offscreenTexture);
 
-            auto renderToTexturePass = RenderPass::create()
-                 .withCamera(camera)
-                 .withWorldLights(&worldLights)
-                 .withFramebuffer(framebuffer)
-                 .withClearColor(true, {0, 0, 0, 1})
-                 .withGUI(false)
-                 .build();
-            static auto litMat = Shader::getStandardBlinnPhong()->createMaterial();
-            static auto unlitMat = Shader::getUnlit()->createMaterial();
+                auto renderToTexturePass = RenderPass::create()
+                     .withCamera(camera)
+                     .withWorldLights(&worldLights)
+                     .withFramebuffer(framebuffer)
+                     .withClearColor(true, {0, 0, 0, 1})
+                     .withGUI(false)
+                     .build();
+                static auto litMat = Shader::getStandardBlinnPhong()->createMaterial();
+                static auto unlitMat = Shader::getUnlit()->createMaterial();
 
-            bool hasNormals = mesh->getNormals().size()>0;
-            auto mat = hasNormals ? litMat : unlitMat;
-            auto sharedPtrMesh = mesh->shared_from_this();
-            float rotationSpeed = 0.001f;
+                bool hasNormals = mesh->getNormals().size()>0;
+                auto mat = hasNormals ? litMat : unlitMat;
+                auto sharedPtrMesh = mesh->shared_from_this();
+                float rotationSpeed = 0.001f;
 
-            auto bounds = mesh->getBoundsMinMax();
-            auto center = (bounds[1] + bounds[0])*0.5f;
-            auto offset = -center;
-            auto scale = bounds[1]-bounds[0];
-            float maxS = std::max({scale.x,scale.y,scale.z});
+                auto bounds = mesh->getBoundsMinMax();
+                auto center = (bounds[1] + bounds[0])*0.5f;
+                auto offset = -center;
+                auto scale = bounds[1]-bounds[0];
+                float maxS = std::max({scale.x,scale.y,scale.z});
 
-            std::vector<std::shared_ptr<Material>> mats;
-            for (int m = 0;m<std::max(1,sharedPtrMesh->getIndexSets());m++){
-                mats.push_back(mat);
+                std::vector<std::shared_ptr<Material>> mats;
+                for (int m = 0;m<std::max(1,sharedPtrMesh->getIndexSets());m++){
+                    mats.push_back(mat);
+                }
+                renderToTexturePass.draw(sharedPtrMesh, glm::eulerAngleY(time*rotationSpeed)*glm::scale(glm::vec3{2.0f/maxS,2.0f/maxS,2.0f/maxS})*glm::translate(offset), mats);
+
+                ImGui::Image(reinterpret_cast<ImTextureID>(offscreenTexture->textureId), ImVec2(previewSize, previewSize),{0,1},{1,0},{1,1,1,1},{0,0,0,1});
+            } else {
+                ImGui::LabelText("", "No preview - missing position attribute");
             }
-            renderToTexturePass.draw(sharedPtrMesh, glm::eulerAngleY(time*rotationSpeed)*glm::scale(glm::vec3{2.0f/maxS,2.0f/maxS,2.0f/maxS})*glm::translate(offset), mats);
-
-            ImGui::Image(reinterpret_cast<ImTextureID>(offscreenTexture->textureId), ImVec2(previewSize, previewSize),{0,1},{1,0},{1,1,1,1},{0,0,0,1});
             ImGui::TreePop();
         }
     }
@@ -341,6 +372,8 @@ namespace sre {
                 return "vec3";
             case UniformType::Vec4:
                 return "vec4";
+            case UniformType::IVec4:
+                return "ivec4";
             case UniformType::Invalid:
                 return "Unsupported";
 
