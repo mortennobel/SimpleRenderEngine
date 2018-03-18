@@ -50,4 +50,5 @@ API documentation is defined in header files.
  * https://www.opengl.org/registry/ OpenGL Registry
  * https://github.com/ocornut/imgui ImGui 1.53 (bundled)
  * https://github.com/BalazsJako/ImGuiColorTextEdit ImGuiColorTextEdit (bundled)
+ * https://github.com/kazuho/picojson PicoJSON(bundled)
  
