@@ -130,49 +130,41 @@ namespace sre {
         renderQueue.emplace_back(RenderQueueObj{meshPtr, modelTransform, {material_ptr}});
     }
 
+    void RenderPass::setupShaderRenderPass(Shader *shader){
+        if (shader->uniformLocationView != -1) {
+            glUniformMatrix4fv(shader->uniformLocationView, 1, GL_FALSE, glm::value_ptr(builder.camera.viewTransform));
+        }
+        if (shader->uniformLocationProjection != -1) {
+            glUniformMatrix4fv(shader->uniformLocationProjection, 1, GL_FALSE, glm::value_ptr(projection));
+        }
+
+        if (shader->uniformLocationViewport != -1) {
+            glm::vec4 viewport((float)viewportSize.x,(float)viewportSize.y,(float)viewportOffset.x,(float)viewportOffset.y);
+            glUniform4fv(shader->uniformLocationViewport, 1, glm::value_ptr(viewport));
+        }
+        if (shader->uniformLocationCameraPosition != -1) {
+            glm::vec4 cameraPos = glm::vec4(this->builder.camera.getPosition(),1.0f);
+            glUniform4fv(shader->uniformLocationCameraPosition, 1, glm::value_ptr(cameraPos));
+        }
+        shader->setLights(builder.worldLights);
+    }
+
     void RenderPass::setupShader(const glm::mat4 &modelTransform, Shader *shader)  {
-        if (lastBoundShader == shader){
-			if (shader->uniformLocationModel != -1){
-                glUniformMatrix4fv(shader->uniformLocationModel, 1, GL_FALSE, glm::value_ptr(modelTransform));
-            }
-            if (shader->uniformLocationModelViewInverseTranspose != -1){
-                auto normalMatrix = transpose(inverse(((glm::mat3)builder.camera.getViewTransform()) * ((glm::mat3)modelTransform)));
-				glUniformMatrix3fv(shader->uniformLocationModelViewInverseTranspose, 1, GL_FALSE, glm::value_ptr(normalMatrix));
-            }
-            if (shader->uniformLocationModelInverseTranspose != -1){
-                auto normalMatrix = transpose(inverse((glm::mat3)modelTransform));
-				glUniformMatrix3fv(shader->uniformLocationModelInverseTranspose, 1, GL_FALSE, glm::value_ptr(normalMatrix));
-            }
-        } else {
+        if (lastBoundShader != shader){
             builder.renderStats->stateChangesShader++;
             lastBoundShader = shader;
             shader->bind();
-            if (shader->uniformLocationModel != -1) {
-                glUniformMatrix4fv(shader->uniformLocationModel, 1, GL_FALSE, glm::value_ptr(modelTransform));
-            }
-            if (shader->uniformLocationView != -1) {
-                glUniformMatrix4fv(shader->uniformLocationView, 1, GL_FALSE, glm::value_ptr(builder.camera.viewTransform));
-            }
-            if (shader->uniformLocationProjection != -1) {
-                glUniformMatrix4fv(shader->uniformLocationProjection, 1, GL_FALSE, glm::value_ptr(projection));
-            }
-            if (shader->uniformLocationModelViewInverseTranspose != -1) {
-                auto normalMatrix = transpose(inverse(((glm::mat3)builder.camera.getViewTransform()) * ((glm::mat3)modelTransform)));
-                glUniformMatrix3fv(shader->uniformLocationModelViewInverseTranspose, 1, GL_FALSE, glm::value_ptr(normalMatrix));
-            }
-            if (shader->uniformLocationModelInverseTranspose != -1) {
-                auto normalMatrix = transpose(inverse((glm::mat3)modelTransform));
-                glUniformMatrix3fv(shader->uniformLocationModelInverseTranspose, 1, GL_FALSE, glm::value_ptr(normalMatrix));
-            }
-            if (shader->uniformLocationViewport != -1) {
-                glm::vec4 viewport((float)viewportSize.x,(float)viewportSize.y,(float)viewportOffset.x,(float)viewportOffset.y);
-                glUniform4fv(shader->uniformLocationViewport, 1, glm::value_ptr(viewport));
-            }
-            if (shader->uniformLocationCameraPosition != -1) {
-                glm::vec4 cameraPos = glm::vec4(this->builder.camera.getPosition(),1.0f);
-                glUniform4fv(shader->uniformLocationCameraPosition, 1, glm::value_ptr(cameraPos));
-            }
-            shader->setLights(builder.worldLights);
+        }
+        if (shader->uniformLocationModel != -1){
+            glUniformMatrix4fv(shader->uniformLocationModel, 1, GL_FALSE, glm::value_ptr(modelTransform));
+        }
+        if (shader->uniformLocationModelViewInverseTranspose != -1){
+            auto normalMatrix = transpose(inverse(((glm::mat3)builder.camera.getViewTransform()) * ((glm::mat3)modelTransform)));
+            glUniformMatrix3fv(shader->uniformLocationModelViewInverseTranspose, 1, GL_FALSE, glm::value_ptr(normalMatrix));
+        }
+        if (shader->uniformLocationModelInverseTranspose != -1){
+            auto normalMatrix = transpose(inverse((glm::mat3)modelTransform));
+            glUniformMatrix3fv(shader->uniformLocationModelInverseTranspose, 1, GL_FALSE, glm::value_ptr(normalMatrix));
         }
     }
 
@@ -236,9 +228,20 @@ namespace sre {
             glClear(clear);
         }
 
-
-
         projection = builder.camera.getProjectionTransform(viewportSize);
+
+        // find list of used shaders
+        shaders.clear();
+        for (auto & rqObj : renderQueue){
+            for (auto & mat : rqObj.materials){
+                shaders.insert(mat->getShader().get());
+            }
+        }
+        // update global uniforms
+        for (auto shader : shaders){
+            glUseProgram(shader->shaderProgramId);
+            setupShaderRenderPass(shader);
+        }
 
         for (auto & rqObj : renderQueue){
             drawInstance(rqObj);

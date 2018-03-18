@@ -133,6 +133,7 @@ namespace sre {
         RenderPass::RenderPassBuilder builder;
         explicit RenderPass(RenderPass::RenderPassBuilder& builder);
 
+        void setupShaderRenderPass(Shader *shader);
         void setupShader(const glm::mat4 &modelTransform, Shader *shader);
 
         Shader* lastBoundShader = nullptr;
@@ -142,6 +143,7 @@ namespace sre {
         glm::mat4 projection;
         glm::uvec2 viewportOffset;
         glm::uvec2 viewportSize;
+        std::set<Shader*> shaders;
 
         friend class Renderer;
     };
