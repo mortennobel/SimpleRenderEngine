@@ -126,6 +126,15 @@ namespace sre {
             glm::mat4 modelTransform;
             std::vector<std::shared_ptr<Material>> materials;
         };
+        struct GlobalUniforms{
+            glm::mat4* g_view;
+            glm::mat4* g_projection;
+            glm::vec4* g_viewport;
+            glm::vec4* g_cameraPos;
+            glm::vec4* g_ambientLight;
+            glm::vec4* g_lightColorRange;
+            glm::vec4* g_lightPosType;
+        };
         std::vector<RenderQueueObj> renderQueue;
 
         void drawInstance(RenderQueueObj& rqObj);                       // perform the actual rendering
@@ -134,6 +143,8 @@ namespace sre {
         explicit RenderPass(RenderPass::RenderPassBuilder& builder);
 
         void setupShaderRenderPass(Shader *shader);
+        void setupShaderRenderPass(const GlobalUniforms& globalUniforms);
+        void setupGlobalShaderUniforms();
         void setupShader(const glm::mat4 &modelTransform, Shader *shader);
 
         Shader* lastBoundShader = nullptr;

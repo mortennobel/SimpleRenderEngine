@@ -1,4 +1,4 @@
-#version 140
+#version 330
 #extension GL_EXT_shader_texture_lod: enable
 #extension GL_OES_standard_derivatives : enable
 out vec4 fragColor;

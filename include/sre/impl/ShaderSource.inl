@@ -34,7 +34,7 @@ vec4 toOutput(vec3 colorLinear, float alpha){
     return vec4(colorLinear, alpha);                      // pass through
 #endif
 })"),
-std::make_pair<std::string,std::string>("debug_normal_frag.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("debug_normal_frag.glsl",R"(#version 330
 out vec4 fragColor;
 in vec3 vNormal;
 
@@ -45,7 +45,7 @@ void main(void)
     fragColor = vec4(vNormal*0.5+0.5,1.0);
     fragColor = toOutput(fragColor);
 })"),
-std::make_pair<std::string,std::string>("debug_normal_vert.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("debug_normal_vert.glsl",R"(#version 330
 in vec3 position;
 in vec3 normal;
 out vec3 vNormal;
@@ -58,7 +58,7 @@ void main(void) {
     gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
     vNormal = normal;
 })"),
-std::make_pair<std::string,std::string>("debug_uv_frag.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("debug_uv_frag.glsl",R"(#version 330
 out vec4 fragColor;
 in vec4 vUV;
 
@@ -69,7 +69,7 @@ void main(void)
     fragColor = vUV;
     fragColor = toOutput(fragColor);
 })"),
-std::make_pair<std::string,std::string>("debug_uv_vert.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("debug_uv_vert.glsl",R"(#version 330
 in vec3 position;
 in vec4 uv;
 out vec4 vUV;
@@ -179,7 +179,7 @@ vec3 computeLightPhong(vec3 wsPos, vec3 wsCameraPos, vec3 normal, out vec3 specu
 
     return lightColor;
 })"),
-std::make_pair<std::string,std::string>("particles_frag.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("particles_frag.glsl",R"(#version 330
 out vec4 fragColor;
 in mat3 vUVMat;
 in vec3 uvSize;
@@ -202,7 +202,7 @@ void main(void)
     fragColor = c;
     fragColor = toOutput(fragColor);
 })"),
-std::make_pair<std::string,std::string>("particles_vert.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("particles_vert.glsl",R"(#version 330
 in vec3 position;
 in float particleSize;
 in vec4 uv;
@@ -242,7 +242,7 @@ void main(void) {
     vColor = color;
     uvSize = uv.xyz;
 })"),
-std::make_pair<std::string,std::string>("sprite_frag.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("sprite_frag.glsl",R"(#version 330
 out vec4 fragColor;
 in vec2 vUV;
 in vec4 vColor;
@@ -256,7 +256,7 @@ void main(void)
     fragColor = vColor * toLinear(texture(tex, vUV));
     fragColor = toOutput(fragColor);
 })"),
-std::make_pair<std::string,std::string>("sprite_vert.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("sprite_vert.glsl",R"(#version 330
 in vec3 position;
 in vec4 uv;
 in vec4 color;
@@ -271,7 +271,7 @@ void main(void) {
     vUV = uv.xy;
     vColor = color;
 })"),
-std::make_pair<std::string,std::string>("standard_pbr_frag.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("standard_pbr_frag.glsl",R"(#version 330
 #extension GL_EXT_shader_texture_lod: enable
 #extension GL_OES_standard_derivatives : enable
 out vec4 fragColor;
@@ -473,7 +473,7 @@ void main(void)
 
     fragColor = toOutput(color,baseColor.a);
 })"),
-std::make_pair<std::string,std::string>("standard_pbr_vert.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("standard_pbr_vert.glsl",R"(#version 330
 in vec3 position;
 in vec3 normal;
 in vec4 uv;
@@ -510,7 +510,7 @@ void main(void) {
     vColor = color;
 #endif
 })"),
-std::make_pair<std::string,std::string>("standard_blinn_phong_frag.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("standard_blinn_phong_frag.glsl",R"(#version 330
 out vec4 fragColor;
 #if defined(S_TANGENTS) && defined(S_NORMALMAP)
 in mat3 vTBN;
@@ -548,7 +548,7 @@ void main()
     fragColor = c * vec4(l, 1.0) + vec4(specularLight,0);
     fragColor = toOutput(fragColor);
 })"),
-std::make_pair<std::string,std::string>("standard_blinn_phong_vert.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("standard_blinn_phong_vert.glsl",R"(#version 330
 in vec3 position;
 in vec3 normal;
 in vec4 uv;
@@ -586,7 +586,7 @@ void main(void) {
     vColor = color;
 #endif
 })"),
-std::make_pair<std::string,std::string>("standard_phong_frag.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("standard_phong_frag.glsl",R"(#version 330
 out vec4 fragColor;
 #if defined(S_TANGENTS) && defined(S_NORMALMAP)
 in mat3 vTBN;
@@ -625,7 +625,7 @@ void main()
     fragColor = c * vec4(l, 1.0) + vec4(specularLight,0);
     fragColor = toOutput(fragColor);
 })"),
-std::make_pair<std::string,std::string>("standard_phong_vert.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("standard_phong_vert.glsl",R"(#version 330
 in vec3 position;
 in vec3 normal;
 in vec4 uv;
@@ -665,7 +665,7 @@ void main(void) {
     vColor = color;
 #endif
 })"),
-std::make_pair<std::string,std::string>("blit_frag.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("blit_frag.glsl",R"(#version 330
 out vec4 fragColor;
 in vec2 vUV;
 
@@ -678,7 +678,7 @@ void main(void)
     fragColor = toLinear(texture(tex, vUV));
     fragColor = toOutput(fragColor);
 })"),
-std::make_pair<std::string,std::string>("blit_vert.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("blit_vert.glsl",R"(#version 330
 in vec3 position;
 in vec3 normal;
 #ifdef S_VERTEX_COLOR
@@ -695,7 +695,7 @@ void main(void) {
     gl_Position = g_model * vec4(position,1.0);
     vUV = uv.xy;
 })"),
-std::make_pair<std::string,std::string>("unlit_frag.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("unlit_frag.glsl",R"(#version 330
 out vec4 fragColor;
 in vec2 vUV;
 #ifdef S_VERTEX_COLOR
@@ -715,7 +715,7 @@ void main(void)
 #endif
     fragColor = toOutput(fragColor);
 })"),
-std::make_pair<std::string,std::string>("unlit_vert.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("unlit_vert.glsl",R"(#version 330
 in vec3 position;
 in vec3 normal;
 #ifdef S_VERTEX_COLOR
@@ -735,7 +735,7 @@ void main(void) {
     vColor = color;
 #endif
 })"),
-std::make_pair<std::string,std::string>("debug_tangent_frag.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("debug_tangent_frag.glsl",R"(#version 330
 out vec4 fragColor;
 in vec3 vTangent;
 
@@ -746,7 +746,7 @@ void main(void)
     fragColor = vec4(vTangent*0.5+0.5,1.0);
     fragColor = toOutput(fragColor);
 })"),
-std::make_pair<std::string,std::string>("debug_tangent_vert.glsl",R"(#version 140
+std::make_pair<std::string,std::string>("debug_tangent_vert.glsl",R"(#version 330
 in vec3 position;
 in vec4 tangent;
 out vec3 vTangent;
@@ -800,7 +800,7 @@ vec3 getNormal()
 }
 #endif)"),
 std::make_pair<std::string,std::string>("global_uniforms_incl.glsl",R"(#if __VERSION__ > 100
-//layout(std140) uniform g_global_uniforms {
+layout(std140) uniform g_global_uniforms {
 #endif
 #ifdef GL_ES
 uniform precision highp mat4 g_view;
@@ -819,8 +819,7 @@ uniform vec4 g_ambientLight;
 uniform vec4 g_lightColorRange[SI_LIGHTS];
 uniform vec4 g_lightPosType[SI_LIGHTS];
 #endif
-
 #if __VERSION__ > 100
-//};
+};
 #endif)"),
 };

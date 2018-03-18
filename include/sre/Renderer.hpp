@@ -107,6 +107,11 @@ namespace sre {
         std::vector<Texture*> textures;
         std::vector<SpriteAtlas*> spriteAtlases;
 
+        void initGlobalUniformBuffer();
+        GLuint globalUniformBuffer;
+        GLuint globalUniformBufferSize = 0;
+
+
 		VR* vr = nullptr;
 
         friend class Mesh;

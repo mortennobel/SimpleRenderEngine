@@ -1,4 +1,4 @@
-#version 140
+#version 330
 out vec4 fragColor;
 in mat3 vUVMat;
 in vec3 uvSize;

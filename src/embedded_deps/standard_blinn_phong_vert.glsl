@@ -1,4 +1,4 @@
-#version 140
+#version 330
 in vec3 position;
 in vec3 normal;
 in vec4 uv;

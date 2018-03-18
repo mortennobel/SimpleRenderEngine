@@ -149,6 +149,37 @@ namespace sre {
         shader->setLights(builder.worldLights);
     }
 
+    void RenderPass::setupShaderRenderPass(const RenderPass::GlobalUniforms &globalUniforms) {
+        *globalUniforms.g_view = builder.camera.viewTransform;
+        *globalUniforms.g_projection = projection;
+        *globalUniforms.g_viewport = glm::vec4 ((float)viewportSize.x,(float)viewportSize.y,(float)viewportOffset.x,(float)viewportOffset.y);;
+        *globalUniforms.g_cameraPos = glm::vec4(this->builder.camera.getPosition(),1.0f);;
+        int maxSceneLights = Renderer::instance->maxSceneLights;
+        size_t lightSize = sizeof(glm::vec4)*(1 + maxSceneLights*2);
+        memset(globalUniforms.g_ambientLight,0, lightSize); // ambient + (lightPosType + lightColorRange) * maxSceneLights
+        if (builder.worldLights){
+            *globalUniforms.g_ambientLight = glm::vec4(builder.worldLights->getAmbientLight(),1.0);
+
+            for (int i=0;i<maxSceneLights;i++){
+                auto light = builder.worldLights->getLight(i);
+                if (light == nullptr || light->lightType == LightType::Unused) {
+                    globalUniforms.g_lightPosType[i] = glm::vec4(0.0f,0.0f,0.0f, 2);
+
+                    continue;
+                } else if (light->lightType == LightType::Point) {
+                    globalUniforms.g_lightPosType[i] = glm::vec4(light->position, 1);
+                } else if (light->lightType == LightType::Directional) {
+                    globalUniforms.g_lightPosType[i] = glm::vec4(glm::normalize(light->direction), 0);
+                }
+                // transform to eye space
+                globalUniforms.g_lightColorRange[i] = glm::vec4(light->color, light->range);
+            }
+        }
+        glBindBuffer(GL_UNIFORM_BUFFER, Renderer::instance->globalUniformBuffer);
+        glBufferData(GL_UNIFORM_BUFFER, Renderer::instance->globalUniformBufferSize, globalUniforms.g_view, GL_STREAM_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
+    }
+
     void RenderPass::setupShader(const glm::mat4 &modelTransform, Shader *shader)  {
         if (lastBoundShader != shader){
             builder.renderStats->stateChangesShader++;
@@ -186,6 +217,41 @@ namespace sre {
                                          glm::mat4(1),
                                          {material}
                                  });
+    }
+
+    void RenderPass::setupGlobalShaderUniforms(){
+        static std::vector<char> buffer;
+        static GlobalUniforms globalUniforms;
+        static bool once = [&](){
+            buffer.resize(Renderer::instance->globalUniformBufferSize, 0);
+            globalUniforms.g_view = reinterpret_cast<glm::mat4 *>(buffer.data());
+            globalUniforms.g_projection = reinterpret_cast<glm::mat4 *>(buffer.data() + sizeof(glm::mat4));
+            globalUniforms.g_viewport = reinterpret_cast<glm::vec4 *>(buffer.data() + sizeof(glm::mat4)*2);
+            globalUniforms.g_cameraPos = reinterpret_cast<glm::vec4 *>(buffer.data() + sizeof(glm::mat4)*2 + sizeof(glm::vec4));
+            globalUniforms.g_ambientLight = reinterpret_cast<glm::vec4 *>(buffer.data() + sizeof(glm::mat4)*2 + sizeof(glm::vec4)*2);
+            int lightColorRangeOffset = sizeof(glm::mat4)*2 + sizeof(glm::vec4)*3;
+            globalUniforms.g_lightColorRange = reinterpret_cast<glm::vec4*>(buffer.data() + lightColorRangeOffset);
+            int g_lightPosTypeOffset = lightColorRangeOffset+ sizeof(glm::vec4)*(Renderer::instance->maxSceneLights);
+            globalUniforms.g_lightPosType = reinterpret_cast<glm::vec4*>(buffer.data() + g_lightPosTypeOffset );
+            return true;
+        } ();
+        auto rinfo = renderInfo();
+        if (rinfo.graphicsAPIVersionMajor <= 2){
+            // find list of used shaders
+            shaders.clear();
+            for (auto & rqObj : renderQueue){
+                for (auto & mat : rqObj.materials){
+                    shaders.insert(mat->getShader().get());
+                }
+            }
+            // update global uniforms
+            for (auto shader : shaders){
+                glUseProgram(shader->shaderProgramId);
+                setupShaderRenderPass(shader);
+            }
+        } else {
+            setupShaderRenderPass(globalUniforms);
+        }
     }
 
     void RenderPass::finish(){
@@ -230,18 +296,7 @@ namespace sre {
 
         projection = builder.camera.getProjectionTransform(viewportSize);
 
-        // find list of used shaders
-        shaders.clear();
-        for (auto & rqObj : renderQueue){
-            for (auto & mat : rqObj.materials){
-                shaders.insert(mat->getShader().get());
-            }
-        }
-        // update global uniforms
-        for (auto shader : shaders){
-            glUseProgram(shader->shaderProgramId);
-            setupShaderRenderPass(shader);
-        }
+        setupGlobalShaderUniforms();
 
         for (auto & rqObj : renderQueue){
             drawInstance(rqObj);
@@ -373,4 +428,6 @@ namespace sre {
 
         draw(mesh, transformation, material);
     }
+
+
 }

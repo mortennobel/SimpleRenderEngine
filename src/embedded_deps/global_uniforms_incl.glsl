@@ -1,5 +1,5 @@
 #if __VERSION__ > 100
-//layout(std140) uniform g_global_uniforms {
+layout(std140) uniform g_global_uniforms {
 #endif
 #ifdef GL_ES
 uniform precision highp mat4 g_view;
@@ -18,7 +18,6 @@ uniform vec4 g_ambientLight;
 uniform vec4 g_lightColorRange[SI_LIGHTS];
 uniform vec4 g_lightPosType[SI_LIGHTS];
 #endif
-
 #if __VERSION__ > 100
-//};
+};
 #endif

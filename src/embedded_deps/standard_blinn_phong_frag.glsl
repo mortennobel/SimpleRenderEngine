@@ -1,4 +1,4 @@
-#version 140
+#version 330
 out vec4 fragColor;
 #if defined(S_TANGENTS) && defined(S_NORMALMAP)
 in mat3 vTBN;

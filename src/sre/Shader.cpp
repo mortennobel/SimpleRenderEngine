@@ -275,7 +275,7 @@ namespace sre {
 
     std::string Shader::translateToGLSLES(std::string source, bool vertexShader, int version) {
         using namespace std;
-        string replace = "#version 140";
+        string replace = "#version 330";
         string replaceWith = string("#version ")+std::to_string(version);
         if (version >100){
             replaceWith += " es";
@@ -758,6 +758,18 @@ namespace sre {
         if (oldShaderProgramId != 0){
             glDeleteProgram( oldShaderProgramId ); // delete old shader if any
         }
+        // setup global uniform
+        glUseProgram(shaderProgramId);
+        auto index = glGetUniformBlockIndex(shaderProgramId, "g_global_uniforms");
+        if (index != GL_INVALID_INDEX){
+            const int globalUniformBindingIndex = 1;
+            glUniformBlockBinding(shaderProgramId, index, globalUniformBindingIndex);
+            glBindBufferRange(GL_UNIFORM_BUFFER, globalUniformBindingIndex,
+                              Renderer::instance->globalUniformBuffer, 0, Renderer::instance->globalUniformBufferSize);
+        } else {
+
+        }
+
         updateUniformsAndAttributes();
         return true;
     }

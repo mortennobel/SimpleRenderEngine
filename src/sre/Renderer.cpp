@@ -114,6 +114,8 @@ namespace sre {
 			glEnable(GL_POINT_SPRITE);
 		}
 
+        initGlobalUniformBuffer();
+
         // initialize ImGUI
         ImGui_SRE_Init(window);
 
@@ -123,6 +125,7 @@ namespace sre {
 
     Renderer::~Renderer() {
 		delete vr;
+        glDeleteBuffers(1,&globalUniformBuffer);
         SDL_GL_DeleteContext(glcontext);
         instance = nullptr;
     }
@@ -169,5 +172,18 @@ namespace sre {
 
     const RenderInfo &Renderer::getRenderInfo() {
         return renderInfo_;
+    }
+
+    void Renderer::initGlobalUniformBuffer(){
+        if (renderInfo_.graphicsAPIVersionMajor <= 2){
+            globalUniformBuffer = 0;
+            return; //
+        }
+        glGenBuffers(1,&globalUniformBuffer);
+        size_t lightSize = sizeof(glm::vec4)*(1 + maxSceneLights*2);
+        globalUniformBufferSize = sizeof(glm::mat4)*2+sizeof(glm::vec4)*2 + lightSize;
+        glBindBuffer(GL_UNIFORM_BUFFER, globalUniformBuffer);
+        glBufferData(GL_UNIFORM_BUFFER, globalUniformBufferSize, NULL, GL_STREAM_DRAW);
+        glBindBuffer(GL_UNIFORM_BUFFER, 0);
     }
 }
