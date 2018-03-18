@@ -108,7 +108,7 @@ namespace sre {
         std::vector<SpriteAtlas*> spriteAtlases;
 
         void initGlobalUniformBuffer();
-        GLuint globalUniformBuffer;
+        GLuint globalUniformBuffer = 0;
         GLuint globalUniformBufferSize = 0;
 
 

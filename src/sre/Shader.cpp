@@ -759,15 +759,15 @@ namespace sre {
             glDeleteProgram( oldShaderProgramId ); // delete old shader if any
         }
         // setup global uniform
-        glUseProgram(shaderProgramId);
-        auto index = glGetUniformBlockIndex(shaderProgramId, "g_global_uniforms");
-        if (index != GL_INVALID_INDEX){
-            const int globalUniformBindingIndex = 1;
-            glUniformBlockBinding(shaderProgramId, index, globalUniformBindingIndex);
-            glBindBufferRange(GL_UNIFORM_BUFFER, globalUniformBindingIndex,
-                              Renderer::instance->globalUniformBuffer, 0, Renderer::instance->globalUniformBufferSize);
-        } else {
-
+        if (Renderer::instance->globalUniformBuffer){
+            glUseProgram(shaderProgramId);
+            auto index = glGetUniformBlockIndex(shaderProgramId, "g_global_uniforms");
+            if (index != GL_INVALID_INDEX){
+                const int globalUniformBindingIndex = 1;
+                glUniformBlockBinding(shaderProgramId, index, globalUniformBindingIndex);
+                glBindBufferRange(GL_UNIFORM_BUFFER, globalUniformBindingIndex,
+                                  Renderer::instance->globalUniformBuffer, 0, Renderer::instance->globalUniformBufferSize);
+            }
         }
 
         updateUniformsAndAttributes();

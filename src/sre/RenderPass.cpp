@@ -223,6 +223,7 @@ namespace sre {
         static std::vector<char> buffer;
         static GlobalUniforms globalUniforms;
         static bool once = [&](){
+            // allocate buffer and setup pointers into buffer
             buffer.resize(Renderer::instance->globalUniformBufferSize, 0);
             globalUniforms.g_view = reinterpret_cast<glm::mat4 *>(buffer.data());
             globalUniforms.g_projection = reinterpret_cast<glm::mat4 *>(buffer.data() + sizeof(glm::mat4));
@@ -236,7 +237,9 @@ namespace sre {
             return true;
         } ();
         auto rinfo = renderInfo();
-        if (rinfo.graphicsAPIVersionMajor <= 2){
+        if (Renderer::instance->globalUniformBuffer){
+            setupShaderRenderPass(globalUniforms);
+        } else {
             // find list of used shaders
             shaders.clear();
             for (auto & rqObj : renderQueue){
@@ -249,8 +252,6 @@ namespace sre {
                 glUseProgram(shader->shaderProgramId);
                 setupShaderRenderPass(shader);
             }
-        } else {
-            setupShaderRenderPass(globalUniforms);
         }
     }
 
@@ -428,6 +429,4 @@ namespace sre {
 
         draw(mesh, transformation, material);
     }
-
-
 }
