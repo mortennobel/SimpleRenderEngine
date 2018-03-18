@@ -1,8 +1,6 @@
-uniform vec3 g_ambientLight;
+
 in vec4 vLightDir[SI_LIGHTS];
 
-uniform vec4 g_lightColorRange[SI_LIGHTS];
-uniform vec4 g_lightPosType[SI_LIGHTS];
 uniform vec4 specularity;
 
 void lightDirectionAndAttenuation(vec4 lightPosType, float lightRange, vec3 pos, out vec3 lightDirection, out float attenuation){

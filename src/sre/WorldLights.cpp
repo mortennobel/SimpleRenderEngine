@@ -40,11 +40,11 @@ namespace sre {
     }
 
     void WorldLights::setAmbientLight(const glm::vec3& ambientLight){
-        this->ambientLight = ambientLight;
+        this->ambientLight = glm::vec4(ambientLight,0.0);
     }
 
     glm::vec3 WorldLights::getAmbientLight() {
-        return ambientLight;
+        return glm::vec3(ambientLight);
     }
 
     void WorldLights::clear() {

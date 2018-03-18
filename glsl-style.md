@@ -20,7 +20,7 @@ Simple Render Engine provides some coding styles:
 
 **Light**
 
-* glm::vec3 **g_ambientLight**. Automatically set from WorldLight::ambientLight
+* glm::vec4 **g_ambientLight**. Automatically set from WorldLight::ambientLight (w is ignored)
 * glm::vec4[] **g_lightPosType**. Contains a number of scene light positions (.xyz) and types (.w). (w==0 is directional light, w==1 is point light)
 * glm::vec4[] **g_lightColorRange**. Contains a number of scene light colors (.xyz) and range (.w). 
 

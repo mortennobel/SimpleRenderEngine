@@ -24,7 +24,7 @@ namespace sre {
         void setAmbientLight(const glm::vec3& light);       // Set ambient light
         glm::vec3 getAmbientLight();                        // Get ambient light
     private:
-        glm::vec3 ambientLight;
+        glm::vec4 ambientLight;
         std::vector<Light> lights;
 
         friend class Shader;

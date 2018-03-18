@@ -457,10 +457,10 @@ namespace sre {
                     }
                 }
                 if (strcmp(name, "g_ambientLight")==0){
-                    if (uniformType == UniformType::Vec3){
+                    if (uniformType == UniformType::Vec4){
                         uniformLocationAmbientLight = location;
                     } else {
-                        LOG_ERROR("Invalid g_ambientLight uniform type. Expected vec3 - was %s.",c_str(uniformType));
+                        LOG_ERROR("Invalid g_ambientLight uniform type. Expected vec4 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_lightPosType")==0){
@@ -484,7 +484,6 @@ namespace sre {
                         LOG_ERROR("Invalid g_cameraPos uniform type. Expected vec4 - was %s[%i].",c_str(uniformType),size);
                     }
                 }
-
             }
         }
 
@@ -542,7 +541,7 @@ namespace sre {
             return false;
         }
         if (uniformLocationAmbientLight != -1) {
-            glUniform3fv(uniformLocationAmbientLight, 1, glm::value_ptr(worldLights->ambientLight));
+            glUniform4fv(uniformLocationAmbientLight, 1, glm::value_ptr(worldLights->ambientLight));
         }
         if (uniformLocationLightPosType != -1 && uniformLocationLightColorRange != -1){
 			std::vector<glm::vec4> lightPosType(maxSceneLights, glm::vec4(0));
