@@ -294,7 +294,7 @@ namespace sre {
             if (ImGui::TreeNode("Uniforms")) {
                 auto uniformNames = shader->getUniformNames();
                 for (auto a : uniformNames){
-                    auto type = shader->getUniformType(a);
+                    auto type = shader->getUniform(a);
                     std::string typeStr = glUniformToString(type.type);
                     typeStr = appendSize(typeStr, type.arraySize);
                     ImGui::LabelText(a.c_str(), typeStr.c_str());

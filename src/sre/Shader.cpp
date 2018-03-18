@@ -685,7 +685,7 @@ namespace sre {
         return standardPBR;
     }
 
-    Uniform Shader::getUniformType(const std::string &name) {
+    Uniform Shader::getUniform(const std::string &name) {
 		for (auto i = uniforms.cbegin(); i != uniforms.cend(); i++) {
 			if (i->name.compare(name) == 0)
 				return *i;

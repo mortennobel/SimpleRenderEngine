@@ -224,7 +224,7 @@ namespace sre {
 
         std::shared_ptr<Material> createMaterial(std::map<std::string,std::string> specializationConstants = {});
 
-        Uniform getUniformType(const std::string &name);
+        Uniform getUniform(const std::string &name);
 
         std::pair<int,int> getAttibuteType(const std::string & name); // Return type, size of the attribute
 

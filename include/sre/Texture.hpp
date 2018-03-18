@@ -162,6 +162,7 @@ private:
     friend class Inspector;
     friend class VR;
     friend class Sprite;
+    friend class UniformSet;
 };
 
 
