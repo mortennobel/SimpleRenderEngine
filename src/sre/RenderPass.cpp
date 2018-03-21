@@ -127,7 +127,7 @@ namespace sre {
 
     void RenderPass::draw(std::shared_ptr<Mesh>& meshPtr, glm::mat4 modelTransform, std::shared_ptr<Material>& material_ptr) {
         assert(!mIsFinished && "RenderPass is finished. Can no longer be modified.");
-        renderQueue.emplace_back(RenderQueueObj{meshPtr, modelTransform, {material_ptr}});
+        renderQueue.emplace_back(RenderQueueObj{meshPtr, modelTransform, material_ptr});
     }
 
     void RenderPass::setupShaderRenderPass(Shader *shader){
@@ -215,7 +215,7 @@ namespace sre {
         renderQueue.emplace_back(RenderQueueObj{
                                          mesh,
                                          glm::mat4(1),
-                                         {material}
+                                         material
                                  });
     }
 
@@ -243,9 +243,7 @@ namespace sre {
             // find list of used shaders
             shaders.clear();
             for (auto & rqObj : renderQueue){
-                for (auto & mat : rqObj.materials){
-                    shaders.insert(mat->getShader().get());
-                }
+                shaders.insert(rqObj.material->getShader().get());
             }
             // update global uniforms
             for (auto shader : shaders){
@@ -348,37 +346,40 @@ namespace sre {
                           std::vector<std::shared_ptr<Material>> materials) {
         assert(!mIsFinished && "RenderPass is finished. Can no longer be modified.");
         assert(meshPtr->indices.size() == 0 || meshPtr->indices.size() == materials.size());
-        renderQueue.emplace_back(RenderQueueObj{meshPtr, modelTransform, materials});
+        int subMesh = 0;
+        for (auto & mat : materials){
+            renderQueue.emplace_back(RenderQueueObj{meshPtr, modelTransform, mat,subMesh});
+            subMesh++;
+        }
     }
 
     void RenderPass::drawInstance(RenderQueueObj& rqObj) {
-        for (int i=0;i<rqObj.materials.size();i++){
-            auto material_ptr = rqObj.materials[i];
-            Mesh* mesh = rqObj.mesh.get();
-            auto material = material_ptr.get();
-            auto shader = material->getShader().get();
-            assert(mesh  != nullptr);
-            builder.renderStats->drawCalls++;
-            setupShader(rqObj.modelTransform, shader);
-            if (material != lastBoundMaterial) {
-                builder.renderStats->stateChangesMaterial++;
-                lastBoundMaterial = material;
-                lastBoundMeshId = -1; // force mesh to rebind
-                material->bind();
-            }
-            if (mesh->meshId != lastBoundMeshId) {
-                builder.renderStats->stateChangesMesh++;
-                lastBoundMeshId = mesh->meshId;
-                mesh->bind(shader);
-            }
-            if (mesh->getIndexSets() == 0){
-                glDrawArrays((GLenum) mesh->getMeshTopology(), 0, mesh->getVertexCount());
-            } else {
-                auto offsetCount = mesh->elementBufferOffsetCount[i];
 
-                GLsizei indexCount = offsetCount.second;
-                glDrawElements((GLenum) mesh->getMeshTopology(i), indexCount, GL_UNSIGNED_SHORT, BUFFER_OFFSET(offsetCount.first));
-            }
+        auto material_ptr = rqObj.material;
+        Mesh* mesh = rqObj.mesh.get();
+        auto material = material_ptr.get();
+        auto shader = material->getShader().get();
+        assert(mesh  != nullptr);
+        builder.renderStats->drawCalls++;
+        setupShader(rqObj.modelTransform, shader);
+        if (material != lastBoundMaterial) {
+            builder.renderStats->stateChangesMaterial++;
+            lastBoundMaterial = material;
+            lastBoundMeshId = -1; // force mesh to rebind
+            material->bind();
+        }
+        if (mesh->meshId != lastBoundMeshId) {
+            builder.renderStats->stateChangesMesh++;
+            lastBoundMeshId = mesh->meshId;
+            mesh->bind(shader);
+        }
+        if (mesh->getIndexSets() == 0){
+            glDrawArrays((GLenum) mesh->getMeshTopology(), 0, mesh->getVertexCount());
+        } else {
+            auto offsetCount = mesh->elementBufferOffsetCount[rqObj.subMesh];
+
+            GLsizei indexCount = offsetCount.second;
+            glDrawElements((GLenum) mesh->getMeshTopology(rqObj.subMesh), indexCount, GL_UNSIGNED_SHORT, BUFFER_OFFSET(offsetCount.first));
         }
     }
 
@@ -391,7 +392,7 @@ namespace sre {
         if (spriteBatch == nullptr) return;
 
         for (int i=0;i<spriteBatch->materials.size();i++) {
-            renderQueue.emplace_back(RenderQueueObj{spriteBatch->spriteMeshes[i], modelTransform, {spriteBatch->materials[i]}});
+            renderQueue.emplace_back(RenderQueueObj{spriteBatch->spriteMeshes[i], modelTransform, spriteBatch->materials[i]});
         }
     }
 
@@ -400,7 +401,7 @@ namespace sre {
         if (spriteBatch == nullptr) return;
 
         for (int i=0;i<spriteBatch->materials.size();i++) {
-            renderQueue.emplace_back(RenderQueueObj{spriteBatch->spriteMeshes[i], modelTransform, {spriteBatch->materials[i]}});
+            renderQueue.emplace_back(RenderQueueObj{spriteBatch->spriteMeshes[i], modelTransform, spriteBatch->materials[i]});
         }
     }
 

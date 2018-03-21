@@ -124,7 +124,8 @@ namespace sre {
         struct RenderQueueObj{
             std::shared_ptr<Mesh> mesh;
             glm::mat4 modelTransform;
-            std::vector<std::shared_ptr<Material>> materials;
+            std::shared_ptr<Material> material;
+            int subMesh = 0;
         };
         struct GlobalUniforms{
             glm::mat4* g_view;
