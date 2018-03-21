@@ -118,9 +118,7 @@ namespace sre{
         glBindFramebuffer(GL_FRAMEBUFFER, frameBufferObjectId);
         if (dirty){
             for (int i=0;i<textures.size();i++){
-                for (unsigned i=0;i<textures.size();i++){
-                    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, textures[i]->textureId, 0);
-                }
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, textures[i]->textureId, 0);
             }
             if (depthTexture){
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture->textureId, 0);

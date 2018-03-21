@@ -236,7 +236,7 @@ namespace sre {
             globalUniforms.g_lightPosType = reinterpret_cast<glm::vec4*>(buffer.data() + g_lightPosTypeOffset );
             return true;
         } ();
-        auto rinfo = renderInfo();
+        auto& rinfo = renderInfo();
         if (Renderer::instance->globalUniformBuffer){
             setupShaderRenderPass(globalUniforms);
         } else {
@@ -411,7 +411,7 @@ namespace sre {
 
     void RenderPass::blit(std::shared_ptr<Texture> texture, glm::mat4 transformation) {
         auto material = Shader::getBlit()->createMaterial();
-        material->setTexture(texture);
+        material->setTexture(std::move(texture));
         blit(material, transformation);
     }
 

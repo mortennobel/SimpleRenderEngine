@@ -20,7 +20,7 @@ namespace sre {
 
     int WorldLights::addLight(const Light & light){
         lights.push_back(light);
-        return lights.size()-1;
+        return (int)lights.size()-1;
     }
 
     void WorldLights::removeLight(int index){
@@ -36,7 +36,7 @@ namespace sre {
     }
 
     int WorldLights::lightCount(){
-        return lights.size();
+        return (int)lights.size();
     }
 
     void WorldLights::setAmbientLight(const glm::vec3& ambientLight){
