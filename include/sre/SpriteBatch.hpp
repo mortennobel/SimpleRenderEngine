@@ -5,8 +5,7 @@
  *  License: MIT
  */
 
-#pragma once
-
+#pragma once 
 #include <vector>
 #include "sre/Sprite.hpp"
 #include "Mesh.hpp"
@@ -58,9 +57,10 @@ private:
             size ++;
             start ++;
         }
-        if (size >= std::numeric_limits<uint16_t>::max()){
-            LOG_ERROR("More than %i sprites in a batch ",std::numeric_limits<uint16_t>::max());
-            sprites.resize(std::numeric_limits<uint16_t>::max());
+
+        if (size >= USHRT_MAX){
+            LOG_ERROR("More than %i sprites in a batch ", USHRT_MAX);
+            sprites.resize(USHRT_MAX);
             return *this;
         }
         return *this;
