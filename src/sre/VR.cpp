@@ -90,8 +90,8 @@ namespace sre
 			if (m_rTrackedDevicePose[vr::k_unTrackedDeviceIndex_Hmd].bPoseIsValid)
 			{
 				m_mat4HMDPose = m_rmat4DevicePose[vr::k_unTrackedDeviceIndex_Hmd];
-				left.setViewTransform(glm::inverse(mat4eyePosLeft*m_mat4HMDPose)*baseViewTransform);
-				right.setViewTransform(glm::inverse(mat4eyePosRight*m_mat4HMDPose)*baseViewTransform);
+				left.setViewTransform(glm::inverse(m_mat4HMDPose*mat4eyePosLeft)*baseViewTransform);
+				right.setViewTransform(glm::inverse(m_mat4HMDPose*mat4eyePosRight)*baseViewTransform);
 			}
 #endif
 		}
