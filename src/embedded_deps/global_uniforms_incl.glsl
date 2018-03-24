@@ -2,13 +2,13 @@
 layout(std140) uniform g_global_uniforms {
 #endif
 #ifdef GL_ES
-uniform precision highp mat4 g_view;
-uniform precision highp mat4 g_projection;
-uniform precision highp vec4 g_viewport;
-uniform precision highp vec4 g_cameraPos;
-uniform precision highp vec4 g_ambientLight;
-uniform precision highp vec4 g_lightColorRange[SI_LIGHTS];
-uniform precision highp vec4 g_lightPosType[SI_LIGHTS];
+uniform highp mat4 g_view;
+uniform highp mat4 g_projection;
+uniform highp vec4 g_viewport;
+uniform highp vec4 g_cameraPos;
+uniform highp vec4 g_ambientLight;
+uniform highp vec4 g_lightColorRange[SI_LIGHTS];
+uniform highp vec4 g_lightPosType[SI_LIGHTS];
 #else
 uniform mat4 g_view;
 uniform mat4 g_projection;
