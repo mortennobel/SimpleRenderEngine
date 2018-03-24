@@ -28,5 +28,6 @@ namespace sre {
         std::vector<Light> lights;
 
         friend class Shader;
+        friend class Inspector;
     };
 }

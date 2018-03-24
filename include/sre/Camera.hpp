@@ -116,6 +116,7 @@ namespace sre {
         glm::vec2 viewportSize = glm::vec2{1,1};
 
         friend class RenderPass;
+        friend class Inspector;
 
     };
 

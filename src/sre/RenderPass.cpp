@@ -361,20 +361,22 @@ namespace sre {
 
     void RenderPass::drawInstance(RenderQueueObj& rqObj) {
 
-        auto material_ptr = rqObj.material;
+
         Mesh* mesh = rqObj.mesh.get();
-        auto material = material_ptr.get();
+        auto material = rqObj.material.get();
         auto shader = material->getShader().get();
         assert(mesh  != nullptr);
         builder.renderStats->drawCalls++;
         setupShader(rqObj.modelTransform, shader);
-        if (material != lastBoundMaterial) {
+        if (material != lastBoundMaterial)
+        {
             builder.renderStats->stateChangesMaterial++;
             lastBoundMaterial = material;
             lastBoundMeshId = -1; // force mesh to rebind
             material->bind();
         }
-        if (mesh->meshId != lastBoundMeshId) {
+        if (mesh->meshId != lastBoundMeshId)
+        {
             builder.renderStats->stateChangesMesh++;
             lastBoundMeshId = mesh->meshId;
             mesh->bind(shader);

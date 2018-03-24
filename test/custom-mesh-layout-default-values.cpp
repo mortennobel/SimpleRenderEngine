@@ -33,15 +33,14 @@ public:
                 .withAttribute("posxyzw",positions)
                 .withAttribute("color",colors)
                 .build();
-
         std::string vertexShaderSource =  R"(#version 330
 in vec4 posxyzw;    // should automatically cast vec2 -> vec4 by appending (z = 0.0, w = 1.0)
 in vec4 color;
 out vec4 vColor;
 
 uniform mat4 g_model;
-uniform mat4 g_view;
-uniform mat4 g_projection;
+
+#pragma include "global_uniforms_incl.glsl"
 
 void main(void) {
     gl_Position = g_projection * g_view * g_model * posxyzw;
@@ -68,7 +67,6 @@ void main(void)
         } else {
             std::cout << "Mesh ok" << std::endl;
         }
-
 
         r.frameRender = [&](){
             render();

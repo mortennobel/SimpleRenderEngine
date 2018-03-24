@@ -352,6 +352,12 @@ namespace sre {
         uniformLocationLightColorRange = -1;
         uniformLocationCameraPosition = -1;
         uniforms.clear();
+
+        bool hasGlobalUniformBuffer = false;
+        if (Renderer::instance->globalUniformBuffer) {
+            hasGlobalUniformBuffer = glGetUniformBlockIndex(shaderProgramId, "g_global_uniforms") != GL_INVALID_INDEX;
+        }
+
         GLint uniformCount;
         glGetProgramiv(shaderProgramId,GL_ACTIVE_UNIFORMS,&uniformCount);
         UniformType uniformType = UniformType::Invalid;
@@ -414,25 +420,22 @@ namespace sre {
                 u.type = uniformType;
                 uniforms.push_back(u);
             } else {
+                if (Renderer::instance->globalUniformBuffer){
+                    if (strncmp(name, "g_model_it",64)!=0 &&
+                        strncmp(name, "g_model_view_it",64)!=0 &&
+                        strncmp(name, "g_model",64)!=0){
+                        if (!hasGlobalUniformBuffer){
+                            // Check using old style non uniform buffer
+                            LOG_ERROR("global uniform %s must be loaded using #pragma include \"global_uniforms_incl.glsl\"", name);
+                        }
+                        continue;
+                    }
+                }
                 if (strcmp(name, "g_model")==0){
                     if (uniformType == UniformType::Mat4){
                         uniformLocationModel = location;
                     } else {
                         LOG_ERROR("Invalid g_model uniform type. Expected mat4 - was %s.",c_str(uniformType));
-                    }
-                }
-                if (strcmp(name, "g_view")==0){
-                    if (uniformType == UniformType::Mat4){
-                        uniformLocationView = location;
-                    } else {
-                        LOG_ERROR("Invalid g_view uniform type. Expected mat4 - was %s.",c_str(uniformType));
-                    }
-                }
-                if (strcmp(name, "g_projection")==0){
-                    if (uniformType == UniformType::Mat4){
-                        uniformLocationProjection = location;
-                    } else {
-                        LOG_ERROR("Invalid g_projection uniform type. Expected mat4 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_model_it")==0){
@@ -447,6 +450,20 @@ namespace sre {
                         uniformLocationModelViewInverseTranspose = location;
                     } else {
                         LOG_ERROR("Invalid g_model_view_it uniform type. Expected mat3 - was %s.",c_str(uniformType));
+                    }
+                }
+                if (strcmp(name, "g_view")==0){
+                    if (uniformType == UniformType::Mat4){
+                        uniformLocationView = location;
+                    } else {
+                        LOG_ERROR("Invalid g_view uniform type. Expected mat4 - was %s.",c_str(uniformType));
+                    }
+                }
+                if (strcmp(name, "g_projection")==0){
+                    if (uniformType == UniformType::Mat4){
+                        uniformLocationProjection = location;
+                    } else {
+                        LOG_ERROR("Invalid g_projection uniform type. Expected mat4 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_viewport")==0){

@@ -21,6 +21,7 @@ namespace sre {
     class Mesh;
 
     class Shader;
+    class Camera;
 
     class SpriteAtlas;
 
@@ -45,6 +46,8 @@ namespace sre {
         void showMatrix(const char* label,glm::mat4 matrix);
         void showMatrix(const char* label,glm::mat3 matrix);
         void showTexture(Texture *tex);
+        void showCamera(Camera *cam);
+        void showWorldLights(WorldLights *lights);
 
     private:
         std::shared_ptr<Texture> getTmpTexture();

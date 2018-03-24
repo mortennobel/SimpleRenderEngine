@@ -15,6 +15,7 @@
 #include "sre/SDLRenderer.hpp"
 #include "sre/impl/GL.hpp"
 #include "sre/Texture.hpp"
+#include "sre/Camera.hpp"
 #include "sre/SpriteAtlas.hpp"
 #include "sre/Framebuffer.hpp"
 #include "sre/RenderPass.hpp"
@@ -513,23 +514,38 @@ namespace sre {
                 ImGui::LabelText("RenderPasses", "%i", RenderPass::frameInspector.renderPasses.size());
                 ImGui::Indent();
                 for (auto & rp : RenderPass::frameInspector.renderPasses){
+                    showCamera(&rp->builder.camera);
+                    ImGui::LabelText ("Framebuffer",rp->builder.framebuffer.get()?rp->builder.framebuffer->getName().c_str():"default");
+                    showWorldLights(rp->builder.worldLights);
+                    ImGui::LabelText ("Clear color",rp->builder.clearColor?"true":"false");
+                    if (rp->builder.clearColor){
+                        ImGui::InputFloat4 ("Clear color value", &rp->builder.clearColorValue.x);
+                    }
+                    ImGui::LabelText ("Clear depth",rp->builder.clearDepth?"true":"false");
+                    if (rp->builder.clearDepth){
+                        ImGui::InputFloat ("Clear depth value", &rp->builder.clearDepthValue);
+                    }
+                    ImGui::LabelText ("Clear stencil",rp->builder.clearStencil?"true":"false");
+                    if (rp->builder.clearStencil){
+                        ImGui::InputInt ("Clear stencil value", &rp->builder.clearStencilValue);
+                    }
 
                     static char label[256];
                     sprintf(label, "Renderpass #%i %s", id, rp->builder.name.c_str());
                     ImGui::PushID(rp.get());
-                    if (ImGui::CollapsingHeader(label)){
-                        ImGui::Indent();
+                    if (ImGui::TreeNode(label)){
                         int i=0;
                         for (auto& r : rp->renderQueue){
                             sprintf(label, "Draw call #%i",i++);
-                            if (ImGui::CollapsingHeader(label)){
+                            if (ImGui::TreeNode(label)){
                                 ImGui::LabelText("Submesh", "%i", r.subMesh);
                                 showMaterial(r.material.get());
                                 showMatrix("ModelTransform",r.modelTransform);
                                 showMesh(r.mesh.get());
+                                ImGui::TreePop();
                             }
                         }
-                        ImGui::Unindent();
+                        ImGui::TreePop();
                     }
                     ImGui::PopID();
                     id++;
@@ -623,6 +639,46 @@ namespace sre {
 
         if (auto shaderEditPtr = shaderEdit.lock()){
             editShader(shaderEditPtr.get());
+        }
+    }
+
+    void Inspector::showCamera(Camera *cam){
+        if (ImGui::TreeNode("Camera")){
+            ImGui::LabelText("Camera", cam->projectionType==Camera::ProjectionType::Custom?"Custom":
+                                       cam->projectionType==Camera::ProjectionType::Orthographic?"Orthographic":
+                                       cam->projectionType==Camera::ProjectionType::OrthographicWindow?"OrthographicWindow":
+                                       "Perspective");
+            showMatrix("Camera view", cam->viewTransform);
+            showMatrix("Camera projection", cam->getProjectionTransform(cam->viewportSize));
+            ImGui::InputFloat2("Viewport Offset", &cam->viewportOffset.x);
+            ImGui::InputFloat2("Viewport Size", &cam->viewportSize.x);
+            ImGui::TreePop();
+        }
+
+    }
+
+    void Inspector::showWorldLights(WorldLights *lights){
+        if (lights == nullptr) return;
+        if (ImGui::TreeNode("Light")){
+
+            int id = 0;
+            for (auto l : lights->lights){
+                ImGui::PushID(&l);
+                ImGui::LabelText("Light", "%i",id++);
+                ImGui::LabelText("Light type ", l.lightType==LightType::Directional?"Directional":l.lightType==LightType::Point?"Point":"Unused");
+                ImGui::ColorEdit4("Light color", &l.color.x);
+                if (l.lightType==LightType::Directional){
+                    ImGui::InputFloat3("Light direction", &l.direction.x);
+                }else {
+                    ImGui::InputFloat3("Light position", &l.position.x);
+                    ImGui::InputFloat("Light range", &l.range);
+                }
+                ImGui::PopID();
+            }
+
+            ImGui::InputFloat4("Ambient Light", &lights->ambientLight.x);
+
+            ImGui::TreePop();
         }
     }
 
@@ -890,8 +946,8 @@ namespace sre {
         char res[128];
         ImGui::LabelText("Material", material->getName().c_str());
         ImGui::LabelText("Shader", material->getShader()->getName().c_str());
-        if (ImGui::CollapsingHeader("Uniform values")){
-            ImGui::Indent();
+        if (ImGui::TreeNode("Uniform values")){
+
             for (auto& name : material->shader->getUniformNames()){
                 auto uniform = material->shader->getUniform(name);
                 ImGui::PushID(uniform.id);
@@ -915,22 +971,24 @@ namespace sre {
                         break;
                     case UniformType::Mat3:
 
-                        if (ImGui::CollapsingHeader(name.c_str(), "Mat3")){
+                        if (ImGui::TreeNode(name.c_str(), "Mat3")){
                             auto values = material->get<std::shared_ptr<std::vector<glm::mat3>>>(name);
                             for (int i=0;i<values->size();i++){
                                 sprintf(res,"%i",i);
                                 showMatrix(res,(*values)[i]);
                             }
+                            ImGui::TreePop();
                         }
                         break;
                     case UniformType::Mat4:
-                        if (ImGui::CollapsingHeader(name.c_str(), "Mat4")){
+                        if (ImGui::TreeNode(name.c_str(), "Mat4")){
                             auto values = material->get<std::shared_ptr<std::vector<glm::mat4>>>(name);
 
                             for (int i=0;i<values->size();i++){
                                 sprintf(res,"%i",i);
                                 showMatrix(res,(*values)[i]);
                             }
+                            ImGui::TreePop();
                         }
                         break;
                     default:
@@ -938,14 +996,8 @@ namespace sre {
                 }
                 ImGui::PopID();
             }
-            ImGui::Unindent();
+            ImGui::TreePop();
         }
-        bool set(std::string uniformName, glm::vec4 value);
-        bool set(std::string uniformName, float value);
-        bool set(std::string uniformName, std::shared_ptr<Texture> value);
-        bool set(std::string uniformName, std::shared_ptr<std::vector<glm::mat3>> value);
-        bool set(std::string uniformName, std::shared_ptr<std::vector<glm::mat4>> value);
-        bool set(std::string uniformName, Color value);
     }
 
     void Inspector::showMatrix(const char *label, glm::mat4 matrix) {
@@ -955,6 +1007,7 @@ namespace sre {
         ImGui::InputFloat4("", glm::value_ptr(matrix[1]));
         ImGui::InputFloat4("", glm::value_ptr(matrix[2]));
         ImGui::InputFloat4("", glm::value_ptr(matrix[3]));
+        ImGui::Spacing();
     }
 
     void Inspector::showMatrix(const char *label, glm::mat3 matrix) {
@@ -963,5 +1016,6 @@ namespace sre {
         ImGui::InputFloat3(label, glm::value_ptr(matrix[0]));
         ImGui::InputFloat3("", glm::value_ptr(matrix[1]));
         ImGui::InputFloat3("", glm::value_ptr(matrix[2]));
+        ImGui::Spacing();
     }
 }
