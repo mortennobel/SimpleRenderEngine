@@ -1,4 +1,4 @@
-#version 140
+#version 330
 in vec3 position;
 in vec3 normal;
 in vec4 uv;
@@ -16,8 +16,7 @@ out vec2 vUV;
 out vec3 vWsPos;
 
 uniform mat4 g_model;
-uniform mat4 g_view;
-uniform mat4 g_projection;
+#pragma include "global_uniforms_incl.glsl"
 uniform mat3 g_model_it;
 
 #pragma include "normalmap_incl.glsl"

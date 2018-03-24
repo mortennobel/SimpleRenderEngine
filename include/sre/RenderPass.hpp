@@ -124,7 +124,17 @@ namespace sre {
         struct RenderQueueObj{
             std::shared_ptr<Mesh> mesh;
             glm::mat4 modelTransform;
-            std::vector<std::shared_ptr<Material>> materials;
+            std::shared_ptr<Material> material;
+            int subMesh = 0;
+        };
+        struct GlobalUniforms{
+            glm::mat4* g_view;
+            glm::mat4* g_projection;
+            glm::vec4* g_viewport;
+            glm::vec4* g_cameraPos;
+            glm::vec4* g_ambientLight;
+            glm::vec4* g_lightColorRange;
+            glm::vec4* g_lightPosType;
         };
         std::vector<RenderQueueObj> renderQueue;
 
@@ -133,6 +143,9 @@ namespace sre {
         RenderPass::RenderPassBuilder builder;
         explicit RenderPass(RenderPass::RenderPassBuilder& builder);
 
+        void setupShaderRenderPass(Shader *shader);
+        void setupShaderRenderPass(const GlobalUniforms& globalUniforms);
+        void setupGlobalShaderUniforms();
         void setupShader(const glm::mat4 &modelTransform, Shader *shader);
 
         Shader* lastBoundShader = nullptr;
@@ -142,6 +155,7 @@ namespace sre {
         glm::mat4 projection;
         glm::uvec2 viewportOffset;
         glm::uvec2 viewportSize;
+        std::set<Shader*> shaders;
 
         friend class Renderer;
     };

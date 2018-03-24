@@ -71,7 +71,7 @@ namespace sre {
         ~Renderer();
         static constexpr int sre_version_major = 1;
         static constexpr int sre_version_minor = 0;
-        static constexpr int sre_version_point = 6;
+        static constexpr int sre_version_point = 7;
 
         glm::ivec2 getWindowSize();                         // Return the current size of the window
 
@@ -106,6 +106,11 @@ namespace sre {
         std::vector<Shader*> shaders;
         std::vector<Texture*> textures;
         std::vector<SpriteAtlas*> spriteAtlases;
+
+        void initGlobalUniformBuffer();
+        GLuint globalUniformBuffer = 0;
+        GLuint globalUniformBufferSize = 0;
+
 
 		VR* vr = nullptr;
 

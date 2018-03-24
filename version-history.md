@@ -1,5 +1,5 @@
 ## Version history
-
+ * 1.0.7 Performance improvements (global uniform buffer). Flatten render queue. VR: Fix left/right eye offset bug.
  * 1.0.6 Inspector: Correctly show integer attributes in Mesh and Shader. Inspector: Navigate mesh data (vertex attributes). Fix binding of integer attributes. Matrix arrays as uniforms.
  * 1.0.5 Improve indexed mesh performance. 
  * 1.0.4 WebGL 2 support. Fix WebGL shader warnings. 

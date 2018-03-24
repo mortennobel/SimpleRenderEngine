@@ -57,9 +57,9 @@ public:
         for (int i = 0;i<materials.size();i++){
             // explicit use
             if (i % 2==0){
-                materials[i]->setTexture(Texture::create().withFile("examples_data/test.png").withGenerateMipmaps(true).build());
+                materials[i]->setTexture(Texture::create().withFile("test_data/t_explosionsheet.png").withGenerateMipmaps(true).build());
             } else {
-                materials[i]->setTexture(Texture::create().withFile("examples_data/cartman.png").withGenerateMipmaps(true).build());
+                materials[i]->setTexture(Texture::create().withFile("test_data/gamma-test.png").withGenerateMipmaps(true).build());
             }
         }
 

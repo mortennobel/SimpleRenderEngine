@@ -1,4 +1,4 @@
-#version 140
+#version 330
 in vec3 position;
 in float particleSize;
 in vec4 uv;
@@ -8,9 +8,7 @@ out vec4 vColor;
 out vec3 uvSize;
 
 uniform mat4 g_model;
-uniform mat4 g_view;
-uniform mat4 g_projection;
-uniform vec4 g_viewport;
+#pragma include "global_uniforms_incl.glsl"
 
 mat3 translate(vec2 p){
  return mat3(1.0,0.0,0.0,0.0,1.0,0.0,p.x,p.y,1.0);

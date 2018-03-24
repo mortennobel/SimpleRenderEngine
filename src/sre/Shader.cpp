@@ -275,7 +275,7 @@ namespace sre {
 
     std::string Shader::translateToGLSLES(std::string source, bool vertexShader, int version) {
         using namespace std;
-        string replace = "#version 140";
+        string replace = "#version 330";
         string replaceWith = string("#version ")+std::to_string(version);
         if (version >100){
             replaceWith += " es";
@@ -457,10 +457,10 @@ namespace sre {
                     }
                 }
                 if (strcmp(name, "g_ambientLight")==0){
-                    if (uniformType == UniformType::Vec3){
+                    if (uniformType == UniformType::Vec4){
                         uniformLocationAmbientLight = location;
                     } else {
-                        LOG_ERROR("Invalid g_ambientLight uniform type. Expected vec3 - was %s.",c_str(uniformType));
+                        LOG_ERROR("Invalid g_ambientLight uniform type. Expected vec4 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_lightPosType")==0){
@@ -484,7 +484,6 @@ namespace sre {
                         LOG_ERROR("Invalid g_cameraPos uniform type. Expected vec4 - was %s[%i].",c_str(uniformType),size);
                     }
                 }
-
             }
         }
 
@@ -542,7 +541,7 @@ namespace sre {
             return false;
         }
         if (uniformLocationAmbientLight != -1) {
-            glUniform3fv(uniformLocationAmbientLight, 1, glm::value_ptr(worldLights->ambientLight));
+            glUniform4fv(uniformLocationAmbientLight, 1, glm::value_ptr(worldLights->ambientLight));
         }
         if (uniformLocationLightPosType != -1 && uniformLocationLightColorRange != -1){
 			std::vector<glm::vec4> lightPosType(maxSceneLights, glm::vec4(0));
@@ -685,7 +684,7 @@ namespace sre {
         return standardPBR;
     }
 
-    Uniform Shader::getUniformType(const std::string &name) {
+    Uniform Shader::getUniform(const std::string &name) {
 		for (auto i = uniforms.cbegin(); i != uniforms.cend(); i++) {
 			if (i->name.compare(name) == 0)
 				return *i;
@@ -759,6 +758,18 @@ namespace sre {
         if (oldShaderProgramId != 0){
             glDeleteProgram( oldShaderProgramId ); // delete old shader if any
         }
+        // setup global uniform
+        if (Renderer::instance->globalUniformBuffer){
+            glUseProgram(shaderProgramId);
+            auto index = glGetUniformBlockIndex(shaderProgramId, "g_global_uniforms");
+            if (index != GL_INVALID_INDEX){
+                const int globalUniformBindingIndex = 1;
+                glUniformBlockBinding(shaderProgramId, index, globalUniformBindingIndex);
+                glBindBufferRange(GL_UNIFORM_BUFFER, globalUniformBindingIndex,
+                                  Renderer::instance->globalUniformBuffer, 0, Renderer::instance->globalUniformBufferSize);
+            }
+        }
+
         updateUniformsAndAttributes();
         return true;
     }

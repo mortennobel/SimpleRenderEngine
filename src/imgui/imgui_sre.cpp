@@ -269,7 +269,7 @@ bool ImGui_SRE_CreateDeviceObjects()
         glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
     }
     const GLchar *vertex_shader =
-            "#version 140\n"
+            "#version 330\n"
                     "uniform mat4 ProjMtx;\n"
                     "in vec2 Position;\n"
                     "in vec2 UV;\n"
@@ -284,7 +284,7 @@ bool ImGui_SRE_CreateDeviceObjects()
                     "}\n";
 
     std::stringstream ss;
-    ss << "#version 140\n";
+    ss << "#version 330\n";
     ss << "uniform sampler2D Texture;\n";
     ss << "in vec2 Frag_UV;\n";
     ss << "in vec4 Frag_Color;\n";

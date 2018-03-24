@@ -22,7 +22,7 @@ sre provides:
  * Support for 2D or 3D rendering
  * GUI rendering (using Dear ImGui)
  * Emscripten support (allows cross compiling to HTML 5 + WebGL)
- * VR support
+ * VR support (OpenVR)
  * Bump mapping
 
 To keep sre as simple and flexible as possible the following features are not a part of sre:
@@ -50,4 +50,5 @@ API documentation is defined in header files.
  * https://www.opengl.org/registry/ OpenGL Registry
  * https://github.com/ocornut/imgui ImGui 1.53 (bundled)
  * https://github.com/BalazsJako/ImGuiColorTextEdit ImGuiColorTextEdit (bundled)
+ * https://github.com/kazuho/picojson PicoJSON(bundled)
  

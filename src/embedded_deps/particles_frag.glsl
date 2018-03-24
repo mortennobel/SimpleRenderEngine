@@ -1,13 +1,10 @@
-#version 140
+#version 330
 out vec4 fragColor;
 in mat3 vUVMat;
 in vec3 uvSize;
 in vec4 vColor;
-#ifdef GL_ES
-uniform precision highp vec4 g_viewport;
-#else
-uniform vec4 g_viewport;
-#endif
+
+#pragma include "global_uniforms_incl.glsl"
 
 uniform sampler2D tex;
 

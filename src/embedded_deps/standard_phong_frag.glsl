@@ -1,4 +1,4 @@
-#version 140
+#version 330
 out vec4 fragColor;
 #if defined(S_TANGENTS) && defined(S_NORMALMAP)
 in mat3 vTBN;
@@ -7,7 +7,7 @@ in vec3 vNormal;
 #endif
 in vec2 vUV;
 in vec3 vWsPos;
-uniform vec4 g_cameraPos;
+
 #ifdef S_NORMALMAP
 uniform sampler2D normalTex;
 uniform float normalScale;
@@ -19,6 +19,7 @@ in vec4 vColor;
 uniform vec4 color;
 uniform sampler2D tex;
 
+#pragma include "global_uniforms_incl.glsl"
 #pragma include "light_incl.glsl"
 #pragma include "normalmap_incl.glsl"
 #pragma include "sre_utils_incl.glsl"
