@@ -74,11 +74,11 @@ namespace sre {
             explicit RenderPassBuilder(RenderStats* renderStats);
             friend class RenderPass;
             friend class Renderer;
+            friend class Inspector;
         };
 
         static RenderPassBuilder create();   // Create a RenderPass
 
-        RenderPass(const RenderPass&) = delete;
         RenderPass(RenderPass&& rp) noexcept;
         RenderPass& operator=(RenderPass&& other) noexcept;
         virtual ~RenderPass();
@@ -120,6 +120,14 @@ namespace sre {
         void finish();
         bool isFinished();
     private:
+        RenderPass(const RenderPass&) = default;
+        struct FrameInspector {
+            int frameid = -1;
+            std::vector<std::shared_ptr<RenderPass>> renderPasses;
+        };
+
+        static FrameInspector frameInspector;
+
         bool mIsFinished = false;
         struct RenderQueueObj{
             std::shared_ptr<Mesh> mesh;
@@ -155,8 +163,8 @@ namespace sre {
         glm::mat4 projection;
         glm::uvec2 viewportOffset;
         glm::uvec2 viewportSize;
-        std::set<Shader*> shaders;
 
         friend class Renderer;
+        friend class Inspector;
     };
 }

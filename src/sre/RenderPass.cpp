@@ -25,6 +25,8 @@
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 namespace sre {
+    // declare static variable
+    RenderPass::FrameInspector RenderPass::frameInspector;
 
     RenderPass::RenderPassBuilder RenderPass::create() {
         return RenderPass::RenderPassBuilder(&Renderer::instance->renderStats);
@@ -241,7 +243,7 @@ namespace sre {
             setupShaderRenderPass(globalUniforms);
         } else {
             // find list of used shaders
-            shaders.clear();
+            std::set<Shader*> shaders;
             for (auto & rqObj : renderQueue){
                 shaders.insert(rqObj.material->getShader().get());
             }
@@ -318,6 +320,10 @@ namespace sre {
 #ifndef NDEBUG
         checkGLError();
 #endif
+        if (frameInspector.frameid == Renderer::instance->getRenderStats().frame){
+            // make a copy of this renderpass as a shared_ptr
+            frameInspector.renderPasses.push_back(std::shared_ptr<RenderPass>(new RenderPass(*this)));
+        }
     }
 
     std::vector<Color> RenderPass::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {

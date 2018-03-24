@@ -17,9 +17,11 @@
 #include "sre/Texture.hpp"
 #include "sre/SpriteAtlas.hpp"
 #include "sre/Framebuffer.hpp"
+#include "sre/RenderPass.hpp"
 #include "sre/Sprite.hpp"
 #include "imgui_internal.h"
 #include <SDL_image.h>
+#include <glm/gtc/type_ptr.hpp>
 
 using Clock = std::chrono::high_resolution_clock;
 using Milliseconds = std::chrono::duration<float, std::chrono::milliseconds::period>;
@@ -451,7 +453,7 @@ namespace sre {
             ImGui::LabelText("IMGUI version", IMGUI_VERSION);
         }
 
-        if (ImGui::CollapsingHeader("Performance")){
+        if (ImGui::CollapsingHeader("Performance metrics")){
             if (SDLRenderer::instance){
                 plotTimings(millisecondsEvent.data(), "Event ms");
                 plotTimings(millisecondsUpdate.data(), "Update ms");
@@ -499,6 +501,41 @@ namespace sre {
             ImGui::PlotLines(res,data.data(),frames, 0, "State changes", -1,max*1.2f,ImVec2(ImGui::CalcItemWidth(),150));
 
             plotTimings(millisecondsFrameTime.data(), "Frame-time ms");
+        }
+        if (ImGui::CollapsingHeader("Frame inspector")){
+            if (ImGui::Button("Capture frame")){
+                RenderPass::frameInspector.frameid = Renderer::instance->getRenderStats().frame + 1;
+                RenderPass::frameInspector.renderPasses.clear();
+            }
+            if (RenderPass::frameInspector.frameid > -1){
+                ImGui::LabelText("Frame", "%i", RenderPass::frameInspector.frameid);
+                int id = 1;
+                ImGui::LabelText("RenderPasses", "%i", RenderPass::frameInspector.renderPasses.size());
+                ImGui::Indent();
+                for (auto & rp : RenderPass::frameInspector.renderPasses){
+
+                    static char label[256];
+                    sprintf(label, "Renderpass #%i %s", id, rp->builder.name.c_str());
+                    ImGui::PushID(rp.get());
+                    if (ImGui::CollapsingHeader(label)){
+                        ImGui::Indent();
+                        int i=0;
+                        for (auto& r : rp->renderQueue){
+                            sprintf(label, "Draw call #%i",i++);
+                            if (ImGui::CollapsingHeader(label)){
+                                ImGui::LabelText("Submesh", "%i", r.subMesh);
+                                showMaterial(r.material.get());
+                                showMatrix("ModelTransform",r.modelTransform);
+                                showMesh(r.mesh.get());
+                            }
+                        }
+                        ImGui::Unindent();
+                    }
+                    ImGui::PopID();
+                    id++;
+                }
+                ImGui::Unindent();
+            }
         }
         if (ImGui::CollapsingHeader("Memory")){
             float max = 0;
@@ -847,5 +884,84 @@ namespace sre {
         offscreenTextures.push_back(offscreenTex);
         usedTextures++;
         return offscreenTex;
+    }
+
+    void Inspector::showMaterial(Material *material) {
+        char res[128];
+        ImGui::LabelText("Material", material->getName().c_str());
+        ImGui::LabelText("Shader", material->getShader()->getName().c_str());
+        if (ImGui::CollapsingHeader("Uniform values")){
+            ImGui::Indent();
+            for (auto& name : material->shader->getUniformNames()){
+                auto uniform = material->shader->getUniform(name);
+                ImGui::PushID(uniform.id);
+                switch (uniform.type){
+                    case UniformType::Float: {
+                        float value = material->get<float>(name);
+                        ImGui::InputFloat(name.c_str(),&value);
+                    }
+                        break;
+                        break;
+                    case UniformType::Vec4: {
+                        glm::vec4 value4 = material->get<glm::vec4>(name);
+                        ImGui::InputFloat4(name.c_str(),&value4.x);
+                    }
+                        break;
+                    case UniformType::Texture:
+                    case UniformType::TextureCube:{
+                        std::shared_ptr<Texture> valueTex = material->get<std::shared_ptr<Texture>>(name);
+                        ImGui::LabelText(name.c_str(),valueTex->getName().c_str());
+                    }
+                        break;
+                    case UniformType::Mat3:
+
+                        if (ImGui::CollapsingHeader(name.c_str(), "Mat3")){
+                            auto values = material->get<std::shared_ptr<std::vector<glm::mat3>>>(name);
+                            for (int i=0;i<values->size();i++){
+                                sprintf(res,"%i",i);
+                                showMatrix(res,(*values)[i]);
+                            }
+                        }
+                        break;
+                    case UniformType::Mat4:
+                        if (ImGui::CollapsingHeader(name.c_str(), "Mat4")){
+                            auto values = material->get<std::shared_ptr<std::vector<glm::mat4>>>(name);
+
+                            for (int i=0;i<values->size();i++){
+                                sprintf(res,"%i",i);
+                                showMatrix(res,(*values)[i]);
+                            }
+                        }
+                        break;
+                    default:
+                        LOG_ERROR("Unexpected error type %i", (int)uniform.type);
+                }
+                ImGui::PopID();
+            }
+            ImGui::Unindent();
+        }
+        bool set(std::string uniformName, glm::vec4 value);
+        bool set(std::string uniformName, float value);
+        bool set(std::string uniformName, std::shared_ptr<Texture> value);
+        bool set(std::string uniformName, std::shared_ptr<std::vector<glm::mat3>> value);
+        bool set(std::string uniformName, std::shared_ptr<std::vector<glm::mat4>> value);
+        bool set(std::string uniformName, Color value);
+    }
+
+    void Inspector::showMatrix(const char *label, glm::mat4 matrix) {
+
+        matrix = glm::transpose(matrix);
+        ImGui::InputFloat4(label, glm::value_ptr(matrix[0]));
+        ImGui::InputFloat4("", glm::value_ptr(matrix[1]));
+        ImGui::InputFloat4("", glm::value_ptr(matrix[2]));
+        ImGui::InputFloat4("", glm::value_ptr(matrix[3]));
+    }
+
+    void Inspector::showMatrix(const char *label, glm::mat3 matrix) {
+
+        matrix = glm::transpose(matrix);
+        ImGui::InputFloat3(label, glm::value_ptr(matrix[0]));
+        ImGui::InputFloat3("", glm::value_ptr(matrix[1]));
+        ImGui::InputFloat3("", glm::value_ptr(matrix[2]));
     }
 }

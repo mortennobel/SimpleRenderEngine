@@ -71,7 +71,7 @@ namespace sre {
         ~Renderer();
         static constexpr int sre_version_major = 1;
         static constexpr int sre_version_minor = 0;
-        static constexpr int sre_version_point = 7;
+        static constexpr int sre_version_point = 8;
 
         glm::ivec2 getWindowSize();                         // Return the current size of the window
 
@@ -111,8 +111,7 @@ namespace sre {
         GLuint globalUniformBuffer = 0;
         GLuint globalUniformBufferSize = 0;
 
-
-		VR* vr = nullptr;
+        VR* vr = nullptr;
 
         friend class Mesh;
         friend class Mesh::MeshBuilder;

@@ -97,6 +97,7 @@ namespace sre {
 
         friend class Shader;
         friend class RenderPass;
+        friend class Inspector;
     };
 
     template<>
@@ -151,4 +152,29 @@ namespace sre {
         }
         return 0.0f;
     }
+
+    template<>
+    inline std::shared_ptr<std::vector<glm::mat3>> Material::get(std::string uniformName) {
+        auto t = shader->getUniform(uniformName);
+        if (t.type == UniformType::Mat3) {
+            auto res = uniformMap.mat3Values.find(t.id);
+            if (res != uniformMap.mat3Values.end()){
+                return res->second;
+            }
+        }
+        return {};
+    }
+
+    template<>
+    inline std::shared_ptr<std::vector<glm::mat4>> Material::get(std::string uniformName) {
+        auto t = shader->getUniform(uniformName);
+        if (t.type == UniformType::Mat4) {
+            auto res = uniformMap.mat4Values.find(t.id);
+            if (res != uniformMap.mat4Values.end()){
+                return res->second;
+            }
+        }
+        return {};
+    }
+
 }
