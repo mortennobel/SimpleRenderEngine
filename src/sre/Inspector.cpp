@@ -517,19 +517,21 @@ namespace sre {
                     showCamera(&rp->builder.camera);
                     ImGui::LabelText ("Framebuffer",rp->builder.framebuffer.get()?rp->builder.framebuffer->getName().c_str():"default");
                     showWorldLights(rp->builder.worldLights);
-                    ImGui::LabelText ("Clear color",rp->builder.clearColor?"true":"false");
-                    if (rp->builder.clearColor){
-                        ImGui::InputFloat4 ("Clear color value", &rp->builder.clearColorValue.x);
+                    if (ImGui::TreeNode("Clear")){
+                        ImGui::LabelText ("Clear color",rp->builder.clearColor?"true":"false");
+                        if (rp->builder.clearColor){
+                            ImGui::InputFloat4 ("Clear color value", &rp->builder.clearColorValue.x);
+                        }
+                        ImGui::LabelText ("Clear depth",rp->builder.clearDepth?"true":"false");
+                        if (rp->builder.clearDepth){
+                            ImGui::InputFloat ("Clear depth value", &rp->builder.clearDepthValue);
+                        }
+                        ImGui::LabelText ("Clear stencil",rp->builder.clearStencil?"true":"false");
+                        if (rp->builder.clearStencil){
+                            ImGui::InputInt ("Clear stencil value", &rp->builder.clearStencilValue);
+                        }
+                        ImGui::TreePop();
                     }
-                    ImGui::LabelText ("Clear depth",rp->builder.clearDepth?"true":"false");
-                    if (rp->builder.clearDepth){
-                        ImGui::InputFloat ("Clear depth value", &rp->builder.clearDepthValue);
-                    }
-                    ImGui::LabelText ("Clear stencil",rp->builder.clearStencil?"true":"false");
-                    if (rp->builder.clearStencil){
-                        ImGui::InputInt ("Clear stencil value", &rp->builder.clearStencilValue);
-                    }
-
                     static char label[256];
                     sprintf(label, "Renderpass #%i %s", id, rp->builder.name.c_str());
                     ImGui::PushID(rp.get());

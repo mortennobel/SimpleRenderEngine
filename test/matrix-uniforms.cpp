@@ -43,8 +43,7 @@ out vec4 vColor;
 uniform mat4 customTransform4[2];
 uniform float customTransformIndex;
 uniform mat4 g_model;
-uniform mat4 g_view;
-uniform mat4 g_projection;
+#pragma include "global_uniforms_incl.glsl"
 
 void main(void) {
     int id = int(customTransformIndex);

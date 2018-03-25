@@ -115,7 +115,7 @@ namespace sre {
             return sstream.str();
         }
 
-        void logCurrentCompileInfo(GLuint &shader, GLenum type, vector<string> &errors, std::string source, const std::string name) {
+        void logCurrentCompileInfo(GLuint &shader, GLenum type, vector<string> &errors, const std::string& source, const std::string name) {
             GLint logSize = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
             if (logSize > 1){ // log size of 1 is empty, since it includes \0
@@ -574,7 +574,6 @@ namespace sre {
                     lightPosType[i] = glm::vec4(glm::normalize(light->direction), 0);
                 }
                 // transform to eye space
-                lightPosType[i] = lightPosType[i];
                 lightColorRange[i] = glm::vec4(light->color, light->range);
 
             }
