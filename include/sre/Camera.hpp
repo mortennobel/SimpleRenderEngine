@@ -32,7 +32,6 @@ namespace sre {
     class DllExport Camera {
     public:
 
-
         Camera();                                               // Set camera at (0,0,0) looking down the negative
                                                                 // z-axis using orthographic viewing volume between -1 to 1
 

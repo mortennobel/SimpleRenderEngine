@@ -38,7 +38,7 @@ emcc -Iinclude src/imgui/imgui.cpp \
                -O2 -std=c++14 -s USE_WEBGL2=1 -s FORCE_FILESYSTEM=1 -s TOTAL_MEMORY=67108864 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' --preload-file test_data -s USE_SDL=2 -o html/$FILENAME.html
 done
 
-for FILENAME in benchmark64k custom-mesh-layout gui hello-engine hello-engine-raw obj-viewer picking render-to-texture spheres spinning-cube spinning-primitives-tex sprite-example
+for FILENAME in matcap benchmark64k custom-mesh-layout gui hello-engine hello-engine-raw obj-viewer picking render-to-texture spheres spinning-cube spinning-primitives-tex sprite-example
 do
 echo $FILENAME
 emcc -Iinclude src/imgui/imgui.cpp \
