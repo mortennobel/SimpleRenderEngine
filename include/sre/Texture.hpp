@@ -67,12 +67,20 @@ public:
         None
     };
 
+    enum class Wrap {
+        Repeat,
+        ClampToEdge,
+        Mirror
+    };
+
     class DllExport TextureBuilder {
     public:
         ~TextureBuilder();
         TextureBuilder& withGenerateMipmaps(bool enable);
         TextureBuilder& withFilterSampling(bool enable);                                    // if true texture sampling is filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
+        DEPRECATED("Use with WrapUV")
         TextureBuilder& withWrappedTextureCoordinates(bool enable);
+        TextureBuilder& withWrapUV(Wrap wrap);                                              // Define how texture coordinates are sampled outside the [0.0,1.0] range
         TextureBuilder& withFileCubemap(std::string filename, CubemapSide side);            // Must define a cubemap for each side
         TextureBuilder& withFile(std::string filename);                                     // Currently only PNG files supported
         TextureBuilder& withRGBData(const char* data, int width, int height);               // data may be null (for a uninitialized texture)
@@ -103,7 +111,7 @@ public:
 		bool transparent;
         bool generateMipmaps = false;
         bool filterSampling = true;                                                         // true = linear/trilinear sampling, false = point sampling
-        bool wrapTextureCoordinates = true;
+        Wrap wrapUV = Wrap::Repeat;
         bool dumpDebug = false;
         SamplerColorspace samplerColorspace = SamplerColorspace::Linear;
         uint32_t target = 0;
@@ -128,7 +136,9 @@ public:
     int getHeight();
 
     bool isFilterSampling();                                                                // returns true if texture sampling is filtered when sampling (bi-linear or tri-linear sampling).
+    DEPRECATED("Use getWrapUV() instead")
     bool isWrapTextureCoordinates();                                                        // returns false if texture coordinates are clamped otherwise wrapped
+    Wrap getWrapUV();
     bool isCubemap();                                                                       // is cubemap texture
     bool isMipmapped();                                                                     // has texture mipmapped enabled
 	bool isTransparent();																	// Does texture has alpha channel
@@ -140,7 +150,7 @@ public:
     DepthPrecision getDepthPrecision();
 private:
     Texture(unsigned int textureId, int width, int height, uint32_t target, std::string string);
-    void updateTextureSampler(bool filterSampling, bool wrapTextureCoordinates);
+    void updateTextureSampler(bool filterSampling, Wrap wrapTextureCoordinates);
     void invokeGenerateMipmap();
     static GLenum getFormat(SDL_Surface *image);
     static std::vector<char> loadFileFromMemory(const char* data, int dataSize, GLenum& format, bool & alpha,int& width, int& height, int& bytesPerPixel, bool invertY = true);
@@ -153,7 +163,7 @@ private:
     std::string name;
     SamplerColorspace samplerColorspace;
     bool filterSampling = true; // true = linear/trilinear sampling, false = point sampling
-    bool wrapTextureCoordinates = true;
+    Wrap wrapUV;
     unsigned int textureId;
     friend class Shader;
     friend class Material;

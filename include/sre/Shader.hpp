@@ -199,6 +199,8 @@ namespace sre {
                                                                // S_VERTEX_COLOR
                                                                //   Adds VertexAttribute "color" vec4 defined in linear space.
 
+        static std::shared_ptr<Shader> getSkybox();
+
         static std::shared_ptr<Shader> getUnlitSprite();       // UnlitSprite = no depth examples and alpha blending
                                                                // Uniforms
                                                                //   "color" vec4 (default (1,1,1,1))

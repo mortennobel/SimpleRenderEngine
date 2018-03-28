@@ -79,6 +79,8 @@ namespace sre {
 
         glm::mat4 getProjectionTransform(glm::uvec2 viewportSize);// Get the projection transform - used for rendering
 
+        glm::mat4 getInfiniteProjectionTransform(glm::uvec2 viewportSize);// Get the projection transform - used for skybox rendering
+
 
         void setViewport(glm::vec2 offset = glm::vec2{0,0}, glm::vec2 size = glm::vec2{1,1});    // defines which part of the window is used for
                                                                                                  // rendering (default settings is the full window).

@@ -21,6 +21,7 @@
 #include <glm/gtc/type_precision.hpp>
 #include <glm/gtc/color_space.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
@@ -49,6 +50,12 @@ namespace sre {
 
     RenderPass::RenderPassBuilder& RenderPass::RenderPassBuilder::withWorldLights(WorldLights* worldLights){
         this->worldLights = worldLights;
+        return *this;
+    }
+
+    RenderPass::RenderPassBuilder &RenderPass::RenderPassBuilder::withSkybox(std::shared_ptr<Skybox> skybox) {
+        this->clearColor = false;
+        this->skybox = skybox;
         return *this;
     }
 
@@ -96,6 +103,9 @@ namespace sre {
     {
         if (builder.gui) {
             ImGui_SRE_NewFrame(Renderer::instance->window);
+        }
+        if (builder.skybox){
+            renderQueue.push_back({}); // reserve empty obj
         }
     }
 
@@ -298,6 +308,24 @@ namespace sre {
         projection = builder.camera.getProjectionTransform(viewportSize);
 
         setupGlobalShaderUniforms();
+
+        if (builder.skybox) {
+            // Create an infinite translation
+            glm::mat4 inf = builder.camera.getInfiniteProjectionTransform(viewportSize);
+            static std::vector<glm::mat4> matList({glm::mat4(1)});
+            static std::shared_ptr<std::vector<glm::mat4>> matListPtr(&matList);
+            matList[0] = inf;
+            builder.skybox->material->set("infProjection",matListPtr);
+            // create a view transform without translation
+            glm::mat4 view = builder.camera.getViewTransform();
+            view[3][0] = 0;
+            view[3][1] = 0;
+            view[3][2] = 0;
+
+            renderQueue[0] = {builder.skybox->skyboxMesh,
+                                                     view,
+                                                     builder.skybox->material};
+        }
 
         for (auto & rqObj : renderQueue){
             drawInstance(rqObj);

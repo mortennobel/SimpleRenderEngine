@@ -17,6 +17,7 @@
 
 #include "sre/impl/Export.hpp"
 #include "SpriteBatch.hpp"
+#include "Skybox.hpp"
 
 namespace sre {
     class Renderer;
@@ -39,6 +40,8 @@ namespace sre {
 
             RenderPassBuilder& withClearColor(bool enabled = true,Color color = {0,0,0,1});    // Set the clear color.
                                                                                                    // Default enabled with the color value {0.0,0.0,0.0,1.0}
+
+            RenderPassBuilder& withSkybox(std::shared_ptr<Skybox> skybox);                     // Set clear color to skybox.
 
             RenderPassBuilder& withClearDepth(bool enabled = true, float value = 1);               // Set the clear depth. Value is clamped between [0.0;1.0]
                                                                                                    // Default: enabled with depth value 1.0
@@ -68,6 +71,7 @@ namespace sre {
             float clearDepthValue = 1.0f;
             bool clearStencil = false;
             int clearStencilValue = 0;
+            std::shared_ptr<Skybox> skybox;
 
             bool gui = true;
 

@@ -82,6 +82,26 @@ namespace sre {
         }
     }
 
+    glm::mat4 Camera::getInfiniteProjectionTransform(glm::uvec2 viewportSize) {
+        switch (projectionType){
+            case ProjectionType::Custom:
+                LOG_WARNING("getInfiniteProjectionTransform not supported for custom projection");
+                return glm::mat4(1);
+            case ProjectionType::Orthographic:
+            {
+                LOG_WARNING("getInfiniteProjectionTransform not supported for Orthographic projection");
+                return glm::mat4(1);
+            }
+            case ProjectionType::OrthographicWindow:
+                LOG_WARNING("getInfiniteProjectionTransform not supported for OrthographicWindow projection");
+                return glm::mat4(1);
+            case ProjectionType::Perspective:
+                return glm::tweakedInfinitePerspective(projectionValue.perspective.fieldOfViewY,float(viewportSize.x)/float(viewportSize.y),projectionValue.perspective.nearPlane);
+            default:
+                return glm::mat4(1);
+        }
+    }
+
     void Camera::setViewTransform(const glm::mat4 &viewTransform) {
         Camera::viewTransform = viewTransform;
     }

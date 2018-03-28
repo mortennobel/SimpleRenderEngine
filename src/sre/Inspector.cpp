@@ -129,7 +129,8 @@ namespace sre {
                 colorSpace = "Linear";
             }
             ImGui::LabelText("Colorspace", "%s", colorSpace);
-            ImGui::LabelText("Wrap tex-coords","%s",tex->isWrapTextureCoordinates()?"true":"false");
+            const char* wrap = tex->getWrapUV()==Texture::Wrap::Repeat?"Repeat":(tex->getWrapUV()==Texture::Wrap::Mirror?"Mirror":"Clamp to edge");
+            ImGui::LabelText("Wrap tex-coords",wrap);
             ImGui::LabelText("Data size","%f MB",tex->getDataSize()/(1000*1000.0f));
             if (!tex->isCubemap()){
                 ImGui::Image(reinterpret_cast<ImTextureID>(tex->textureId), ImVec2(previewSize, previewSize),{0,1},{1,0},{1,1,1,1},{0,0,0,1});
@@ -246,6 +247,7 @@ namespace sre {
                      .withFramebuffer(framebuffer)
                      .withClearColor(true, {0, 0, 0, 1})
                      .withGUI(false)
+                     .withName("Inspector - Mesh")
                      .build();
                 static auto litMat = Shader::getStandardBlinnPhong()->createMaterial();
                 static auto unlitMat = Shader::getUnlit()->createMaterial();
@@ -347,6 +349,7 @@ namespace sre {
                     .withFramebuffer(framebuffer)
                     .withClearColor(true, {0, 0, 0, 1})
                     .withGUI(false)
+                    .withName("Inspector - Shader")
                     .build();
             float rotationSpeed = 0.001f;
 
@@ -513,39 +516,48 @@ namespace sre {
                 int id = 1;
                 ImGui::LabelText("RenderPasses", "%i", RenderPass::frameInspector.renderPasses.size());
                 ImGui::Indent();
+
                 for (auto & rp : RenderPass::frameInspector.renderPasses){
-                    showCamera(&rp->builder.camera);
-                    ImGui::LabelText ("Framebuffer",rp->builder.framebuffer.get()?rp->builder.framebuffer->getName().c_str():"default");
-                    showWorldLights(rp->builder.worldLights);
-                    if (ImGui::TreeNode("Clear")){
-                        ImGui::LabelText ("Clear color",rp->builder.clearColor?"true":"false");
-                        if (rp->builder.clearColor){
-                            ImGui::InputFloat4 ("Clear color value", &rp->builder.clearColorValue.x);
-                        }
-                        ImGui::LabelText ("Clear depth",rp->builder.clearDepth?"true":"false");
-                        if (rp->builder.clearDepth){
-                            ImGui::InputFloat ("Clear depth value", &rp->builder.clearDepthValue);
-                        }
-                        ImGui::LabelText ("Clear stencil",rp->builder.clearStencil?"true":"false");
-                        if (rp->builder.clearStencil){
-                            ImGui::InputInt ("Clear stencil value", &rp->builder.clearStencilValue);
-                        }
-                        ImGui::TreePop();
-                    }
                     static char label[256];
                     sprintf(label, "Renderpass #%i %s", id, rp->builder.name.c_str());
                     ImGui::PushID(rp.get());
-                    if (ImGui::TreeNode(label)){
-                        int i=0;
-                        for (auto& r : rp->renderQueue){
-                            sprintf(label, "Draw call #%i",i++);
-                            if (ImGui::TreeNode(label)){
-                                ImGui::LabelText("Submesh", "%i", r.subMesh);
-                                showMaterial(r.material.get());
-                                showMatrix("ModelTransform",r.modelTransform);
-                                showMesh(r.mesh.get());
-                                ImGui::TreePop();
+                    if (ImGui::TreeNode(label)) {
+                        showCamera(&rp->builder.camera);
+                        ImGui::LabelText("Framebuffer",
+                                         rp->builder.framebuffer.get() ? rp->builder.framebuffer->getName().c_str()
+                                                                       : "default");
+                        showWorldLights(rp->builder.worldLights);
+                        if (ImGui::TreeNode("Clear")) {
+                            ImGui::LabelText("Clear color", rp->builder.clearColor ? "true" : "false");
+                            if (rp->builder.clearColor) {
+                                ImGui::InputFloat4("Clear color value", &rp->builder.clearColorValue.x);
                             }
+                            ImGui::LabelText("Clear depth", rp->builder.clearDepth ? "true" : "false");
+                            if (rp->builder.clearDepth) {
+                                ImGui::InputFloat("Clear depth value", &rp->builder.clearDepthValue);
+                            }
+                            ImGui::LabelText("Clear stencil", rp->builder.clearStencil ? "true" : "false");
+                            if (rp->builder.clearStencil) {
+                                ImGui::InputInt("Clear stencil value", &rp->builder.clearStencilValue);
+                            }
+                            ImGui::TreePop();
+                        }
+
+                        sprintf(label, "Draw calls (%i)", rp->renderQueue.size());
+
+                        if (ImGui::TreeNode(label)) {
+                            int i = 0;
+                            for (auto &r : rp->renderQueue) {
+                                sprintf(label, "Draw call #%i", i++);
+                                if (ImGui::TreeNode(label)) {
+                                    ImGui::LabelText("Submesh", "%i", r.subMesh);
+                                    showMaterial(r.material.get());
+                                    showMatrix("ModelTransform", r.modelTransform);
+                                    showMesh(r.mesh.get());
+                                    ImGui::TreePop();
+                                }
+                            }
+                            ImGui::TreePop();
                         }
                         ImGui::TreePop();
                     }
