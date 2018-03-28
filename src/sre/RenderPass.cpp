@@ -310,21 +310,11 @@ namespace sre {
         setupGlobalShaderUniforms();
 
         if (builder.skybox) {
-            // Create an infinite translation
+            // Create an infinite projection
             glm::mat4 inf = builder.camera.getInfiniteProjectionTransform(viewportSize);
-            static std::vector<glm::mat4> matList({glm::mat4(1)});
-            static std::shared_ptr<std::vector<glm::mat4>> matListPtr(&matList);
-            matList[0] = inf;
-            builder.skybox->material->set("infProjection",matListPtr);
-            // create a view transform without translation
-            glm::mat4 view = builder.camera.getViewTransform();
-            view[3][0] = 0;
-            view[3][1] = 0;
-            view[3][2] = 0;
-
             renderQueue[0] = {builder.skybox->skyboxMesh,
-                                                     view,
-                                                     builder.skybox->material};
+                                inf, // passing the inf projection as the model matrix
+                                builder.skybox->material};
         }
 
         for (auto & rqObj : renderQueue){

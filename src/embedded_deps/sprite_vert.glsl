@@ -5,7 +5,6 @@ in vec4 color;
 out vec2 vUV;
 out vec4 vColor;
 
-uniform mat4 g_model;
 #pragma include "global_uniforms_incl.glsl"
 
 void main(void) {

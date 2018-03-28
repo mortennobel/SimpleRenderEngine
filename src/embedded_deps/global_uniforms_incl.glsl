@@ -1,3 +1,4 @@
+// Per render-pass uniforms
 #if __VERSION__ > 100
 layout(std140) uniform g_global_uniforms {
 #endif
@@ -21,3 +22,8 @@ uniform vec4 g_lightPosType[SI_LIGHTS];
 #if __VERSION__ > 100
 };
 #endif
+
+// Per draw call uniforms
+uniform mat4 g_model;
+uniform mat3 g_model_it;
+uniform mat3 g_model_view_it;

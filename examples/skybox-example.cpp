@@ -58,7 +58,7 @@ public:
             if (event.type == SDL_MOUSEMOTION){
                 float mouseSpeed = 1/50.0f;
                 float rotateY = event.motion.x*mouseSpeed;
-                float rotateX = (event.motion.y/(float)Renderer::instance->getWindowSize().y)*3.14f-3.14f/2;
+                float rotateX = (event.motion.y/(float)Renderer::instance->getWindowSize().y) * 3.14f-3.14f/2;
                 auto rot = glm::rotate(rotateY, glm::vec3(0,1,0))*glm::rotate(rotateX, glm::vec3(1,0,0));
                 auto rotatedPos = rot * glm::vec4(0,0,3,1);
                 camera.lookAt(glm::vec3(rotatedPos),{0,0,0},{0,1,0});

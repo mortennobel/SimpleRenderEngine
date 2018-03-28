@@ -34,8 +34,6 @@ in vec4 position;
 in vec3 normal;
 out vec3 vNormal;
 
-uniform mat4 g_model;
-uniform mat3 g_model_it;
 #pragma include "global_uniforms_incl.glsl"
 
 void main(void) {

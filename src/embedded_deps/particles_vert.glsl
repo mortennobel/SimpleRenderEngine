@@ -7,7 +7,6 @@ out mat3 vUVMat;
 out vec4 vColor;
 out vec3 uvSize;
 
-uniform mat4 g_model;
 #pragma include "global_uniforms_incl.glsl"
 
 mat3 translate(vec2 p){

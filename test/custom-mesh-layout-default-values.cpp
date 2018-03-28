@@ -38,8 +38,6 @@ in vec4 posxyzw;    // should automatically cast vec2 -> vec4 by appending (z = 
 in vec4 color;
 out vec4 vColor;
 
-uniform mat4 g_model;
-
 #pragma include "global_uniforms_incl.glsl"
 
 void main(void) {

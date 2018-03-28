@@ -23,11 +23,12 @@ std::make_pair<std::string,std::string>("skybox_vert.glsl",R"(#version 330
 in vec3 position;
 out vec3 vUV;
 
-uniform mat4 infProjection;
-uniform mat4 g_model;
+#pragma include "global_uniforms_incl.glsl"
 
 void main(void) {
-    gl_Position = infProjection * (g_model * vec4(position, 1.0));
+    vec4 eyespacePos = (g_view * vec4(position, 0.0));
+    eyespacePos.w = 1;
+    gl_Position = g_model * eyespacePos; // model matrix here contains the infinite projection
     vUV = position;
 })"),
 std::make_pair<std::string,std::string>("sre_utils_incl.glsl",R"(vec4 toLinear(vec4 col){
@@ -75,8 +76,6 @@ in vec3 position;
 in vec3 normal;
 out vec3 vNormal;
 
-uniform mat4 g_model;
-uniform mat3 g_model_view_it;
 #pragma include "global_uniforms_incl.glsl"
 
 void main(void) {
@@ -99,7 +98,6 @@ in vec3 position;
 in vec4 uv;
 out vec4 vUV;
 
-uniform mat4 g_model;
 #pragma include "global_uniforms_incl.glsl"
 
 void main(void) {
@@ -236,7 +234,6 @@ out mat3 vUVMat;
 out vec4 vColor;
 out vec3 uvSize;
 
-uniform mat4 g_model;
 #pragma include "global_uniforms_incl.glsl"
 
 mat3 translate(vec2 p){
@@ -288,7 +285,6 @@ in vec4 color;
 out vec2 vUV;
 out vec4 vColor;
 
-uniform mat4 g_model;
 #pragma include "global_uniforms_incl.glsl"
 
 void main(void) {
@@ -515,9 +511,7 @@ out vec4 vColor;
 out vec2 vUV;
 out vec3 vWsPos;
 
-uniform mat4 g_model;
 #pragma include "global_uniforms_incl.glsl"
-uniform mat3 g_model_it;
 
 #pragma include "normalmap_incl.glsl"
 
@@ -589,9 +583,6 @@ out vec3 vWsPos;
 in vec4 color;
 out vec4 vColor;
 #endif
-
-uniform mat4 g_model;
-uniform mat3 g_model_it;
 
 #pragma include "global_uniforms_incl.glsl"
 #pragma include "normalmap_incl.glsl"
@@ -667,12 +658,7 @@ in vec4 color;
 out vec4 vColor;
 #endif
 
-uniform mat4 g_model;
-
 #pragma include "global_uniforms_incl.glsl"
-
-uniform mat3 g_model_it;
-
 #pragma include "normalmap_incl.glsl"
 
 void main(void) {
@@ -713,7 +699,6 @@ out vec4 vColor;
 in vec4 uv;
 out vec2 vUV;
 
-uniform mat4 g_model;
 #pragma include "global_uniforms_incl.glsl"
 
 void main(void) {
@@ -750,7 +735,6 @@ out vec4 vColor;
 in vec4 uv;
 out vec2 vUV;
 
-uniform mat4 g_model;
 #pragma include "global_uniforms_incl.glsl"
 
 void main(void) {
@@ -776,7 +760,6 @@ in vec3 position;
 in vec4 tangent;
 out vec3 vTangent;
 
-uniform mat4 g_model;
 #pragma include "global_uniforms_incl.glsl"
 
 void main(void) {
@@ -824,7 +807,8 @@ vec3 getNormal()
     return n;
 }
 #endif)"),
-std::make_pair<std::string,std::string>("global_uniforms_incl.glsl",R"(#if __VERSION__ > 100
+std::make_pair<std::string,std::string>("global_uniforms_incl.glsl",R"(// Per render-pass uniforms
+#if __VERSION__ > 100
 layout(std140) uniform g_global_uniforms {
 #endif
 #ifdef GL_ES
@@ -846,5 +830,10 @@ uniform vec4 g_lightPosType[SI_LIGHTS];
 #endif
 #if __VERSION__ > 100
 };
-#endif)"),
+#endif
+
+// Per draw call uniforms
+uniform mat4 g_model;
+uniform mat3 g_model_it;
+uniform mat3 g_model_view_it;)"),
 };

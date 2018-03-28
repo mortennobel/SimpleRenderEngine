@@ -3,7 +3,6 @@ in vec3 position;
 in vec4 uv;
 out vec4 vUV;
 
-uniform mat4 g_model;
 #pragma include "global_uniforms_incl.glsl"
 
 void main(void) {

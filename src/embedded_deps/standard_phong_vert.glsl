@@ -15,12 +15,7 @@ in vec4 color;
 out vec4 vColor;
 #endif
 
-uniform mat4 g_model;
-
 #pragma include "global_uniforms_incl.glsl"
-
-uniform mat3 g_model_it;
-
 #pragma include "normalmap_incl.glsl"
 
 void main(void) {
