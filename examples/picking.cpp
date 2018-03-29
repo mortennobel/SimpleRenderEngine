@@ -10,6 +10,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <sre/SDLRenderer.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <sre/Inspector.hpp>
 
 using namespace sre;
 using namespace std;
@@ -61,6 +62,9 @@ public:
                 mouseX = static_cast<int>(pos.x);
                 mouseY = static_cast<int>(pos.y);
             }
+            if (e.button.button==SDL_BUTTON_RIGHT){
+                showInspector = true;
+            }
         };
         r.startEventLoop();
     }
@@ -80,10 +84,18 @@ public:
             }
         }
         drawTopTextAndColor(pixelValue);
+        static Inspector inspector;
+        inspector.update();
+        if (showInspector){
+            inspector.gui();
+        }
+
         renderPass.finish();
         auto pixelValues = renderPass.readPixels(mouseX, mouseY);           // read pixel values from defualt framebuffer (before gui is rendered)
 
         pixelValue = pixelValues[0];
+
+
     }
 
     void drawTopTextAndColor(sre::Color color){
@@ -107,6 +119,7 @@ private:
     int i=0;
     int mouseX;
     int mouseY;
+    bool showInspector = false;
 };
 
 int main() {

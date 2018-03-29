@@ -74,6 +74,9 @@ void main(void)
                 rotateY = event.motion.x*mouseSpeed;
                 rotateX = event.motion.y*mouseSpeed;
             }
+            if (event.button.button==SDL_BUTTON_RIGHT){
+                showInspector = true;
+            }
         };
         r.startEventLoop();
     }
@@ -89,6 +92,12 @@ void main(void)
 
         const char* items[] = { "00001", "00002", "00003", "00004"};
         ImGui::ListBox("Texture",&texture, items,4);
+
+        static Inspector inspector;
+        inspector.update();
+        if (showInspector){
+            inspector.gui();
+        }
     }
 private:
     float time;
@@ -100,6 +109,7 @@ private:
     float rotateX = 0;
     float rotateY = 0;
     int texture = 0;
+    bool showInspector = false;
 };
 
 int main() {

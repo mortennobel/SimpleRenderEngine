@@ -8,6 +8,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <sre/SDLRenderer.hpp>
 #include <sre/impl/GL.hpp>
+#include <sre/Inspector.hpp>
 
 using namespace sre;
 
@@ -25,7 +26,6 @@ public:
                                               {1, 0,0,1},
                                               {0, 1,0,1},
                                               {0, 0,1,1},
-
                                       });
 
         mesh = Mesh::create()
@@ -60,6 +60,13 @@ void main(void)
         r.frameRender = [&](){
             render();
         };
+        r.mouseEvent = [&](SDL_Event& event){
+            if (event.type == SDL_MOUSEBUTTONUP){
+                if (event.button.button==SDL_BUTTON_RIGHT){
+                    showInspector = true;
+                }
+            }
+        };
         r.startEventLoop();
     }
 
@@ -70,6 +77,11 @@ void main(void)
                 .build();
 
         rp.draw(mesh, glm::mat4(1), mat1);
+        static Inspector inspector;
+        inspector.update();
+        if (showInspector){
+            inspector.gui();
+        }
 
     }
 private:
@@ -78,6 +90,7 @@ private:
     Camera camera;
     std::shared_ptr<Mesh> mesh;
     std::shared_ptr<Material> mat1;
+    bool showInspector = false;
 };
 
 int main() {

@@ -13,6 +13,7 @@
 
 #include <sre/ModelImporter.hpp>
 #include <glm/gtx/string_cast.hpp>
+#include <sre/Inspector.hpp>
 
 using namespace sre;
 
@@ -48,6 +49,12 @@ public:
 
         r.frameRender = [&](){
             render();
+        };
+
+        r.mouseEvent = [&](SDL_Event& event){
+            if (event.button.button==SDL_BUTTON_RIGHT){
+                showInspector = true;
+            }
         };
 
         r.startEventLoop();
@@ -145,7 +152,11 @@ public:
         "Drop obj file here"
 #endif
         );
-
+        static Inspector inspector;
+        inspector.update();
+        if (showInspector){
+            inspector.gui();
+        }
         i++;
     }
 
@@ -224,6 +235,7 @@ private:
 #else
 		'/';
 #endif
+    bool showInspector = false;
 };
 
 int main() {

@@ -40,8 +40,7 @@ public:
 			{
 				if (event.key.keysym.sym == SDLK_r)
 				{
-					if (speed != 0)
-					{
+					if (speed != 0) {
 						speed = 0;
 					} else
 					{
