@@ -27,7 +27,7 @@ out vec3 vUV;
 
 void main(void) {
     vec4 eyespacePos = (g_view * vec4(position, 0.0));
-    eyespacePos.w = 1;
+    eyespacePos.w = 1.0;
     gl_Position = g_model * eyespacePos; // model matrix here contains the infinite projection
     vUV = position;
 })"),
@@ -127,7 +127,7 @@ void lightDirectionAndAttenuation(vec4 lightPosType, float lightRange, vec3 pos,
             attenuation = 0.0;
             return;
         } else {
-            attenuation = pow(1.0 - lightVectorLength / lightRange, 1.5); // non physical range based attenuation
+            attenuation = pow(1.0 - (lightVectorLength / lightRange), 1.5); // non physical range based attenuation
         }
     } else {
         attenuation = 0.0;
@@ -774,6 +774,7 @@ mat3 computeTBN(mat3 g_model_it, vec3 normal, vec4 tangent){
     return mat3(wsTangent, wsBitangent, wsNormal);
 }
 #endif
+
 #ifdef SI_FRAGMENT
 
 // Find the normal for this fragment, pulling either from a predefined normal map
@@ -812,6 +813,7 @@ std::make_pair<std::string,std::string>("global_uniforms_incl.glsl",R"(// Per re
 layout(std140) uniform g_global_uniforms {
 #endif
 #ifdef GL_ES
+#ifdef GL_FRAGMENT_PRECISION_HIGH
 uniform highp mat4 g_view;
 uniform highp mat4 g_projection;
 uniform highp vec4 g_viewport;
@@ -819,6 +821,15 @@ uniform highp vec4 g_cameraPos;
 uniform highp vec4 g_ambientLight;
 uniform highp vec4 g_lightColorRange[SI_LIGHTS];
 uniform highp vec4 g_lightPosType[SI_LIGHTS];
+#else
+uniform mediump mat4 g_view;
+uniform mediump mat4 g_projection;
+uniform mediump vec4 g_viewport;
+uniform mediump vec4 g_cameraPos;
+uniform mediump vec4 g_ambientLight;
+uniform mediump vec4 g_lightColorRange[SI_LIGHTS];
+uniform mediump vec4 g_lightPosType[SI_LIGHTS];
+#endif
 #else
 uniform mat4 g_view;
 uniform mat4 g_projection;
@@ -831,9 +842,20 @@ uniform vec4 g_lightPosType[SI_LIGHTS];
 #if __VERSION__ > 100
 };
 #endif
-
+#ifdef GL_ES
 // Per draw call uniforms
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+uniform highp mat4 g_model;
+uniform highp mat3 g_model_it;
+uniform highp mat3 g_model_view_it;
+#else
+uniform mediump mat4 g_model;
+uniform mediump mat3 g_model_it;
+uniform mediump mat3 g_model_view_it;
+#endif
+#else
 uniform mat4 g_model;
 uniform mat3 g_model_it;
-uniform mat3 g_model_view_it;)"),
+uniform mat3 g_model_view_it;
+#endif)"),
 };

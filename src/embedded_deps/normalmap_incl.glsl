@@ -6,6 +6,7 @@ mat3 computeTBN(mat3 g_model_it, vec3 normal, vec4 tangent){
     return mat3(wsTangent, wsBitangent, wsNormal);
 }
 #endif
+
 #ifdef SI_FRAGMENT
 
 // Find the normal for this fragment, pulling either from a predefined normal map
