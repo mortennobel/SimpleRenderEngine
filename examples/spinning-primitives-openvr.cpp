@@ -18,6 +18,22 @@ public:
     SpinningPrimitivesOpenVRExample(){
         r.init();
 
+		auto tex = Texture::create()
+			.withFileCubemap("examples_data/cube-posx.png", Texture::CubemapSide::PositiveX)
+			.withFileCubemap("examples_data/cube-negx.png", Texture::CubemapSide::NegativeX)
+			.withFileCubemap("examples_data/cube-posy.png", Texture::CubemapSide::PositiveY)
+			.withFileCubemap("examples_data/cube-negy.png", Texture::CubemapSide::NegativeY)
+			.withFileCubemap("examples_data/cube-posz.png", Texture::CubemapSide::PositiveZ)
+			.withFileCubemap("examples_data/cube-negz.png", Texture::CubemapSide::NegativeZ)
+			.withWrapUV(Texture::Wrap::ClampToEdge)
+			.build();
+
+		skybox = Skybox::create();
+
+		auto skyboxMaterial = Shader::getSkybox()->createMaterial();
+		skyboxMaterial->setTexture(tex);
+		skybox->setMaterial(skyboxMaterial);
+
         camera.setPerspectiveProjection(60,0.1,100);
         material = Shader::getUnlit()->createMaterial();
         material->setTexture(Texture::create().withFile("examples_data/test.png").withGenerateMipmaps(true).build());
@@ -62,6 +78,7 @@ public:
 			auto renderPass = RenderPass::create()
 					.withFramebuffer(fb)
 					.withCamera(cam)
+					.withSkybox(skybox)
 					.build();
 			render(renderPass);
 		};
@@ -72,7 +89,7 @@ public:
     void render(){
         auto renderPass = RenderPass::create()
                 .withCamera(camera)
-                .withClearColor(true,{1, 0, 0, 1})
+				.withSkybox(skybox)
                 .build();
 
 		render(renderPass);
@@ -117,6 +134,8 @@ private:
     Camera camera;
     std::shared_ptr<Material> material;
     std::shared_ptr<Mesh> mesh[4];
+
+	std::shared_ptr<Skybox> skybox;
     int i=0;
 	float speed = .5f;
 };
