@@ -89,7 +89,7 @@ namespace sre {
 
 
         void drawLines(const std::vector<glm::vec3> &verts,             // Draws worldspace lines.
-                       Color color = {1.0f, 1.0f, 1.0f, 1.0f},      // Note that this member function is not expected
+                       Color color = {1.0f, 1.0f, 1.0f, 1.0f},          // Note that this member function is not expected
                        MeshTopology meshTopology = MeshTopology::Lines);// to perform as efficient as draw()
 
         void draw(std::shared_ptr<Mesh>& mesh,                          // Draws a mesh using the given transform and material.

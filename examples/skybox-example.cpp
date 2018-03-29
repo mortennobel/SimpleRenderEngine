@@ -63,6 +63,11 @@ public:
                 auto rotatedPos = rot * glm::vec4(0,0,3,1);
                 camera.lookAt(glm::vec3(rotatedPos),{0,0,0},{0,1,0});
             }
+            if (event.type == SDL_MOUSEBUTTONUP){
+                if (event.button.button==SDL_BUTTON_RIGHT){
+                    showGui = true;
+                }
+            }
         };
 
         r.startEventLoop();
@@ -79,7 +84,9 @@ public:
         renderPass.draw(mesh, glm::mat4(1), material);
         renderPass.draw(mesh, glm::translate(glm::vec3(2,2,2)) * glm::scale(glm::vec3(0.1)), material);
         renderPass.draw(mesh, glm::translate(glm::vec3(-2,-2,-2)) * glm::scale(glm::vec3(0.1)), material);
-
+        static Inspector inspector;
+        inspector.update();
+        if (showGui) inspector.gui();
     }
 private:
     SDLRenderer r;
@@ -88,6 +95,7 @@ private:
     std::shared_ptr<Mesh> mesh;
     std::shared_ptr<Material> material;
     std::shared_ptr<Skybox> skybox;
+    bool showGui = false;
 };
 
 int main() {

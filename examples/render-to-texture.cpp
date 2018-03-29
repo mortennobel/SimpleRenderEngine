@@ -64,9 +64,9 @@ public:
 
         renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), material);
                                                                         // The offscreen texture is used in material
-        // static Inspector prof;
-        // prof.update();
-        // prof.gui(true);
+        static Inspector prof;
+        prof.update();
+        prof.gui(true);
 
         i++;
     }
