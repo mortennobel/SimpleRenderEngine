@@ -254,7 +254,11 @@ namespace sre {
         } else {
             // find list of used shaders
             std::set<Shader*> shaders;
-            for (auto & rqObj : renderQueue){
+
+            for (auto &rqObj : renderQueue) {
+                assert(rqObj.material.get());
+                assert(rqObj.material->getShader().get());
+                assert(rqObj.mesh.get());
                 shaders.insert(rqObj.material->getShader().get());
             }
             // update global uniforms
@@ -307,8 +311,6 @@ namespace sre {
 
         projection = builder.camera.getProjectionTransform(viewportSize);
 
-        setupGlobalShaderUniforms();
-
         if (builder.skybox) {
             // Create an infinite projection
             glm::mat4 inf = builder.camera.getInfiniteProjectionTransform(viewportSize);
@@ -316,6 +318,8 @@ namespace sre {
                                 inf, // passing the inf projection as the model matrix
                                 builder.skybox->material};
         }
+
+        setupGlobalShaderUniforms();
 
         for (auto & rqObj : renderQueue){
             drawInstance(rqObj);
