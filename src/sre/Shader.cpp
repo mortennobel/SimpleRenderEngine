@@ -283,7 +283,9 @@ namespace sre {
         }
 
         size_t f = source.find(replace);
-        source = source.replace(f, replace.length(), replaceWith);
+        if (f != std::string::npos){
+            source = source.replace(f, replace.length(), replaceWith);
+        }
         if (!vertexShader){
             auto extension = source.rfind("#extension");
             // insert precision after extensions

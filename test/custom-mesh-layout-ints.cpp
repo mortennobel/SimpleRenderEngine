@@ -35,7 +35,7 @@ public:
                 .withAttribute("vertex_color",colors)
                 .build();
 
-        std::string vertexShaderSource =  R"(#version 140
+        std::string vertexShaderSource =  R"(#version 330
 #if defined(GL_ES) && __VERSION__ == 100
 in vec4 posxyzw;
 #else
@@ -51,7 +51,7 @@ void main(void) {
     vColor = vertex_color;
 }
 )";
-        std::string fragmentShaderSource = R"(#version 140
+        std::string fragmentShaderSource = R"(#version 330
 out vec4 fragColor;
 in vec4 vColor;
 
