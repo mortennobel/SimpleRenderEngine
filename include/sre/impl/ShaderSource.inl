@@ -229,7 +229,7 @@ std::make_pair<std::string,std::string>("particles_vert.glsl",R"(#version 330
 in vec3 position;
 in float particleSize;
 in vec4 uv;
-in vec4 color;
+in vec4 vertex_color;
 out mat3 vUVMat;
 out vec4 vColor;
 out vec3 uvSize;
@@ -261,7 +261,7 @@ void main(void) {
     }
 
     vUVMat = translate(uv.xy)*scale(uv.z) * translate(vec2(0.5,0.5))*rotate(uv.w) * translate(vec2(-0.5,-0.5));
-    vColor = color;
+    vColor = vertex_color;
     uvSize = uv.xyz;
 })"),
 std::make_pair<std::string,std::string>("sprite_frag.glsl",R"(#version 330
@@ -281,7 +281,7 @@ void main(void)
 std::make_pair<std::string,std::string>("sprite_vert.glsl",R"(#version 330
 in vec3 position;
 in vec4 uv;
-in vec4 color;
+in vec4 vertex_color;
 out vec2 vUV;
 out vec4 vColor;
 
@@ -290,7 +290,7 @@ out vec4 vColor;
 void main(void) {
     gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
     vUV = uv.xy;
-    vColor = color;
+    vColor = vertex_color;
 })"),
 std::make_pair<std::string,std::string>("standard_pbr_frag.glsl",R"(#version 330
 #extension GL_EXT_shader_texture_lod: enable
@@ -505,7 +505,7 @@ out mat3 vTBN;
 out vec3 vNormal;
 #endif
 #ifdef S_VERTEX_COLOR
-in vec4 color;
+in vec4 vertex_color;
 out vec4 vColor;
 #endif
 out vec2 vUV;
@@ -526,7 +526,7 @@ void main(void) {
 #endif
     vUV = uv.xy;
 #ifdef S_VERTEX_COLOR
-    vColor = color;
+    vColor = vertex_color;
 #endif
 })"),
 std::make_pair<std::string,std::string>("standard_blinn_phong_frag.glsl",R"(#version 330
@@ -580,7 +580,7 @@ out vec3 vNormal;
 #endif
 out vec3 vWsPos;
 #ifdef S_VERTEX_COLOR
-in vec4 color;
+in vec4 vertex_color;
 out vec4 vColor;
 #endif
 
@@ -599,7 +599,7 @@ void main(void) {
     vWsPos = wsPos.xyz;
 
 #ifdef S_VERTEX_COLOR
-    vColor = color;
+    vColor = vertex_color;
 #endif
 })"),
 std::make_pair<std::string,std::string>("standard_phong_frag.glsl",R"(#version 330
@@ -654,7 +654,7 @@ out vec3 vNormal;
 #endif
 out vec3 vWsPos;
 #ifdef S_VERTEX_COLOR
-in vec4 color;
+in vec4 vertex_color;
 out vec4 vColor;
 #endif
 
@@ -673,7 +673,7 @@ void main(void) {
     vWsPos = wsPos.xyz;
 
 #ifdef S_VERTEX_COLOR
-    vColor = color;
+    vColor = vertex_color;
 #endif
 })"),
 std::make_pair<std::string,std::string>("blit_frag.glsl",R"(#version 330
@@ -692,10 +692,6 @@ void main(void)
 std::make_pair<std::string,std::string>("blit_vert.glsl",R"(#version 330
 in vec3 position;
 in vec3 normal;
-#ifdef S_VERTEX_COLOR
-in vec4 color;
-out vec4 vColor;
-#endif
 in vec4 uv;
 out vec2 vUV;
 
@@ -729,7 +725,7 @@ std::make_pair<std::string,std::string>("unlit_vert.glsl",R"(#version 330
 in vec3 position;
 in vec3 normal;
 #ifdef S_VERTEX_COLOR
-in vec4 color;
+in vec4 vertex_color;
 out vec4 vColor;
 #endif
 in vec4 uv;
@@ -741,7 +737,7 @@ void main(void) {
     gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
     vUV = uv.xy;
 #ifdef S_VERTEX_COLOR
-    vColor = color;
+    vColor = vertex_color;
 #endif
 })"),
 std::make_pair<std::string,std::string>("debug_tangent_frag.glsl",R"(#version 330

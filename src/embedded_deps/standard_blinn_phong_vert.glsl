@@ -11,7 +11,7 @@ out vec3 vNormal;
 #endif
 out vec3 vWsPos;
 #ifdef S_VERTEX_COLOR
-in vec4 color;
+in vec4 vertex_color;
 out vec4 vColor;
 #endif
 
@@ -30,6 +30,6 @@ void main(void) {
     vWsPos = wsPos.xyz;
 
 #ifdef S_VERTEX_COLOR
-    vColor = color;
+    vColor = vertex_color;
 #endif
 }

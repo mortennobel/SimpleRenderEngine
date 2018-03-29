@@ -30,19 +30,19 @@ public:
 
         mesh = Mesh::create()
                 .withPositions(positions)
-                .withAttribute("color",colors)
+                .withAttribute("vertex_color",colors)
                 .build();
 
         std::string vertexShaderSource =  R"(#version 140
 in vec4 posxyzw;
-in vec4 color;
+in vec4 vertex_color;
 out vec4 vColor;
 
 #pragma include "global_uniforms_incl.glsl"
 
 void main(void) {
     gl_Position = g_projection * g_view * g_model * posxyzw;
-    vColor = color;
+    vColor = vertex_color;
 }
 )";
         std::string fragmentShaderSource = R"(#version 140

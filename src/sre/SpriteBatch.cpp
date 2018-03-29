@@ -39,7 +39,7 @@ namespace sre{
                                            .withPositions(vertices)
                                            .withUVs(uvs)
                                            .withIndices(indices)
-                                           .withAttribute("color",colors)
+                                           .withAttribute("vertex_color",colors)
                                            .build());
             auto mat = shader->createMaterial();
             mat->setTexture(lastTexture->shared_from_this());

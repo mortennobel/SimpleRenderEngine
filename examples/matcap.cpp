@@ -91,7 +91,11 @@ void main(void)
         rp.draw(mesh, glm::rotate(rotateX, glm::vec3(1,0,0))*glm::rotate(rotateY, glm::vec3(0,1,0)), mat1);
 
         const char* items[] = { "00001", "00002", "00003", "00004"};
+        ImGui::SetNextWindowPos(ImVec2(0,0));
+        ImGui::SetNextWindowContentSize(ImVec2(300,100));
+        ImGui::Begin("Matcap");
         ImGui::ListBox("Texture",&texture, items,4);
+        ImGui::End();
 
         static Inspector inspector;
         inspector.update();

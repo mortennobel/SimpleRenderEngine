@@ -31,18 +31,18 @@ public:
 
         mesh = Mesh::create()
                 .withAttribute("posxyzw",positions)
-                .withAttribute("color",colors)
+                .withAttribute("vertex_color",colors)
                 .build();
         std::string vertexShaderSource =  R"(#version 330
 in vec4 posxyzw;    // should automatically cast vec2 -> vec4 by appending (z = 0.0, w = 1.0)
-in vec4 color;
+in vec4 vertex_color;
 out vec4 vColor;
 
 #pragma include "global_uniforms_incl.glsl"
 
 void main(void) {
     gl_Position = g_projection * g_view * g_model * posxyzw;
-    vColor = color;
+    vColor = vertex_color;
 }
 )";
         std::string fragmentShaderSource = R"(#version 330

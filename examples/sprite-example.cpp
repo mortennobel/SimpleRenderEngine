@@ -125,11 +125,6 @@ public:
             renderPass.drawLines(lines);
         }
 
-        auto& renderStats = Renderer::instance->getRenderStats();
-
-        float bytesToMB = 1.0f/(1024*1024);
-        ImGui::Text("sre draw-calls %i meshes %i (%.2fMB) textures %i (%.2fMB) shaders %i", renderStats.drawCalls,renderStats.meshCount, renderStats.meshBytes*bytesToMB, renderStats.textureCount, renderStats.textureBytes*bytesToMB, renderStats.shaderCount);
-
         static Inspector inspector;
         inspector.update();
         if (showInspector){
