@@ -47,6 +47,13 @@ public:
         r.frameRender = [&](){
             render();
         };
+        r.mouseEvent = [&](SDL_Event& event){
+            if (event.type == SDL_MOUSEBUTTONUP){
+                if (event.button.button==SDL_BUTTON_RIGHT){
+                    showInspector = true;
+                }
+            }
+        };
 
         r.startEventLoop();
     }
@@ -76,8 +83,9 @@ public:
         i++;
         static Inspector inspector;
         inspector.update();
-        inspector.gui();
-
+        if (showInspector){
+            inspector.gui();
+        }
 
         ImGui::SliderInt("Grid size",&gridSize,1,BOX_GRID_DIM);
     }
@@ -97,7 +105,7 @@ private:
         glm::mat4 translationMatrix;
     } box[BOX_GRID_DIM][BOX_GRID_DIM][BOX_GRID_DIM];
     glm::mat4 modelMatrix[BOX_GRID_DIM][BOX_GRID_DIM][BOX_GRID_DIM];
-
+    bool showInspector = false;
 };
 
 int main() {

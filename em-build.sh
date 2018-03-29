@@ -8,7 +8,7 @@ fi
 
 source ${EMSDK}/emsdk_env.sh
 
-for FILENAME in benchmark64k-heavy matrix-uniforms custom-mesh-layout-ints multiple-materials multiple-lights imgui-color-test pbr-test custom-mesh-layout-default-values imgui_demo multi-cameras particle-sprite particle-test polygon-offset-example spinning-sphere-cubemap sprite-test static_vertex_attribute texture-test
+for FILENAME in custom-mesh-layout-ints benchmark64k-heavy matrix-uniforms multiple-materials multiple-lights imgui-color-test pbr-test custom-mesh-layout-default-values imgui_demo multi-cameras particle-sprite particle-test polygon-offset-example spinning-sphere-cubemap sprite-test static_vertex_attribute texture-test
 do
 echo $FILENAME
 emcc -Iinclude src/imgui/imgui.cpp \
@@ -33,12 +33,14 @@ emcc -Iinclude src/imgui/imgui.cpp \
                src/sre/SpriteAtlas.cpp \
                src/sre/Inspector.cpp \
                src/sre/Log.cpp \
+               src/sre/Skybox.cpp \
                src/sre/impl/UniformSet.cpp \
                test/$FILENAME.cpp \
-               -O2 -std=c++14 -s USE_WEBGL2=1 -s FORCE_FILESYSTEM=1 -s TOTAL_MEMORY=67108864 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' --preload-file test_data -s USE_SDL=2 -o html/$FILENAME.html
+               -O2 -s ASSERTIONS=1 -std=c++14 -s USE_WEBGL2=1 -s FORCE_FILESYSTEM=1 -s TOTAL_MEMORY=67108864 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' --preload-file test_data -s USE_SDL=2 -o html/$FILENAME.html
+               #-O3 -g4 -s ASSERTIONS=1 -std=c++14 -s USE_WEBGL2=1 -s FORCE_FILESYSTEM=1 -s TOTAL_MEMORY=67108864 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' --preload-file test_data -s USE_SDL=2 -o html/$FILENAME.html
 done
 
-for FILENAME in benchmark64k custom-mesh-layout gui hello-engine hello-engine-raw obj-viewer picking render-to-texture spheres spinning-cube spinning-primitives-tex sprite-example
+for FILENAME in skybox-example render-to-texture matcap benchmark64k custom-mesh-layout gui hello-engine hello-engine-raw obj-viewer picking spheres spinning-cube spinning-primitives-tex sprite-example
 do
 echo $FILENAME
 emcc -Iinclude src/imgui/imgui.cpp \
@@ -63,7 +65,9 @@ emcc -Iinclude src/imgui/imgui.cpp \
                src/sre/SpriteAtlas.cpp \
                src/sre/Inspector.cpp \
                src/sre/Log.cpp \
+               src/sre/Skybox.cpp \
                src/sre/impl/UniformSet.cpp \
                examples/$FILENAME.cpp \
                -O2 -std=c++14 -s USE_WEBGL2=1 -s FORCE_FILESYSTEM=1 -s TOTAL_MEMORY=33554432 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' --preload-file examples_data -s USE_SDL=2 -o html/$FILENAME.html
 done
+

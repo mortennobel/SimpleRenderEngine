@@ -26,6 +26,7 @@ namespace sre {
         std::shared_ptr<Shader> standardBlinnPhong;
         std::shared_ptr<Shader> standardPhong;
         std::shared_ptr<Shader> unlit;
+        std::shared_ptr<Shader> skybox;
         std::shared_ptr<Shader> blit;
         std::shared_ptr<Shader> unlitSprite;
         std::shared_ptr<Shader> standardParticles;
@@ -115,7 +116,7 @@ namespace sre {
             return sstream.str();
         }
 
-        void logCurrentCompileInfo(GLuint &shader, GLenum type, vector<string> &errors, std::string source, const std::string name) {
+        void logCurrentCompileInfo(GLuint &shader, GLenum type, vector<string> &errors, const std::string& source, const std::string name) {
             GLint logSize = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
             if (logSize > 1){ // log size of 1 is empty, since it includes \0
@@ -282,7 +283,9 @@ namespace sre {
         }
 
         size_t f = source.find(replace);
-        source = source.replace(f, replace.length(), replaceWith);
+        if (f != std::string::npos){
+            source = source.replace(f, replace.length(), replaceWith);
+        }
         if (!vertexShader){
             auto extension = source.rfind("#extension");
             // insert precision after extensions
@@ -297,8 +300,12 @@ namespace sre {
                 insertPrecisionPos = 0;
             }
             source = source.substr(0, insertPrecisionPos)+
-                     "\n"+
-                     "precision mediump float;\n"+
+                     "\n"
+                     "#ifdef GL_FRAGMENT_PRECISION_HIGH \n"
+                     "   precision highp float;         \n"
+                     "#else                             \n"
+                     "   precision mediump float;       \n"
+                     "#endif                            \n"
                      "#line 2"+
                      source.substr(insertPrecisionPos);
         }
@@ -352,6 +359,12 @@ namespace sre {
         uniformLocationLightColorRange = -1;
         uniformLocationCameraPosition = -1;
         uniforms.clear();
+
+        bool hasGlobalUniformBuffer = false;
+        if (Renderer::instance->globalUniformBuffer) {
+            hasGlobalUniformBuffer = glGetUniformBlockIndex(shaderProgramId, "g_global_uniforms") != GL_INVALID_INDEX;
+        }
+
         GLint uniformCount;
         glGetProgramiv(shaderProgramId,GL_ACTIVE_UNIFORMS,&uniformCount);
         UniformType uniformType = UniformType::Invalid;
@@ -414,25 +427,22 @@ namespace sre {
                 u.type = uniformType;
                 uniforms.push_back(u);
             } else {
+                if (Renderer::instance->globalUniformBuffer){
+                    if (strncmp(name, "g_model_it",64)!=0 &&
+                        strncmp(name, "g_model_view_it",64)!=0 &&
+                        strncmp(name, "g_model",64)!=0){
+                        if (!hasGlobalUniformBuffer){
+                            // Check using old style non uniform buffer
+                            LOG_ERROR("global uniform %s must be loaded using #pragma include \"global_uniforms_incl.glsl\"", name);
+                        }
+                        continue;
+                    }
+                }
                 if (strcmp(name, "g_model")==0){
                     if (uniformType == UniformType::Mat4){
                         uniformLocationModel = location;
                     } else {
                         LOG_ERROR("Invalid g_model uniform type. Expected mat4 - was %s.",c_str(uniformType));
-                    }
-                }
-                if (strcmp(name, "g_view")==0){
-                    if (uniformType == UniformType::Mat4){
-                        uniformLocationView = location;
-                    } else {
-                        LOG_ERROR("Invalid g_view uniform type. Expected mat4 - was %s.",c_str(uniformType));
-                    }
-                }
-                if (strcmp(name, "g_projection")==0){
-                    if (uniformType == UniformType::Mat4){
-                        uniformLocationProjection = location;
-                    } else {
-                        LOG_ERROR("Invalid g_projection uniform type. Expected mat4 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_model_it")==0){
@@ -447,6 +457,20 @@ namespace sre {
                         uniformLocationModelViewInverseTranspose = location;
                     } else {
                         LOG_ERROR("Invalid g_model_view_it uniform type. Expected mat3 - was %s.",c_str(uniformType));
+                    }
+                }
+                if (strcmp(name, "g_view")==0){
+                    if (uniformType == UniformType::Mat4){
+                        uniformLocationView = location;
+                    } else {
+                        LOG_ERROR("Invalid g_view uniform type. Expected mat4 - was %s.",c_str(uniformType));
+                    }
+                }
+                if (strcmp(name, "g_projection")==0){
+                    if (uniformType == UniformType::Mat4){
+                        uniformLocationProjection = location;
+                    } else {
+                        LOG_ERROR("Invalid g_projection uniform type. Expected mat4 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_viewport")==0){
@@ -557,7 +581,6 @@ namespace sre {
                     lightPosType[i] = glm::vec4(glm::normalize(light->direction), 0);
                 }
                 // transform to eye space
-                lightPosType[i] = lightPosType[i];
                 lightColorRange[i] = glm::vec4(light->color, light->range);
 
             }
@@ -639,6 +662,24 @@ namespace sre {
                 .build();
         return unlit;
     }
+
+
+
+    std::shared_ptr<Shader> Shader::getSkybox() {
+        if (unlit != nullptr){
+            return skybox;
+        }
+
+        skybox = create()
+                .withSourceFile("skybox_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("skybox_frag.glsl", ShaderType::Fragment)
+                .withName("Skybox")
+                .withDepthWrite(false)
+                .build();
+        return skybox;
+    }
+
+
 
     std::shared_ptr<Shader> Shader::getBlit() {
         if (blit != nullptr){

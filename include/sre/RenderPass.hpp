@@ -17,6 +17,7 @@
 
 #include "sre/impl/Export.hpp"
 #include "SpriteBatch.hpp"
+#include "Skybox.hpp"
 
 namespace sre {
     class Renderer;
@@ -39,6 +40,8 @@ namespace sre {
 
             RenderPassBuilder& withClearColor(bool enabled = true,Color color = {0,0,0,1});    // Set the clear color.
                                                                                                    // Default enabled with the color value {0.0,0.0,0.0,1.0}
+
+            RenderPassBuilder& withSkybox(std::shared_ptr<Skybox> skybox);                     // Set clear color to skybox.
 
             RenderPassBuilder& withClearDepth(bool enabled = true, float value = 1);               // Set the clear depth. Value is clamped between [0.0;1.0]
                                                                                                    // Default: enabled with depth value 1.0
@@ -68,24 +71,25 @@ namespace sre {
             float clearDepthValue = 1.0f;
             bool clearStencil = false;
             int clearStencilValue = 0;
+            std::shared_ptr<Skybox> skybox;
 
             bool gui = true;
 
             explicit RenderPassBuilder(RenderStats* renderStats);
             friend class RenderPass;
             friend class Renderer;
+            friend class Inspector;
         };
 
         static RenderPassBuilder create();   // Create a RenderPass
 
-        RenderPass(const RenderPass&) = delete;
         RenderPass(RenderPass&& rp) noexcept;
         RenderPass& operator=(RenderPass&& other) noexcept;
         virtual ~RenderPass();
 
 
         void drawLines(const std::vector<glm::vec3> &verts,             // Draws worldspace lines.
-                       Color color = {1.0f, 1.0f, 1.0f, 1.0f},      // Note that this member function is not expected
+                       Color color = {1.0f, 1.0f, 1.0f, 1.0f},          // Note that this member function is not expected
                        MeshTopology meshTopology = MeshTopology::Lines);// to perform as efficient as draw()
 
         void draw(std::shared_ptr<Mesh>& mesh,                          // Draws a mesh using the given transform and material.
@@ -120,6 +124,14 @@ namespace sre {
         void finish();
         bool isFinished();
     private:
+        RenderPass(const RenderPass&) = default;
+        struct FrameInspector {
+            int frameid = -1;
+            std::vector<std::shared_ptr<RenderPass>> renderPasses;
+        };
+
+        static FrameInspector frameInspector;
+
         bool mIsFinished = false;
         struct RenderQueueObj{
             std::shared_ptr<Mesh> mesh;
@@ -155,8 +167,8 @@ namespace sre {
         glm::mat4 projection;
         glm::uvec2 viewportOffset;
         glm::uvec2 viewportSize;
-        std::set<Shader*> shaders;
 
         friend class Renderer;
+        friend class Inspector;
     };
 }

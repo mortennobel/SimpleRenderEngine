@@ -9,6 +9,7 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <sre/SDLRenderer.hpp>
+#include <sre/Inspector.hpp>
 
 using namespace sre;
 
@@ -34,9 +35,13 @@ public:
 				.withTorus()
 				.build();
 
-
 		r.frameRender = [&](){
 			render();
+		};
+		r.mouseEvent = [&](SDL_Event& event){
+			if (event.button.button==SDL_BUTTON_RIGHT){
+				showInspector = true;
+			}
 		};
 		r.startEventLoop();
 	}
@@ -57,6 +62,11 @@ public:
 				index++;
 			}
 		}
+		static Inspector inspector;
+		inspector.update();
+		if (showInspector){
+			inspector.gui();
+		}
 		i++;
 	}
 private:
@@ -65,6 +75,7 @@ private:
 	std::shared_ptr<Material> material;
 	std::shared_ptr<Mesh> mesh[4];
 	int i=0;
+	bool showInspector = false;
 };
 
 int main() {

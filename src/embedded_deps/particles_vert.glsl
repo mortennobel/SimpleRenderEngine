@@ -2,12 +2,11 @@
 in vec3 position;
 in float particleSize;
 in vec4 uv;
-in vec4 color;
+in vec4 vertex_color;
 out mat3 vUVMat;
 out vec4 vColor;
 out vec3 uvSize;
 
-uniform mat4 g_model;
 #pragma include "global_uniforms_incl.glsl"
 
 mat3 translate(vec2 p){
@@ -35,6 +34,6 @@ void main(void) {
     }
 
     vUVMat = translate(uv.xy)*scale(uv.z) * translate(vec2(0.5,0.5))*rotate(uv.w) * translate(vec2(-0.5,-0.5));
-    vColor = color;
+    vColor = vertex_color;
     uvSize = uv.xyz;
 }

@@ -21,6 +21,7 @@ namespace sre {
     class Mesh;
 
     class Shader;
+    class Camera;
 
     class SpriteAtlas;
 
@@ -37,6 +38,16 @@ namespace sre {
 
         void update();                  // must be called each in the beginning of each frame to capture data
         void gui(bool useWindow = true);// called when gui should be shown
+
+        void showMesh(Mesh *mesh);
+        void showFramebufferObject(Framebuffer* fbo);
+        void showShader(Shader *shader);
+        void showMaterial(Material *material);
+        void showMatrix(const char* label,glm::mat4 matrix);
+        void showMatrix(const char* label,glm::mat3 matrix);
+        void showTexture(Texture *tex);
+        void showCamera(Camera *cam);
+        void showWorldLights(WorldLights *lights);
 
     private:
         std::shared_ptr<Texture> getTmpTexture();
@@ -58,12 +69,6 @@ namespace sre {
         float time;
 
         std::chrono::time_point<std::chrono::high_resolution_clock> lastTick;
-
-        void showMesh(Mesh *mesh);
-        void showFramebufferObject(Framebuffer* fbo);
-        void showShader(Shader *shader);
-
-        void showTexture(Texture *tex);
 
         void showSpriteAtlas(SpriteAtlas *pAtlas);
         void editShader(Shader* shader);

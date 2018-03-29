@@ -21,7 +21,7 @@ void lightDirectionAndAttenuation(vec4 lightPosType, float lightRange, vec3 pos,
             attenuation = 0.0;
             return;
         } else {
-            attenuation = pow(1.0 - lightVectorLength / lightRange, 1.5); // non physical range based attenuation
+            attenuation = pow(1.0 - (lightVectorLength / lightRange), 1.5); // non physical range based attenuation
         }
     } else {
         attenuation = 0.0;

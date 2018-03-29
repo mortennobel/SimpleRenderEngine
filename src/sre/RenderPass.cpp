@@ -21,10 +21,13 @@
 #include <glm/gtc/type_precision.hpp>
 #include <glm/gtc/color_space.hpp>
 #include <glm/gtx/transform.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 namespace sre {
+    // declare static variable
+    RenderPass::FrameInspector RenderPass::frameInspector;
 
     RenderPass::RenderPassBuilder RenderPass::create() {
         return RenderPass::RenderPassBuilder(&Renderer::instance->renderStats);
@@ -47,6 +50,12 @@ namespace sre {
 
     RenderPass::RenderPassBuilder& RenderPass::RenderPassBuilder::withWorldLights(WorldLights* worldLights){
         this->worldLights = worldLights;
+        return *this;
+    }
+
+    RenderPass::RenderPassBuilder &RenderPass::RenderPassBuilder::withSkybox(std::shared_ptr<Skybox> skybox) {
+        this->clearColor = false;
+        this->skybox = skybox;
         return *this;
     }
 
@@ -94,6 +103,9 @@ namespace sre {
     {
         if (builder.gui) {
             ImGui_SRE_NewFrame(Renderer::instance->window);
+        }
+        if (builder.skybox){
+            renderQueue.push_back({}); // reserve empty obj
         }
     }
 
@@ -241,8 +253,12 @@ namespace sre {
             setupShaderRenderPass(globalUniforms);
         } else {
             // find list of used shaders
-            shaders.clear();
-            for (auto & rqObj : renderQueue){
+            std::set<Shader*> shaders;
+
+            for (auto &rqObj : renderQueue) {
+                assert(rqObj.material.get());
+                assert(rqObj.material->getShader().get());
+                assert(rqObj.mesh.get());
                 shaders.insert(rqObj.material->getShader().get());
             }
             // update global uniforms
@@ -295,6 +311,14 @@ namespace sre {
 
         projection = builder.camera.getProjectionTransform(viewportSize);
 
+        if (builder.skybox) {
+            // Create an infinite projection
+            glm::mat4 inf = builder.camera.getInfiniteProjectionTransform(viewportSize);
+            renderQueue[0] = {builder.skybox->skyboxMesh,
+                                inf, // passing the inf projection as the model matrix
+                                builder.skybox->material};
+        }
+
         setupGlobalShaderUniforms();
 
         for (auto & rqObj : renderQueue){
@@ -318,6 +342,10 @@ namespace sre {
 #ifndef NDEBUG
         checkGLError();
 #endif
+        if (frameInspector.frameid == Renderer::instance->getRenderStats().frame){
+            // make a copy of this renderpass as a shared_ptr
+            frameInspector.renderPasses.push_back(std::shared_ptr<RenderPass>(new RenderPass(*this)));
+        }
     }
 
     std::vector<Color> RenderPass::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {
@@ -355,20 +383,22 @@ namespace sre {
 
     void RenderPass::drawInstance(RenderQueueObj& rqObj) {
 
-        auto material_ptr = rqObj.material;
+
         Mesh* mesh = rqObj.mesh.get();
-        auto material = material_ptr.get();
+        auto material = rqObj.material.get();
         auto shader = material->getShader().get();
         assert(mesh  != nullptr);
         builder.renderStats->drawCalls++;
         setupShader(rqObj.modelTransform, shader);
-        if (material != lastBoundMaterial) {
+        if (material != lastBoundMaterial)
+        {
             builder.renderStats->stateChangesMaterial++;
             lastBoundMaterial = material;
             lastBoundMeshId = -1; // force mesh to rebind
             material->bind();
         }
-        if (mesh->meshId != lastBoundMeshId) {
+        if (mesh->meshId != lastBoundMeshId)
+        {
             builder.renderStats->stateChangesMesh++;
             lastBoundMeshId = mesh->meshId;
             mesh->bind(shader);

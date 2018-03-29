@@ -376,6 +376,11 @@ namespace {
 
 }
 
+std::shared_ptr<sre::Mesh> sre::ModelImporter::importObj(std::string path, std::string filename){
+    std::vector<std::shared_ptr<Material>> outModelMaterials;
+    return sre::ModelImporter::importObj(path, filename, outModelMaterials);
+}
+
 std::shared_ptr<sre::Mesh> sre::ModelImporter::importObj(std::string path, std::string filename, std::vector<std::shared_ptr<Material>>& outModelMaterials) {
     path = fixPathEnd(path);
     string file = getFileContents(path+filename);

@@ -193,7 +193,12 @@ namespace sre {
     }
 
     Texture::TextureBuilder &Texture::TextureBuilder::withWrappedTextureCoordinates(bool enable) {
-        this->wrapTextureCoordinates = enable;
+        this->wrapUV = enable?Wrap::Repeat:Wrap::ClampToEdge;
+        return *this;
+    }
+
+    Texture::TextureBuilder &Texture::TextureBuilder::withWrapUV(Texture::Wrap wrap) {
+        this->wrapUV = wrap;
         return *this;
     }
 
@@ -413,10 +418,11 @@ namespace sre {
 		res->transparent = this->transparent;
 		res->samplerColorspace = this->samplerColorspace;
 		res->depthPrecision = this->depthPrecision;
+		res->wrapUV = this->wrapUV;
         if (this->generateMipmaps){
             res->invokeGenerateMipmap();
         }
-        res->updateTextureSampler(filterSampling, wrapTextureCoordinates);
+        res->updateTextureSampler(filterSampling, wrapUV);
 		
         textureId = 0;
         return std::shared_ptr<Texture>(res);
@@ -478,13 +484,14 @@ namespace sre {
         return *this;
     }
 
+
     // returns true if texture sampling should be filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
 	bool Texture::isFilterSampling() {
 		return filterSampling;
 	}
 
 	bool Texture::isWrapTextureCoordinates() {
-		return wrapTextureCoordinates;
+		return wrapUV == Wrap::Repeat;
 	}
 
 	int Texture::getWidth() {
@@ -495,12 +502,13 @@ namespace sre {
 		return height;
 	}
 
-	void Texture::updateTextureSampler(bool filterSampling, bool wrapTextureCoordinates) {
+	void Texture::updateTextureSampler(bool filterSampling, Wrap wrapTextureCoordinates) {
         this->filterSampling = filterSampling;
-        this->wrapTextureCoordinates = wrapTextureCoordinates;
+        this->wrapUV = wrapTextureCoordinates;
 		glBindTexture(target, textureId);
-		glTexParameteri(target, GL_TEXTURE_WRAP_S, wrapTextureCoordinates ? GL_REPEAT : GL_CLAMP_TO_EDGE);
-		glTexParameteri(target, GL_TEXTURE_WRAP_T, wrapTextureCoordinates ? GL_REPEAT : GL_CLAMP_TO_EDGE);
+		auto wrapParam = wrapTextureCoordinates == Wrap::ClampToEdge?GL_CLAMP_TO_EDGE:(wrapTextureCoordinates == Wrap::Mirror ? GL_MIRRORED_REPEAT:GL_REPEAT);
+		glTexParameteri(target, GL_TEXTURE_WRAP_S, wrapParam);
+		glTexParameteri(target, GL_TEXTURE_WRAP_T, wrapParam);
 		GLuint minification;
 		GLuint magnification;
 		if (!filterSampling) {
@@ -582,6 +590,10 @@ namespace sre {
 
     bool Texture::isCubemap() {
         return target == GL_TEXTURE_CUBE_MAP;
+    }
+
+    sre::Texture::Wrap Texture::getWrapUV() {
+        return wrapUV;
     }
 
     std::shared_ptr<Texture> Texture::getDefaultCubemapTexture() {

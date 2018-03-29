@@ -45,6 +45,11 @@ public:
                 rotation.x += glm::radians((float)e.motion.xrel);
                 rotation.y += glm::radians((float)e.motion.yrel);
             }
+            if (e.type == SDL_MOUSEBUTTONUP){
+                if (e.button.button==SDL_BUTTON_RIGHT){
+                    showInspector = true;
+                }
+            }
         };
         // start render loop
         r.startEventLoop();
@@ -125,7 +130,9 @@ public:
             ImGui::End();
         }
         inspector.update();
-        inspector.gui();
+        if (showInspector){
+            inspector.gui();
+        }
     }
 private:
     SDLRenderer r;
@@ -137,6 +144,7 @@ private:
     std::shared_ptr<Material> material;
     Camera camera;
     WorldLights worldLights;
+    bool showInspector = false;
 };
 
 int main() {

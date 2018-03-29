@@ -11,16 +11,11 @@ out vec3 vNormal;
 #endif
 out vec3 vWsPos;
 #ifdef S_VERTEX_COLOR
-in vec4 color;
+in vec4 vertex_color;
 out vec4 vColor;
 #endif
 
-uniform mat4 g_model;
-
 #pragma include "global_uniforms_incl.glsl"
-
-uniform mat3 g_model_it;
-
 #pragma include "normalmap_incl.glsl"
 
 void main(void) {
@@ -35,6 +30,6 @@ void main(void) {
     vWsPos = wsPos.xyz;
 
 #ifdef S_VERTEX_COLOR
-    vColor = color;
+    vColor = vertex_color;
 #endif
 }

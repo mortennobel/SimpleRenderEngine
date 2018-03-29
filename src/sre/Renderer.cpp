@@ -110,8 +110,16 @@ namespace sre {
 #define GL_POINT_SPRITE 0x8861
 #endif // !GL_POINT_SPRITE
 
-		if (!renderInfo_.graphicsAPIVersionES && (renderInfo_.graphicsAPIVersionMajor == 3 && renderInfo_.graphicsAPIVersionMinor<=1)){
+		if (!renderInfo_.graphicsAPIVersionES && (renderInfo_.graphicsAPIVersionMajor == 3 && renderInfo_.graphicsAPIVersionMinor <= 1)){
 			glEnable(GL_POINT_SPRITE);
+		}
+		if (!renderInfo_.graphicsAPIVersionES && (
+		        (renderInfo_.graphicsAPIVersionMajor == 3 && renderInfo_.graphicsAPIVersionMinor>=2) ||
+                (renderInfo_.graphicsAPIVersionMajor > 3))){
+#ifndef GL_TEXTURE_CUBE_MAP_SEAMLESS
+#define GL_TEXTURE_CUBE_MAP_SEAMLESS 0x884F
+#endif
+            glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 		}
 
         initGlobalUniformBuffer();

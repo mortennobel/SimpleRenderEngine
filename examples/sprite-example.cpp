@@ -36,7 +36,11 @@ public:
 
         r.frameRender = [&](){
             render();
-
+        };
+        r.mouseEvent = [&](SDL_Event& event){
+            if (event.button.button==SDL_BUTTON_RIGHT){
+                showInspector = true;
+            }
         };
 
         r.startEventLoop();
@@ -121,16 +125,18 @@ public:
             renderPass.drawLines(lines);
         }
 
-        auto& renderStats = Renderer::instance->getRenderStats();
-
-        float bytesToMB = 1.0f/(1024*1024);
-        ImGui::Text("sre draw-calls %i meshes %i (%.2fMB) textures %i (%.2fMB) shaders %i", renderStats.drawCalls,renderStats.meshCount, renderStats.meshBytes*bytesToMB, renderStats.textureCount, renderStats.textureBytes*bytesToMB, renderStats.shaderCount);
+        static Inspector inspector;
+        inspector.update();
+        if (showInspector){
+            inspector.gui();
+        }
     }
 private:
     std::shared_ptr<SpriteAtlas> atlas;
     SDLRenderer r;
     Camera camera;
     std::shared_ptr<SpriteBatch> world;
+    bool showInspector = false;
 };
 
 int main() {

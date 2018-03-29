@@ -37,7 +37,11 @@ public:
         r.frameRender = [&](){
             render();
         };
-
+        r.mouseEvent = [&](SDL_Event& event){
+            if (event.button.button==SDL_BUTTON_RIGHT){
+                showInspector = true;
+            }
+        };
         r.startEventLoop();
     }
 
@@ -53,8 +57,6 @@ public:
 
         renderToTexturePass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), materialOffscreen);
 
-
-
         auto renderPass = RenderPass::create()                          // Create a renderpass which writes to the screen.
                 .withCamera(camera)
                 .withWorldLights(&worldLights)
@@ -64,9 +66,11 @@ public:
 
         renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), material);
                                                                         // The offscreen texture is used in material
-        // static Inspector prof;
-        // prof.update();
-        // prof.gui(true);
+        static Inspector prof;
+        prof.update();
+        if (showInspector){
+            prof.gui(true);
+        }
 
         i++;
     }
@@ -80,6 +84,7 @@ private:
     std::shared_ptr<Texture> texture;
     std::shared_ptr<Framebuffer> framebuffer;
     int i=0;
+    bool showInspector = false;
 };
 
 int main() {

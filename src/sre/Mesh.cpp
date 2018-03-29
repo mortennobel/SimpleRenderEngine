@@ -442,7 +442,7 @@ namespace sre {
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withColors(const std::vector<glm::vec4> &colors) {
-        withAttribute("color", colors);
+        withAttribute("vertex_color", colors);
         return *this;
     }
 

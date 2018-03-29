@@ -44,12 +44,10 @@ public:
 
         };
 
-        std::cout << "d for debug" << std::endl;
-        r.keyEvent = [&](SDL_Event& event){
-            if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_d){
-                debug = true;
+        r.mouseEvent = [&](SDL_Event& event){
+            if (event.button.button==SDL_BUTTON_RIGHT){
+                showInspector = true;
             }
-
         };
         r.startEventLoop();
     }
@@ -69,9 +67,10 @@ public:
 
         checkGLError();
         rp.draw(mesh, pos2, mat2);
-        if (debug){
-            static sre::Inspector inspector;
-            inspector.update();
+        
+        static sre::Inspector inspector;
+        inspector.update();
+        if (showInspector){
             inspector.gui();
         }
 
@@ -86,14 +85,13 @@ private:
     WorldLights worldLights;
     std::shared_ptr<Material> mat1;
     std::shared_ptr<Material> mat2;
-    bool debug = false;
+    bool showInspector = false;
     glm::mat4 pos1 = glm::translate(glm::mat4(1), {-1,0,0});
     glm::mat4 pos2 = glm::translate(glm::mat4(1), {1,0,0});
 };
 
 int main() {
     new Spheres();
-
     return 0;
 }
 

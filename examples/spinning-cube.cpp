@@ -11,6 +11,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
+#include <sre/Inspector.hpp>
 
 
 using namespace sre;
@@ -37,7 +38,11 @@ public:
         r.frameRender = [&](){
             render();
         };
-
+        r.mouseEvent = [&](SDL_Event& event){
+            if (event.button.button==SDL_BUTTON_RIGHT){
+                showInspector = true;
+            }
+        };
         r.startEventLoop();
     }
 
@@ -49,6 +54,11 @@ public:
                 .build();
         renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i*0.1f)), materialPhong);
         i++;
+        static Inspector inspector;
+        inspector.update();
+        if (showInspector){
+            inspector.gui();
+        }
     }
 private:
     SDLRenderer r;
@@ -57,6 +67,7 @@ private:
     std::shared_ptr<Mesh> mesh;
     std::shared_ptr<Material> materialPhong;
     int i=0;
+    bool showInspector = false;
 };
 
 int main() {

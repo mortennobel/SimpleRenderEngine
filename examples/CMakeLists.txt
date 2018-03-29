@@ -1,4 +1,4 @@
-SET(scr_files spinning-cube spinning-primitives-tex spinning-primitives-openvr hello-engine gui spheres benchmark64k picking render-to-texture obj-viewer hello-engine-raw sprite-example custom-mesh-layout)
+SET(scr_files skybox-example matcap spinning-cube spinning-primitives-tex spinning-primitives-openvr hello-engine gui spheres benchmark64k picking render-to-texture obj-viewer hello-engine-raw sprite-example custom-mesh-layout)
 
 # Create custom build targets
 FOREACH(scr_file ${scr_files})

@@ -26,23 +26,20 @@ public:
 
         camera.lookAt(eye,at, up);
         camera.setPerspectiveProjection(60,0.1f,100);
-        const char* vertexShaderStr = R"(#version 140
+        const char* vertexShaderStr = R"(#version 330
 in vec3 position;
 in vec3 normal;
 in vec2 uv;
 out vec3 vNormal;
 
-uniform mat4 g_model;
-uniform mat4 g_view;
-uniform mat4 g_projection;
-uniform mat3 g_model_view_it;
+#pragma include "global_uniforms_incl.glsl"
 
 void main(void) {
     gl_Position = g_projection * g_view * g_model * vec4(position,1.0);
     vNormal = normal;
 }
 )";
-        const char* fragmentShaderStr = R"(#version 140
+        const char* fragmentShaderStr = R"(#version 330
 out vec4 fragColor;
 in vec3 vNormal;
 

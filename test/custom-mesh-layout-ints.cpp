@@ -32,28 +32,26 @@ public:
 
         mesh = Mesh::create()
                 .withAttribute("posxyzw",positions)
-                .withAttribute("color",colors)
+                .withAttribute("vertex_color",colors)
                 .build();
 
-        std::string vertexShaderSource =  R"(#version 140
+        std::string vertexShaderSource =  R"(#version 330
 #if defined(GL_ES) && __VERSION__ == 100
 in vec4 posxyzw;
 #else
 in ivec4 posxyzw;
 #endif
-in vec4 color;
+in vec4 vertex_color;
 out vec4 vColor;
 
-uniform mat4 g_model;
-uniform mat4 g_view;
-uniform mat4 g_projection;
+#pragma include "global_uniforms_incl.glsl"
 
 void main(void) {
     gl_Position = g_projection * g_view * g_model * vec4(posxyzw);
-    vColor = color;
+    vColor = vertex_color;
 }
 )";
-        std::string fragmentShaderSource = R"(#version 140
+        std::string fragmentShaderSource = R"(#version 330
 out vec4 fragColor;
 in vec4 vColor;
 

@@ -82,6 +82,15 @@ namespace sre {
         }
     }
 
+    glm::mat4 Camera::getInfiniteProjectionTransform(glm::uvec2 viewportSize) {
+        switch (projectionType){
+            case ProjectionType::Perspective:
+                return glm::tweakedInfinitePerspective(projectionValue.perspective.fieldOfViewY,float(viewportSize.x)/float(viewportSize.y),projectionValue.perspective.nearPlane);
+            default:
+                return getProjectionTransform(viewportSize);
+        }
+    }
+
     void Camera::setViewTransform(const glm::mat4 &viewTransform) {
         Camera::viewTransform = viewTransform;
     }
