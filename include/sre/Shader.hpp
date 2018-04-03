@@ -61,6 +61,38 @@ namespace sre {
         int arraySize;                  // 1 means not array
     };
 
+    enum class StencilFunc {
+        Never = GL_NEVER,               // Never pass.
+        Less = GL_LESS,                 // Pass if (ref & mask) <  (stencil & mask).
+        Equal = GL_EQUAL,               // Pass if (ref & mask) =  (stencil & mask).
+        LEqual = GL_LEQUAL,             // Pass if (ref & mask) <= (stencil & mask).
+        Greater = GL_GREATER,           // Pass if (ref & mask) >  (stencil & mask).
+        NotEqual = GL_NOTEQUAL,         // Pass if (ref & mask) != (stencil & mask).
+        GEequal = GL_GEQUAL,            // Pass if (ref & mask) >= (stencil & mask).
+        Always = GL_ALWAYS,             // Always pass.
+        Disabled                        // Stencil test disabled
+    };
+
+    enum class StencilOp {
+        Keep = GL_KEEP,                 // Keeps the current value.
+        Zero = GL_ZERO,                 // Sets the stencil buffer value to 0.
+        Replace = GL_REPLACE,           // Sets the stencil buffer value to the reference value as specified by WebGLRenderingContext.stencilFunc().
+        Incr = GL_INCR,                 // Increments the current stencil buffer value. Clamps to the maximum representable unsigned value.
+        IncrWrap = GL_INCR_WRAP,        // Increments the current stencil buffer value. Wraps stencil buffer value to zero when incrementing the maximum representable unsigned value.
+        Decr = GL_DECR,                 // Decrements the current stencil buffer value. Clamps to 0.
+        DecrWrap = GL_DECR_WRAP,        // Decrements the current stencil buffer value. Wraps stencil buffer value to the maximum representable unsigned value when decrementing a stencil buffer value of 0.
+        Invert = GL_INVERT,             // Inverts the current stencil buffer value bitwise.
+    };
+
+    struct Stencil {
+        StencilFunc func = StencilFunc::Disabled; // Specifying the test function
+        uint16_t ref;                             // Specifying the reference value for the stencil test. This value is clamped to the range 0 to 2n -1 where n is the number of bitplanes in the stencil buffer.
+        uint16_t mask;                            // Specifying a bit-wise mask that is used to AND the reference value and the stored stencil value when the test is done.
+        StencilOp fail = StencilOp::Keep;         // Specifying the function to use when the stencil test fails.
+        StencilOp zfail = StencilOp::Keep;        // Specifying the function to use when the stencil test passes, but the depth test fails
+        StencilOp zpass = StencilOp::Keep;        // Specifying the function to use when both the stencil test and the depth test pass, or when the stencil test passes and there is no depth buffer or depth testing is disabled
+    };
+
     /**
      * Controls the appearance of the rendered objects.
      *
@@ -131,6 +163,7 @@ namespace sre {
             ShaderBuilder& withDepthTest(bool enable);
             ShaderBuilder& withDepthWrite(bool enable);
             ShaderBuilder& withBlend(BlendType blendType);
+            ShaderBuilder& withStencil(Stencil stencil);
             ShaderBuilder& withName(const std::string& name);
             std::shared_ptr<Shader> build(std::vector<std::string>& errors);
             std::shared_ptr<Shader> build();
@@ -146,6 +179,7 @@ namespace sre {
             std::string name;
             Shader *updateShader = nullptr;
             BlendType blend = BlendType::Disabled;
+            Stencil stencil = {};
             friend class Shader;
         };
 
@@ -277,6 +311,7 @@ namespace sre {
         std::string name;
         BlendType blend = BlendType::Disabled;
         glm::vec2 offset = glm::vec2(0,0);
+        Stencil stencil;
 
         std::map<ShaderType, Resource> shaderSources;
 
