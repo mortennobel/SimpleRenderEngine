@@ -50,10 +50,7 @@ public:
                 .withStencil(Stencil{
                         .func = StencilFunc ::Equal,
                         .ref = 1,
-                        .mask = 1,
-                        .fail = StencilOp::Keep,
-                        .zfail = StencilOp::Keep,
-                        .zpass = StencilOp::Keep,
+                        .mask = 1
                 })
                 .withName("StencilWrite").build()->createMaterial();
         matStencilTest->setColor({0.3,0.3,0.3});
@@ -127,6 +124,7 @@ public:
         ImGui::Checkbox("Draw plane",&drawPlane);
         ImGui::Checkbox("Draw shadow",&drawShadow);
         ImGui::Checkbox("Use stencil",&useStencil);
+        ImGui::DragFloat3("Light pos",&worldLights.getLight(0)->position.x,.1f);
         ImGui::End();
 
         static Inspector inspector;
