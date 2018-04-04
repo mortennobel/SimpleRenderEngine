@@ -609,10 +609,12 @@ namespace sre {
         }
         if (stencil.func == StencilFunc::Disabled){
             glDisable(GL_STENCIL_TEST);
+            glStencilMask(0);
         } else {
             glEnable(GL_STENCIL_TEST);
             glStencilFunc(static_cast<GLenum>(stencil.func), (GLint)stencil.ref, (GLint)stencil.mask);
             glStencilOp(static_cast<GLenum>(stencil.fail),static_cast<GLenum>(stencil.zfail),static_cast<GLenum>(stencil.zpass));
+            glStencilMask(0xFFFF);
         }
         GLboolean dm = (GLboolean) (depthWrite ? GL_TRUE : GL_FALSE);
         glDepthMask(dm);
