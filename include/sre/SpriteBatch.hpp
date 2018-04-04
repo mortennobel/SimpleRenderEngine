@@ -49,9 +49,8 @@ private:
 
     template<class InputIt>
     SpriteBatch::SpriteBatchBuilder &SpriteBatch::SpriteBatchBuilder::addSprites(InputIt first, InputIt last) {
-        auto start = sprites.end();
         int size = sprites.size();
-        start = sprites.insert(sprites.end(), first, last);
+        auto start = sprites.insert(sprites.end(), first, last);
         while (start != sprites.end()){
             (*start).order.details.drawOrder = static_cast<uint16_t>(size);
             size ++;

@@ -85,7 +85,7 @@ public:
         auto renderPass = RenderPass::create()
                 .withCamera(camera)
                 .withWorldLights(&worldLights)
-                .withClearColor(true, {0.2,0.2,0.2,1})
+                .withClearColor(true, {0.2f,0.2f,0.2f,1})
                 .build();
 
         if (!multipleModels){

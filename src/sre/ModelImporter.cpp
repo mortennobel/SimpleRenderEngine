@@ -47,18 +47,18 @@ namespace {
         rtrim(s);
     }
 
-    const char kPathSeparator =
+    std::string kPathSeparator =
 #ifdef _WIN32
-            '\\';
+            "\\";
 #else
-            '/';
+            "/";
 #endif
 
-    const char kNonPathSeparator =
+	std::string kNonPathSeparator =
 #ifndef _WIN32
-            '\\';
+            "\\";
 #else
-            '/';
+            "/";
 #endif
 
     // from http://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring
@@ -94,8 +94,8 @@ namespace {
 
     std::string fixPathEnd(std::string &path){
         char lastChar = path[path.length()-1];
-        if (lastChar != kPathSeparator){
-            return path + std::to_string(kPathSeparator);
+        if (lastChar != kPathSeparator[0]){
+            return path + kPathSeparator;
         }
         return path;
     }
@@ -114,9 +114,8 @@ namespace {
 
 
     std::string fixPath(std::string path){
-        auto p = std::string(1,kPathSeparator);
-        replaceAll( path, std::string(1,kNonPathSeparator), p);
-        replaceAll( path, p+"."+p, p);
+        replaceAll( path, kNonPathSeparator, kPathSeparator);
+        replaceAll( path, kPathSeparator +"."+ kPathSeparator, kPathSeparator);
         replaceAll( path, "\r", "");
         return path;
     }

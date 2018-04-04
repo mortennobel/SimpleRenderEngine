@@ -96,8 +96,8 @@ void main(void)
             (*mats4)[i] = glm::translate(offset[i]) * glm::rotate(rotate[i],glm::vec3(0,0,1));
         }
         // update uniforms
-        bool setIndex = mat1->set("customTransformIndex",(float)id);
-        bool setMatrix = mat1->set("customTransform4",mats4);
+        mat1->set("customTransformIndex",(float)id);
+        mat1->set("customTransform4",mats4);
 
         rp.draw(mesh, glm::mat4(1), mat1);
 
@@ -107,7 +107,6 @@ void main(void)
 
     }
 private:
-    float time;
     SDLRenderer r;
     Camera camera;
     std::shared_ptr<Mesh> mesh;

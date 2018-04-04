@@ -295,15 +295,18 @@ namespace sre {
         if (builder.clearColor) {
             glClearColor(builder.clearColorValue.r, builder.clearColorValue.g, builder.clearColorValue.b, builder.clearColorValue.a);
             clear |= GL_COLOR_BUFFER_BIT;
+            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
         }
         if (builder.clearDepth) {
             glClearDepthf(builder.clearDepthValue);
             glDepthMask(GL_TRUE);
             clear |= GL_DEPTH_BUFFER_BIT;
+            glDepthMask(GL_TRUE);
         }
         if (builder.clearStencil) {
             glClearStencil(builder.clearStencilValue);
             clear |= GL_STENCIL_BUFFER_BIT;
+            glStencilMask(0xFFFF);
         }
         if (clear != 0u) {
             glClear(clear);

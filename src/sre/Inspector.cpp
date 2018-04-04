@@ -29,6 +29,30 @@ using Milliseconds = std::chrono::duration<float, std::chrono::milliseconds::per
 
 namespace sre {
     namespace {
+
+        char* to_string(StencilOp op){
+            switch (op){
+                case StencilOp::Keep:
+                    return "Keep";
+                case StencilOp::Zero:
+                    return "Zero";
+                case StencilOp::Replace:
+                    return "Replace";
+                case StencilOp::Incr:
+                    return "Incr";
+                case StencilOp::IncrWrap:
+                    return "IncrWrap";
+                case StencilOp::Decr:
+                    return "Decr";
+                case StencilOp::DecrWrap:
+                    return "DecrWrap";
+                case StencilOp::Invert:
+                    return "Invert";
+            }
+            return "Err";
+        };
+
+
         std::string appendSize(std::string s, int size) {
             if (size>1){
                 s += "["+std::to_string(size)+"]";
@@ -246,6 +270,7 @@ namespace sre {
                      .withWorldLights(&worldLights)
                      .withFramebuffer(framebuffer)
                      .withClearColor(true, {0, 0, 0, 1})
+                     .withClearStencil(true, 0)
                      .withGUI(false)
                      .withName("Inspector - Mesh")
                      .build();
@@ -268,7 +293,7 @@ namespace sre {
                     mats.push_back(mat);
                 }
                 renderToTexturePass.draw(sharedPtrMesh, glm::eulerAngleY(time*rotationSpeed)*glm::scale(glm::vec3{2.0f/maxS,2.0f/maxS,2.0f/maxS})*glm::translate(offset), mats);
-
+                renderToTexturePass.finish();
                 ImGui::Image(reinterpret_cast<ImTextureID>(offscreenTexture->textureId), ImVec2(previewSize, previewSize),{0,1},{1,0},{1,1,1,1},{0,0,0,1});
             } else {
                 ImGui::LabelText("", "No preview - missing position attribute");
@@ -330,6 +355,55 @@ namespace sre {
             ImGui::LabelText("Blending","%s",s.c_str());
             ImGui::LabelText("Depth test","%s",shader->isDepthTest()?"true":"false");
             ImGui::LabelText("Depth write","%s",shader->isDepthWrite()?"true":"false");
+            ImGui::LabelText("Color write","%s,%s,%s,%s",
+                             shader->getColorWrite().r?"true":"false",
+                             shader->getColorWrite().g?"true":"false",
+                             shader->getColorWrite().b?"true":"false",
+                             shader->getColorWrite().a?"true":"false");
+            auto stencil = shader->getStencil();
+            if (stencil.func == StencilFunc::Disabled){
+                ImGui::LabelText("Stencil","Disabled");
+            } else {
+                if (ImGui::TreeNode("Stencil")){
+                    std::string func = "unknown";
+                    switch (stencil.func){
+                        case StencilFunc::Equal:
+                            func = "Equal";
+                            break;
+                        case StencilFunc::Always:
+                            func = "Always";
+                            break;
+                        case StencilFunc::GEequal:
+                            func = "GEequal";
+                            break;
+                        case StencilFunc::Greater:
+                            func = "Greater";
+                            break;
+                        case StencilFunc::LEqual:
+                            func = "LEqual";
+                            break;
+                        case StencilFunc::Less:
+                            func = "Less";
+                            break;
+                        case StencilFunc::Never:
+                            func = "Never";
+                            break;
+                        case StencilFunc::NotEqual:
+                            func = "NotEqual";
+                            break;
+                    }
+                    ImGui::LabelText("Function",func.c_str());
+                    ImGui::LabelText("Ref","%i",stencil.ref);
+                    ImGui::LabelText("Mask","%i",stencil.mask);
+
+                    ImGui::LabelText("Fail Operation",to_string(stencil.fail));
+                    ImGui::LabelText("ZFail Operation",to_string(stencil.zfail));
+                    ImGui::LabelText("ZPass Operation",to_string(stencil.zpass));
+
+
+                    ImGui::TreePop();
+                }
+            }
             ImGui::LabelText("Offset","factor: %.1f units: %.1f",shader->getOffset().x,shader->getOffset().y);
 
             initFramebuffer();
@@ -348,12 +422,14 @@ namespace sre {
                     .withWorldLights(&worldLights)
                     .withFramebuffer(framebuffer)
                     .withClearColor(true, {0, 0, 0, 1})
+                    .withClearStencil(true, 0)
                     .withGUI(false)
                     .withName("Inspector - Shader")
                     .build();
             float rotationSpeed = 0.001f;
 
             renderToTexturePass.draw(mesh, glm::eulerAngleY(time*rotationSpeed), mat);
+            renderToTexturePass.finish();
 
             ImGui::Image(reinterpret_cast<ImTextureID>(offscreenTexture->textureId), ImVec2(previewSize, previewSize),{0,1},{1,0},{1,1,1,1},{0,0,0,1});
             ImGui::TreePop();
@@ -936,7 +1012,9 @@ namespace sre {
 
     void Inspector::initFramebuffer() {
         if (framebuffer == nullptr){
-            framebuffer = Framebuffer::create().withColorTexture(getTmpTexture()).withName("SRE Inspector Framebufferobject").build();
+            framebuffer = Framebuffer::create().withColorTexture(getTmpTexture())
+                    .withName("SRE Inspector Framebufferobject")
+                    .build();
             usedTextures = 0; // reset usedTextures count to avoid an extra texture to be created
             worldLights.setAmbientLight({0.2,0.2,0.2});
             auto light = Light::create().withPointLight({0,0,4}).build();

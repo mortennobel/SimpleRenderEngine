@@ -210,6 +210,17 @@ namespace sre {
         return *this;
     }
 
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withColorWrite(glm::bvec4 enable) {
+        this->colorWrite = enable;
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withStencil(Stencil stencil) {
+        this->stencil = std::move(stencil);
+        return *this;
+    }
+
     Shader::ShaderBuilder &Shader::ShaderBuilder::withBlend(BlendType blendType) {
         this->blend = blendType;
         return *this;
@@ -245,6 +256,8 @@ namespace sre {
         shader->offset = this->offset;
         shader->shaderSources = this->shaderSources;
         shader->shaderUniqueId = globalShaderCounter++;
+        shader->stencil = stencil;
+        shader->colorWrite = colorWrite;
         return std::shared_ptr<Shader>(shader);
     }
 
@@ -601,8 +614,18 @@ namespace sre {
         } else {
             glDisable(GL_DEPTH_TEST);
         }
+        if (stencil.func == StencilFunc::Disabled){
+            glDisable(GL_STENCIL_TEST);
+            glStencilMask(0);
+        } else {
+            glEnable(GL_STENCIL_TEST);
+            glStencilFunc(static_cast<GLenum>(stencil.func), (GLint)stencil.ref, (GLint)stencil.mask);
+            glStencilOp(static_cast<GLenum>(stencil.fail),static_cast<GLenum>(stencil.zfail),static_cast<GLenum>(stencil.zpass));
+            glStencilMask(0xFFFF);
+        }
         GLboolean dm = (GLboolean) (depthWrite ? GL_TRUE : GL_FALSE);
         glDepthMask(dm);
+        glColorMask(colorWrite.r, colorWrite.g, colorWrite.b, colorWrite.a);
         switch (blend) {
             case BlendType::Disabled:
                 glDisable(GL_BLEND);
@@ -726,9 +749,9 @@ namespace sre {
     }
 
     Uniform Shader::getUniform(const std::string &name) {
-		for (auto i = uniforms.cbegin(); i != uniforms.cend(); i++) {
-			if (i->name.compare(name) == 0)
-				return *i;
+		for (auto& uniform : uniforms) {
+			if (uniform.name == name)
+				return uniform;
 		}
 		Uniform u;
 		u.type = UniformType::Invalid;
@@ -1069,6 +1092,14 @@ namespace sre {
         return source.substr(0, insertPos+1) +
                ss.str()+
                source.substr(insertPos+1);
+    }
+
+    Stencil Shader::getStencil() {
+        return stencil;
+    }
+
+    glm::bvec4 Shader::getColorWrite() {
+        return colorWrite;
     }
 
     uint32_t to_id(ShaderType st) {

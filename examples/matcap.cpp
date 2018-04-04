@@ -104,7 +104,6 @@ void main(void)
         }
     }
 private:
-    float time;
     SDLRenderer r;
     Camera camera;
     std::shared_ptr<Mesh> mesh;
