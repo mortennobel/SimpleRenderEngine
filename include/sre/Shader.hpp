@@ -162,6 +162,7 @@ namespace sre {
             ShaderBuilder& withOffset(float factor,float units);  // set the scale and units used to calculate depth values (note for WebGL1.0/OpenGL ES 2.0 only affects polygon fill)
             ShaderBuilder& withDepthTest(bool enable);
             ShaderBuilder& withDepthWrite(bool enable);
+            ShaderBuilder& withColorWrite(glm::bvec4 enable);
             ShaderBuilder& withBlend(BlendType blendType);
             ShaderBuilder& withStencil(Stencil stencil);
             ShaderBuilder& withName(const std::string& name);
@@ -175,6 +176,7 @@ namespace sre {
             std::map<std::string,std::string> specializationConstants;
             bool depthTest = true;
             bool depthWrite = true;
+            glm::bvec4 colorWrite = glm::bvec4(true, true, true, true);
             glm::vec2 offset = {0,0};
             std::string name;
             Shader *updateShader = nullptr;
@@ -268,9 +270,13 @@ namespace sre {
 
         bool isDepthWrite();
 
+        glm::bvec4 getColorWrite();
+
         BlendType getBlend();
 
         glm::vec2 getOffset();
+
+        Stencil getStencil();
 
         const std::string& getName();
 
@@ -308,6 +314,7 @@ namespace sre {
         bool depthTest = true;
         bool depthWrite = true;
         long shaderUniqueId = 0;
+        glm::bvec4 colorWrite = glm::bvec4(true, true, true, true);
         std::string name;
         BlendType blend = BlendType::Disabled;
         glm::vec2 offset = glm::vec2(0,0);

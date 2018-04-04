@@ -34,6 +34,7 @@ public:
                 .withSourceFile("unlit_vert.glsl", ShaderType::Vertex)
                 .withSourceFile("unlit_frag.glsl", ShaderType::Fragment)
                 .withDepthWrite(false)
+                .withColorWrite({false,false,false,false})
                 .withStencil(Stencil{
                     .func = StencilFunc ::Always,
                     .ref = 1,
@@ -52,7 +53,7 @@ public:
                         .ref = 1,
                         .mask = 1
                 })
-                .withName("StencilWrite").build()->createMaterial();
+                .withName("StencilClippedShadow").build()->createMaterial();
         matStencilTest->setColor({0.3,0.3,0.3});
 
         mat1 = Shader::getStandardPhong()->createMaterial();

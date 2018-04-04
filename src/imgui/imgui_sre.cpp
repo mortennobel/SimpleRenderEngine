@@ -100,6 +100,9 @@ void ImGui_ImplSdlGL3_RenderDrawLists(ImDrawData* draw_data)
     glDisable(GL_CULL_FACE);
     glDisable(GL_DEPTH_TEST);
     glEnable(GL_SCISSOR_TEST);
+    glDisable(GL_STENCIL_TEST);
+    glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+    glStencilMask(0);
 #ifndef GL_ES_VERSION_2_0
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 #endif
