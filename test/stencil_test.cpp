@@ -21,7 +21,7 @@ public:
 
         std::vector<std::shared_ptr<Material>> materials_unused;
 
-        mesh = sre::ModelImporter::importObj("examples_data", "suzanne.obj", materials_unused);
+        mesh = sre::ModelImporter::importObj("test_data", "suzanne.obj", materials_unused);
         plane = Mesh::create().withQuad(1).build();
 
         camera.setPerspectiveProjection(45,0.1,10);
@@ -119,7 +119,7 @@ public:
         }
 
         ImGui::SetNextWindowPos(ImVec2(0,0));
-        ImGui::SetNextWindowContentSize(ImVec2(300,100));
+        ImGui::SetNextWindowContentSize(ImVec2(300,120));
         ImGui::Begin("Shadow");
         ImGui::DragFloat("Ground height ",&shadowPlane,0.1f);
         ImGui::Checkbox("Draw plane",&drawPlane);
