@@ -25,23 +25,23 @@ public:
         plane = Mesh::create().withQuad(1).build();
 
         camera.setPerspectiveProjection(45,0.1,10);
-        camera.lookAt({0,0,3.5},{0,0,0},{0,1,0});
+        camera.lookAt({0,0,3.5f},{0,0,0},{0,1,0});
 
-        worldLights.setAmbientLight(glm::vec3{0.05});
+        worldLights.setAmbientLight(glm::vec3{0.05f});
         worldLights.addLight(Light::create().withPointLight({0.5,2,0.5}).build());
 
-        matStencilWrite = Shader::create()
+		matStencilWrite = Shader::create()
                 .withSourceFile("unlit_vert.glsl", ShaderType::Vertex)
                 .withSourceFile("unlit_frag.glsl", ShaderType::Fragment)
                 .withDepthWrite(false)
                 .withColorWrite({false,false,false,false})
                 .withStencil(Stencil{
-                    .func = StencilFunc ::Always,
-                    .ref = 1,
-                    .mask = 1,
-                    .fail = StencilOp::Replace,
-                    .zfail = StencilOp::Replace,
-                    .zpass = StencilOp::Replace,
+                    StencilFunc ::Always,
+                    1,
+                    1,
+                    StencilOp::Replace,
+                    StencilOp::Replace,
+                    StencilOp::Replace,
                 })
                 .withName("StencilWrite").build()->createMaterial();
 
@@ -49,16 +49,16 @@ public:
                 .withSourceFile("unlit_vert.glsl", ShaderType::Vertex)
                 .withSourceFile("unlit_frag.glsl", ShaderType::Fragment)
                 .withStencil(Stencil{
-                        .func = StencilFunc ::Equal,
-                        .ref = 1,
-                        .mask = 1
+                        StencilFunc ::Equal,
+                        1,
+                        1
                 })
                 .withName("StencilClippedShadow").build()->createMaterial();
-        matStencilTest->setColor({0.3,0.3,0.3});
+        matStencilTest->setColor({0.3f,0.3f,0.3f});
 
         mat1 = Shader::getStandardPhong()->createMaterial();
         shadow = Shader::getUnlit()->createMaterial();
-        shadow->setColor({0.3,0.3,0.3});
+        shadow->setColor({0.3f,0.3f,0.3f});
 
         std::string info;
         if (!mat1->getShader()->validateMesh(mesh.get(), info)){
