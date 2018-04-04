@@ -21,7 +21,7 @@ public:
 
         std::vector<std::shared_ptr<Material>> materials_unused;
 
-        mesh = sre::ModelImporter::importObj("examples_data/", "suzanne.obj", materials_unused);
+        mesh = sre::ModelImporter::importObj("examples_data", "suzanne.obj", materials_unused);
         plane = Mesh::create().withQuad(1).build();
 
         camera.setPerspectiveProjection(45,0.1,10);
