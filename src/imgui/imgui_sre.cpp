@@ -227,7 +227,6 @@ bool ImGui_SRE_ProcessEvent(SDL_Event *event)
             io.KeyAlt = ((SDL_GetModState() & KMOD_ALT) != 0);
             io.KeySuper = ((SDL_GetModState() & KMOD_GUI) != 0);
             return true;
-            return true;
         }
     }
     return false;

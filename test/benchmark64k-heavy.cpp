@@ -28,8 +28,7 @@ public:
     Benchmark64KExample() {
         r.init();
 
-        camera = new Camera();
-        camera->setPerspectiveProjection(60,0.1,100);
+        camera.setPerspectiveProjection(60,0.1,100);
 
         worldLights.addLight(Light::create().withDirectionalLight(glm::vec3(1,1,1)).withColor(Color(1,1,1),1).build());
         renderTime.resize(BOX_GRID_DIM+1,0);
@@ -91,9 +90,9 @@ public:
         eyePosition[0] = (float) (sin(eyeRotation) * eyeRadius);
         eyePosition[2] = (float) (cos(eyeRotation) * eyeRadius);
         if (cameraInCenter){
-            camera->lookAt( {0, 0, 0}, glm::normalize(eyePosition),{0, 1, 0});
+            camera.lookAt( {0, 0, 0}, glm::normalize(eyePosition),{0, 1, 0});
         } else {
-            camera->lookAt(eyePosition, {0, 0, 0}, {0, 1, 0});
+            camera.lookAt(eyePosition, {0, 0, 0}, {0, 1, 0});
         }
         totalTime += delta;
         for (int i = 0; i < gridSize; ++i) {
@@ -126,7 +125,7 @@ public:
 
         }
         auto renderPass = RenderPass::create()
-                .withCamera(*camera)
+                .withCamera(camera)
                 .withWorldLights(&worldLights)
                 .withClearColor(true, {0, 0, 0, 1})
                 .build();
@@ -191,7 +190,7 @@ private:
     glm::vec3 eyePosition = {0, eyeRadius, 0};
     bool cameraInCenter = false;
     SDLRenderer r;
-    Camera *camera;
+    Camera camera;
     WorldLights worldLights;
     std::vector<std::shared_ptr<Mesh>> meshes;
     std::vector<std::shared_ptr<Material>> materials;
