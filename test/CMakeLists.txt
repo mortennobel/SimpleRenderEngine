@@ -1,5 +1,5 @@
 # List of single-file tests
-SET(scr_files stencil_test benchmark64k-heavy matrix-uniforms custom-mesh-layout-ints multiple-materials render-depth spinning-sphere-cubemap particle-test polygon-offset-example multiple-lights particle-sprite sprite-test multi-cameras static_vertex_attribute custom-mesh-layout-default-values imgui_demo texture-test screen-point-to-ray pbr-test gamma primitives-test imgui-color-test)
+SET(scr_files bumpmap stencil_test benchmark64k-heavy matrix-uniforms custom-mesh-layout-ints multiple-materials render-depth spinning-sphere-cubemap particle-test polygon-offset-example multiple-lights particle-sprite sprite-test multi-cameras static_vertex_attribute custom-mesh-layout-default-values imgui_demo texture-test screen-point-to-ray pbr-test gamma primitives-test imgui-color-test)
 
 # Create custom build targets
 FOREACH(scr_file ${scr_files})
