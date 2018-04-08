@@ -330,6 +330,7 @@ namespace sre {
 
         if (builder.gui) {
             ImGui::Render();
+            ImGui_SRE_RenderDrawData(ImGui::GetDrawData());
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         if (builder.framebuffer != nullptr){
@@ -343,7 +344,7 @@ namespace sre {
         }
         mIsFinished = true;
 #ifndef NDEBUG
-        checkGLError();
+        checkGLError("RenderPass");
 #endif
         if (frameInspector.frameid == Renderer::instance->getRenderStats().frame){
             // make a copy of this renderpass as a shared_ptr

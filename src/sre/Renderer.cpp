@@ -125,6 +125,7 @@ namespace sre {
         initGlobalUniformBuffer();
 
         // initialize ImGUI
+        imGuiContext = ImGui::CreateContext();
         ImGui_SRE_Init(window);
 
         // reset render stats
@@ -133,6 +134,8 @@ namespace sre {
 
     Renderer::~Renderer() {
 		delete vr;
+        ImGui_SRE_Shutdown();
+        ImGui::DestroyContext(imGuiContext);
         glDeleteBuffers(1,&globalUniformBuffer);
         SDL_GL_DeleteContext(glcontext);
         instance = nullptr;
