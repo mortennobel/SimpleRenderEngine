@@ -86,6 +86,17 @@ public:
         r.startEventLoop(vr);
     }
 
+	~SpinningPrimitivesOpenVRExample()
+    {
+		vr.reset();
+		material.reset();
+		for (int i=0;i<4;i++)
+		{
+			mesh[i].reset();
+		}
+		skybox.reset();
+    }
+
     void render(){
         auto renderPass = RenderPass::create()
                 .withCamera(camera)
@@ -105,6 +116,7 @@ public:
 			vr->lookAt(eye, at, up);
 		}
 		vr->debugGUI();
+
         i++;
     }
 
@@ -129,8 +141,9 @@ private:
 	glm::vec3 eye = { 0,0,6 };
 	glm::vec3 at  = { 0,0,0 };
 	glm::vec3 up  = { 0,1,0 };
+	SDLRenderer r;
 	std::shared_ptr<sre::VR> vr;
-    SDLRenderer r;
+    
     Camera camera;
     std::shared_ptr<Material> material;
     std::shared_ptr<Mesh> mesh[4];
@@ -141,7 +154,7 @@ private:
 };
 
 int main() {
-    new SpinningPrimitivesOpenVRExample();
+    SpinningPrimitivesOpenVRExample();
 
     return 0;
 }

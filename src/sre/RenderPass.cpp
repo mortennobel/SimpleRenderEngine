@@ -349,7 +349,7 @@ namespace sre {
         if (frameInspector.frameid == Renderer::instance->getRenderStats().frame){
             // make a copy of this renderpass as a shared_ptr
             frameInspector.renderPasses.push_back(std::shared_ptr<RenderPass>(new RenderPass(*this)));
-        }
+        } 
     }
 
     std::vector<Color> RenderPass::readPixels(unsigned int x, unsigned int y, unsigned int width, unsigned int height) {

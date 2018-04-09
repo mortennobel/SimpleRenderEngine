@@ -133,7 +133,6 @@ namespace sre {
     }
 
     Renderer::~Renderer() {
-		delete vr;
         ImGui_SRE_Shutdown();
         ImGui::DestroyContext(imGuiContext);
         glDeleteBuffers(1,&globalUniformBuffer);

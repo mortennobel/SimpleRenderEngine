@@ -111,7 +111,6 @@ namespace sre {
         GLuint globalUniformBuffer = 0;
         GLuint globalUniformBufferSize = 0;
 
-        VR* vr = nullptr;
         ImGuiContext* imGuiContext = nullptr;
 
         friend class Mesh;

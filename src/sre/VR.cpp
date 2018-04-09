@@ -210,10 +210,10 @@ namespace sre
 			res->vrSystem->GetRecommendedRenderTargetSize(&res->targetSizeW, &res->targetSizeH);
 			res->leftTex = Texture::create().withRGBData(nullptr, res->targetSizeW, res->targetSizeH).withGenerateMipmaps( false).withFilterSampling(false).build();
 
-			res->leftFB = Framebuffer::create().withTexture(res->leftTex).build();
+			res->leftFB = Framebuffer::create().withTexture(res->leftTex).withName("VR_LEFT_FB").build();
 			res->rightTex = Texture::create().withRGBData(nullptr, res->targetSizeW, res->targetSizeH).withGenerateMipmaps(false).withFilterSampling(false).build();
 
-			res->rightFB = Framebuffer::create().withTexture(res->rightTex).build();
+			res->rightFB = Framebuffer::create().withTexture(res->rightTex).withName("VR_RIGHT_FB").build();
 
 			res->setupCameras();
 			res->mat4eyePosLeft = res->getHMDMatrixPoseEye(vr::Eye_Left);
