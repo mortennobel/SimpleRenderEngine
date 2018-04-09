@@ -56,11 +56,13 @@ namespace sre{
 
     Framebuffer::~Framebuffer() {
         auto r = Renderer::instance;
-        r->framebufferObjects.erase(std::remove(r->framebufferObjects.begin(), r->framebufferObjects.end(), this));
-        if (renderBufferDepth != 0){
-            glDeleteRenderbuffers(1, &renderBufferDepth);
+        if (r){
+            r->framebufferObjects.erase(std::remove(r->framebufferObjects.begin(), r->framebufferObjects.end(), this));
+            if (renderBufferDepth != 0){
+                glDeleteRenderbuffers(1, &renderBufferDepth);
+            }
+            glDeleteFramebuffers(1,&frameBufferObjectId);
         }
-        glDeleteFramebuffers(1,&frameBufferObjectId);
     }
 
     Framebuffer::FrameBufferBuilder Framebuffer::create() {
