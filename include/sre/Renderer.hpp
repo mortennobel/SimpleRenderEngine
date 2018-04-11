@@ -125,5 +125,6 @@ namespace sre {
         friend class SpriteAtlas;
 		friend class VR;
         friend class RenderPass::RenderPassBuilder;
+        friend void ImGui_SRE_NewFrame(SDL_Window *window);
     };
 }

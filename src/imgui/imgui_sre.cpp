@@ -492,6 +492,10 @@ void ImGui_SRE_Shutdown()
 
 void ImGui_SRE_NewFrame(SDL_Window *window)
 {
+    auto r = Renderer::instance;
+    if (r) {
+        ImGui::SetCurrentContext(r->imGuiContext);
+    }
     if (!g_FontTexture)
         ImGui_SRE_CreateDeviceObjects();
 
