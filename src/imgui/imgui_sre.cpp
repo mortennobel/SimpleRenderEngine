@@ -91,7 +91,9 @@ void ImGui_SRE_RenderDrawData(ImDrawData* draw_data)
     GLint last_array_buffer; glGetIntegerv(GL_ARRAY_BUFFER_BINDING, &last_array_buffer);
     GLint last_element_array_buffer; glGetIntegerv(GL_ELEMENT_ARRAY_BUFFER_BINDING, &last_element_array_buffer);
     GLint last_vertex_array; glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
+#ifndef GL_ES_VERSION_2_0
     GLint last_polygon_mode[2]; glGetIntegerv(GL_POLYGON_MODE, last_polygon_mode);
+#endif
     GLint last_viewport[4]; glGetIntegerv(GL_VIEWPORT, last_viewport);
     GLint last_scissor_box[4]; glGetIntegerv(GL_SCISSOR_BOX, last_scissor_box);
     GLenum last_blend_src_rgb; glGetIntegerv(GL_BLEND_SRC_RGB, (GLint*)&last_blend_src_rgb);
@@ -329,12 +331,12 @@ bool ImGui_SRE_CreateDeviceObjects()
                     "}\n";
 
     std::stringstream ss;
-    ss << "#version 330\n";
-    ss << "uniform sampler2D Texture;\n";
-    ss << "in vec2 Frag_UV;\n";
-    ss << "in vec4 Frag_Color;\n";
-    ss << "out vec4 fragColor;\n";
-    ss << "vec4 toLinear(vec4 col){\n"
+    ss << "#version 330\n"
+            "uniform sampler2D Texture;\n"
+            "in vec2 Frag_UV;\n"
+            "in vec4 Frag_Color;\n"
+            "out vec4 fragColor;\n"
+            "vec4 toLinear(vec4 col){\n"
             "    float gamma = 2.2;\n"
             "    return vec4 (\n"
             "        col.xyz = pow(col.xyz, vec3(gamma)),\n"
@@ -364,17 +366,17 @@ bool ImGui_SRE_CreateDeviceObjects()
     g_VertHandle = glCreateShader(GL_VERTEX_SHADER);
     g_FragHandle = glCreateShader(GL_FRAGMENT_SHADER);
     if (renderInfo().graphicsAPIVersionES) {
-    std::string vs = vertex_shader;
-    std::string fs = fragment_shader;
-    vs = sre::Shader::translateToGLSLES(vs, true);
-    fs = sre::Shader::translateToGLSLES(fs, false);
-    auto vsp = vs.c_str();
-    auto fsp = fs.c_str();
-    glShaderSource(g_VertHandle, 1, &vsp, 0);
-    glShaderSource(g_FragHandle, 1, &fsp, 0);
+        std::string vs = vertex_shader;
+        std::string fs = fragment_shader;
+        vs = sre::Shader::translateToGLSLES(vs, true);
+        fs = sre::Shader::translateToGLSLES(fs, false);
+        auto vsp = vs.c_str();
+        auto fsp = fs.c_str();
+        glShaderSource(g_VertHandle, 1, &vsp, 0);
+        glShaderSource(g_FragHandle, 1, &fsp, 0);
     } else {
-    glShaderSource(g_VertHandle, 1, &vertex_shader, 0);
-    glShaderSource(g_FragHandle, 1, &fragment_shader_c, 0);
+        glShaderSource(g_VertHandle, 1, &vertex_shader, 0);
+        glShaderSource(g_FragHandle, 1, &fragment_shader_c, 0);
     }
     glCompileShader(g_VertHandle);
     glCompileShader(g_FragHandle);
