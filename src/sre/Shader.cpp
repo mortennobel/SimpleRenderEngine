@@ -689,7 +689,7 @@ namespace sre {
 
 
     std::shared_ptr<Shader> Shader::getSkybox() {
-        if (unlit != nullptr){
+        if (skybox != nullptr){
             return skybox;
         }
 
