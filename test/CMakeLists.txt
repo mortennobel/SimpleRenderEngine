@@ -4,7 +4,7 @@ SET(scr_files deallocation bumpmap stencil_test benchmark64k-heavy matrix-unifor
 # Create custom build targets
 FOREACH(scr_file ${scr_files})
     add_executable(SRE-Test-${scr_file} ${scr_file}.cpp)
-    target_link_libraries(SRE-Test-${scr_file} ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} ${OPENVR_LIB} SRE)
+    target_link_libraries(SRE-Test-${scr_file} SRE ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} ${OPENVR_LIB})
 ENDFOREACH()
 
 file(COPY ../test_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
