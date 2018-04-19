@@ -27,6 +27,7 @@ namespace sre {
         std::shared_ptr<Shader> standardPhong;
         std::shared_ptr<Shader> unlit;
         std::shared_ptr<Shader> skybox;
+        std::shared_ptr<Shader> skyboxProcedural;
         std::shared_ptr<Shader> blit;
         std::shared_ptr<Shader> unlitSprite;
         std::shared_ptr<Shader> standardParticles;
@@ -702,6 +703,21 @@ namespace sre {
         return skybox;
     }
 
+
+    std::shared_ptr<Shader> Shader::getSkyboxProcedural() {
+        if (skyboxProcedural != nullptr){
+            return skyboxProcedural;
+        }
+
+        skyboxProcedural = create()
+                .withSourceFile("skybox_proc_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("skybox_proc_frag.glsl", ShaderType::Fragment)
+                .withName("Skybox Procedural")
+                .withDepthWrite(false)
+                .build();
+
+        return skyboxProcedural;
+    }
 
 
     std::shared_ptr<Shader> Shader::getBlit() {

@@ -237,6 +237,8 @@ namespace sre {
 
         static std::shared_ptr<Shader> getSkybox();
 
+        static std::shared_ptr<Shader> getSkyboxProcedural();
+
         static std::shared_ptr<Shader> getUnlitSprite();       // UnlitSprite = no depth examples and alpha blending
                                                                // Uniforms
                                                                //   "color" vec4 (default (1,1,1,1))
