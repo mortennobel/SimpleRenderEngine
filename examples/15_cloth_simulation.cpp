@@ -456,7 +456,6 @@ public:
             if (event.type == SDL_MOUSEWHEEL){
                 camDist += event.wheel.y*0.1f;
                 camDist = glm::max(camDist,1.0f);
-                LOG_INFO("Cam dist %f", camDist);
             }
             auto rot = glm::rotate(rotateY, glm::vec3(0,1,0))*glm::rotate(rotateX, glm::vec3(1,0,0));
 
