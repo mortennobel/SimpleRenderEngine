@@ -27,6 +27,7 @@ namespace sre {
         std::shared_ptr<Shader> standardPhong;
         std::shared_ptr<Shader> unlit;
         std::shared_ptr<Shader> skybox;
+        std::shared_ptr<Shader> skyboxProcedural;
         std::shared_ptr<Shader> blit;
         std::shared_ptr<Shader> unlitSprite;
         std::shared_ptr<Shader> standardParticles;
@@ -226,6 +227,11 @@ namespace sre {
         return *this;
     }
 
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withCullFace(CullFace face) {
+        this->cullFace = face;
+        return *this;
+    }
+
     std::shared_ptr<Shader> Shader::ShaderBuilder::build() {
         std::vector<std::string> errors;
         return build(errors);
@@ -258,6 +264,7 @@ namespace sre {
         shader->shaderUniqueId = globalShaderCounter++;
         shader->stencil = stencil;
         shader->colorWrite = colorWrite;
+        shader->cullFace = cullFace;
         return std::shared_ptr<Shader>(shader);
     }
 
@@ -623,6 +630,17 @@ namespace sre {
             glStencilOp(static_cast<GLenum>(stencil.fail),static_cast<GLenum>(stencil.zfail),static_cast<GLenum>(stencil.zpass));
             glStencilMask(0xFFFF);
         }
+        if (cullFace == CullFace::None){
+            glDisable(GL_CULL_FACE);
+        } else {
+            glEnable(GL_CULL_FACE);
+            if (cullFace == CullFace::Back){
+                glCullFace(GL_BACK);
+            } else {
+                glCullFace(GL_FRONT);
+            }
+        }
+
         GLboolean dm = (GLboolean) (depthWrite ? GL_TRUE : GL_FALSE);
         glDepthMask(dm);
         glColorMask(colorWrite.r, colorWrite.g, colorWrite.b, colorWrite.a);
@@ -689,7 +707,7 @@ namespace sre {
 
 
     std::shared_ptr<Shader> Shader::getSkybox() {
-        if (unlit != nullptr){
+        if (skybox != nullptr){
             return skybox;
         }
 
@@ -702,6 +720,21 @@ namespace sre {
         return skybox;
     }
 
+
+    std::shared_ptr<Shader> Shader::getSkyboxProcedural() {
+        if (skyboxProcedural != nullptr){
+            return skyboxProcedural;
+        }
+
+        skyboxProcedural = create()
+                .withSourceFile("skybox_proc_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("skybox_proc_frag.glsl", ShaderType::Fragment)
+                .withName("Skybox Procedural")
+                .withDepthWrite(false)
+                .build();
+
+        return skyboxProcedural;
+    }
 
 
     std::shared_ptr<Shader> Shader::getBlit() {
@@ -899,6 +932,8 @@ namespace sre {
             res.blend = this->blend;
             res.name = this->name;
             res.offset = this->offset;
+            bool isTwoSided = specializationConstants.find("S_TWO_SIDED") != specializationConstants.end();
+            res.cullFace = isTwoSided ? CullFace::None :this->cullFace;
             res.shaderSources = this->shaderSources;
             res.specializationConstants = specializationConstants;
             auto specializedShader = res.build();
@@ -1100,6 +1135,10 @@ namespace sre {
 
     glm::bvec4 Shader::getColorWrite() {
         return colorWrite;
+    }
+
+    CullFace Shader::getCullFace() {
+        return cullFace;
     }
 
     uint32_t to_id(ShaderType st) {

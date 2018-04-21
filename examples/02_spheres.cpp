@@ -65,7 +65,6 @@ public:
 
         rp.draw(mesh, pos1, mat1);
 
-        checkGLError();
         rp.draw(mesh, pos2, mat2);
         
         static sre::Inspector inspector;
@@ -73,9 +72,6 @@ public:
         if (showInspector){
             inspector.gui();
         }
-
-        checkGLError();
-
     }
 private:
     float time;

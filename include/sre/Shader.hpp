@@ -50,6 +50,12 @@ namespace sre {
         NumberOfShaderTypes
     };
 
+    enum class CullFace {
+        Front,
+        Back,
+        None
+    };
+
     uint32_t to_id(ShaderType st);
 
     const char* c_str(UniformType u);
@@ -164,13 +170,14 @@ namespace sre {
             ShaderBuilder& withDepthWrite(bool enable);
             ShaderBuilder& withColorWrite(glm::bvec4 enable);
             ShaderBuilder& withBlend(BlendType blendType);
+            ShaderBuilder& withCullFace(CullFace face);
             ShaderBuilder& withStencil(Stencil stencil);
             ShaderBuilder& withName(const std::string& name);
             std::shared_ptr<Shader> build(std::vector<std::string>& errors);
             std::shared_ptr<Shader> build();
             ShaderBuilder(const ShaderBuilder&) = default;
         private:
-            ShaderBuilder(Shader* shader);
+            explicit ShaderBuilder(Shader* shader);
             ShaderBuilder() = default;
             std::map<ShaderType, Resource> shaderSources;
             std::map<std::string,std::string> specializationConstants;
@@ -178,6 +185,7 @@ namespace sre {
             bool depthWrite = true;
             glm::bvec4 colorWrite = glm::bvec4(true, true, true, true);
             glm::vec2 offset = {0,0};
+            CullFace cullFace = CullFace::Back;
             std::string name;
             Shader *updateShader = nullptr;
             BlendType blend = BlendType::Disabled;
@@ -210,6 +218,8 @@ namespace sre {
                                                                //   Adds Uniforms "occlusionTex" (Texture) and "occlusionStrength" (float)
                                                                // S_VERTEX_COLOR
                                                                //   Adds VertexAttribute "color" vec4 defined in linear space.
+                                                               // S_TWO_SIDED
+                                                               //   Disables face culling and flips normal on backface
 
 
         static std::shared_ptr<Shader> getStandardBlinnPhong(); // Blinn-Phong Light Model. Uses light objects and ambient light set in Renderer.
@@ -224,6 +234,13 @@ namespace sre {
                                                                 // Specializations
                                                                 // S_VERTEX_COLOR
                                                                 //   Adds VertexAttribute "color" vec4 defined in linear space.
+                                                                // S_TWO_SIDED
+                                                                //   Disables backface culling and flips normal on backface
+                                                                // S_TANGENTS
+                                                                //   Adds VertexAttribute "tangent" vec4. Used for normal maps. Otherwise compute using
+                                                                // S_NORMALMAP
+                                                                //   Adds Uniforms "normalTex" (Texture) and "normalScale" (float)
+
 
         static std::shared_ptr<Shader> getStandardPhong();      // Similar to Blinn-Phong, but with more accurate specular highlights
 
@@ -235,7 +252,20 @@ namespace sre {
                                                                // S_VERTEX_COLOR
                                                                //   Adds VertexAttribute "color" vec4 defined in linear space.
 
-        static std::shared_ptr<Shader> getSkybox();
+        static std::shared_ptr<Shader> getSkybox();            // Textured skybox
+                                                               // Uniforms
+                                                               //   "color" Color (1,1,1,1)
+                                                               //   "tex" shared_ptr<Texture> (default white)
+
+
+        static std::shared_ptr<Shader> getSkyboxProcedural();  // Procedural skybox
+                                                               // Uniforms
+                                                               //   "skyColor" Color
+                                                               //   "horizonColor" Color
+                                                               //   "groundColor" Color
+                                                               //   "skyPow" float
+                                                               //   "sunIntensity" float
+                                                               //   "groundPow" float
 
         static std::shared_ptr<Shader> getUnlitSprite();       // UnlitSprite = no depth examples and alpha blending
                                                                // Uniforms
@@ -278,6 +308,8 @@ namespace sre {
 
         Stencil getStencil();
 
+        CullFace getCullFace();
+
         const std::string& getName();
 
         std::vector<std::string> getAttributeNames();
@@ -313,6 +345,7 @@ namespace sre {
         unsigned int shaderProgramId = 0;
         bool depthTest = true;
         bool depthWrite = true;
+        CullFace cullFace = CullFace::Back;
         long shaderUniqueId = 0;
         glm::bvec4 colorWrite = glm::bvec4(true, true, true, true);
         std::string name;

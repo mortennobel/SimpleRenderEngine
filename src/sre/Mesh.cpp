@@ -50,16 +50,17 @@ namespace sre {
             renderStats.meshBytesDeallocated += datasize;
             renderStats.meshCount--;
             r->meshes.erase(std::remove(r->meshes.begin(), r->meshes.end(), this));
-        }
+        
 
-        if (renderInfo().graphicsAPIVersionMajor >= 3) {
-            for (auto arrayObj : shaderToVertexArrayObject) {
-                glDeleteVertexArrays(1, &(arrayObj.second.vaoID));
+            if (renderInfo().graphicsAPIVersionMajor >= 3) {
+                for (auto arrayObj : shaderToVertexArrayObject) {
+                    glDeleteVertexArrays(1, &(arrayObj.second.vaoID));
+                }
             }
-        }
-        glDeleteBuffers(1, &vertexBufferId);
-        if (elementBufferId != 0){
-            glDeleteBuffers(1, &elementBufferId);
+            glDeleteBuffers(1, &vertexBufferId);
+            if (elementBufferId != 0){
+                glDeleteBuffers(1, &elementBufferId);
+            }
         }
     }
 

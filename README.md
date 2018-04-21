@@ -1,3 +1,4 @@
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](https://raw.githubusercontent.com/mortennobel/SimpleRenderEngine/master/LICENSE)
 [![Build Status](https://travis-ci.org/mortennobel/SimpleRenderEngine.svg?branch=master)](https://travis-ci.org/mortennobel/SimpleRenderEngine)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/86403818b8b54161a6fef03248c0b828)](https://www.codacy.com/app/mortennobel/SimpleRenderEngine?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mortennobel/SimpleRenderEngine&amp;utm_campaign=Badge_Grade)
 
@@ -48,7 +49,7 @@ API documentation is defined in header files.
  * https://www.libsdl.org/projects/SDL_image/ Simple Direct Layer Image 2.x
  * http://glm.g-truc.net/ OpenGL Mathematics (bundled)
  * https://www.opengl.org/registry/ OpenGL Registry
- * https://github.com/ocornut/imgui ImGui 1.53 (bundled)
+ * https://github.com/ocornut/imgui ImGui 1.60 (bundled)
  * https://github.com/BalazsJako/ImGuiColorTextEdit ImGuiColorTextEdit (bundled)
  * https://github.com/kazuho/picojson PicoJSON(bundled)
  

@@ -101,7 +101,6 @@ namespace sre {
 
         // setup opengl context
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
 #ifndef EMSCRIPTEN
         glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN,GL_LOWER_LEFT);
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
@@ -125,6 +124,7 @@ namespace sre {
         initGlobalUniformBuffer();
 
         // initialize ImGUI
+        imGuiContext = ImGui::CreateContext();
         ImGui_SRE_Init(window);
 
         // reset render stats
@@ -132,7 +132,8 @@ namespace sre {
     }
 
     Renderer::~Renderer() {
-		delete vr;
+        ImGui_SRE_Shutdown();
+        ImGui::DestroyContext(imGuiContext);
         glDeleteBuffers(1,&globalUniformBuffer);
         SDL_GL_DeleteContext(glcontext);
         instance = nullptr;

@@ -78,7 +78,7 @@ public:
         r.mouseEvent = [&](SDL_Event event){
             static bool validClick = false;
             if (event.type == SDL_MOUSEBUTTONDOWN){
-                validClick = !ImGui::IsAnyWindowHovered();
+                validClick = !ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
             }
             if (event.type == SDL_MOUSEMOTION && validClick){
                 if (event.motion.state & SDL_BUTTON_LMASK){

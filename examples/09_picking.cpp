@@ -70,19 +70,30 @@ public:
     }
 
     void render(){
-        auto renderPass = RenderPass::create()
+        // Render scene to framebuffer (without gui)
+        auto sceneRenderPass = RenderPass::create()
                 .withCamera(camera)
                 .withClearColor(true,{0, 0, 0, 1})
+                .withGUI(false)
                 .build();
-
         const float speed = .5f;
         int index = 0;
         for (int x=0;x<2;x++){
             for (int y=0;y<2;y++){
-                renderPass.draw(mesh[index], glm::translate(glm::vec3(-1.5+x*3,-1.5+y*3,0)), mat[index]);
+                sceneRenderPass.draw(mesh[index], glm::translate(glm::vec3(-1.5+x*3,-1.5+y*3,0)), mat[index]);
                 index++;
             }
         }
+        sceneRenderPass.finish();
+
+        auto pixelValues = sceneRenderPass.readPixels(mouseX, mouseY);           // read pixel values from framebuffer
+
+        // render gui to framebuffer
+        auto guiRenderPass = RenderPass::create()
+                .withClearColor(false)
+                .withGUI(true)
+                .build();
+
         drawTopTextAndColor(pixelValue);
         static Inspector inspector;
         inspector.update();
@@ -90,12 +101,9 @@ public:
             inspector.gui();
         }
 
-        renderPass.finish();
-        auto pixelValues = renderPass.readPixels(mouseX, mouseY);           // read pixel values from defualt framebuffer (before gui is rendered)
+        guiRenderPass.finish();
 
         pixelValue = pixelValues[0];
-
-
     }
 
     void drawTopTextAndColor(sre::Color color){

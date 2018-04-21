@@ -1,5 +1,6 @@
 ## Version history
 
+ * 1.0.10 Update ImGui to 1.60. Procedural skybox. Face culling option in Shader. Two sided rendering.
  * 1.0.9 Better support for stencil operations using shaders
  * 1.0.8 Skybox. Inspector for RenderPass. All g_ uniforms are now defined in global_uniforms_incl.glsl.
  * 1.0.7 Performance improvements (global uniform buffer). Flatten render queue. VR: Fix left/right eye offset bug.

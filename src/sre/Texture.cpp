@@ -469,8 +469,10 @@ namespace sre {
     }
 
     Texture::TextureBuilder::~TextureBuilder() {
-        if (textureId != 0){
-            glDeleteTextures(1, &textureId);
+	    if (Renderer::instance){
+            if (textureId != 0){
+                glDeleteTextures(1, &textureId);
+            }
         }
     }
 

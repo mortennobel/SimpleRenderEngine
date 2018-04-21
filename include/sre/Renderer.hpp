@@ -20,7 +20,6 @@
 
 
 namespace sre {
-
     // forward declaration
     class Mesh;
     class ParticleMesh;
@@ -71,7 +70,7 @@ namespace sre {
         ~Renderer();
         static constexpr int sre_version_major = 1;
         static constexpr int sre_version_minor = 0;
-        static constexpr int sre_version_point = 9;
+        static constexpr int sre_version_point = 10;
 
         glm::ivec2 getWindowSize();                         // Return the current size of the window
 
@@ -111,7 +110,7 @@ namespace sre {
         GLuint globalUniformBuffer = 0;
         GLuint globalUniformBufferSize = 0;
 
-        VR* vr = nullptr;
+        ImGuiContext* imGuiContext = nullptr;
 
         friend class Mesh;
         friend class Mesh::MeshBuilder;
@@ -125,5 +124,6 @@ namespace sre {
         friend class SpriteAtlas;
 		friend class VR;
         friend class RenderPass::RenderPassBuilder;
+        friend void ImGui_SRE_NewFrame(SDL_Window *window);
     };
 }

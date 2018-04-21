@@ -40,7 +40,7 @@ emcc -Iinclude src/imgui/imgui.cpp \
                #-O3 -g4 -s ASSERTIONS=1 -std=c++14 -s USE_WEBGL2=1 -s FORCE_FILESYSTEM=1 -s TOTAL_MEMORY=67108864 -s USE_SDL_IMAGE=2 -s SDL2_IMAGE_FORMATS='["png"]' --preload-file test_data -s USE_SDL=2 -o html/$FILENAME.html
 done
 
-for FILENAME in skybox-example render-to-texture matcap benchmark64k custom-mesh-layout gui hello-engine hello-engine-raw obj-viewer picking spheres spinning-cube spinning-primitives-tex sprite-example
+for FILENAME in 00_hello-engine 01_hello-engine-raw 02_spheres 03_spinning-cube 04_spinning-primitives-tex 05_obj-viewer 06_custom-mesh-layout 07_matcap 08_gui 09_picking 10_skybox-example 11_sprite-example 12_render-to-texture  13_benchmark64k 14_spinning-primitives-openvr 15_cloth_simulation
 do
 echo $FILENAME
 emcc -Iinclude src/imgui/imgui.cpp \

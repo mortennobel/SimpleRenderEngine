@@ -353,6 +353,9 @@ namespace sre {
 
             }
             ImGui::LabelText("Blending","%s",s.c_str());
+            ImGui::LabelText("Cull face",
+                             shader->getCullFace() ==CullFace::None?"None":
+                             (shader->getCullFace() ==CullFace::Back?"Back":"Front"));
             ImGui::LabelText("Depth test","%s",shader->isDepthTest()?"true":"false");
             ImGui::LabelText("Depth write","%s",shader->isDepthWrite()?"true":"false");
             ImGui::LabelText("Color write","%s,%s,%s,%s",
@@ -360,6 +363,7 @@ namespace sre {
                              shader->getColorWrite().g?"true":"false",
                              shader->getColorWrite().b?"true":"false",
                              shader->getColorWrite().a?"true":"false");
+
             auto stencil = shader->getStencil();
             if (stencil.func == StencilFunc::Disabled){
                 ImGui::LabelText("Stencil","Disabled");
