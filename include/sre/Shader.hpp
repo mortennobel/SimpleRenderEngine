@@ -236,6 +236,11 @@ namespace sre {
                                                                 //   Adds VertexAttribute "color" vec4 defined in linear space.
                                                                 // S_TWO_SIDED
                                                                 //   Disables backface culling and flips normal on backface
+                                                                // S_TANGENTS
+                                                                //   Adds VertexAttribute "tangent" vec4. Used for normal maps. Otherwise compute using
+                                                                // S_NORMALMAP
+                                                                //   Adds Uniforms "normalTex" (Texture) and "normalScale" (float)
+
 
         static std::shared_ptr<Shader> getStandardPhong();      // Similar to Blinn-Phong, but with more accurate specular highlights
 
@@ -247,9 +252,20 @@ namespace sre {
                                                                // S_VERTEX_COLOR
                                                                //   Adds VertexAttribute "color" vec4 defined in linear space.
 
-        static std::shared_ptr<Shader> getSkybox();
+        static std::shared_ptr<Shader> getSkybox();            // Textured skybox
+                                                               // Uniforms
+                                                               //   "color" Color (1,1,1,1)
+                                                               //   "tex" shared_ptr<Texture> (default white)
 
-        static std::shared_ptr<Shader> getSkyboxProcedural();
+
+        static std::shared_ptr<Shader> getSkyboxProcedural();  // Procedural skybox
+                                                               // Uniforms
+                                                               //   "skyColor" Color
+                                                               //   "horizonColor" Color
+                                                               //   "groundColor" Color
+                                                               //   "skyPow" float
+                                                               //   "sunIntensity" float
+                                                               //   "groundPow" float
 
         static std::shared_ptr<Shader> getUnlitSprite();       // UnlitSprite = no depth examples and alpha blending
                                                                // Uniforms
