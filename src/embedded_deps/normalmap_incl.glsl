@@ -37,6 +37,11 @@ vec3 getNormal()
     vec3 n = normalize(vNormal);
 #endif
 
+#ifdef S_TWO_SIDED
+    if (!gl_FrontFacing){
+        return -n;
+    }
+#endif
     return n;
 }
 #endif

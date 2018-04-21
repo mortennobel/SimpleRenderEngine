@@ -101,7 +101,6 @@ namespace sre {
 
         // setup opengl context
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_CULL_FACE);
 #ifndef EMSCRIPTEN
         glPointParameteri(GL_POINT_SPRITE_COORD_ORIGIN,GL_LOWER_LEFT);
         glEnable(GL_VERTEX_PROGRAM_POINT_SIZE);
