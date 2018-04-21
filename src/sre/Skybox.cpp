@@ -18,6 +18,7 @@ namespace sre{
         material->set("horizonColor",Color(1,1,1));
         material->set("groundColor",Color(0.31,0.197,0.026));
         material->set("skyPow",.5f);
+        material->set("sunIntensity",.15f);
         material->set("groundPow",.2f);
     }
 

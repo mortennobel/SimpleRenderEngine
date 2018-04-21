@@ -183,7 +183,6 @@ namespace sre {
                 } else if (light->lightType == LightType::Directional) {
                     globalUniforms.g_lightPosType[i] = glm::vec4(glm::normalize(light->direction), 0);
                 }
-                // transform to eye space
                 globalUniforms.g_lightColorRange[i] = glm::vec4(light->color, light->range);
             }
         }

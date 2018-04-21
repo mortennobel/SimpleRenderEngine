@@ -8,25 +8,31 @@ std::map<std::string, std::string> builtInShaderSource  {
 std::make_pair<std::string,std::string>("skybox_proc_frag.glsl",R"(#version 330
 out vec4 fragColor;
 in vec3 vUV;
+in vec3 vLightDirection;
 
 uniform vec4 skyColor;
 uniform vec4 horizonColor;
 uniform vec4 groundColor;
 uniform float skyPow;
+uniform float sunIntensity;
 uniform float groundPow;
 
 #pragma include "sre_utils_incl.glsl"
 
 void main(void)
 {
-    fragColor = vUV.y>0.0 ?
-        mix(horizonColor,skyColor, pow(vUV.y, skyPow)) :
-        mix(horizonColor,groundColor, pow(-vUV.y, groundPow));
+    if (vUV.y > 0.0){
+        fragColor = mix(horizonColor,skyColor, pow(vUV.y, skyPow));
+        fragColor.xyz += vec3(1.0)*pow(max(0.0,dot(vUV, vLightDirection)),2.0)*sunIntensity;
+    } else {
+        fragColor = mix(horizonColor,groundColor, pow(-vUV.y, groundPow));
+    }
     fragColor = toOutput(fragColor);
 })"),
 std::make_pair<std::string,std::string>("skybox_proc_vert.glsl",R"(#version 330
 in vec3 position;
 out vec3 vUV;
+out vec3 vLightDirection;
 
 #pragma include "global_uniforms_incl.glsl"
 
@@ -35,6 +41,13 @@ void main(void) {
     eyespacePos.w = 1.0;
     gl_Position = g_model * eyespacePos; // model matrix here contains the infinite projection
     vUV = position;
+    vLightDirection = vec3(1.0);
+    for (int i=0;i<SI_LIGHTS;i++){
+        if (g_lightPosType[i].w == 1.0){
+            vLightDirection = g_lightPosType[i].xyz;
+            break;
+        }
+    }
 })"),
 std::make_pair<std::string,std::string>("skybox_frag.glsl",R"(#version 330
 out vec4 fragColor;
