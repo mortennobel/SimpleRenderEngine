@@ -12,7 +12,7 @@ uniform float groundPow;
 
 void main(void)
 {
-    fragColor = vUV.y>0 ?
+    fragColor = vUV.y>0.0 ?
         mix(horizonColor,skyColor, pow(vUV.y, skyPow)) :
         mix(horizonColor,groundColor, pow(-vUV.y, groundPow));
     fragColor = toOutput(fragColor);
