@@ -177,7 +177,7 @@ namespace sre {
             std::shared_ptr<Shader> build();
             ShaderBuilder(const ShaderBuilder&) = default;
         private:
-            ShaderBuilder(Shader* shader);
+            explicit ShaderBuilder(Shader* shader);
             ShaderBuilder() = default;
             std::map<ShaderType, Resource> shaderSources;
             std::map<std::string,std::string> specializationConstants;

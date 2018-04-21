@@ -49,7 +49,7 @@ private:
 
     template<class InputIt>
     SpriteBatch::SpriteBatchBuilder &SpriteBatch::SpriteBatchBuilder::addSprites(InputIt first, InputIt last) {
-        int size = sprites.size();
+        auto size = sprites.size();
         auto start = sprites.insert(sprites.end(), first, last);
         while (start != sprites.end()){
             (*start).order.details.drawOrder = static_cast<uint16_t>(size);

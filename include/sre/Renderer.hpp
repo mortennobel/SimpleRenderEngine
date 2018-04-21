@@ -20,7 +20,6 @@
 
 
 namespace sre {
-
     // forward declaration
     class Mesh;
     class ParticleMesh;
