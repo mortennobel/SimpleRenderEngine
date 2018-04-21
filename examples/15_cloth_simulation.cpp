@@ -58,8 +58,8 @@ int CONSTRAINT_ITERATIONS = 7; // how many iterations of constraint satisfaction
         vec3 accumulated_normal; // an accumulated normal (i.e. non normalized), used for OpenGL soft shading
 
     public:
-        Particle(vec3 pos) : pos(pos), old_pos(pos),acceleration(vec3(0,0,0)), mass(1), movable(true), accumulated_normal(vec3(0,0,0)){}
-        Particle(){}
+        explicit Particle(vec3 pos) : pos(pos), old_pos(pos),acceleration(vec3(0,0,0)), mass(1), movable(true), accumulated_normal(vec3(0,0,0)){}
+        Particle() = default;
 
         void addForce(vec3 f)
         {

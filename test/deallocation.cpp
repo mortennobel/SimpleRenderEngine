@@ -91,7 +91,7 @@ private:
 };
 
 int main() {
-    Deallocation();
+    Deallocation deallocation();
     return 0;
 }
 
