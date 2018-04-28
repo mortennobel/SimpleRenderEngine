@@ -14,6 +14,10 @@ out vec3 vWsPos;
 in vec4 vertex_color;
 out vec4 vColor;
 #endif
+#ifdef S_SHADOW
+uniform mat4 shadowViewProjection;
+out vec4 vShadowmapCoord;
+#endif
 
 #pragma include "global_uniforms_incl.glsl"
 #pragma include "normalmap_incl.glsl"
@@ -31,5 +35,10 @@ void main(void) {
 
 #ifdef S_VERTEX_COLOR
     vColor = vertex_color;
+#endif
+#ifdef S_SHADOW
+    vShadowmapCoord = shadowViewProjection * wsPos;
+    vShadowmapCoord.xyz *= 0.5f;
+    vShadowmapCoord.xyz += vShadowmapCoord.w * 0.5f;
 #endif
 }

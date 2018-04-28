@@ -21,25 +21,33 @@ namespace sre {
         for (auto& t : vectorValues) {
             glUniform4fv(t.first, 1, glm::value_ptr(t.second));
         }
+        for (auto& t : mat4Values) {
+            glUniformMatrix4fv(t.first, 1, GL_FALSE, glm::value_ptr(t.second));
+        }
         for (auto& t : floatValues) {
             glUniform1f(t.first, t.second);
         }
-        for (auto& t : mat3Values) {
+        for (auto& t : mat3sValues) {
             if (t.second.get()) {
                 glm::mat3& m3 = (*t.second)[0];
                 glUniformMatrix3fv(t.first, static_cast<GLsizei>(t.second->size()), GL_FALSE, glm::value_ptr(m3));
             }
         }
-        for (auto& t : mat4Values) {
+        for (auto& t : mat4sValues) {
             if (t.second.get()){
                 glm::mat4& m4 = (*t.second)[0];
                 glUniformMatrix4fv(t.first, static_cast<GLsizei>(t.second->size()), GL_FALSE, glm::value_ptr(m4));
             }
         }
+
     }
 
     void UniformSet::set(int id, glm::vec4 value){
         vectorValues[id] = value;
+    }
+
+    void UniformSet::set(int id, glm::mat4 value){
+        mat4Values[id] = value;
     }
 
     void UniformSet::set(int id, float value){
@@ -51,11 +59,11 @@ namespace sre {
     }
 
     void UniformSet::set(int id, std::shared_ptr<std::vector<glm::mat3>> value){
-        mat3Values[id] = value;
+        mat3sValues[id] = value;
     }
 
     void UniformSet::set(int id, std::shared_ptr<std::vector<glm::mat4>> value){
-        mat4Values[id] = value;
+        mat4sValues[id] = value;
     }
 
     void UniformSet::set(int id, Color value){
@@ -66,7 +74,8 @@ namespace sre {
         textureValues.clear();
         vectorValues.clear();
         mat4Values.clear();
-        mat3Values.clear();
+        mat4sValues.clear();
+        mat3sValues.clear();
         floatValues.clear();
     }
 }

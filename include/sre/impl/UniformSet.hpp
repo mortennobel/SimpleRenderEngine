@@ -18,6 +18,8 @@ namespace sre {
     public:
         void set(int id, glm::vec4 value);
 
+        void set(int id, glm::mat4 value);
+
         void set(int id, float value);
 
         void set(int id, std::shared_ptr<Texture> value);
@@ -38,8 +40,9 @@ namespace sre {
     private:
         std::map<int,std::shared_ptr<sre::Texture>> textureValues;
         std::map<int,glm::vec4> vectorValues;
-        std::map<int,std::shared_ptr<std::vector<glm::mat4>>> mat4Values;
-        std::map<int,std::shared_ptr<std::vector<glm::mat3>>> mat3Values;
+        std::map<int,glm::mat4> mat4Values;
+        std::map<int,std::shared_ptr<std::vector<glm::mat4>>> mat4sValues;
+        std::map<int,std::shared_ptr<std::vector<glm::mat3>>> mat3sValues;
         std::map<int,float> floatValues;
 
         friend class Material;
@@ -53,6 +56,11 @@ namespace sre {
     template<>
     inline glm::vec4 UniformSet::get(int id)  {
         return vectorValues[id];
+    }
+
+    template<>
+    inline glm::mat4 UniformSet::get(int id)  {
+        return mat4Values[id];
     }
 
     template<>

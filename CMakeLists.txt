@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 3.5)
 project(SimpleRenderEngine CXX)
 
+if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+    message(FATAL_ERROR
+            "Building from within the SimpleRenderEngine source tree is not supported.\n"
+            "Hint: Run these commands\n"
+            "$ rm -rf CMakeCache.txt CMakeFiles\n"
+            "$ mkdir -p ../sre_build\n"
+            "$ cd ../sre_build\n"
+            "$ cmake ${CMAKE_CURRENT_SOURCE_DIR}")
+endif ()
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")

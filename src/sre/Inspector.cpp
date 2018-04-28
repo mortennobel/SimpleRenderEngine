@@ -446,9 +446,9 @@ namespace sre {
                 return "float";
             case UniformType::Int:
                 return "int";
-            case UniformType::Mat3:
+            case UniformType::Mat3Array:
                 return "mat3";
-            case UniformType::Mat4:
+            case UniformType::Mat4Array:
                 return "mat4";
             case UniformType::Texture:
                 return "texture";
@@ -1065,10 +1065,21 @@ namespace sre {
                         ImGui::LabelText(name.c_str(),valueTex->getName().c_str());
                     }
                         break;
-                    case UniformType::Mat3:
+                    case UniformType::Mat3Array:
 
-                        if (ImGui::TreeNode(name.c_str(), "Mat3")){
+                        if (ImGui::TreeNode(name.c_str(), "Mat3Array")){
                             auto values = material->get<std::shared_ptr<std::vector<glm::mat3>>>(name);
+                            for (int i=0;i<values->size();i++){
+                                sprintf(res,"%i",i);
+                                showMatrix(res,(*values)[i]);
+                            }
+                            ImGui::TreePop();
+                        }
+                        break;
+                    case UniformType::Mat4Array:
+                        if (ImGui::TreeNode(name.c_str(), "Mat4Array")){
+                            auto values = material->get<std::shared_ptr<std::vector<glm::mat4>>>(name);
+
                             for (int i=0;i<values->size();i++){
                                 sprintf(res,"%i",i);
                                 showMatrix(res,(*values)[i]);
@@ -1078,12 +1089,8 @@ namespace sre {
                         break;
                     case UniformType::Mat4:
                         if (ImGui::TreeNode(name.c_str(), "Mat4")){
-                            auto values = material->get<std::shared_ptr<std::vector<glm::mat4>>>(name);
-
-                            for (int i=0;i<values->size();i++){
-                                sprintf(res,"%i",i);
-                                showMatrix(res,(*values)[i]);
-                            }
+                            auto values = material->get<glm::mat4>(name);
+                            showMatrix("",values);
                             ImGui::TreePop();
                         }
                         break;

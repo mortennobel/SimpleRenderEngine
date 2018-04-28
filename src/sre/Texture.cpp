@@ -346,6 +346,10 @@ namespace sre {
                 textureDefPtr = &td->second;
                 glTexImage2D(target, 0, internalFormat, textureDefPtr->width,
                              textureDefPtr->height, border, format, type, nullptr);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+                glm::vec4 ones(1.0, 1.0, 1.0, 1.0);
+                glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &ones.x);
             }
         } else if ((val = textureTypeData.find(GL_TEXTURE_2D)) != textureTypeData.end()){
             auto& textureDef = val->second;
@@ -508,7 +512,9 @@ namespace sre {
         this->filterSampling = filterSampling;
         this->wrapUV = wrapTextureCoordinates;
 		glBindTexture(target, textureId);
-		auto wrapParam = wrapTextureCoordinates == Wrap::ClampToEdge?GL_CLAMP_TO_EDGE:(wrapTextureCoordinates == Wrap::Mirror ? GL_MIRRORED_REPEAT:GL_REPEAT);
+		auto wrapParam = wrapTextureCoordinates == Wrap::ClampToEdge?GL_CLAMP_TO_EDGE:
+                         (wrapTextureCoordinates == Wrap::Mirror ? GL_MIRRORED_REPEAT:
+                          wrapTextureCoordinates == Wrap::ClampToBorder?GL_CLAMP_TO_BORDER:GL_REPEAT);
 		glTexParameteri(target, GL_TEXTURE_WRAP_S, wrapParam);
 		glTexParameteri(target, GL_TEXTURE_WRAP_T, wrapParam);
 		GLuint minification;

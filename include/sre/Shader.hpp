@@ -31,7 +31,8 @@ namespace sre {
     enum class UniformType {
         Int,
         Float,
-        Mat3,
+        Mat3Array,
+        Mat4Array,
         Mat4,
         Vec3,
         Vec4,
@@ -281,9 +282,15 @@ namespace sre {
                                                                //   "uv" vec4 (note: xy is lower left corner, z is size and w is rotation in radians)
                                                                // Expects a mesh with topology = Points
 
+        static std::shared_ptr<Shader> getShadow();           // Shader used for creating shadow map
+                                                              // Uniforms
+                                                              //   none
+
         static std::shared_ptr<Shader> getBlit();             // Shader used for blitting
                                                               // Uniforms
                                                               //   "tex" shared_ptr<Texture> (default white texture)
+
+
 
         static ShaderBuilder create();
         ShaderBuilder update();                                // Update the shader using the builder pattern. (Must end with build()).

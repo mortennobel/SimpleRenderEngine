@@ -26,6 +26,7 @@ namespace sre {
         std::shared_ptr<Shader> standardBlinnPhong;
         std::shared_ptr<Shader> standardPhong;
         std::shared_ptr<Shader> unlit;
+        std::shared_ptr<Shader> shadow;
         std::shared_ptr<Shader> skybox;
         std::shared_ptr<Shader> skyboxProcedural;
         std::shared_ptr<Shader> blit;
@@ -183,9 +184,9 @@ namespace sre {
                 return "int";
             case UniformType::Float:
                 return "float";
-            case UniformType::Mat3:
+            case UniformType::Mat3Array:
                 return "mat3";
-            case UniformType::Mat4:
+            case UniformType::Mat4Array:
                 return "mat4";
             case UniformType::Vec3:
                 return "vec3";
@@ -418,12 +419,17 @@ namespace sre {
                     uniformType = UniformType::Int;
                     break;
                 case GL_FLOAT_MAT3:
-                    uniformType = UniformType::Mat3;
+                    uniformType = UniformType::Mat3Array;
                     break;
                 case GL_FLOAT_MAT4:
-                    uniformType = UniformType::Mat4;
+                    if (size > 1){
+                        uniformType = UniformType::Mat4Array;
+                    } else {
+                        uniformType = UniformType::Mat4;
+                    }
                     break;
                 case GL_SAMPLER_2D:
+                case GL_SAMPLER_2D_SHADOW:
                     uniformType = UniformType::Texture;
                     break;
                 case GL_SAMPLER_CUBE:
@@ -466,14 +472,14 @@ namespace sre {
                     }
                 }
                 if (strcmp(name, "g_model_it")==0){
-                    if (uniformType == UniformType::Mat3){
+                    if (uniformType == UniformType::Mat3Array){
                         uniformLocationModelInverseTranspose = location;
                     } else {
                         LOG_ERROR("Invalid g_model_it uniform type. Expected mat3 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_model_view_it")==0){
-                    if (uniformType == UniformType::Mat3){
+                    if (uniformType == UniformType::Mat3Array){
                         uniformLocationModelViewInverseTranspose = location;
                     } else {
                         LOG_ERROR("Invalid g_model_view_it uniform type. Expected mat3 - was %s.",c_str(uniformType));
@@ -736,6 +742,20 @@ namespace sre {
         return skyboxProcedural;
     }
 
+    std::shared_ptr<Shader> Shader::getShadow() {
+        if (shadow != nullptr){
+            return shadow;
+        }
+
+        shadow = create()
+                .withSourceFile("shadow_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("shadow_frag.glsl", ShaderType::Fragment)
+                .withName("Shadow")
+                .withOffset(2.5f, 10)                                          // shadow bias
+                .withColorWrite({false,false,false,false})
+                .build();
+        return shadow;
+    }
 
     std::shared_ptr<Shader> Shader::getBlit() {
         if (blit != nullptr){

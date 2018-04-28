@@ -120,19 +120,6 @@ namespace sre {
         std::swap(viewportSize,rp.viewportSize);
     }
 
-    RenderPass &RenderPass::operator=(RenderPass &&rp) noexcept {
-        finish();
-        builder = rp.builder;
-        std::swap(mIsFinished,rp.mIsFinished);
-        std::swap(lastBoundShader,rp.lastBoundShader);
-        std::swap(lastBoundMaterial,rp.lastBoundMaterial);
-        std::swap(lastBoundMeshId,rp.lastBoundMeshId);
-        std::swap(projection,rp.projection);
-        std::swap(viewportOffset,rp.viewportOffset);
-        std::swap(viewportSize,rp.viewportSize);
-        return *this;
-    }
-
     RenderPass::~RenderPass(){
         finish();
     }

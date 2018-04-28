@@ -70,6 +70,7 @@ public:
     enum class Wrap {
         Repeat,
         ClampToEdge,
+        ClampToBorder,
         Mirror
     };
 

@@ -191,6 +191,10 @@ namespace sre{
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, textures[i]->textureId, 0);
             drawBuffers.push_back(GL_COLOR_ATTACHMENT0+i);
         }
+        if (textures.size()==0){
+            glDrawBuffer(GL_NONE);
+            glReadBuffer(GL_NONE);
+        }
         
         if (depthTexture){
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture->textureId, 0);
