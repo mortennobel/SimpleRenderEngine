@@ -109,6 +109,11 @@ public:
         ImGui::DragFloat3("eye", &eye.x,0.1,-10,10);
         ImGui::DragFloat3("at", &at.x,0.1,-10,10);
         camera.lookAt(eye,at,{0,1,0});
+
+        ImGui::DragFloat2("viewportOffset",&viewportOffset.x,0.05,0,1);
+        ImGui::DragFloat2("viewportSize",  &viewportSize.x,0.05,0,1);
+        camera.setViewport(viewportOffset,viewportSize);
+
     }
 
     void update(float deltaTime){
@@ -162,6 +167,9 @@ private:
     float near = 0.1;
     float far = 100;
     float orthoSize = 2;
+
+    glm::vec2 viewportOffset = glm::vec2{0};
+    glm::vec2 viewportSize = glm::vec2{1};
 
     glm::vec3 eye = {0,0,3};
     glm::vec3 at = {0,0,0};
