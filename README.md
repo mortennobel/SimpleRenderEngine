@@ -25,7 +25,7 @@ sre provides:
  * Emscripten support (allows cross compiling to HTML 5 + WebGL)
  * VR support (OpenVR)
  * Bump mapping
- * Shadowmap support
+ * Shadowmap
 
 To keep sre as simple and flexible as possible the following features are not a part of sre:
  * Scenegraphs

@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 3.5)
 project(SimpleRenderEngine CXX)
 
 if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
-    message(FATAL_ERROR
-            "Building from within the SimpleRenderEngine source tree is not supported.\n"
+    message(WARNING
+            "Building from within the SimpleRenderEngine source tree is not recommended.\n"
             "Hint: Run these commands\n"
             "$ rm -rf CMakeCache.txt CMakeFiles\n"
             "$ mkdir -p ../sre_build\n"
