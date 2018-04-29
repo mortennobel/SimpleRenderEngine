@@ -136,7 +136,7 @@ private:
     float fieldOfViewY = 45;
     float near = 0.1;
     float far = 10;
-    unsigned int shadowMapSize = 2048;
+    unsigned int shadowMapSize = 1024;
     glm::vec3 eye = {0,0,3.5};
     glm::vec3 at = {0,0,0};
     glm::vec3 lightDirection;

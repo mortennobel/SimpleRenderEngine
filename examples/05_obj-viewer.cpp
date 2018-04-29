@@ -142,6 +142,7 @@ public:
 
         renderPass.draw(mesh, glm::scale(glm::vec3(0.5f))*glm::eulerAngleY(glm::radians((float)i))*glm::translate(offset), materials);
 
+
         lightGUI();
 
         // align text
@@ -179,8 +180,14 @@ public:
     }
 
     void lightGUI(){
+        auto size = Renderer::instance->getWindowSize();
+        ImVec2 imSize(250, 220.0f);
+        ImVec2 imPos(size.x-250,50);
+        ImGui::SetNextWindowSize(imSize);                                   // imgui window size should have same width as SDL window size
+        ImGui::SetNextWindowPos(imPos);
+
         static bool lightOpen = false;
-        ImGui::Begin("Lights", &lightOpen);
+        ImGui::Begin("Light settings", &lightOpen);
         if (ImGui::CollapsingHeader("Predefined configs")){
             if (ImGui::Button("Camera light")){
                 setLight(0);

@@ -494,6 +494,13 @@ public:
         // draw solid sphere(ball_pos);
         renderPass.draw(sphere, glm::translate(ball_pos)*glm::scale(glm::vec3(ball_radius,ball_radius,ball_radius)), sphereMaterial);
 
+        auto size = Renderer::instance->getWindowSize();
+        ImVec2 imSize(250, 220.0f);
+        ImVec2 imPos(size.x-250, 0);
+        ImGui::SetNextWindowSize(imSize);                                   // imgui window size should have same width as SDL window size
+        ImGui::SetNextWindowPos(imPos);
+        ImGui::Begin("Cloth simulation settings", nullptr, ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize);
+        // create window without title
         ImGui::DragInt("Constraint iterations", &CONSTRAINT_ITERATIONS,1,1,30);
         ImGui::DragFloat("Damping", &DAMPING,0.05,0,1);
         ImGui::DragFloat3("Gravity", &gravity.x);
@@ -505,6 +512,8 @@ public:
         if (updated){
             cloth1 = std::make_shared<Cloth>(14,10,particlesWidth,particlesHeight); // one Cloth object of the Cloth class
         }
+        ImGui::End();
+
 
         static Inspector inspector;
         inspector.update();

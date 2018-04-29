@@ -154,7 +154,7 @@ private:
 };
 
 int main() {
-    SpinningPrimitivesOpenVRExample obj();
+    SpinningPrimitivesOpenVRExample obj;
 
     return 0;
 }
