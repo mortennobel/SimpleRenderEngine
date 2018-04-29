@@ -485,7 +485,7 @@ namespace sre {
                 ImGui::TreePop();
             }
             if (!fbo->depthTexture.get()){
-                ImGui::LabelText("RenderBuffer Depth","%s",fbo->renderBufferDepth?"true":"false");
+                ImGui::LabelText("RenderBuffer Depth","%s",fbo->renderbuffer?"true":"false");
             }
             ImGui::TreePop();
         }

@@ -67,7 +67,7 @@ namespace sre {
         std::vector<std::shared_ptr<Texture>> textures;
         std::shared_ptr<Texture> depthTexture;
         unsigned int frameBufferObjectId;
-        uint32_t renderBufferDepth = 0;
+        uint32_t renderbuffer = 0;
         std::string name;
         glm::uvec2 size;
         friend class RenderPass;

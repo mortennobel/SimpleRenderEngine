@@ -43,7 +43,7 @@ public:
                 .withGenerateMipmaps(false)
                 .withFilterSampling(true)
                 .withWrapUV(Texture::Wrap::ClampToBorder)
-                .withDepth(shadowMapSize,shadowMapSize, Texture::DepthPrecision::I32)
+                .withDepth(shadowMapSize,shadowMapSize, Texture::DepthPrecision::I24)
                 .build();
 
         shadowMap = Framebuffer::create()

@@ -59,7 +59,7 @@ public:
     enum class DepthPrecision {
         I16,                // 16 bit integer
         I24,                // 24 bit integer
-        I32,                // 32 bit integer
+        I32,                // 32 bit integer (not supported on OpenGL ES / WebGL)
         F32,                // 32 bit float
         I24_STENCIL8,       // 24 bit integer 8 bit stencil
         F32_STENCIL8,       // 32 bit float 8 bit stencil
@@ -70,7 +70,7 @@ public:
     enum class Wrap {
         Repeat,
         ClampToEdge,
-        ClampToBorder,
+        ClampToBorder,      // On OpenGL ES/WebGL Clamp to border is not supported. Defaults to ClampToEdge
         Mirror
     };
 

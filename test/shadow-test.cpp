@@ -155,7 +155,7 @@ public:
         c |= ImGui::DragFloat("Bias offset",&biasOffset);
         c |= ImGui::DragFloat("Bias factor",&biasFactor);
         c |= ImGui::Checkbox("Linear texture interpolation",&linearInterpolation);
-        char* resolutionString =
+        const char* resolutionString =
                 "4096\0"
                 "2048\0"
                 "1024\0"
@@ -165,7 +165,7 @@ public:
                 "64\0"
                 "32\0";
         c |= ImGui::Combo("Resolution",&resolutionId, resolutionString);
-        char* depthString =
+        const char* depthString =
                 "I16\0"
                 "I24\0"
                 "I32\0"

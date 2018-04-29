@@ -322,11 +322,14 @@ namespace sre {
             }
             source = source.substr(0, insertPrecisionPos)+
                      "\n"
-                     "#ifdef GL_FRAGMENT_PRECISION_HIGH \n"
-                     "   precision highp float;         \n"
-                     "#else                             \n"
-                     "   precision mediump float;       \n"
-                     "#endif                            \n"
+                     "#ifdef GL_FRAGMENT_PRECISION_HIGH    \n"
+                     "   precision highp float;            \n"
+                     "   precision highp int;            \n"
+                     "   precision highp int;            \n"
+                     "#else                                \n"
+                     "   precision mediump float;          \n"
+                     "   precision mediump int;          \n"
+                     "#endif                               \n"
                      "#line 2"+
                      source.substr(insertPrecisionPos);
         }

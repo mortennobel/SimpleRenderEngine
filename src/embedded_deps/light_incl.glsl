@@ -1,6 +1,14 @@
 #ifdef S_SHADOW
 in vec4 vShadowmapCoord;
+#ifdef GL_ES
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+uniform highp sampler2DShadow shadowMap;
+#else
+uniform mediump sampler2DShadow shadowMap;
+#endif
+#else
 uniform sampler2DShadow shadowMap;
+#endif
 #endif
 
 in vec4 vLightDir[SI_LIGHTS];
@@ -9,6 +17,11 @@ uniform vec4 specularity;
 
 float getShadow() {                                 // returns 0.0 if in shadow and 1.0 if fully lit
 #ifdef S_SHADOW
+#ifdef GL_ES
+    if (vShadowmapCoord.x < 0.0 || vShadowmapCoord.y < 0.0 || vShadowmapCoord.x > vShadowmapCoord.w || vShadowmapCoord.y > vShadowmapCoord.w ){
+        return 1.0;
+    }
+#endif
     return textureProj(shadowMap, vShadowmapCoord); // performs w division and compare .z with current depth
 #else
     return 0.0f;
