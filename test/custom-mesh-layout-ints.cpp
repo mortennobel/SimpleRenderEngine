@@ -97,7 +97,7 @@ private:
 };
 
 int main() {
-    new CustomMeshLayoutExample();
+    CustomMeshLayoutExample customMeshLayoutExample;
 
     return 0;
 }

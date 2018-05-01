@@ -3243,7 +3243,7 @@ private:
 
 
 int main() {
-    new GUIExample();
+    GUIExample guiExample;
 
     return 0;
 }

@@ -158,7 +158,7 @@ private:
 };
 
 int main() {
-    new ShadowExample();
+    ShadowExample shadowExample;
 
     return 0;
 }

@@ -88,6 +88,6 @@ private:
 };
 
 int main() {
-    new RenderToTextureExample();
+    RenderToTextureExample renderToTextureExample;
     return 0;
 }

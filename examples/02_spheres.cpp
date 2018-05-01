@@ -87,7 +87,7 @@ private:
 };
 
 int main() {
-    new Spheres();
+    Spheres spheres;
     return 0;
 }
 

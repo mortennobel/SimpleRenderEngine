@@ -189,7 +189,7 @@ private:
 };
 
 int main() {
-    new ScreenPointToRayExample();
+    ScreenPointToRayExample screenPointToRayExample;
 
     return 0;
 }

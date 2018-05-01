@@ -136,7 +136,7 @@ private:
 };
 
 int main() {
-    new ParticleSpriteExample();
+    ParticleSpriteExample particleSpriteExample;
 
     return 0;
 }

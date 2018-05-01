@@ -123,5 +123,5 @@ private:
 };
 
 int main() {
-    new ParticlesExample();
+    ParticlesExample particlesExample;
 }

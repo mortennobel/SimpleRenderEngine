@@ -100,6 +100,6 @@ private:
 };
 
 int main() {
-    new RenderDepth();
+    RenderDepth renderDepth;
     return 0;
 }

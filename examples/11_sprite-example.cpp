@@ -140,6 +140,6 @@ private:
 };
 
 int main() {
-    new SpriteExample();
+    SpriteExample spriteExample;
     return 0;
 }

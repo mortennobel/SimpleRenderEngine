@@ -100,6 +100,6 @@ private:
 };
 
 int main() {
-    new PolygonOffsetExample();
+    PolygonOffsetExample polygonOffsetExample;
     return 0;
 }

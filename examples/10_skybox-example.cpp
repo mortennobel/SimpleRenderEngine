@@ -99,6 +99,6 @@ private:
 };
 
 int main() {
-    new SkyboxExample();
+    SkyboxExample skyboxExample;
     return 0;
 }

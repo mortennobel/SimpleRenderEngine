@@ -117,6 +117,6 @@ private:
 };
 
 int main() {
-    new PrimitivesTest();
+    PrimitivesTest primitivesTest;
     return 0;
 }

@@ -126,7 +126,7 @@ private:
 
 
 int main() {
-    new SpinningSphereCubemapExample();
+    SpinningSphereCubemapExample spinningSphereCubemapExample;
     return 0;
 }
 

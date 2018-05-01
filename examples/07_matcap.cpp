@@ -116,7 +116,7 @@ private:
 };
 
 int main() {
-    new MapcapExample();
+    MapcapExample mapcapExample;
 
     return 0;
 }

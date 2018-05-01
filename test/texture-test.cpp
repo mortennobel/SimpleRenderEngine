@@ -116,6 +116,6 @@ private:
 };
 
 int main() {
-    new TextureTestExample();
+    TextureTestExample textureTestExample;
     return 0;
 }

@@ -131,7 +131,7 @@ private:
 };
 
 int main() {
-    new PickingExample();
+    PickingExample pickingExample;
 
     return 0;
 }

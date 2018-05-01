@@ -246,6 +246,6 @@ private:
 };
 
 int main() {
-    new ObjViewerExample();
+    ObjViewerExample objViewerExample;
     return 0;
 }

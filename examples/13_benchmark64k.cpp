@@ -109,6 +109,6 @@ private:
 };
 
 int main() {
-    new Benchmark64KExample();
+    Benchmark64KExample benchmark64K;
     return 0;
 }

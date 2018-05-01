@@ -543,6 +543,6 @@ private:
 };
 
 int main() {
-    new ClothSimulation();
+    ClothSimulation clothSimulation;
     return 0;
 }

@@ -85,7 +85,7 @@ private:
 };
 
 int main() {
-    new BumpMap();
+    BumpMap bumpMap;
     return 0;
 }
 

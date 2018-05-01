@@ -62,7 +62,7 @@ private:
 };
 
 int main() {
-    new GammaTest();
+    GammaTest gammaTest;
 
     return 0;
 }

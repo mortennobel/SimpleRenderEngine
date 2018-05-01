@@ -71,6 +71,6 @@ private:
 };
 
 int main() {
-    new SpinningCubeExample();
+    SpinningCubeExample spinningCubeExample;
     return 0;
 }

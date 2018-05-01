@@ -222,7 +222,7 @@ private:
 };
 
 int main() {
-    new MultipleLightsExample();
+    MultipleLightsExample multipleLightsExample;
 
     return 0;
 }

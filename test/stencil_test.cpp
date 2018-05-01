@@ -155,7 +155,7 @@ private:
 };
 
 int main() {
-    new StencilExample();
+    StencilExample stencilExample;
 
     return 0;
 }

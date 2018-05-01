@@ -69,6 +69,6 @@ private:
 };
 
 int main() {
-    new ImGuiColorTest();
+    ImGuiColorTest imGuiColorTest;
     return 0;
 }

@@ -208,6 +208,6 @@ private:
 };
 
 int main() {
-    new Benchmark64KExample();
+    Benchmark64KExample benchmark64KExample;
     return 0;
 }

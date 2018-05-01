@@ -105,7 +105,7 @@ private:
 };
 
 int main() {
-    new MultiCamExample();
+    MultiCamExample multiCamExample;
 
     return 0;
 }

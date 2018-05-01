@@ -114,6 +114,6 @@ private:
 };
 
 int main() {
-    new StaticVertexAttribute();
+    StaticVertexAttribute staticVertexAttribute;
     return 0;
 }

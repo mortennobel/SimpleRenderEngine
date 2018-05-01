@@ -79,7 +79,7 @@ private:
 };
 
 int main() {
-	new SpinningPrimitivesTexExample();
+	SpinningPrimitivesTexExample spinningPrimitivesTexExample;
 
 	return 0;
 }

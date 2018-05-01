@@ -274,6 +274,6 @@ private:
 };
 
 int main() {
-    new PBRTest();
+    PBRTest pbrTest;
     return 0;
 }
