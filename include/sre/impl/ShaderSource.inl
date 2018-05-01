@@ -600,7 +600,7 @@ out vec4 vColor;
 out vec2 vUV;
 out vec3 vWsPos;
 #ifdef S_SHADOW
-uniform mat4 shadowViewProjection;
+uniform mat4 shadowViewProjOffset;
 out vec4 vShadowmapCoord;
 #endif
 
@@ -622,9 +622,7 @@ void main(void) {
     vColor = vertex_color;
 #endif
 #ifdef S_SHADOW
-    vShadowmapCoord = shadowViewProjection * wsPos;
-    vShadowmapCoord.xyz *= 0.5f;
-    vShadowmapCoord.xyz += vShadowmapCoord.w * 0.5f;
+    vShadowmapCoord = shadowViewProjOffset * wsPos;
 #endif
 })"),
 std::make_pair<std::string,std::string>("standard_blinn_phong_frag.glsl",R"(#version 330
@@ -682,7 +680,7 @@ in vec4 vertex_color;
 out vec4 vColor;
 #endif
 #ifdef S_SHADOW
-uniform mat4 shadowViewProjection;
+uniform mat4 shadowViewProjOffset;
 out vec4 vShadowmapCoord;
 #endif
 
@@ -704,9 +702,7 @@ void main(void) {
     vColor = vertex_color;
 #endif
 #ifdef S_SHADOW
-    vShadowmapCoord = shadowViewProjection * wsPos;
-    vShadowmapCoord.xyz *= 0.5f;
-    vShadowmapCoord.xyz += vShadowmapCoord.w * 0.5f;
+    vShadowmapCoord = shadowViewProjOffset * wsPos;
 #endif
 })"),
 std::make_pair<std::string,std::string>("standard_phong_frag.glsl",R"(#version 330
@@ -765,7 +761,7 @@ in vec4 vertex_color;
 out vec4 vColor;
 #endif
 #ifdef S_SHADOW
-uniform mat4 shadowViewProjection;
+uniform mat4 shadowViewProjOffset;
 out vec4 vShadowmapCoord;
 #endif
 
@@ -787,9 +783,7 @@ void main(void) {
     vColor = vertex_color;
 #endif
 #ifdef S_SHADOW
-    vShadowmapCoord = shadowViewProjection * wsPos;
-    vShadowmapCoord.xyz *= 0.5f;
-    vShadowmapCoord.xyz += vShadowmapCoord.w * 0.5f;
+    vShadowmapCoord = shadowViewProjOffset * wsPos;
 #endif
 })"),
 std::make_pair<std::string,std::string>("blit_frag.glsl",R"(#version 330

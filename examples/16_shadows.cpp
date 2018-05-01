@@ -121,8 +121,9 @@ public:
                 .build();
 
         mat->set("shadowMap", shadowMapTexture);
-        shadowViewProjection = shadowmapCamera.getProjectionTransform({shadowMapSize,shadowMapSize}) * shadowmapCamera.getViewTransform();
-        mat->set("shadowViewProjection", shadowViewProjection);
+        static glm::mat4 offset = glm::translate(glm::vec3(0.5f)) * glm::scale(glm::vec3(0.5f));
+        glm::mat4 shadowViewProjOffset = offset * shadowmapCamera.getProjectionTransform({shadowMapSize,shadowMapSize}) * shadowmapCamera.getViewTransform();
+        mat->set("shadowViewProjOffset", shadowViewProjOffset);
 
         renderWorld(rp2, mat);
 
@@ -149,7 +150,6 @@ private:
     std::shared_ptr<Material> shadowMapMat;
     std::shared_ptr<Framebuffer> shadowMap;
     std::shared_ptr<Texture> shadowMapTexture;
-    glm::mat4 shadowViewProjection;
     float rotateX = 0;
     float rotateY = 0;
     int texture = 0;
