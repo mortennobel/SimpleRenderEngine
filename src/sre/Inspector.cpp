@@ -30,7 +30,7 @@ using Milliseconds = std::chrono::duration<float, std::chrono::milliseconds::per
 namespace sre {
     namespace {
 
-        char* to_string(StencilOp op){
+        const char* to_string(StencilOp op){
             switch (op){
                 case StencilOp::Keep:
                     return "Keep";
