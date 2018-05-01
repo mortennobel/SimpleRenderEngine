@@ -395,6 +395,9 @@ namespace sre {
                         case StencilFunc::NotEqual:
                             func = "NotEqual";
                             break;
+                        case StencilFunc::Disabled:
+                            func = "Disabled";
+                            break;
                     }
                     ImGui::LabelText("Function",func.c_str());
                     ImGui::LabelText("Ref","%i",stencil.ref);
@@ -448,6 +451,7 @@ namespace sre {
                 return "int";
             case UniformType::Mat3Array:
                 return "mat3";
+            case UniformType::Mat4:
             case UniformType::Mat4Array:
                 return "mat4";
             case UniformType::Texture:
@@ -471,7 +475,8 @@ namespace sre {
         std::string s = fbo->getName()+"##"+std::to_string((int64_t)fbo);
         if (ImGui::TreeNode(s.c_str())){
             char name[128];
-            sprintf(name, "Color textures %i",fbo->textures.size());
+            int size = (int)fbo->textures.size();
+            sprintf(name, "Color textures %i", size);
             if (ImGui::TreeNode(name)){
                 for (auto & t : fbo->textures){
                     showTexture(t.get());
