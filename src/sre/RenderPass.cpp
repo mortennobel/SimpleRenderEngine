@@ -393,13 +393,13 @@ namespace sre {
             lastBoundMeshId = mesh->meshId;
             mesh->bind(shader);
         }
-        if (mesh->getIndexSets() == 0){
+        if (mesh->indexType == IndexType::None){
             glDrawArrays((GLenum) mesh->getMeshTopology(), 0, mesh->getVertexCount());
         } else {
             auto offsetCount = mesh->elementBufferOffsetCount[rqObj.subMesh];
 
             GLsizei indexCount = offsetCount.second;
-            glDrawElements((GLenum) mesh->getMeshTopology(rqObj.subMesh), indexCount, GL_UNSIGNED_SHORT, BUFFER_OFFSET(offsetCount.first));
+            glDrawElements((GLenum) mesh->getMeshTopology(rqObj.subMesh), indexCount, (GLenum)mesh->indexType, BUFFER_OFFSET(offsetCount.first));
         }
     }
 

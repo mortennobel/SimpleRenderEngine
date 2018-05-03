@@ -24,6 +24,12 @@ namespace sre {
     class Shader;
     class Inspector;
 
+    enum class IndexType{
+        None,
+        UInt16 = GL_UNSIGNED_SHORT,
+        UInt32 = GL_UNSIGNED_INT
+    };
+
     /**
      * Represents a Mesh object.
      * A mesh is composed of a list of named vertex attributes such as
@@ -59,6 +65,7 @@ namespace sre {
             MeshBuilder& withParticleSizes(const std::vector<float> &particleSize);             // Set vertex attribute "particleSize" of type float
             MeshBuilder& withMeshTopology(MeshTopology meshTopology);                           // Defines the meshTopology (default is Triangles)
             MeshBuilder& withIndices(const std::vector<uint16_t> &indices, MeshTopology meshTopology = MeshTopology::Triangles, int indexSet=0);
+            MeshBuilder& withIndices(const std::vector<uint32_t> &indices, MeshTopology meshTopology = MeshTopology::Triangles, int indexSet=0);
                                                                                                 // Defines the indices (if no indices defined then the vertices are rendered sequeantial)
             // custom data layout
             MeshBuilder& withAttribute(std::string name, const std::vector<float> &values);       // Set a named vertex attribute of float
@@ -81,6 +88,7 @@ namespace sre {
             std::map<std::string,std::vector<glm::i32vec4>> attributesIVec4;
             std::vector<MeshTopology> meshTopology = {MeshTopology::Triangles};
             std::vector<std::vector<uint16_t>> indices;
+            std::vector<std::vector<uint32_t>> indices32;
             Mesh *updateMesh = nullptr;
             std::string name;
             friend class Mesh;
@@ -102,6 +110,7 @@ namespace sre {
         int getIndexSets();                                         // Return the number of index sets
         MeshTopology getMeshTopology(int indexSet=0);               // Mesh topology used
         const std::vector<uint16_t>& getIndices(int indexSet=0);    // Indices used in the mesh
+        const std::vector<uint32_t>& getIndices32(int indexSet=0);  // Indices used in the mesh
         int getIndicesSize(int indexSet=0);                         // Return the size of the index set
 
         template<typename T>
@@ -127,10 +136,12 @@ namespace sre {
             int disabledAttributes[10];
         };
 
-        Mesh       (std::map<std::string,std::vector<float>>&& attributesFloat, std::map<std::string,std::vector<glm::vec2>>&& attributesVec2, std::map<std::string, std::vector<glm::vec3>>&& attributesVec3, std::map<std::string,std::vector<glm::vec4>>&& attributesVec4,std::map<std::string,std::vector<glm::i32vec4>>&& attributesIVec4, std::vector<std::vector<uint16_t>> &&indices, std::vector<MeshTopology> meshTopology,std::string name,RenderStats& renderStats);
-        void update(std::map<std::string,std::vector<float>>&& attributesFloat, std::map<std::string,std::vector<glm::vec2>>&& attributesVec2, std::map<std::string, std::vector<glm::vec3>>&& attributesVec3, std::map<std::string,std::vector<glm::vec4>>&& attributesVec4,std::map<std::string,std::vector<glm::i32vec4>>&& attributesIVec4, std::vector<std::vector<uint16_t>> &&indices, std::vector<MeshTopology> meshTopology,std::string name,RenderStats& renderStats);
+        Mesh       (std::map<std::string,std::vector<float>>&& attributesFloat, std::map<std::string,std::vector<glm::vec2>>&& attributesVec2, std::map<std::string, std::vector<glm::vec3>>&& attributesVec3, std::map<std::string,std::vector<glm::vec4>>&& attributesVec4,std::map<std::string,std::vector<glm::i32vec4>>&& attributesIVec4, std::vector<std::vector<uint16_t>> &&indices,std::vector<std::vector<uint32_t>> &&indices32, std::vector<MeshTopology> meshTopology,std::string name,RenderStats& renderStats);
+        void update(std::map<std::string,std::vector<float>>&& attributesFloat, std::map<std::string,std::vector<glm::vec2>>&& attributesVec2, std::map<std::string, std::vector<glm::vec3>>&& attributesVec3, std::map<std::string,std::vector<glm::vec4>>&& attributesVec4,std::map<std::string,std::vector<glm::i32vec4>>&& attributesIVec4, std::vector<std::vector<uint16_t>> &&indices,std::vector<std::vector<uint32_t>> &&indices32, std::vector<MeshTopology> meshTopology,std::string name,RenderStats& renderStats);
 
         std::vector<float> getInterleavedData();
+
+        IndexType indexType;
 
         int totalBytesPerVertex = 0;
         static uint16_t meshIdCount;
@@ -157,6 +168,7 @@ namespace sre {
         std::map<std::string,std::vector<glm::i32vec4>> attributesIVec4;
 
         std::vector<std::vector<uint16_t>> indices;
+        std::vector<std::vector<uint32_t>> indices32;
 
         std::array<glm::vec3,2> boundsMinMax;
 

@@ -335,7 +335,7 @@ namespace {
 
     struct ObjInterleavedIndex {
         std::string materialName;
-        std::vector<uint16_t> vertexIndices;
+        std::vector<uint32_t> vertexIndices;
     };
 
     shared_ptr<sre::Material> createMaterial(const std::string& materialName, const std::vector<ObjMaterial>& matVector, std::string path) {
@@ -531,9 +531,20 @@ std::shared_ptr<sre::Mesh> sre::ModelImporter::importObj(std::string path, std::
         meshBuilder.withNormals(finalNormals);
     }
 
-    for (int i=0;i<indices.size();i++){
-        outModelMaterials.push_back(createMaterial(indices[i].materialName, materials, path));
-        meshBuilder.withIndices(indices[i].vertexIndices, MeshTopology::Triangles, i);
+    if (finalPositions.size()<65536){
+        for (int i=0;i<indices.size();i++){
+            outModelMaterials.push_back(createMaterial(indices[i].materialName, materials, path));
+            std::vector<uint16_t> indices16(indices[i].vertexIndices.size(),0);
+            for (int j=0;j<indices16.size();j++){
+                indices16[j] = static_cast<uint16_t >(indices[i].vertexIndices[j]);
+            }
+            meshBuilder.withIndices(indices16, MeshTopology::Triangles, i);
+        }
+    } else {
+        for (int i=0;i<indices.size();i++){
+            outModelMaterials.push_back(createMaterial(indices[i].materialName, materials, path));
+            meshBuilder.withIndices(indices[i].vertexIndices, MeshTopology::Triangles, i);
+        }
     }
 
     return meshBuilder.build();
