@@ -25,9 +25,9 @@ namespace sre {
     class Inspector;
 
     enum class IndexType{
-        None,
-        UInt16 = GL_UNSIGNED_SHORT,
-        UInt32 = GL_UNSIGNED_INT
+        None = 0,
+        UInt16 = 0x1403, // GL_UNSIGNED_SHORT
+        UInt32 = 0x1405  // GL_UNSIGNED_INT
     };
 
     /**
