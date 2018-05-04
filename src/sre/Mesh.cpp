@@ -135,7 +135,7 @@ namespace sre {
 
         elementBufferOffsetCount.clear();
         if (this->indices.empty() && this->indices32.empty()){
-            indexType = IndexType::None;
+            indexType = IndexType::NoIndex;
             if (elementBufferId != 0){
                 glDeleteBuffers(1, &elementBufferId);
                 elementBufferId = 0;

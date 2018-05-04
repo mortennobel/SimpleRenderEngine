@@ -24,10 +24,10 @@ namespace sre {
     class Shader;
     class Inspector;
 
-    enum class IndexType{
-        None = 0,
-        UInt16 = 0x1403, // GL_UNSIGNED_SHORT
-        UInt32 = 0x1405  // GL_UNSIGNED_INT
+    enum class IndexType {
+        NoIndex = 0,
+        UInt16 = 0x1403, // 16 bit index (GL_UNSIGNED_SHORT)
+        UInt32 = 0x1405  // 32 bit index (GL_UNSIGNED_INT)
     };
 
     /**
