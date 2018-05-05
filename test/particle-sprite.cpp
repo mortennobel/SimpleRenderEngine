@@ -136,7 +136,6 @@ private:
 };
 
 int main() {
-    ParticleSpriteExample particleSpriteExample;
-
+    std::make_unique<ParticleSpriteExample>();
     return 0;
 }

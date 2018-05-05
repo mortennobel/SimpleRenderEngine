@@ -97,8 +97,7 @@ private:
 };
 
 int main() {
-    CustomMeshLayoutExample customMeshLayoutExample;
-
+    std::make_unique<CustomMeshLayoutExample>();
     return 0;
 }
 

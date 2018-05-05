@@ -85,8 +85,7 @@ private:
 };
 
 int main() {
-    Deferred deferredExample;
-
+    std::make_unique<Deferred>();
     return 0;
 }
 

@@ -99,6 +99,6 @@ private:
 };
 
 int main() {
-    SkyboxExample skyboxExample;
+    std::make_unique<SkyboxExample>();
     return 0;
 }

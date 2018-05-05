@@ -148,8 +148,7 @@ private:
 };
 
 int main() {
-    GUIExample guiExample;
-
+    std::make_unique<GUIExample>();
     return 0;
 }
 

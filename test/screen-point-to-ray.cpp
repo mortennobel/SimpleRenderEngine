@@ -189,8 +189,7 @@ private:
 };
 
 int main() {
-    ScreenPointToRayExample screenPointToRayExample;
-
+    std::make_unique<ScreenPointToRayExample>();
     return 0;
 }
 

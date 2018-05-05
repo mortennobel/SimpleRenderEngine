@@ -246,6 +246,6 @@ private:
 };
 
 int main() {
-    ObjViewerExample objViewerExample;
+    std::make_unique<ObjViewerExample>();
     return 0;
 }

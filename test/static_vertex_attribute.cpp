@@ -114,6 +114,7 @@ private:
 };
 
 int main() {
-    StaticVertexAttribute staticVertexAttribute;
+    
+    std::make_unique<StaticVertexAttribute>();
     return 0;
 }

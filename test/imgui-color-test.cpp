@@ -69,6 +69,6 @@ private:
 };
 
 int main() {
-    ImGuiColorTest imGuiColorTest;
+    std::make_unique<ImGuiColorTest>();
     return 0;
 }

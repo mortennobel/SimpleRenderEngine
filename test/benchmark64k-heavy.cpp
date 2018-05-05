@@ -12,8 +12,8 @@
 #include <glm/gtx/transform.hpp>
 #include <sre/Inspector.hpp>
 
-const int BOX_GRID_DIM = 40;
-const int BENCHMARK_SIZE = 40;
+constexpr int BOX_GRID_DIM = 40;
+constexpr int BENCHMARK_SIZE = 40;
 
 using namespace sre;
 
@@ -23,9 +23,9 @@ float renderTimeGetter(void* data, int offset){
     return floatData[id];
 }
 //
-class Benchmark64KExample {
+class Benchmark64KExampleHeavy {
 public:
-    Benchmark64KExample() {
+    Benchmark64KExampleHeavy() {
         r.init();
 
         camera.setPerspectiveProjection(60,0.1,100);
@@ -208,6 +208,6 @@ private:
 };
 
 int main() {
-    Benchmark64KExample benchmark64KExample;
+    std::make_unique<Benchmark64KExampleHeavy>();
     return 0;
 }

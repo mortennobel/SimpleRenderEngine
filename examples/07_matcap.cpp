@@ -116,8 +116,7 @@ private:
 };
 
 int main() {
-    MapcapExample mapcapExample;
-
+    std::make_unique<MapcapExample>();
     return 0;
 }
 

@@ -158,8 +158,7 @@ private:
 };
 
 int main() {
-    ShadowExample shadowExample;
-
+    std::make_unique<ShadowExample>();
     return 0;
 }
 

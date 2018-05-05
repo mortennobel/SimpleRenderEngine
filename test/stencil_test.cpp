@@ -155,8 +155,8 @@ private:
 };
 
 int main() {
-    StencilExample stencilExample;
-
+    
+    std::make_unique<StencilExample>();
     return 0;
 }
 

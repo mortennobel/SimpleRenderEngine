@@ -543,6 +543,6 @@ private:
 };
 
 int main() {
-    ClothSimulation clothSimulation;
+    std::make_unique<ClothSimulation>();
     return 0;
 }

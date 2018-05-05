@@ -91,7 +91,7 @@ private:
 };
 
 int main() {
-    Deallocation deallocation;
+    std::make_unique<Deallocation>();
     return 0;
 }
 

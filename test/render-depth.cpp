@@ -100,6 +100,6 @@ private:
 };
 
 int main() {
-    RenderDepth renderDepth;
+    std::make_unique<RenderDepth>();
     return 0;
 }

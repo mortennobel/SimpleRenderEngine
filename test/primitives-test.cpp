@@ -117,6 +117,6 @@ private:
 };
 
 int main() {
-    PrimitivesTest primitivesTest;
+    std::make_unique<PrimitivesTest>();
     return 0;
 }

@@ -85,7 +85,7 @@ private:
 };
 
 int main() {
-    BumpMap bumpMap;
+    std::make_unique<BumpMap>();
     return 0;
 }
 

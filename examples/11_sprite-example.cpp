@@ -140,6 +140,6 @@ private:
 };
 
 int main() {
-    SpriteExample spriteExample;
+    std::make_unique<SpriteExample>();
     return 0;
 }

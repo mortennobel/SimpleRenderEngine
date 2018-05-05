@@ -105,7 +105,6 @@ private:
 };
 
 int main() {
-    MultiCamExample multiCamExample;
-
+    std::make_unique<MultiCamExample>();
     return 0;
 }
