@@ -14,9 +14,9 @@
 
 using namespace sre;
 
-class ShadowExample{
+class Deferred{
 public:
-    ShadowExample(){
+    Deferred(){
         r.init();
 
         mesh = sre::ModelImporter::importObj("examples_data/sponza/", "sponza.obj", materials);
@@ -85,7 +85,7 @@ private:
 };
 
 int main() {
-    ShadowExample shadowExample;
+    Deferred deferredExample;
 
     return 0;
 }

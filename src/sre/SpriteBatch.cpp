@@ -30,7 +30,7 @@ namespace sre{
         std::vector<glm::vec3> vertices;
         std::vector<glm::vec4> colors;
         std::vector<glm::vec4> uvs;
-        std::vector<uint16_t> indices;
+        std::vector<uint32_t> indices;
         sre::Texture* lastTexture = nullptr;
 
         auto pushCurrentMesh = [&](){

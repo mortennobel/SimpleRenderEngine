@@ -293,21 +293,21 @@ int CONSTRAINT_ITERATIONS = 7; // how many iterations of constraint satisfaction
             rp.draw(mesh,glm::mat4(1.0f), material);
         }
 
-        std::vector<uint16_t > createIndices(){
-            std::vector<uint16_t> indices;
+        std::vector<uint32_t > createIndices(){
+            std::vector<uint32_t> indices;
 
             for (int j = 0; j < num_particles_height-1; j++) {
                 int index = 0;
                 if (j > 0) {
-                    indices.push_back(static_cast<uint16_t>(j * num_particles_width)); // make degenerate
+                    indices.push_back(static_cast<uint32_t>(j * num_particles_width)); // make degenerate
                 }
                 for (int i = 0; i <= num_particles_width-1; i++) {
                     index = j * num_particles_width + i;
-                    indices.push_back(static_cast<uint16_t>(index));
-                    indices.push_back(static_cast<uint16_t>(index + num_particles_width));
+                    indices.push_back(static_cast<uint32_t>(index));
+                    indices.push_back(static_cast<uint32_t>(index + num_particles_width));
                 }
                 if (j + 1 < num_particles_height-1) {
-                    indices.push_back(static_cast<uint16_t>(index + num_particles_width)); // make degenerate
+                    indices.push_back(static_cast<uint32_t>(index + num_particles_width)); // make degenerate
                 }
             }
             return indices;
