@@ -143,12 +143,11 @@ namespace sre {
     }
 
     std::array<glm::vec3, 2> Camera::screenPointToRay(glm::vec2 position) {
-        glm::vec2 viewportSize = (glm::vec2)Renderer::instance->getWindowSize() * this->viewportSize;
+        glm::vec2 scaledWindowsSize = (glm::vec2)Renderer::instance->getWindowSize() * viewportSize;
 
-        position = (position / viewportSize)*2.0f-glm::vec2(1.0f);
+        position = (position / scaledWindowsSize - viewportOffset/viewportSize)*2.0f-glm::vec2(1.0f);
 
-
-        auto viewProjection = getProjectionTransform(viewportSize) * viewTransform;
+        auto viewProjection = getProjectionTransform(scaledWindowsSize) * viewTransform;
         auto invViewProjection = glm::inverse(viewProjection);
 
         glm::vec4 originClipSpace{position,-1,1};
