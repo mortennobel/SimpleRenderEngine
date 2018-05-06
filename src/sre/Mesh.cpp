@@ -175,8 +175,13 @@ namespace sre {
                     } else {
                         indexSize = sizeof(uint32_t)*idx.size();
                         type = GL_UNSIGNED_INT;
+                        // enforce alignment to 4 bytes
+                        if (offset%4==2){
+                            offset+=2;
+                        }
                     }
                 }
+
                 elementBufferOffsetCount.push_back({offset, (uint32_t)this->indices[i].size(), type});
                 offset += indexSize;
                 totalBytes += indexSize;
