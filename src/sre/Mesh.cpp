@@ -158,7 +158,6 @@ namespace sre {
             if (elementBufferId == 0){
                 glGenBuffers(1, &elementBufferId);
             }
-            size_t totalBytes = 0;
             uint32_t offset = 0;
             for (int i=0;i<this->indices.size();i++) {
                 auto & idx = this->indices[i];
@@ -184,11 +183,9 @@ namespace sre {
 
                 elementBufferOffsetCount.push_back({offset, (uint32_t)this->indices[i].size(), type});
                 offset += indexSize;
-                totalBytes += indexSize;
-
             }
             std::vector<uint8_t> concatenatedIndices;
-            concatenatedIndices.reserve(totalBytes);
+            concatenatedIndices.reserve(offset);
 
             for (int i=0;i<this->indices.size();i++) {
                 uint8_t* dest = concatenatedIndices.data()+elementBufferOffsetCount[i].offset;
