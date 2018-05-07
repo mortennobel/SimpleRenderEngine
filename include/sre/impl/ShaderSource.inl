@@ -10,7 +10,7 @@ out vec4 fragColor;
 
 void main(void)
 {
-    fragColor = vec4(0.0f);
+    fragColor = vec4(0.0);
 })"),
 std::make_pair<std::string,std::string>("shadow_vert.glsl",R"(#version 330
 in vec3 position;
@@ -189,7 +189,7 @@ float getShadow() {                                 // returns 0.0 if in shadow 
 #endif
     return textureProj(shadowMap, vShadowmapCoord); // performs w division and compare .z with current depth
 #else
-    return 0.0f;
+    return 0.0;
 #endif
 }
 

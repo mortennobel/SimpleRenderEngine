@@ -24,7 +24,7 @@ float getShadow() {                                 // returns 0.0 if in shadow 
 #endif
     return textureProj(shadowMap, vShadowmapCoord); // performs w division and compare .z with current depth
 #else
-    return 0.0f;
+    return 0.0;
 #endif
 }
 
