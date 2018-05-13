@@ -3243,7 +3243,6 @@ private:
 
 
 int main() {
-    new GUIExample();
-
+    std::make_unique<GUIExample>();
     return 0;
 }

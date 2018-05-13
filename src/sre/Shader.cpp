@@ -26,6 +26,7 @@ namespace sre {
         std::shared_ptr<Shader> standardBlinnPhong;
         std::shared_ptr<Shader> standardPhong;
         std::shared_ptr<Shader> unlit;
+        std::shared_ptr<Shader> shadow;
         std::shared_ptr<Shader> skybox;
         std::shared_ptr<Shader> skyboxProcedural;
         std::shared_ptr<Shader> blit;
@@ -150,7 +151,9 @@ namespace sre {
 
                 LOG_ERROR("Shader compile error in %s (%s): %s", name.c_str(), typeStr.c_str(), errorLog.data());
                 errors.push_back(std::string(errorLog.data())+"##"+std::to_string(type));
-
+                if (Renderer::instance->getRenderStats().frame <= 1){
+                    std::cout << source << std::endl;
+                }
             }
         }
 
@@ -183,9 +186,9 @@ namespace sre {
                 return "int";
             case UniformType::Float:
                 return "float";
-            case UniformType::Mat3:
+            case UniformType::Mat3Array:
                 return "mat3";
-            case UniformType::Mat4:
+            case UniformType::Mat4Array:
                 return "mat4";
             case UniformType::Vec3:
                 return "vec3";
@@ -321,11 +324,14 @@ namespace sre {
             }
             source = source.substr(0, insertPrecisionPos)+
                      "\n"
-                     "#ifdef GL_FRAGMENT_PRECISION_HIGH \n"
-                     "   precision highp float;         \n"
-                     "#else                             \n"
-                     "   precision mediump float;       \n"
-                     "#endif                            \n"
+                     "#ifdef GL_FRAGMENT_PRECISION_HIGH    \n"
+                     "   precision highp float;            \n"
+                     "   precision highp int;            \n"
+                     "   precision highp int;            \n"
+                     "#else                                \n"
+                     "   precision mediump float;          \n"
+                     "   precision mediump int;          \n"
+                     "#endif                               \n"
                      "#line 2"+
                      source.substr(insertPrecisionPos);
         }
@@ -418,12 +424,17 @@ namespace sre {
                     uniformType = UniformType::Int;
                     break;
                 case GL_FLOAT_MAT3:
-                    uniformType = UniformType::Mat3;
+                    uniformType = UniformType::Mat3Array;
                     break;
                 case GL_FLOAT_MAT4:
-                    uniformType = UniformType::Mat4;
+                    if (size > 1){
+                        uniformType = UniformType::Mat4Array;
+                    } else {
+                        uniformType = UniformType::Mat4;
+                    }
                     break;
                 case GL_SAMPLER_2D:
+                case GL_SAMPLER_2D_SHADOW:
                     uniformType = UniformType::Texture;
                     break;
                 case GL_SAMPLER_CUBE:
@@ -466,14 +477,14 @@ namespace sre {
                     }
                 }
                 if (strcmp(name, "g_model_it")==0){
-                    if (uniformType == UniformType::Mat3){
+                    if (uniformType == UniformType::Mat3Array){
                         uniformLocationModelInverseTranspose = location;
                     } else {
                         LOG_ERROR("Invalid g_model_it uniform type. Expected mat3 - was %s.",c_str(uniformType));
                     }
                 }
                 if (strcmp(name, "g_model_view_it")==0){
-                    if (uniformType == UniformType::Mat3){
+                    if (uniformType == UniformType::Mat3Array){
                         uniformLocationModelViewInverseTranspose = location;
                     } else {
                         LOG_ERROR("Invalid g_model_view_it uniform type. Expected mat3 - was %s.",c_str(uniformType));
@@ -736,6 +747,21 @@ namespace sre {
         return skyboxProcedural;
     }
 
+    std::shared_ptr<Shader> Shader::getShadow() {
+        if (shadow != nullptr){
+            return shadow;
+        }
+        auto& renderInfo = sre::renderInfo();
+        bool colorWrite = renderInfo.supportFBODepthAttachment == false;
+        shadow = create()
+                .withSourceFile("shadow_vert.glsl", ShaderType::Vertex)
+                .withSourceFile("shadow_frag.glsl", ShaderType::Fragment)
+                .withName("Shadow")
+                .withOffset(2.5f, 10)                                          // shadow bias
+                .withColorWrite({colorWrite,colorWrite,colorWrite,colorWrite})
+                .build();
+        return shadow;
+    }
 
     std::shared_ptr<Shader> Shader::getBlit() {
         if (blit != nullptr){
@@ -763,10 +789,6 @@ namespace sre {
                 .withName("Unlit Sprite")
                 .build();
         return unlitSprite;
-    }
-
-    std::shared_ptr<Shader> Shader::getStandard(){
-        return getStandardBlinnPhong();
     }
 
     std::shared_ptr<Shader> Shader::getStandardPBR(){
@@ -1055,14 +1077,6 @@ namespace sre {
         return standardPhong;
     }
 
-
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withSource(const std::string& vertexShader, const std::string& fragmentShader) {
-        withSourceString(vertexShader, ShaderType::Vertex);
-        withSourceString(fragmentShader, ShaderType::Fragment);
-
-        return *this;
-    }
-
     Shader::ShaderBuilder::ShaderBuilder(Shader *shader)
     :updateShader(shader)
     {
@@ -1106,6 +1120,9 @@ namespace sre {
         }
         if (renderInfo().supportTextureSamplerSRGB){
             ss<<"#define SI_TEX_SAMPLER_SRGB 1\n";
+        }
+        if (renderInfo().supportFBODepthAttachment){
+            ss<<"#define SI_FBO_DEPTH_ATTACHMENT 1\n";
         }
 
         // If the shader contains any #version or #extension statements, the defines are added after them.

@@ -293,21 +293,21 @@ int CONSTRAINT_ITERATIONS = 7; // how many iterations of constraint satisfaction
             rp.draw(mesh,glm::mat4(1.0f), material);
         }
 
-        std::vector<uint16_t > createIndices(){
-            std::vector<uint16_t> indices;
+        std::vector<uint32_t > createIndices(){
+            std::vector<uint32_t> indices;
 
             for (int j = 0; j < num_particles_height-1; j++) {
                 int index = 0;
                 if (j > 0) {
-                    indices.push_back(static_cast<uint16_t>(j * num_particles_width)); // make degenerate
+                    indices.push_back(static_cast<uint32_t>(j * num_particles_width)); // make degenerate
                 }
                 for (int i = 0; i <= num_particles_width-1; i++) {
                     index = j * num_particles_width + i;
-                    indices.push_back(static_cast<uint16_t>(index));
-                    indices.push_back(static_cast<uint16_t>(index + num_particles_width));
+                    indices.push_back(static_cast<uint32_t>(index));
+                    indices.push_back(static_cast<uint32_t>(index + num_particles_width));
                 }
                 if (j + 1 < num_particles_height-1) {
-                    indices.push_back(static_cast<uint16_t>(index + num_particles_width)); // make degenerate
+                    indices.push_back(static_cast<uint32_t>(index + num_particles_width)); // make degenerate
                 }
             }
             return indices;
@@ -494,6 +494,13 @@ public:
         // draw solid sphere(ball_pos);
         renderPass.draw(sphere, glm::translate(ball_pos)*glm::scale(glm::vec3(ball_radius,ball_radius,ball_radius)), sphereMaterial);
 
+        auto size = Renderer::instance->getWindowSize();
+        ImVec2 imSize(250, 220.0f);
+        ImVec2 imPos(size.x-250, 0);
+        ImGui::SetNextWindowSize(imSize);                                   // imgui window size should have same width as SDL window size
+        ImGui::SetNextWindowPos(imPos);
+        ImGui::Begin("Cloth simulation settings", nullptr, ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoResize);
+        // create window without title
         ImGui::DragInt("Constraint iterations", &CONSTRAINT_ITERATIONS,1,1,30);
         ImGui::DragFloat("Damping", &DAMPING,0.05,0,1);
         ImGui::DragFloat3("Gravity", &gravity.x);
@@ -505,6 +512,8 @@ public:
         if (updated){
             cloth1 = std::make_shared<Cloth>(14,10,particlesWidth,particlesHeight); // one Cloth object of the Cloth class
         }
+        ImGui::End();
+
 
         static Inspector inspector;
         inspector.update();
@@ -534,6 +543,6 @@ private:
 };
 
 int main() {
-    new ClothSimulation();
+    std::make_unique<ClothSimulation>();
     return 0;
 }

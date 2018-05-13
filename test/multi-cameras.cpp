@@ -56,14 +56,15 @@ public:
 
         renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), material);
 
-        renderPass = RenderPass::create()
+        renderPass.finish();
+        auto renderPass2 = RenderPass::create()
                 .withCamera(camera2)
                 .withWorldLights(&worldLights)
                 .withClearColor(true, {1, 1, 0, 1})
                 .withGUI(true)
                 .build();
 
-        renderPass.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), material);
+        renderPass2.draw(mesh, glm::eulerAngleY(glm::radians((float)i)), material);
 
         static bool lookAt = true;
         ImGui::Checkbox("LookAt",&lookAt);
@@ -104,7 +105,6 @@ private:
 };
 
 int main() {
-    new MultiCamExample();
-
+    std::make_unique<MultiCamExample>();
     return 0;
 }

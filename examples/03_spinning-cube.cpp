@@ -71,6 +71,7 @@ private:
 };
 
 int main() {
-    new SpinningCubeExample();
+     
+    std::make_unique<SpinningCubeExample>();
     return 0;
 }

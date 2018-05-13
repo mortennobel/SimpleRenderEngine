@@ -1,6 +1,16 @@
 cmake_minimum_required(VERSION 3.5)
 project(SimpleRenderEngine CXX)
 
+if ("${CMAKE_CURRENT_SOURCE_DIR}" STREQUAL "${CMAKE_BINARY_DIR}")
+    message(WARNING
+            "Building from within the SimpleRenderEngine source tree is not recommended.\n"
+            "Hint: Run these commands\n"
+            "$ rm -rf CMakeCache.txt CMakeFiles\n"
+            "$ mkdir -p ../sre_build\n"
+            "$ cd ../sre_build\n"
+            "$ cmake ${CMAKE_CURRENT_SOURCE_DIR}")
+endif ()
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
@@ -58,5 +68,9 @@ ENDIF(USE_OPENVR)
 
 add_subdirectory(src)
 add_subdirectory(examples)
-add_subdirectory(test)
-add_subdirectory(utils)
+
+option(USE_SRE_TEST_AND_UTILS "Enable Tests and Utils for SRE" OFF)
+IF (USE_SRE_TEST_AND_UTILS)
+    add_subdirectory(test)
+    add_subdirectory(utils)
+ENDIF(USE_SRE_TEST_AND_UTILS)

@@ -79,6 +79,7 @@ namespace sre {
 
         bool set(std::string uniformName, glm::vec4 value);
         bool set(std::string uniformName, float value);
+        bool set(std::string uniformName, glm::mat4 value);
         bool set(std::string uniformName, std::shared_ptr<Texture> value);
         bool set(std::string uniformName, std::shared_ptr<std::vector<glm::mat3>> value);
         bool set(std::string uniformName, std::shared_ptr<std::vector<glm::mat4>> value);
@@ -128,6 +129,18 @@ namespace sre {
     }
 
     template<>
+    inline glm::mat4 Material::get(std::string uniformName)  {
+        auto t = shader->getUniform(uniformName);
+        if (t.type == UniformType::Mat4){
+            auto res = uniformMap.mat4Values.find(t.id);
+            if (res != uniformMap.mat4Values.end()){
+                return res->second;
+            }
+        }
+        return glm::mat4(1);
+    }
+
+    template<>
     inline Color Material::get(std::string uniformName)  {
         auto t = shader->getUniform(uniformName);
         if (t.type == UniformType::Vec4){
@@ -156,9 +169,9 @@ namespace sre {
     template<>
     inline std::shared_ptr<std::vector<glm::mat3>> Material::get(std::string uniformName) {
         auto t = shader->getUniform(uniformName);
-        if (t.type == UniformType::Mat3) {
-            auto res = uniformMap.mat3Values.find(t.id);
-            if (res != uniformMap.mat3Values.end()){
+        if (t.type == UniformType::Mat3Array) {
+            auto res = uniformMap.mat3sValues.find(t.id);
+            if (res != uniformMap.mat3sValues.end()){
                 return res->second;
             }
         }
@@ -168,9 +181,9 @@ namespace sre {
     template<>
     inline std::shared_ptr<std::vector<glm::mat4>> Material::get(std::string uniformName) {
         auto t = shader->getUniform(uniformName);
-        if (t.type == UniformType::Mat4) {
-            auto res = uniformMap.mat4Values.find(t.id);
-            if (res != uniformMap.mat4Values.end()){
+        if (t.type == UniformType::Mat4Array) {
+            auto res = uniformMap.mat4sValues.find(t.id);
+            if (res != uniformMap.mat4sValues.end()){
                 return res->second;
             }
         }

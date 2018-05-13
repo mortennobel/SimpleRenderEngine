@@ -1,15 +1,71 @@
+#ifdef S_SHADOW
+in vec4 vShadowmapCoord;
+#ifdef GL_ES
+#ifdef SI_FBO_DEPTH_ATTACHMENT
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+uniform highp sampler2DShadow shadowMap;
+#else
+uniform mediump sampler2DShadow shadowMap;
+#endif
+#else
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+uniform highp sampler2D shadowMap;
+#else
+uniform mediump sampler2D shadowMap;
+#endif
+#endif
+#else
+#ifdef SI_FBO_DEPTH_ATTACHMENT
+uniform sampler2DShadow shadowMap;
+#else
+uniform sampler2D shadowMap;
+#endif
+#endif
+#endif
 
 in vec4 vLightDir[SI_LIGHTS];
 
 uniform vec4 specularity;
 
-void lightDirectionAndAttenuation(vec4 lightPosType, float lightRange, vec3 pos, out vec3 lightDirection, out float attenuation){
+float unpackDepth(const in vec4 rgba_depth)
+{
+    const vec4 bit_shift = vec4(1.0/(256.0*256.0*256.0), 1.0/(256.0*256.0), 1.0/256.0, 1.0);
+    float depth = dot(rgba_depth, bit_shift);
+    return depth;
+}
+
+float getShadow() {                                 // returns 0.0 if in shadow and 1.0 if fully lit
+#ifdef S_SHADOW
+#ifdef GL_ES
+    if (vShadowmapCoord.x < 0.0 || vShadowmapCoord.y < 0.0 || vShadowmapCoord.x > vShadowmapCoord.w || vShadowmapCoord.y > vShadowmapCoord.w ){
+        return 1.0;
+    }
+#endif
+#ifndef SI_FBO_DEPTH_ATTACHMENT
+    vec3 shadowmapCoord = vShadowmapCoord.xyz/vShadowmapCoord.w;
+    vec4 packedShadowDepth = texture(shadowMap, shadowmapCoord.xy);
+    float depth = unpackDepth(packedShadowDepth);
+    return depth > shadowmapCoord.z ? 1.0 : 0.0;
+#else
+    return textureProj(shadowMap, vShadowmapCoord); // performs w division and compare .z with current depth
+#endif
+#else
+    return 0.0;
+#endif
+}
+
+void lightDirectionAndAttenuation(vec4 lightPosType, float lightRange, vec3 pos, bool shadow, out vec3 lightDirection, out float attenuation){
     bool isDirectional = lightPosType.w == 0.0;
     bool isPoint       = lightPosType.w == 1.0;
 
     if (isDirectional){
         lightDirection = lightPosType.xyz;
         attenuation = 1.0;
+#ifdef S_SHADOW
+        if (shadow){
+            attenuation = getShadow();
+        }
+#endif
     } else if (isPoint) {
         vec3 lightVector = lightPosType.xyz - pos;
         float lightVectorLength = length(lightVector);
@@ -36,7 +92,7 @@ vec3 computeLightBlinnPhong(vec3 wsPos, vec3 wsCameraPos, vec3 normal, out vec3 
     for (int i=0;i<SI_LIGHTS;i++){
         vec3 lightDirection = vec3(0.0,0.0,0.0);
         float att = 0.0;
-        lightDirectionAndAttenuation(g_lightPosType[i], g_lightColorRange[i].w, wsPos, lightDirection, att);
+        lightDirectionAndAttenuation(g_lightPosType[i], g_lightColorRange[i].w, wsPos,i==0, lightDirection, att);
 
         if (att <= 0.0){
             continue;
@@ -70,7 +126,7 @@ vec3 computeLightPhong(vec3 wsPos, vec3 wsCameraPos, vec3 normal, out vec3 specu
     for (int i=0;i<SI_LIGHTS;i++){
         vec3 lightDirection = vec3(0.0,0.0,0.0);
         float att = 0.0;
-        lightDirectionAndAttenuation(g_lightPosType[i], g_lightColorRange[i].w, wsPos, lightDirection, att);
+        lightDirectionAndAttenuation(g_lightPosType[i], g_lightColorRange[i].w, wsPos, i==0, lightDirection, att);
 
         if (att <= 0.0){
             continue;

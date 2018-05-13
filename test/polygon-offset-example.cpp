@@ -100,6 +100,6 @@ private:
 };
 
 int main() {
-    new PolygonOffsetExample();
+    std::make_unique<PolygonOffsetExample>();
     return 0;
 }

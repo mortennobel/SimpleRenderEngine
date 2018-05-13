@@ -123,5 +123,6 @@ private:
 };
 
 int main() {
-    new ParticlesExample();
+    std::make_unique<ParticlesExample>();
+    return 0;
 }

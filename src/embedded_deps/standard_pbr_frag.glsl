@@ -148,7 +148,7 @@ void main(void)
     for (int i=0;i<SI_LIGHTS;i++) {
         float attenuation = 0.0;
         vec3 l = vec3(0.0,0.0,0.0);
-        lightDirectionAndAttenuation(g_lightPosType[i], g_lightColorRange[i].w, vWsPos, l, attenuation);
+        lightDirectionAndAttenuation(g_lightPosType[i], g_lightColorRange[i].w, vWsPos, i==0, l, attenuation);
         if (attenuation <= 0.0){
             continue;
         }

@@ -79,7 +79,7 @@ private:
 };
 
 int main() {
-	new SpinningPrimitivesTexExample();
-
+	 
+	std::make_unique<SpinningPrimitivesTexExample>();
 	return 0;
 }

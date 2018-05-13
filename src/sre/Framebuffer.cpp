@@ -14,10 +14,6 @@
 #include <sre/Renderer.hpp>
 
 namespace sre{
-    Framebuffer::FrameBufferBuilder& Framebuffer::FrameBufferBuilder::withTexture(std::shared_ptr<Texture> texture) {
-        return withColorTexture(texture);
-    }
-
     Framebuffer::FrameBufferBuilder& Framebuffer::FrameBufferBuilder::withColorTexture(std::shared_ptr<Texture> texture) {
         assert(!texture->isDepthTexture());
         auto s = glm::uvec2{texture->getWidth(), texture->getHeight()};
@@ -43,12 +39,12 @@ namespace sre{
     }
 
     Framebuffer::FrameBufferBuilder &Framebuffer::FrameBufferBuilder::withName(std::string name) {
-        this->name = name;
+        this->name = std::move(name);
         return *this;
     }
 
     Framebuffer::Framebuffer(std::string name)
-    :name(name)
+    :name(std::move(name))
     {
         auto r = Renderer::instance;
         r->framebufferObjects.push_back(this);
@@ -58,8 +54,8 @@ namespace sre{
         auto r = Renderer::instance;
         if (r){
             r->framebufferObjects.erase(std::remove(r->framebufferObjects.begin(), r->framebufferObjects.end(), this));
-            if (renderBufferDepth != 0){
-                glDeleteRenderbuffers(1, &renderBufferDepth);
+            if (renderbuffer != 0){
+                glDeleteRenderbuffers(1, &renderbuffer);
             }
             glDeleteFramebuffers(1,&frameBufferObjectId);
         }
@@ -98,10 +94,6 @@ namespace sre{
         return name;
     }
 
-    void Framebuffer::setTexture(std::shared_ptr<Texture> tex, int index) {
-        setColorTexture(tex, index);
-    }
-
     void Framebuffer::setColorTexture(std::shared_ptr<Texture> tex, int index) {
         assert(textures.size() > index && index >= 0);
         assert(!tex->isDepthTexture());
@@ -137,7 +129,7 @@ namespace sre{
             const char* errorMsg = nullptr;
             switch (frameBufferStatus) {
                 case GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT:
-                    errorMsg = "GL_FRAMEBUFFER_UNDEFINED";
+                    errorMsg = "GL_FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
                     break;
 #ifdef GL_ES_VERSION_2_0
                 case GL_FRAMEBUFFER_INCOMPLETE_DIMENSIONS:
@@ -158,7 +150,7 @@ namespace sre{
                     errorMsg = "GL_FRAMEBUFFER_INCOMPLETE_READ_BUFFER";
                     break;
                 case GL_FRAMEBUFFER_UNDEFINED:
-                    errorMsg = "FRAMEBUFFER_INCOMPLETE_ATTACHMENT";
+                    errorMsg = "GL_FRAMEBUFFER_UNDEFINED";
                     break;
                 case GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE:
                     errorMsg = "GL_FRAMEBUFFER_INCOMPLETE_MULTISAMPLE";
@@ -191,27 +183,47 @@ namespace sre{
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0+i, GL_TEXTURE_2D, textures[i]->textureId, 0);
             drawBuffers.push_back(GL_COLOR_ATTACHMENT0+i);
         }
+
+        if (textures.empty()){
+            glGenRenderbuffers(1,&framebuffer->renderbuffer); // Create a renderbuffer object
+            glBindRenderbuffer(GL_RENDERBUFFER, framebuffer->renderbuffer);
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_RGBA8, size.x, size.y);
+
+            glBindRenderbuffer(GL_RENDERBUFFER, 0);
+            // attach the renderbuffer to depth attachment point
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER,
+                                      GL_COLOR_ATTACHMENT0,
+                                      GL_RENDERBUFFER,
+                                      framebuffer->renderbuffer);
+        }
         
         if (depthTexture){
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depthTexture->textureId, 0);
         } else {
-            glGenRenderbuffers(1,&framebuffer->renderBufferDepth); // Create a renderbuffer object
-            glBindRenderbuffer(GL_RENDERBUFFER, framebuffer->renderBufferDepth);
-            glRenderbufferStorage(GL_RENDERBUFFER,
-                                  renderInfo().graphicsAPIVersionMajor<=2?GL_DEPTH_COMPONENT16:GL_DEPTH_COMPONENT24
-                    , size.x, size.y);
+            glGenRenderbuffers(1,&framebuffer->renderbuffer); // Create a renderbuffer object
+            glBindRenderbuffer(GL_RENDERBUFFER, framebuffer->renderbuffer);
 
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+            if (renderInfo().graphicsAPIVersionES){
+                glRenderbufferStorage(GL_RENDERBUFFER, renderInfo().graphicsAPIVersionMajor<=2?GL_DEPTH_COMPONENT16:GL_DEPTH_COMPONENT24,
                                   size.x, size.y);
+            } else {
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+                                  size.x, size.y);
+            }
             glBindRenderbuffer(GL_RENDERBUFFER, 0);
             // attach the renderbuffer to depth attachment point
             glFramebufferRenderbuffer(GL_FRAMEBUFFER,
                                       GL_DEPTH_ATTACHMENT,
                                       GL_RENDERBUFFER,
-                                      framebuffer->renderBufferDepth);
+                                      framebuffer->renderbuffer);
         }
         if (!renderInfo().graphicsAPIVersionES || renderInfo().graphicsAPIVersionMajor>=3){
             glDrawBuffers((GLsizei)drawBuffers.size(), drawBuffers.data());
+            if (drawBuffers.empty()){
+                glReadBuffer(GL_NONE);
+            } else {
+                glReadBuffer(GL_COLOR_ATTACHMENT0);
+            }
         }
         // Check if FBO is configured correctly
         checkStatus();

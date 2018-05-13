@@ -192,11 +192,6 @@ namespace sre {
         return *this;
     }
 
-    Texture::TextureBuilder &Texture::TextureBuilder::withWrappedTextureCoordinates(bool enable) {
-        this->wrapUV = enable?Wrap::Repeat:Wrap::ClampToEdge;
-        return *this;
-    }
-
     Texture::TextureBuilder &Texture::TextureBuilder::withWrapUV(Texture::Wrap wrap) {
         this->wrapUV = wrap;
         return *this;
@@ -315,37 +310,51 @@ namespace sre {
                 this->target = GL_TEXTURE_2D;
                 GLint internalFormat;
                 GLint format = GL_DEPTH_COMPONENT;
+                GLenum type = GL_UNSIGNED_BYTE;
                 if (depthPrecision == DepthPrecision::I16){
                     internalFormat = GL_DEPTH_COMPONENT16;
+                    type = GL_UNSIGNED_SHORT;
                 } else if (depthPrecision == DepthPrecision::I24){
                     internalFormat = GL_DEPTH_COMPONENT24;
+                    type = GL_UNSIGNED_INT;
 #ifndef GL_ES_VERSION_2_0
                 } else if (depthPrecision == DepthPrecision::I32){
                     internalFormat = GL_DEPTH_COMPONENT32;
+                    type = GL_UNSIGNED_INT;
 #endif
                 } else if (depthPrecision == DepthPrecision::I24_STENCIL8){
                     internalFormat =  GL_DEPTH24_STENCIL8;
+                    type = GL_UNSIGNED_INT;
                     format = GL_DEPTH_STENCIL;
                 } else if (depthPrecision == DepthPrecision::F32_STENCIL8){
                     internalFormat = GL_DEPTH32F_STENCIL8;
+                    type = GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
                     format = GL_DEPTH_STENCIL;
                 } else if (depthPrecision == DepthPrecision::F32){
                     internalFormat = GL_DEPTH_COMPONENT32F;
+                    type = GL_FLOAT;
 #ifndef GL_ES_VERSION_2_0
                 } else if (depthPrecision == DepthPrecision::STENCIL8){
                     internalFormat = GL_STENCIL_INDEX8;
+                    type = GL_UNSIGNED_BYTE;
                     format = GL_STENCIL_INDEX;
 #endif
                 } else {
                     assert(false && "Invalid depth/stencil format");
                 }
                 GLint border = 0;
-                GLenum type = GL_UNSIGNED_BYTE;
+
                 glBindTexture(target, textureId);
                 auto td = textureTypeData.find(GL_TEXTURE_2D);
                 textureDefPtr = &td->second;
                 glTexImage2D(target, 0, internalFormat, textureDefPtr->width,
                              textureDefPtr->height, border, format, type, nullptr);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_COMPARE_REF_TO_TEXTURE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+#ifndef GL_ES_VERSION_2_0
+                glm::vec4 ones(1.0, 1.0, 1.0, 1.0);
+                glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, &ones.x);
+#endif
             }
         } else if ((val = textureTypeData.find(GL_TEXTURE_2D)) != textureTypeData.end()){
             auto& textureDef = val->second;
@@ -492,10 +501,6 @@ namespace sre {
 		return filterSampling;
 	}
 
-	bool Texture::isWrapTextureCoordinates() {
-		return wrapUV == Wrap::Repeat;
-	}
-
 	int Texture::getWidth() {
 		return width;
 	}
@@ -508,7 +513,14 @@ namespace sre {
         this->filterSampling = filterSampling;
         this->wrapUV = wrapTextureCoordinates;
 		glBindTexture(target, textureId);
-		auto wrapParam = wrapTextureCoordinates == Wrap::ClampToEdge?GL_CLAMP_TO_EDGE:(wrapTextureCoordinates == Wrap::Mirror ? GL_MIRRORED_REPEAT:GL_REPEAT);
+		auto wrapParam = wrapTextureCoordinates == Wrap::Repeat?GL_REPEAT:
+                         (wrapTextureCoordinates == Wrap::Mirror ? GL_MIRRORED_REPEAT:
+#ifndef GL_ES_VERSION_2_0
+                          wrapTextureCoordinates == Wrap::ClampToBorder?GL_CLAMP_TO_BORDER:GL_CLAMP_TO_EDGE);
+#else
+                          GL_CLAMP_TO_EDGE);
+#endif
+
 		glTexParameteri(target, GL_TEXTURE_WRAP_S, wrapParam);
 		glTexParameteri(target, GL_TEXTURE_WRAP_T, wrapParam);
 		GLuint minification;

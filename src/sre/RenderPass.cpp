@@ -120,19 +120,6 @@ namespace sre {
         std::swap(viewportSize,rp.viewportSize);
     }
 
-    RenderPass &RenderPass::operator=(RenderPass &&rp) noexcept {
-        finish();
-        builder = rp.builder;
-        std::swap(mIsFinished,rp.mIsFinished);
-        std::swap(lastBoundShader,rp.lastBoundShader);
-        std::swap(lastBoundMaterial,rp.lastBoundMaterial);
-        std::swap(lastBoundMeshId,rp.lastBoundMeshId);
-        std::swap(projection,rp.projection);
-        std::swap(viewportOffset,rp.viewportOffset);
-        std::swap(viewportSize,rp.viewportSize);
-        return *this;
-    }
-
     RenderPass::~RenderPass(){
         finish();
     }
@@ -406,13 +393,11 @@ namespace sre {
             lastBoundMeshId = mesh->meshId;
             mesh->bind(shader);
         }
-        if (mesh->getIndexSets() == 0){
+        if (mesh->elementBufferOffsetCount.empty()){
             glDrawArrays((GLenum) mesh->getMeshTopology(), 0, mesh->getVertexCount());
         } else {
             auto offsetCount = mesh->elementBufferOffsetCount[rqObj.subMesh];
-
-            GLsizei indexCount = offsetCount.second;
-            glDrawElements((GLenum) mesh->getMeshTopology(rqObj.subMesh), indexCount, GL_UNSIGNED_SHORT, BUFFER_OFFSET(offsetCount.first));
+            glDrawElements((GLenum) mesh->getMeshTopology(rqObj.subMesh), offsetCount.size, offsetCount.type, BUFFER_OFFSET(offsetCount.offset));
         }
     }
 

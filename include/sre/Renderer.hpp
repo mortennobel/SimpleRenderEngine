@@ -31,6 +31,7 @@ namespace sre {
     struct RenderInfo{
         bool useFramebufferSRGB = false;
         bool supportTextureSamplerSRGB = false;
+        bool supportFBODepthAttachment = false;
         int graphicsAPIVersionMajor;            // For WebGL uses OpenGL ES api version (WebGL 1.0 = OpenGL ES 2.0)
         int graphicsAPIVersionMinor;
         bool graphicsAPIVersionES;
@@ -69,8 +70,8 @@ namespace sre {
                                                             // param window pointer to the SDL window (must be initialized using OpenGL)
         ~Renderer();
         static constexpr int sre_version_major = 1;
-        static constexpr int sre_version_minor = 0;
-        static constexpr int sre_version_point = 10;
+        static constexpr int sre_version_minor = 1;
+        static constexpr int sre_version_point = 0;
 
         glm::ivec2 getWindowSize();                         // Return the current size of the window
 
@@ -87,9 +88,6 @@ namespace sre {
         static Renderer* instance;                          // Singleton reference to the engine after initialization.
 
         int getMaxSceneLights();                            // Get maximum amout of scenelights per object
-
-        DEPRECATED("Use sre::renderInfo() instead of Renderer::getRenderInfo()")
-        const RenderInfo& getRenderInfo();                  // Get info about the renderer
     private:
         int maxSceneLights = 4;                             // Maximum of scene lights
         SDL_Window *window;

@@ -222,7 +222,6 @@ private:
 };
 
 int main() {
-    new MultipleLightsExample();
-
+    std::make_unique<MultipleLightsExample>();
     return 0;
 }

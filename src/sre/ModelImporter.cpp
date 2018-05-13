@@ -335,7 +335,7 @@ namespace {
 
     struct ObjInterleavedIndex {
         std::string materialName;
-        std::vector<uint16_t> vertexIndices;
+        std::vector<uint32_t> vertexIndices;
     };
 
     shared_ptr<sre::Material> createMaterial(const std::string& materialName, const std::vector<ObjMaterial>& matVector, std::string path) {
@@ -535,6 +535,7 @@ std::shared_ptr<sre::Mesh> sre::ModelImporter::importObj(std::string path, std::
         outModelMaterials.push_back(createMaterial(indices[i].materialName, materials, path));
         meshBuilder.withIndices(indices[i].vertexIndices, MeshTopology::Triangles, i);
     }
+
 
     return meshBuilder.build();
 }

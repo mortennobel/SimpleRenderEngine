@@ -22,7 +22,7 @@
 namespace sre {
     uint16_t Mesh::meshIdCount = 0;
 
-    Mesh::Mesh(std::map<std::string,std::vector<float>>&& attributesFloat,std::map<std::string,std::vector<glm::vec2>>&& attributesVec2, std::map<std::string,std::vector<glm::vec3>>&& attributesVec3,std::map<std::string,std::vector<glm::vec4>>&& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>&& attributesIVec4, std::vector<std::vector<uint16_t>> &&indices, std::vector<MeshTopology> meshTopology, std::string name,RenderStats& renderStats)
+    Mesh::Mesh(std::map<std::string,std::vector<float>>&& attributesFloat,std::map<std::string,std::vector<glm::vec2>>&& attributesVec2, std::map<std::string,std::vector<glm::vec3>>&& attributesVec3,std::map<std::string,std::vector<glm::vec4>>&& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>&& attributesIVec4, std::vector<std::vector<uint32_t>> &&indices, std::vector<MeshTopology> meshTopology, std::string name,RenderStats& renderStats)
     {
         meshId = meshIdCount++;
         if ( Renderer::instance == nullptr){
@@ -99,7 +99,7 @@ namespace sre {
         return vertexCount;
     }
 
-    void Mesh::update(std::map<std::string,std::vector<float>>&& attributesFloat,std::map<std::string,std::vector<glm::vec2>>&& attributesVec2, std::map<std::string,std::vector<glm::vec3>>&& attributesVec3,std::map<std::string,std::vector<glm::vec4>>&& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>&& attributesIVec4, std::vector<std::vector<uint16_t>> &&indices, std::vector<MeshTopology> meshTopology,std::string name,RenderStats& renderStats) {
+    void Mesh::update(std::map<std::string,std::vector<float>>&& attributesFloat,std::map<std::string,std::vector<glm::vec2>>&& attributesVec2, std::map<std::string,std::vector<glm::vec3>>&& attributesVec3,std::map<std::string,std::vector<glm::vec4>>&& attributesVec4,std::map<std::string,std::vector<glm::ivec4>>&& attributesIVec4, std::vector<std::vector<uint32_t>> &&indices, std::vector<MeshTopology> meshTopology,std::string name,RenderStats& renderStats) {
         this->meshTopology = meshTopology;
         this->name = name;
         meshId = meshIdCount++;
@@ -130,34 +130,7 @@ namespace sre {
         glBindBuffer(GL_ARRAY_BUFFER, vertexBufferId);
         glBufferData(GL_ARRAY_BUFFER, sizeof(float)*interleavedData.size(), interleavedData.data(), GL_STATIC_DRAW);
 
-        elementBufferOffsetCount.clear();
-        if (this->indices.empty()){
-            if (elementBufferId != 0){
-                glDeleteBuffers(1, &elementBufferId);
-                elementBufferId = 0;
-            }
-        } else {
-            if (elementBufferId == 0){
-                glGenBuffers(1, &elementBufferId);
-            }
-            size_t totalCount = 0;
-            for (int i=0;i<this->indices.size();i++) {
-                totalCount += this->indices[i].size();
-            }
-            std::vector<uint16_t> concatenatedIndices;
-            concatenatedIndices.reserve(totalCount);
-            int offset = 0;
-            for (int i=0;i<this->indices.size();i++) {
-                size_t dataSize = this->indices[i].size()*sizeof(uint16_t);
-                concatenatedIndices.insert(concatenatedIndices.end(), this->indices[i].begin(), this->indices[i].end());
-                elementBufferOffsetCount.emplace_back(offset, this->indices[i].size());
-                offset += dataSize;
-            }
-            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferId);
-            glBufferData(GL_ELEMENT_ARRAY_BUFFER, offset, concatenatedIndices.data(), GL_STATIC_DRAW);
-
-            this->dataSize += offset;
-        }
+        updateIndexBuffers();
 
         boundsMinMax[0] = glm::vec3{std::numeric_limits<float>::max()};
         boundsMinMax[1] = glm::vec3{-std::numeric_limits<float>::max()};
@@ -172,6 +145,65 @@ namespace sre {
 
         renderStats.meshBytes += dataSize;
         renderStats.meshBytesAllocated += dataSize;
+    }
+
+    void Mesh::updateIndexBuffers() {
+        elementBufferOffsetCount.clear();
+        if (this->indices.empty()){
+            if (elementBufferId != 0){
+                glDeleteBuffers(1, &elementBufferId);
+                elementBufferId = 0;
+            }
+        } else if (this->indices.size()>0){
+            if (elementBufferId == 0){
+                glGenBuffers(1, &elementBufferId);
+            }
+            uint32_t offset = 0;
+            for (int i=0;i<this->indices.size();i++) {
+                auto & idx = this->indices[i];
+                int indexSize;
+                uint32_t type;
+                if (vertexCount < std::numeric_limits<uint16_t>().max()){
+                    indexSize = sizeof(uint16_t)*idx.size();
+                    type = GL_UNSIGNED_SHORT;
+                } else {
+                    uint32_t maxElem = *std::max_element(idx.begin(), idx.end());
+                    if (maxElem <= std::numeric_limits<uint16_t>().max()){
+                        indexSize = sizeof(uint16_t)*idx.size();
+                        type = GL_UNSIGNED_SHORT;
+                    } else {
+                        indexSize = sizeof(uint32_t)*idx.size();
+                        type = GL_UNSIGNED_INT;
+                        // enforce alignment to 4 bytes
+                        if (offset%4==2){
+                            offset+=2;
+                        }
+                    }
+                }
+
+                elementBufferOffsetCount.push_back({offset, (uint32_t)this->indices[i].size(), type});
+                offset += indexSize;
+            }
+            std::vector<uint8_t> concatenatedIndices;
+            concatenatedIndices.reserve(offset);
+
+            for (int i=0;i<this->indices.size();i++) {
+                uint8_t* dest = concatenatedIndices.data()+elementBufferOffsetCount[i].offset;
+                if (elementBufferOffsetCount[i].type == GL_UNSIGNED_INT){
+                    void* srcData = this->indices[i].data();
+                    memcpy( dest,srcData, this->indices[i].size() * sizeof(uint32_t));
+                } else {
+                    uint16_t* dest16 = reinterpret_cast<uint16_t *>(dest);
+                    for (int j=0;j<this->indices[i].size();j++){
+                        dest16[j] = static_cast<uint16_t>(this->indices[i][j]);
+                    }
+                }
+            }
+            glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, elementBufferId);
+            glBufferData(GL_ELEMENT_ARRAY_BUFFER, offset, concatenatedIndices.data(), GL_STATIC_DRAW);
+
+            this->dataSize += offset;
+        }
     }
 
     void Mesh::setVertexAttributePointers(Shader* shader) {
@@ -252,7 +284,7 @@ namespace sre {
         return res;
     }
 
-    const std::vector<uint16_t>& Mesh::getIndices(int indexSet) {
+    const std::vector<uint32_t>& Mesh::getIndices(int indexSet) {
         return indices.at(indexSet);
     }
 
@@ -326,7 +358,11 @@ namespace sre {
     }
 
     int Mesh::getIndicesSize(int indexSet) {
-        return indices.at(indexSet).size();
+        if (indexSet < indices.size()) {
+            return static_cast<int>(indices[indexSet].size());
+        }
+        LOG_ERROR("Indexset %i out of bounds.",indexSet);
+        return -1;
     }
 
     std::vector<glm::vec4> Mesh::getTangents() {
@@ -466,6 +502,15 @@ namespace sre {
     }
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withIndices(const std::vector<uint16_t> &indices,MeshTopology meshTopology, int indexSet) {
+        std::vector<uint32_t> indices32(indices.size());
+        for (int i=0;i<indices32.size();i++){
+            indices32[i] = indices[i];
+        }
+
+        return withIndices(indices32, meshTopology, indexSet);
+    }
+
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withIndices(const std::vector<uint32_t> &indices,MeshTopology meshTopology, int indexSet) {
         while (indexSet >= this->indices.size()){
             this->indices.emplace_back();
         }
@@ -477,6 +522,7 @@ namespace sre {
         this->meshTopology[indexSet] = meshTopology;
         return *this;
     }
+
 
     std::shared_ptr<Mesh> Mesh::MeshBuilder::build() {
         // update stats
@@ -494,7 +540,7 @@ namespace sre {
             return updateMesh->shared_from_this();
         }
 
-        auto res = new Mesh(std::move(this->attributesFloat), std::move(this->attributesVec2), std::move(this->attributesVec3), std::move(this->attributesVec4), std::move(this->attributesIVec4), std::move(indices), meshTopology,name,renderStats);
+        auto res = new Mesh(std::move(this->attributesFloat), std::move(this->attributesVec2), std::move(this->attributesVec3), std::move(this->attributesVec4), std::move(this->attributesIVec4), std::move(indices),meshTopology,name,renderStats);
         renderStats.meshCount++;
 
         return std::shared_ptr<Mesh>(res);
@@ -696,7 +742,7 @@ namespace sre {
                 vec3{length, -length, -length}
 
         };
-        vector<uint16_t> indices({
+        vector<uint32_t> indices({
                                     0,1,2, 0,2,3,
                                     4,5,6, 4,6,7,
                                     8,9,10, 8,10,11,
@@ -819,7 +865,7 @@ namespace sre {
                                            glm::vec4{0, 0,0,0},
                                            glm::vec4{0, 1,0,0}
                                    });
-        std::vector<uint16_t> indices = {
+        std::vector<uint32_t> indices = {
                 0,1,2,
                 2,1,3
         };

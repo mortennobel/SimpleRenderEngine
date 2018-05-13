@@ -109,6 +109,6 @@ private:
 };
 
 int main() {
-    new Benchmark64KExample();
+    std::make_unique<Benchmark64KExample>();
     return 0;
 }

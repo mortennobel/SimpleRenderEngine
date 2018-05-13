@@ -126,7 +126,7 @@ private:
 
 
 int main() {
-    new SpinningSphereCubemapExample();
+    std::make_unique<SpinningSphereCubemapExample>();
     return 0;
 }
 

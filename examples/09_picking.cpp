@@ -131,8 +131,7 @@ private:
 };
 
 int main() {
-    new PickingExample();
-
+    std::make_unique<PickingExample>();
     return 0;
 }
 

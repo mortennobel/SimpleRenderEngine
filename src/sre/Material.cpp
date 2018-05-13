@@ -60,14 +60,19 @@ namespace sre {
                     uniformMap.set(u.id, 0.0f);
                 }
                 break;
-                case UniformType::Mat3:
+                case UniformType::Mat3Array:
                 {
                     uniformMap.set(u.id, std::shared_ptr<std::vector<glm::mat3>>());
                 }
                 break;
                 case UniformType::Mat4:
+                case UniformType::Mat4Array:
                 {
-                    uniformMap.set(u.id, std::shared_ptr<std::vector<glm::mat4>>());
+                    if (u.arraySize>1){
+                        uniformMap.set(u.id, std::shared_ptr<std::vector<glm::mat4>>());
+                    } else {
+                        uniformMap.set(u.id, glm::mat4(1));
+                    }
                 }
                 break;
                 default:
@@ -114,6 +119,13 @@ namespace sre {
         uniformMap.set(type.id, value);
         return true;
     }
+
+    bool Material::set(std::string uniformName, glm::mat4 value){
+        auto type = shader->getUniform(uniformName);
+        uniformMap.set(type.id, value);
+        return true;
+    }
+
 
     bool Material::set(std::string uniformName, std::shared_ptr<std::vector<glm::mat3>> value){
         auto type = shader->getUniform(uniformName);

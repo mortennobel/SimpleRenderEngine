@@ -154,8 +154,7 @@ private:
 };
 
 int main() {
-    SpinningPrimitivesOpenVRExample obj();
-
+    std::make_unique<SpinningPrimitivesOpenVRExample>();
     return 0;
 }
 

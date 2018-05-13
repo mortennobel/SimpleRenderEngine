@@ -62,8 +62,7 @@ private:
 };
 
 int main() {
-    new GammaTest();
-
+    std::make_unique<GammaTest>();
     return 0;
 }
 

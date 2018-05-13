@@ -84,9 +84,8 @@ namespace sre {
         static RenderPassBuilder create();   // Create a RenderPass
 
         RenderPass(RenderPass&& rp) noexcept;
-        RenderPass& operator=(RenderPass&& other) noexcept;
+        RenderPass& operator=(RenderPass&& other) = delete;             // RenderPass objects cannot be reused.
         virtual ~RenderPass();
-
 
         void drawLines(const std::vector<glm::vec3> &verts,             // Draws worldspace lines.
                        Color color = {1.0f, 1.0f, 1.0f, 1.0f},          // Note that this member function is not expected

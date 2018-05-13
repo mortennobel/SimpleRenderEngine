@@ -274,6 +274,6 @@ private:
 };
 
 int main() {
-    new PBRTest();
+    std::make_unique<PBRTest>();
     return 0;
 }

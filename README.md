@@ -13,7 +13,7 @@ SimpleRenderEngine currently depends on Simple Direct Layer 2.x (SDL2), SDL2-ima
  
 sre provides:
  * Virtual camera (perspective and orthographic)
- * Texture support (JPEG, PNG, Raw)
+ * Texture support (JPEG, PNG)
  * Cube map support
  * Mesh support (with custom vertex attributes)
  * Shaders (PBR, Blinn-Phong, unlit, alpha blending, and custom shaders)
@@ -25,11 +25,11 @@ sre provides:
  * Emscripten support (allows cross compiling to HTML 5 + WebGL)
  * VR support (OpenVR)
  * Bump mapping
+ * Shadowmap
 
 To keep sre as simple and flexible as possible the following features are not a part of sre:
  * Scenegraphs
  * Deferred rendering
- * Shadowmap support
  * Dynamic particle systems
 
 ## Examples

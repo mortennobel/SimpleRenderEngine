@@ -81,7 +81,4 @@ namespace sre {
 
         void plotTimings(float *inputData, const char *title);
     };
-
-    DEPRECATED("Use Inspector instead")
-    typedef Inspector Profiler;
 }

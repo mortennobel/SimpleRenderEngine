@@ -30,7 +30,7 @@ using Milliseconds = std::chrono::duration<float, std::chrono::milliseconds::per
 namespace sre {
     namespace {
 
-        char* to_string(StencilOp op){
+        const char* to_string(StencilOp op){
             switch (op){
                 case StencilOp::Keep:
                     return "Keep";
@@ -395,6 +395,9 @@ namespace sre {
                         case StencilFunc::NotEqual:
                             func = "NotEqual";
                             break;
+                        case StencilFunc::Disabled:
+                            func = "Disabled";
+                            break;
                     }
                     ImGui::LabelText("Function",func.c_str());
                     ImGui::LabelText("Ref","%i",stencil.ref);
@@ -446,9 +449,10 @@ namespace sre {
                 return "float";
             case UniformType::Int:
                 return "int";
-            case UniformType::Mat3:
+            case UniformType::Mat3Array:
                 return "mat3";
             case UniformType::Mat4:
+            case UniformType::Mat4Array:
                 return "mat4";
             case UniformType::Texture:
                 return "texture";
@@ -471,7 +475,8 @@ namespace sre {
         std::string s = fbo->getName()+"##"+std::to_string((int64_t)fbo);
         if (ImGui::TreeNode(s.c_str())){
             char name[128];
-            sprintf(name, "Color textures %i",fbo->textures.size());
+            int size = (int)fbo->textures.size();
+            sprintf(name, "Color textures %i", size);
             if (ImGui::TreeNode(name)){
                 for (auto & t : fbo->textures){
                     showTexture(t.get());
@@ -485,7 +490,7 @@ namespace sre {
                 ImGui::TreePop();
             }
             if (!fbo->depthTexture.get()){
-                ImGui::LabelText("RenderBuffer Depth","%s",fbo->renderBufferDepth?"true":"false");
+                ImGui::LabelText("RenderBuffer Depth","%s",fbo->renderbuffer?"true":"false");
             }
             ImGui::TreePop();
         }
@@ -594,7 +599,7 @@ namespace sre {
             if (RenderPass::frameInspector.frameid > -1){
                 ImGui::LabelText("Frame", "%i", RenderPass::frameInspector.frameid);
                 int id = 1;
-                ImGui::LabelText("RenderPasses", "%i", RenderPass::frameInspector.renderPasses.size());
+                ImGui::LabelText("RenderPasses", "%i", (int)RenderPass::frameInspector.renderPasses.size());
                 ImGui::Indent();
 
                 for (auto & rp : RenderPass::frameInspector.renderPasses){
@@ -623,7 +628,7 @@ namespace sre {
                             ImGui::TreePop();
                         }
 
-                        sprintf(label, "Draw calls (%i)", rp->renderQueue.size());
+                        sprintf(label, "Draw calls (%i)", (int)rp->renderQueue.size());
 
                         if (ImGui::TreeNode(label)) {
                             int i = 0;
@@ -1065,10 +1070,21 @@ namespace sre {
                         ImGui::LabelText(name.c_str(),valueTex->getName().c_str());
                     }
                         break;
-                    case UniformType::Mat3:
+                    case UniformType::Mat3Array:
 
-                        if (ImGui::TreeNode(name.c_str(), "Mat3")){
+                        if (ImGui::TreeNode(name.c_str(), "Mat3Array")){
                             auto values = material->get<std::shared_ptr<std::vector<glm::mat3>>>(name);
+                            for (int i=0;i<values->size();i++){
+                                sprintf(res,"%i",i);
+                                showMatrix(res,(*values)[i]);
+                            }
+                            ImGui::TreePop();
+                        }
+                        break;
+                    case UniformType::Mat4Array:
+                        if (ImGui::TreeNode(name.c_str(), "Mat4Array")){
+                            auto values = material->get<std::shared_ptr<std::vector<glm::mat4>>>(name);
+
                             for (int i=0;i<values->size();i++){
                                 sprintf(res,"%i",i);
                                 showMatrix(res,(*values)[i]);
@@ -1078,12 +1094,8 @@ namespace sre {
                         break;
                     case UniformType::Mat4:
                         if (ImGui::TreeNode(name.c_str(), "Mat4")){
-                            auto values = material->get<std::shared_ptr<std::vector<glm::mat4>>>(name);
-
-                            for (int i=0;i<values->size();i++){
-                                sprintf(res,"%i",i);
-                                showMatrix(res,(*values)[i]);
-                            }
+                            auto values = material->get<glm::mat4>(name);
+                            showMatrix("",values);
                             ImGui::TreePop();
                         }
                         break;

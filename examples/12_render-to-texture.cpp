@@ -88,6 +88,6 @@ private:
 };
 
 int main() {
-    new RenderToTextureExample();
+    std::make_unique<RenderToTextureExample>();
     return 0;
 }

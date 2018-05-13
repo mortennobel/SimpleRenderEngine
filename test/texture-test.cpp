@@ -116,6 +116,6 @@ private:
 };
 
 int main() {
-    new TextureTestExample();
+	std::make_unique<TextureTestExample>();
     return 0;
 }

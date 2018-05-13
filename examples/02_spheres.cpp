@@ -87,7 +87,7 @@ private:
 };
 
 int main() {
-    new Spheres();
+    std::make_unique<Spheres>();
     return 0;
 }
 
