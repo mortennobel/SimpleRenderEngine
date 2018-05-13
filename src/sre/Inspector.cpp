@@ -599,7 +599,7 @@ namespace sre {
             if (RenderPass::frameInspector.frameid > -1){
                 ImGui::LabelText("Frame", "%i", RenderPass::frameInspector.frameid);
                 int id = 1;
-                ImGui::LabelText("RenderPasses", "%i", RenderPass::frameInspector.renderPasses.size());
+                ImGui::LabelText("RenderPasses", "%i", (int)RenderPass::frameInspector.renderPasses.size());
                 ImGui::Indent();
 
                 for (auto & rp : RenderPass::frameInspector.renderPasses){
@@ -628,7 +628,7 @@ namespace sre {
                             ImGui::TreePop();
                         }
 
-                        sprintf(label, "Draw calls (%i)", rp->renderQueue.size());
+                        sprintf(label, "Draw calls (%i)", (int)rp->renderQueue.size());
 
                         if (ImGui::TreeNode(label)) {
                             int i = 0;

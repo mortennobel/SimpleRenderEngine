@@ -161,9 +161,6 @@ namespace sre {
 
         class DllExport ShaderBuilder {
         public:
-            DEPRECATED("Use ShaderType withSourceString() or withSourceFile() instead")
-            ShaderBuilder& withSource(const std::string& vertexShaderGLSL,
-                                      const std::string& fragmentShaderGLSL);
             ShaderBuilder& withSourceString(const std::string& shaderSource, ShaderType shaderType);
             ShaderBuilder& withSourceFile(const std::string& shaderFile, ShaderType shaderType);
             ShaderBuilder& withOffset(float factor,float units);  // set the scale and units used to calculate depth values (note for WebGL1.0/OpenGL ES 2.0 only affects polygon fill)
@@ -193,9 +190,6 @@ namespace sre {
             Stencil stencil = {};
             friend class Shader;
         };
-
-        DEPRECATED("Use getStandardPBR or getStandardBlinnPhong")
-        static std::shared_ptr<Shader> getStandard();
 
         static std::shared_ptr<Shader> getStandardPBR();       // Phong Light Model. Uses light objects and ambient light set in Renderer.
                                                                // Uniforms

@@ -88,9 +88,6 @@ namespace sre {
         static Renderer* instance;                          // Singleton reference to the engine after initialization.
 
         int getMaxSceneLights();                            // Get maximum amout of scenelights per object
-
-        DEPRECATED("Use sre::renderInfo() instead of Renderer::getRenderInfo()")
-        const RenderInfo& getRenderInfo();                  // Get info about the renderer
     private:
         int maxSceneLights = 4;                             // Maximum of scene lights
         SDL_Window *window;

@@ -79,8 +79,6 @@ public:
         ~TextureBuilder();
         TextureBuilder& withGenerateMipmaps(bool enable);
         TextureBuilder& withFilterSampling(bool enable);                                    // if true texture sampling is filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
-        DEPRECATED("Use with WrapUV")
-        TextureBuilder& withWrappedTextureCoordinates(bool enable);
         TextureBuilder& withWrapUV(Wrap wrap);                                              // Define how texture coordinates are sampled outside the [0.0,1.0] range
         TextureBuilder& withFileCubemap(std::string filename, CubemapSide side);            // Must define a cubemap for each side
         TextureBuilder& withFile(std::string filename);                                     // Currently only PNG files supported
@@ -137,8 +135,6 @@ public:
     int getHeight();
 
     bool isFilterSampling();                                                                // returns true if texture sampling is filtered when sampling (bi-linear or tri-linear sampling).
-    DEPRECATED("Use getWrapUV() instead")
-    bool isWrapTextureCoordinates();                                                        // returns false if texture coordinates are clamped otherwise wrapped
     Wrap getWrapUV();
     bool isCubemap();                                                                       // is cubemap texture
     bool isMipmapped();                                                                     // has texture mipmapped enabled

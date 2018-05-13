@@ -192,11 +192,6 @@ namespace sre {
         return *this;
     }
 
-    Texture::TextureBuilder &Texture::TextureBuilder::withWrappedTextureCoordinates(bool enable) {
-        this->wrapUV = enable?Wrap::Repeat:Wrap::ClampToEdge;
-        return *this;
-    }
-
     Texture::TextureBuilder &Texture::TextureBuilder::withWrapUV(Texture::Wrap wrap) {
         this->wrapUV = wrap;
         return *this;
@@ -504,10 +499,6 @@ namespace sre {
     // returns true if texture sampling should be filtered (bi-linear or tri-linear sampling) otherwise use point sampling.
 	bool Texture::isFilterSampling() {
 		return filterSampling;
-	}
-
-	bool Texture::isWrapTextureCoordinates() {
-		return wrapUV == Wrap::Repeat;
 	}
 
 	int Texture::getWidth() {

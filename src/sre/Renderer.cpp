@@ -179,10 +179,6 @@ namespace sre {
         return maxSceneLights;
     }
 
-    const RenderInfo &Renderer::getRenderInfo() {
-        return renderInfo_;
-    }
-
     void Renderer::initGlobalUniformBuffer(){
         if (renderInfo_.graphicsAPIVersionMajor <= 2){
             globalUniformBuffer = 0;

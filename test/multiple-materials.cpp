@@ -39,8 +39,8 @@ public:
                 .withCube()
                 .build();
         auto indices = meshSingle->getIndices(0);
-        auto indicesFirst = std::vector<uint16_t>(indices.begin()+0, indices.begin()+indices.size()/2);
-        auto indicesLast = std::vector<uint16_t>(indices.begin()+indices.size()/2, indices.begin()+indices.size());
+        auto indicesFirst = std::vector<uint32_t>(indices.begin()+0, indices.begin()+indices.size()/2);
+        auto indicesLast = std::vector<uint32_t>(indices.begin()+indices.size()/2, indices.begin()+indices.size());
 
         mesh = Mesh::create()
                 .withCube()

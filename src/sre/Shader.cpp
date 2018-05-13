@@ -789,10 +789,6 @@ namespace sre {
         return unlitSprite;
     }
 
-    std::shared_ptr<Shader> Shader::getStandard(){
-        return getStandardBlinnPhong();
-    }
-
     std::shared_ptr<Shader> Shader::getStandardPBR(){
         if (standardPBR != nullptr){
             return standardPBR;
@@ -1077,14 +1073,6 @@ namespace sre {
                 .withName("StandardPhong")
                 .build();
         return standardPhong;
-    }
-
-
-    Shader::ShaderBuilder &Shader::ShaderBuilder::withSource(const std::string& vertexShader, const std::string& fragmentShader) {
-        withSourceString(vertexShader, ShaderType::Vertex);
-        withSourceString(fragmentShader, ShaderType::Fragment);
-
-        return *this;
     }
 
     Shader::ShaderBuilder::ShaderBuilder(Shader *shader)

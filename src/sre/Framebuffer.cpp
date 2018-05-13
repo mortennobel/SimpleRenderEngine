@@ -14,10 +14,6 @@
 #include <sre/Renderer.hpp>
 
 namespace sre{
-    Framebuffer::FrameBufferBuilder& Framebuffer::FrameBufferBuilder::withTexture(std::shared_ptr<Texture> texture) {
-        return withColorTexture(std::move(texture));
-    }
-
     Framebuffer::FrameBufferBuilder& Framebuffer::FrameBufferBuilder::withColorTexture(std::shared_ptr<Texture> texture) {
         assert(!texture->isDepthTexture());
         auto s = glm::uvec2{texture->getWidth(), texture->getHeight()};
@@ -96,10 +92,6 @@ namespace sre{
 
     const std::string& Framebuffer::getName() {
         return name;
-    }
-
-    void Framebuffer::setTexture(std::shared_ptr<Texture> tex, int index) {
-        setColorTexture(std::move(tex), index);
     }
 
     void Framebuffer::setColorTexture(std::shared_ptr<Texture> tex, int index) {

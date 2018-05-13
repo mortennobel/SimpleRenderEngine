@@ -30,9 +30,6 @@ namespace sre {
     public:
         class FrameBufferBuilder {
         public:
-            DEPRECATED("Use withColorTexture() instead")
-            FrameBufferBuilder& withTexture(std::shared_ptr<Texture> texture);
-
             FrameBufferBuilder& withColorTexture(std::shared_ptr<Texture> texture);
             FrameBufferBuilder& withDepthTexture(std::shared_ptr<Texture> texture);
             FrameBufferBuilder& withName(std::string name);
@@ -54,8 +51,6 @@ namespace sre {
         static int getMaximumDepthAttachments();
         static int getMaximumColorAttachments();
 
-        DEPRECATED("Use setColorTexture() instead")
-        void setTexture(std::shared_ptr<Texture> tex, int index = 0);
         void setColorTexture(std::shared_ptr<Texture> tex, int index = 0);
         void setDepthTexture(std::shared_ptr<Texture> tex);
 
