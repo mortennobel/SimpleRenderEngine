@@ -54,6 +54,7 @@ There are also defined a number of engine specific definitions, which cannot be 
 * **SI_LIGHTS** number of lights per draw call. The number is defined as a engine constant.
 * **SI_FRAMEBUFFER_SRGB** defined when framebuffers is sRGB.
 * **SI_TEX_SAMPLER_SRGB** defined when texture sampler supports sRGB.
+* **SI_FBO_DEPTH_ATTACHMENT** defined when frame buffer support depth texture attachments.
 * **SI_VERTEX** Defined only for vertex shaders.
 * **SI_FRAGMENT** Defined only for fragment shaders.
 * **SI_GEOMETRY** Defined only for geometry shaders.

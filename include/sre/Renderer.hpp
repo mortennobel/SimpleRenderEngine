@@ -31,6 +31,7 @@ namespace sre {
     struct RenderInfo{
         bool useFramebufferSRGB = false;
         bool supportTextureSamplerSRGB = false;
+        bool supportFBODepthAttachment = false;
         int graphicsAPIVersionMajor;            // For WebGL uses OpenGL ES api version (WebGL 1.0 = OpenGL ES 2.0)
         int graphicsAPIVersionMinor;
         bool graphicsAPIVersionES;

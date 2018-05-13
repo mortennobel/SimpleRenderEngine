@@ -210,12 +210,14 @@ namespace sre{
         } else {
             glGenRenderbuffers(1,&framebuffer->renderbuffer); // Create a renderbuffer object
             glBindRenderbuffer(GL_RENDERBUFFER, framebuffer->renderbuffer);
-            //glRenderbufferStorage(GL_RENDERBUFFER,
-            //                      renderInfo().graphicsAPIVersionMajor<=2?GL_DEPTH_COMPONENT16:GL_DEPTH_COMPONENT24
-            //        , size.x, size.y);
 
-            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+            if (renderInfo().graphicsAPIVersionES){
+                glRenderbufferStorage(GL_RENDERBUFFER, renderInfo().graphicsAPIVersionMajor<=2?GL_DEPTH_COMPONENT16:GL_DEPTH_COMPONENT24,
                                   size.x, size.y);
+            } else {
+                glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT,
+                                  size.x, size.y);
+            }
             glBindRenderbuffer(GL_RENDERBUFFER, 0);
             // attach the renderbuffer to depth attachment point
             glFramebufferRenderbuffer(GL_FRAMEBUFFER,

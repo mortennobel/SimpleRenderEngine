@@ -38,24 +38,31 @@ public:
         shadowMapMat = Shader::getShadow()->createMaterial();
         mat->setName("Shadow material");
 
-        shadowMapTexture = Texture::create()
-                .withName("ShadowMapTex")
-                .withGenerateMipmaps(false)
-                .withFilterSampling(true)
-                .withWrapUV(Texture::Wrap::ClampToBorder)
-                .withDepth(shadowMapSize,shadowMapSize, Texture::DepthPrecision::I24)
-                .build();
+        if (!sre::renderInfo().supportFBODepthAttachment){         // if not support for depth textures
+            shadowMapTexture = Texture::create()
+                    .withName("ShadowMapTex")
+                    .withGenerateMipmaps(false)
+                    .withFilterSampling(false)                     // filtering not supported, since packing depth in RGBA
+                    .withRGBAData(nullptr,shadowMapSize,shadowMapSize)
+                    .build();
 
-        shadowMap = Framebuffer::create()
-                .withName("ShadowMap")
-                .withDepthTexture(shadowMapTexture)
-                .build();
-
-        std::string info;
-        if (!mat->getShader()->validateMesh(mesh.get(), info)){
-            std::cout << info <<std::endl;
+            shadowMap = Framebuffer::create()
+                    .withName("ShadowMap")
+                    .withColorTexture(shadowMapTexture)
+                    .build();
         } else {
-            std::cout << "Mesh ok" << std::endl;
+            shadowMapTexture = Texture::create()
+                    .withName("ShadowMapTex")
+                    .withGenerateMipmaps(false)
+                    .withFilterSampling(true)
+                    .withWrapUV(Texture::Wrap::ClampToBorder)
+                    .withDepth(shadowMapSize,shadowMapSize, Texture::DepthPrecision::I24)
+                    .build();
+
+            shadowMap = Framebuffer::create()
+                    .withName("ShadowMap")
+                    .withDepthTexture(shadowMapTexture)
+                    .build();
         }
 
         r.frameRender = [&](){
@@ -89,7 +96,7 @@ public:
         glm::vec3 lightEye = eye + viewDirection * ((far-near)*shadowMapFraction/2 + near);
         glm::vec3 lightAt = lightEye - lightDirection;
 
-        shadowmapCamera->setOrthographicProjection(2,-2,2);
+        shadowmapCamera->setOrthographicProjection(4,-4,4);
         shadowmapCamera->lookAt(lightEye,lightAt, abs(lightDirection.x)<0.5? glm::vec3(1,0,0) : glm::vec3(0,0,1));
     }
 
@@ -105,7 +112,7 @@ public:
                 .withFramebuffer(shadowMap)
                 .withCamera(shadowmapCamera)
                 .withWorldLights(&worldLights)
-                .withClearColor(false)
+                .withClearColor(true,{1,1,1,1})
                 .withGUI(false)
                 .build();
 

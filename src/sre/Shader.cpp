@@ -749,13 +749,14 @@ namespace sre {
         if (shadow != nullptr){
             return shadow;
         }
-
+        auto& renderInfo = sre::renderInfo();
+        bool colorWrite = renderInfo.supportFBODepthAttachment == false;
         shadow = create()
                 .withSourceFile("shadow_vert.glsl", ShaderType::Vertex)
                 .withSourceFile("shadow_frag.glsl", ShaderType::Fragment)
                 .withName("Shadow")
                 .withOffset(2.5f, 10)                                          // shadow bias
-                .withColorWrite({false,false,false,false})
+                .withColorWrite({colorWrite,colorWrite,colorWrite,colorWrite})
                 .build();
         return shadow;
     }
@@ -1129,6 +1130,9 @@ namespace sre {
         }
         if (renderInfo().supportTextureSamplerSRGB){
             ss<<"#define SI_TEX_SAMPLER_SRGB 1\n";
+        }
+        if (renderInfo().supportFBODepthAttachment){
+            ss<<"#define SI_FBO_DEPTH_ATTACHMENT 1\n";
         }
 
         // If the shader contains any #version or #extension statements, the defines are added after them.

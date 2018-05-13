@@ -8,9 +8,21 @@ std::map<std::string, std::string> builtInShaderSource  {
 std::make_pair<std::string,std::string>("shadow_frag.glsl",R"(#version 330
 out vec4 fragColor;
 
+vec4 packDepth( const in float depth ) {
+    const vec4 bitShift = vec4( 16777216.0, 65536.0, 256.0, 1.0 );
+    const vec4 bitMask  = vec4( 0.0, 1.0 / 256.0, 1.0 / 256.0, 1.0 / 256.0 );
+    vec4 res = fract( depth * bitShift );
+    res -= res.xxyz * bitMask;
+    return res;
+}
+
 void main(void)
 {
+#ifndef SI_FBO_DEPTH_ATTACHMENT
+    fragColor = packDepth(gl_FragCoord.z);
+#else
     fragColor = vec4(0.0);
+#endif
 })"),
 std::make_pair<std::string,std::string>("shadow_vert.glsl",R"(#version 330
 in vec3 position;
@@ -166,19 +178,38 @@ void main(void) {
 std::make_pair<std::string,std::string>("light_incl.glsl",R"(#ifdef S_SHADOW
 in vec4 vShadowmapCoord;
 #ifdef GL_ES
+#ifdef SI_FBO_DEPTH_ATTACHMENT
 #ifdef GL_FRAGMENT_PRECISION_HIGH
 uniform highp sampler2DShadow shadowMap;
 #else
 uniform mediump sampler2DShadow shadowMap;
 #endif
 #else
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+uniform highp sampler2D shadowMap;
+#else
+uniform mediump sampler2D shadowMap;
+#endif
+#endif
+#else
+#ifdef SI_FBO_DEPTH_ATTACHMENT
 uniform sampler2DShadow shadowMap;
+#else
+uniform sampler2D shadowMap;
+#endif
 #endif
 #endif
 
 in vec4 vLightDir[SI_LIGHTS];
 
 uniform vec4 specularity;
+
+float unpackDepth(const in vec4 rgba_depth)
+{
+    const vec4 bit_shift = vec4(1.0/(256.0*256.0*256.0), 1.0/(256.0*256.0), 1.0/256.0, 1.0);
+    float depth = dot(rgba_depth, bit_shift);
+    return depth;
+}
 
 float getShadow() {                                 // returns 0.0 if in shadow and 1.0 if fully lit
 #ifdef S_SHADOW
@@ -187,7 +218,14 @@ float getShadow() {                                 // returns 0.0 if in shadow 
         return 1.0;
     }
 #endif
+#ifndef SI_FBO_DEPTH_ATTACHMENT
+    vec3 shadowmapCoord = vShadowmapCoord.xyz/vShadowmapCoord.w;
+    vec4 packedShadowDepth = texture(shadowMap, shadowmapCoord.xy);
+    float depth = unpackDepth(packedShadowDepth);
+    return depth > shadowmapCoord.z ? 1.0 : 0.0;
+#else
     return textureProj(shadowMap, vShadowmapCoord); // performs w division and compare .z with current depth
+#endif
 #else
     return 0.0;
 #endif

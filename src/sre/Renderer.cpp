@@ -92,8 +92,6 @@ namespace sre {
 			LOG_FATAL("Error initializing OpenGL using GLEW: %s",glewGetErrorString(err));
 		}
 #endif
-
-
         renderInfo_.graphicsAPIVendor = (char*)glGetString(GL_VENDOR);
 
         LOG_INFO("OpenGL version %s (%i.%i)",renderInfo_.graphicsAPIVersion.c_str(), renderInfo_.graphicsAPIVersionMajor,renderInfo_.graphicsAPIVersionMinor);
@@ -120,6 +118,8 @@ namespace sre {
 #endif
             glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 		}
+        renderInfo_.supportFBODepthAttachment = !renderInfo_.graphicsAPIVersionES || renderInfo_.graphicsAPIVersionMajor>2;
+		std::cout << "renderInfo_.supportFBODepthAttachment "<<renderInfo_.supportFBODepthAttachment<<std::endl;
 
         initGlobalUniformBuffer();
 
