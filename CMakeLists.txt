@@ -68,5 +68,9 @@ ENDIF(USE_OPENVR)
 
 add_subdirectory(src)
 add_subdirectory(examples)
-add_subdirectory(test)
-add_subdirectory(utils)
+
+option(USE_SRE_TEST_AND_UTILS "Enable Tests and Utils for SRE" OFF)
+IF (USE_SRE_TEST_AND_UTILS)
+    add_subdirectory(test)
+    add_subdirectory(utils)
+ENDIF(USE_SRE_TEST_AND_UTILS)
