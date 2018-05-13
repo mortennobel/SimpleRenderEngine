@@ -151,7 +151,9 @@ namespace sre {
 
                 LOG_ERROR("Shader compile error in %s (%s): %s", name.c_str(), typeStr.c_str(), errorLog.data());
                 errors.push_back(std::string(errorLog.data())+"##"+std::to_string(type));
-
+                if (Renderer::instance->getRenderStats().frame <= 1){
+                    std::cout << source << std::endl;
+                }
             }
         }
 
