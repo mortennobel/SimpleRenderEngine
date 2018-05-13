@@ -119,7 +119,6 @@ namespace sre {
             glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 		}
         renderInfo_.supportFBODepthAttachment = !renderInfo_.graphicsAPIVersionES || renderInfo_.graphicsAPIVersionMajor>2;
-		std::cout << "renderInfo_.supportFBODepthAttachment "<<renderInfo_.supportFBODepthAttachment<<std::endl;
 
         initGlobalUniformBuffer();
 
