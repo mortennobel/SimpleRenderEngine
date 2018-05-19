@@ -15,4 +15,4 @@ addons:
 
 script:
   - CXX=/usr/bin/g++-5 CC=/usr/bin/gcc-5 cmake .
-  - cmake --build . -- -j2
+  - cmake --build . -- -j2  -D USE_SRE_TEST_AND_UTILS=ON
