@@ -71,7 +71,7 @@ namespace sre {
         ~Renderer();
         static constexpr int sre_version_major = 1;
         static constexpr int sre_version_minor = 1;
-        static constexpr int sre_version_point = 0;
+        static constexpr int sre_version_point = 1;
 
         glm::ivec2 getWindowSize();                         // Return the current size of the window
 
