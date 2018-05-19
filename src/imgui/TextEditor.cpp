@@ -18,6 +18,18 @@ static const int cTextStart = 7;
 // - handle unicode/utf
 // - testing
 
+template<class InputIt1, class InputIt2, class BinaryPredicate>
+bool equals(InputIt1 first1, InputIt1 last1,
+	InputIt2 first2, InputIt2 last2, BinaryPredicate p)
+{
+	for (; first1 != last1 && first2 != last2; ++first1, ++first2)
+	{
+		if (!p(*first1, *first2))
+			return false;
+	}
+	return first1 == last1 && first2 == last2;
+}
+
 TextEditor::TextEditor()
 	: mLineSpacing(0.0f)
 	, mUndoIndex(0)
@@ -30,6 +42,7 @@ TextEditor::TextEditor()
 	, mTextChanged(false)
 	, mColorRangeMin(0)
 	, mColorRangeMax(0)
+	, mSelectionMode(SelectionMode::Normal)
 	, mCheckMultilineComments(true)
 {
 	SetPalette(GetDarkPalette());
@@ -555,31 +568,65 @@ void TextEditor::Render(const char* aTitle, const ImVec2& aSize, bool aBorder)
 
 	if (ImGui::IsWindowHovered())
 	{
+		static float lastClick = -1.0f;
 		if (!shift && !alt)
 		{
-			if (ImGui::IsMouseClicked(0))
+			auto click = ImGui::IsMouseClicked(0);
+			auto doubleClick = ImGui::IsMouseDoubleClicked(0);
+			auto t = ImGui::GetTime();
+			auto tripleClick = click && !doubleClick && t - lastClick < io.MouseDoubleClickTime;
+			if (tripleClick)
 			{
+				printf("triple\n");
+				if (!ctrl)
+				{
+					mState.mCursorPosition = mInteractiveStart = mInteractiveEnd = SanitizeCoordinates(ScreenPosToCoordinates(ImGui::GetMousePos()));
+					mSelectionMode = SelectionMode::Line;
+					SetSelection(mInteractiveStart, mInteractiveEnd, mSelectionMode);
+				}
+
+				lastClick = -1.0f;
+			}
+			else if (doubleClick)
+			{
+				printf("double\n");
+				if (!ctrl)
+			{
+					mState.mCursorPosition = mInteractiveStart = mInteractiveEnd = SanitizeCoordinates(ScreenPosToCoordinates(ImGui::GetMousePos()));
+					if (mSelectionMode == SelectionMode::Line)
+						mSelectionMode = SelectionMode::Normal;
+					else
+						mSelectionMode = SelectionMode::Word;
+					SetSelection(mInteractiveStart, mInteractiveEnd, mSelectionMode);
+				}
+
+				lastClick = ImGui::GetTime();
+			}
+			else if (click)
+			{
+				printf("single\n");
 				mState.mCursorPosition = mInteractiveStart = mInteractiveEnd = SanitizeCoordinates(ScreenPosToCoordinates(ImGui::GetMousePos()));
 				if (ctrl)
-					mWordSelectionMode = true;
-				SetSelection(mInteractiveStart, mInteractiveEnd, mWordSelectionMode);
-			}
-			if (ImGui::IsMouseDoubleClicked(0) && !ctrl)
-			{
-				mState.mCursorPosition = mInteractiveStart = mInteractiveEnd = SanitizeCoordinates(ScreenPosToCoordinates(ImGui::GetMousePos()));
-				mWordSelectionMode = true;
-				SetSelection(mInteractiveStart, mInteractiveEnd, mWordSelectionMode);
+					mSelectionMode = SelectionMode::Word;
+				else
+					mSelectionMode = SelectionMode::Normal;
+				SetSelection(mInteractiveStart, mInteractiveEnd, mSelectionMode);
+
+				lastClick = ImGui::GetTime();
 			}
 			else if (ImGui::IsMouseDragging(0) && ImGui::IsMouseDown(0))
 			{
 				io.WantCaptureMouse = true;
 				mState.mCursorPosition = mInteractiveEnd = SanitizeCoordinates(ScreenPosToCoordinates(ImGui::GetMousePos()));
-				SetSelection(mInteractiveStart, mInteractiveEnd, mWordSelectionMode);
+				SetSelection(mInteractiveStart, mInteractiveEnd, mSelectionMode);
+			}
+			else
+			{
 			}
 		}
 
-		if (!ImGui::IsMouseDown(0))
-			mWordSelectionMode = false;
+		//if (!ImGui::IsMouseDown(0))
+		//	mWordSelectionMode = false;
 	}
 
 	ColorizeInternal();
@@ -866,18 +913,34 @@ void TextEditor::SetSelectionEnd(const Coordinates & aPosition)
 		std::swap(mState.mSelectionStart, mState.mSelectionEnd);
 }
 
-void TextEditor::SetSelection(const Coordinates & aStart, const Coordinates & aEnd, bool aWordMode)
+void TextEditor::SetSelection(const Coordinates & aStart, const Coordinates & aEnd, SelectionMode aMode)
 {
 	mState.mSelectionStart = SanitizeCoordinates(aStart);
 	mState.mSelectionEnd = SanitizeCoordinates(aEnd);
 	if (aStart > aEnd)
 		std::swap(mState.mSelectionStart, mState.mSelectionEnd);
 
-	if (aWordMode)
+	switch (aMode)
+	{
+	case TextEditor::SelectionMode::Normal:
+		break;
+	case TextEditor::SelectionMode::Word:
 	{
 		mState.mSelectionStart = FindWordStart(mState.mSelectionStart);
 		if (!IsOnWordBoundary(mState.mSelectionEnd))
 			mState.mSelectionEnd = FindWordEnd(FindWordStart(mState.mSelectionEnd));
+		break;
+	}
+	case TextEditor::SelectionMode::Line:
+	{
+		const auto lineNo = mState.mSelectionEnd.mLine;
+		const auto lineSize = lineNo < mLines.size() ? mLines[lineNo].size() : 0;
+		mState.mSelectionStart = Coordinates(mState.mSelectionStart.mLine, 0);
+		mState.mSelectionEnd = Coordinates(lineNo, (int) lineSize);
+		break;
+	}
+	default:
+		break;
 	}
 }
 
@@ -1011,7 +1074,7 @@ void TextEditor::MoveLeft(int aAmount, bool aSelect, bool aWordMode)
 	}
 	else
 		mInteractiveStart = mInteractiveEnd = mState.mCursorPosition;
-	SetSelection(mInteractiveStart, mInteractiveEnd, aSelect && aWordMode);
+	SetSelection(mInteractiveStart, mInteractiveEnd, aSelect && aWordMode ? SelectionMode::Word : SelectionMode::Normal);
 
 	EnsureCursorVisible();
 }
@@ -1056,7 +1119,7 @@ void TextEditor::MoveRight(int aAmount, bool aSelect, bool aWordMode)
 	}
 	else
 		mInteractiveStart = mInteractiveEnd = mState.mCursorPosition;
-	SetSelection(mInteractiveStart, mInteractiveEnd, aSelect && aWordMode);
+	SetSelection(mInteractiveStart, mInteractiveEnd, aSelect && aWordMode ? SelectionMode::Word : SelectionMode::Normal);
 
 	EnsureCursorVisible();
 }
@@ -1603,7 +1666,7 @@ void TextEditor::ColorizeInternal()
 						auto from = line.begin() + i.mColumn;
 						auto& startStr = mLanguageDefinition.mCommentStart;
 						if (i.mColumn + startStr.size() <= line.size() &&
-							std::equal(startStr.begin(), startStr.end(), from, from + startStr.size(), pred))
+							equals(startStr.begin(), startStr.end(), from, from + startStr.size(), pred))
 							commentStart = i;
 
 						inComment = commentStart <= i;
@@ -1612,7 +1675,7 @@ void TextEditor::ColorizeInternal()
 
 						auto& endStr = mLanguageDefinition.mCommentEnd;
 						if (i.mColumn + 1 >= (int)endStr.size() &&
-							std::equal(endStr.begin(), endStr.end(), from + 1 - endStr.size(), from + 1, pred))
+							equals(endStr.begin(), endStr.end(), from + 1 - endStr.size(), from + 1, pred))
 							commentStart = end;
 					}
 				}
@@ -1775,7 +1838,7 @@ TextEditor::LanguageDefinition TextEditor::LanguageDefinition::CPlusPlus()
 		}
 
 		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("//.*", PaletteIndex::Comment));
-		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("[ \t]*#[ \\t]*[a-zA-Z_]+", PaletteIndex::Preprocessor));
+		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("[ \\t]*#[ \\t]*[a-zA-Z_]+", PaletteIndex::Preprocessor));
 		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("L?\\\"(\\\\.|[^\\\"])*\\\"", PaletteIndex::String));
 		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("\\'\\\\?[^\\']\\'", PaletteIndex::CharLiteral));
 		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("0[xX][0-9a-fA-F]+[uU]?[lL]?[lL]?", PaletteIndex::Number));
@@ -1846,7 +1909,7 @@ TextEditor::LanguageDefinition TextEditor::LanguageDefinition::HLSL()
 		}
 
 		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("//.*", PaletteIndex::Comment));
-		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("[ \t]*#[ \\t]*[a-zA-Z_]+", PaletteIndex::Preprocessor));
+		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("[ \\t]*#[ \\t]*[a-zA-Z_]+", PaletteIndex::Preprocessor));
 		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("L?\\\"(\\\\.|[^\\\"])*\\\"", PaletteIndex::String));
 		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("\\'\\\\?[^\\']\\'", PaletteIndex::CharLiteral));
 		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+-]?[0-9]+)?[fF]?", PaletteIndex::Number));
@@ -1909,7 +1972,7 @@ TextEditor::LanguageDefinition TextEditor::LanguageDefinition::GLSL()
 		}
 
 		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("//.*", PaletteIndex::Comment));
-		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("[ \t]*#[ \\t]*[a-zA-Z_]+", PaletteIndex::Preprocessor));
+		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("[ \\t]*#[ \\t]*[a-zA-Z_]+", PaletteIndex::Preprocessor));
 		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("L?\\\"(\\\\.|[^\\\"])*\\\"", PaletteIndex::String));
 		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("\\'\\\\?[^\\']\\'", PaletteIndex::CharLiteral));
 		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+-]?[0-9]+)?[fF]?", PaletteIndex::Number));
@@ -1957,7 +2020,7 @@ TextEditor::LanguageDefinition TextEditor::LanguageDefinition::C()
 		}
 
 		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("//.*", PaletteIndex::Comment));
-		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("[ \t]*#[ \\t]*[a-zA-Z_]+", PaletteIndex::Preprocessor));
+		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("[ \\t]*#[ \\t]*[a-zA-Z_]+", PaletteIndex::Preprocessor));
 		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("L?\\\"(\\\\.|[^\\\"])*\\\"", PaletteIndex::String));
 		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("\\'\\\\?[^\\']\\'", PaletteIndex::CharLiteral));
 		langDef.mTokenRegexStrings.push_back(std::make_pair<std::string, PaletteIndex>("[+-]?([0-9]+([.][0-9]*)?|[.][0-9]+)([eE][+-]?[0-9]+)?[fF]?", PaletteIndex::Number));

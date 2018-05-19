@@ -11,7 +11,7 @@
 #include "imgui.h"
 
 /**
- * https://github.com/BalazsJako/ImGuiColorTextEdit (commit 6c69c306da0afb6c0b7ea51ec504aa0aae348aad)
+ * https://github.com/BalazsJako/ImGuiColorTextEdit (commit 1fbba2fe8da83139a39789ea4ef8ca3077143b79)
  *
  * MIT License
  *
@@ -63,6 +63,13 @@ public:
 		CurrentLineFillInactive,
 		CurrentLineEdge,
 		Max
+	};
+
+	enum class SelectionMode
+	{
+		Normal,
+		Word,
+		Line
 	};
 
 	struct Breakpoint
@@ -222,7 +229,7 @@ public:
 
 	void SetSelectionStart(const Coordinates& aPosition);
 	void SetSelectionEnd(const Coordinates& aPosition);
-	void SetSelection(const Coordinates& aStart, const Coordinates& aEnd, bool awordmode = false);
+	void SetSelection(const Coordinates& aStart, const Coordinates& aEnd, SelectionMode aMode = SelectionMode::Normal);
 	void SelectWordUnderCursor();
 	void SelectAll();
 	bool HasSelection() const;
@@ -329,6 +336,7 @@ private:
 	bool mWordSelectionMode;
 	bool mTextChanged;
 	int mColorRangeMin, mColorRangeMax;
+	SelectionMode mSelectionMode;
 
 	Palette mPalette;
 	LanguageDefinition mLanguageDefinition;
