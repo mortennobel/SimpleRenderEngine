@@ -14,5 +14,5 @@ addons:
       - libsdl2-image-dev
 
 script:
-  - CXX=/usr/bin/g++-5 CC=/usr/bin/gcc-5 cmake .
-  - cmake --build . -- -j2  -D USE_SRE_TEST_AND_UTILS=ON
+  - CXX=/usr/bin/g++-5 CC=/usr/bin/gcc-5 cmake . -D USE_SRE_TEST_AND_UTILS=ON
+  - cmake --build . -- -j2
