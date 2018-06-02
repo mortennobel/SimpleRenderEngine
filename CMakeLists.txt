@@ -17,10 +17,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
+
 find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR})
-include_directories(sre)
-include_directories(include)
 
 #########################################################
 # FIND OPENGL
@@ -69,7 +68,8 @@ IF (USE_OPENVR)
 ENDIF(USE_OPENVR)
 
 add_subdirectory(submodules)
-include_directories(${EXTRA_INCLUDE})
+set(SRE_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/include ${EXTRA_INCLUDE} CACHE PATH "" FORCE)
+include_directories(${SRE_INCLUDE})
 message(${EXTRA_INCLUDE})
 add_subdirectory(src)
 add_subdirectory(examples)
