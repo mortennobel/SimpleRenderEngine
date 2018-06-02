@@ -68,6 +68,9 @@ IF (USE_OPENVR)
     ENDIF(APPLE)
 ENDIF(USE_OPENVR)
 
+add_subdirectory(submodules)
+include_directories(${EXTRA_INCLUDE})
+message(${EXTRA_INCLUDE})
 add_subdirectory(src)
 add_subdirectory(examples)
 

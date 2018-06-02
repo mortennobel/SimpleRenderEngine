@@ -8,7 +8,7 @@
 #include "sre/SDLRenderer.hpp"
 #include "sre/impl/GL.hpp"
 
-
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <sre/Inspector.hpp>

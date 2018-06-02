@@ -11,6 +11,7 @@
 
 #include "sre/Renderer.hpp"
 #include <glm/gtc/matrix_transform.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 #include <sre/Camera.hpp>
 #include <glm/gtx/matrix_decompose.hpp>

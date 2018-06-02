@@ -18,6 +18,7 @@
 #include "sre/Mesh.hpp"
 #include "sre/Log.hpp"
 #include <unordered_map>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include "glm/glm.hpp"
 

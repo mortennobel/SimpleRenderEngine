@@ -6,6 +6,7 @@
 #include "sre/Renderer.hpp"
 #include "sre/Material.hpp"
 
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <sre/SDLRenderer.hpp>

@@ -1,0 +1,9 @@
+[submodule "submodules/imgui"]
+	path = submodules/imgui
+	url = https://github.com/ocornut/imgui.git
+[submodule "submodules/glm"]
+	path = submodules/glm
+	url = https://github.com/g-truc/glm.git
+[submodule "submodules/picojson"]
+	path = submodules/picojson
+	url = https://github.com/kazuho/picojson.git
