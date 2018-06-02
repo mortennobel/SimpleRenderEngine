@@ -1,6 +1,6 @@
 ## Version history
 
- * 1.1.1 
+ * 1.1.1 Dependent libraries as submodules. 
  * 1.1.0 Shadowmap support. Mesh indices 32 bit option (now uses uint32_t for mesh indices instead of uint16_t). Fixed Camera::screenPointToRay for scaled/offset viewport.
  * 1.0.10 Update ImGui to 1.60. Procedural skybox. Face culling option in Shader. Two sided rendering.
  * 1.0.9 Better support for stencil operations using shaders
