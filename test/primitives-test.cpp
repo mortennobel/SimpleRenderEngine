@@ -84,20 +84,21 @@ public:
             material->setColor({1.0f,1.0f,1.0f,1.0f});
             material->setSpecularity(Color(1,1,1,20.0f));
         }
-        changed = ImGui::Combo("Primitive",&primitive,"Cube\0Sphere\0Quad\0Torus\0");
+        changed |= ImGui::Checkbox("Recompute normals",&recomputeNormals);
+        changed |= ImGui::Combo("Primitive",&primitive,"Cube\0Sphere\0Quad\0Torus\0");
         if (changed){
             switch (primitive){
                 case 0:
-                    mesh = Mesh::create().withCube(1).build();
+                    mesh = Mesh::create().withCube(1).withRecomputeNormals(recomputeNormals).build();
                     break;
                 case 1:
-                    mesh = Mesh::create().withSphere().build();
+                    mesh = Mesh::create().withSphere().withRecomputeNormals(recomputeNormals).build();
                     break;
                 case 2:
-                    mesh = Mesh::create().withQuad(1).build();
+                    mesh = Mesh::create().withQuad(1).withRecomputeNormals(recomputeNormals).build();
                     break;
                 case 3:
-                    mesh = Mesh::create().withTorus().build();
+                    mesh = Mesh::create().withTorus().withRecomputeNormals(recomputeNormals).build();
                     break;
                 default:
                     std::cout << "Err"<<std::endl;
@@ -106,6 +107,7 @@ public:
 
     }
 private:
+    bool recomputeNormals = false;
     int shader = 0;
     int primitive = 0;
     SDLRenderer r;

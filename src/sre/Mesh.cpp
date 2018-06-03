@@ -524,6 +524,56 @@ namespace sre {
         return *this;
     }
 
+    std::vector<glm::vec3> Mesh::MeshBuilder::computeNormals(){
+        if (attributesVec3.find("position") == attributesVec3.end()){
+            LOG_WARNING("Cannot find vertex attribute position (vec3) for recomputeNormals()");
+            return {};
+        }
+
+        std::vector<glm::vec3> vertexPositions = attributesVec3["position"];
+        std::vector<glm::vec3> normals(vertexPositions.size(), glm::vec3(0));
+
+        auto computeNormal = [&](int i1, int i2, int i3){
+            auto v1 = vertexPositions[i1];
+            auto v2 = vertexPositions[i2];
+            auto v3 = vertexPositions[i3];
+            auto v1v2 = glm::normalize(v2 - v1);
+            auto v1v3 = glm::normalize(v3 - v1);
+            auto normal = glm::normalize(glm::cross(v1v2, v1v3));
+            float weight1 = acos(glm::max(-1.0f, glm::min(1.0f, glm::dot(v1v2, v1v3))));
+            auto v2v3Alias = glm::normalize(v3 - v2);
+            float weight2 = glm::pi<float>() - acos(glm::max(-1.0f, glm::min(1.0f, glm::dot(v1v2, v2v3Alias))));
+            normals[i1] += normal * weight1;
+            normals[i2] += normal * weight2;
+            normals[i3] += normal * (glm::pi<float>() - weight1 - weight2);
+        };
+
+        if (indices.empty()){
+            if (meshTopology[0] != MeshTopology::Triangles){
+                LOG_WARNING("Cannot only triangles supported for recomputeNormals()");
+                return {};
+            }
+            for (int i=0;i<vertexPositions.size();i=i+3){
+                computeNormal(i, i+1, i+2);
+            }
+        } else {
+            for (int j=0;j<indices.size();j++){
+                if (meshTopology[j] != MeshTopology::Triangles){
+                    LOG_WARNING("Cannot only triangles supported for recomputeNormals()");
+                    return {};
+                }
+                auto & submeshIdx = indices[j];
+                for (int i=0;i<submeshIdx.size();i=i+3){
+                    computeNormal(submeshIdx[i], submeshIdx[i+1], submeshIdx[i+2]);
+                }
+            }
+        }
+
+        for (auto & val : normals){
+            val = glm::normalize(val);
+        }
+        return normals;
+    }
 
     std::shared_ptr<Mesh> Mesh::MeshBuilder::build() {
         // update stats
@@ -531,6 +581,10 @@ namespace sre {
 
         if (name.length()==0){
             name = "Unnamed Mesh";
+        }
+
+        if (recomputeNormals){
+            withNormals(computeNormals());
         }
 
         if (updateMesh != nullptr){
@@ -936,6 +990,11 @@ namespace sre {
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withName(const std::string& name) {
         this->name = name;
+        return *this;
+    }
+
+    Mesh::MeshBuilder& Mesh::MeshBuilder::withRecomputeNormals(bool enabled){
+        recomputeNormals = enabled;
         return *this;
     }
 }
