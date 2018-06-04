@@ -11,6 +11,7 @@
 
 #include <fstream>
 #include <glm/gtc/type_ptr.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <regex>
 #include <sre/Log.hpp>
@@ -118,7 +119,7 @@ namespace sre {
             return sstream.str();
         }
 
-        void logCurrentCompileInfo(GLuint &shader, GLenum type, vector<string> &errors, const std::string& source, const std::string name) {
+        void logCurrentCompileInfo(GLuint &shader, GLenum type, vector<string> &errors, const std::string& source, const std::string name, bool compileSuccess) {
             GLint logSize = 0;
             glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logSize);
             if (logSize > 1){ // log size of 1 is empty, since it includes \0
@@ -148,10 +149,13 @@ namespace sre {
                         typeStr = std::string("Unknown error type: ") + std::to_string(type);
                         break;
                 }
-
-                LOG_ERROR("Shader compile error in %s (%s): %s", name.c_str(), typeStr.c_str(), errorLog.data());
+                if (compileSuccess){
+                    LOG_WARNING("Shader compile warning in %s (%s): %s", name.c_str(), typeStr.c_str(), errorLog.data());
+                } else {
+                    LOG_ERROR("Shader compile error in %s (%s): %s", name.c_str(), typeStr.c_str(), errorLog.data());
+                }
                 errors.push_back(std::string(errorLog.data())+"##"+std::to_string(type));
-                if (Renderer::instance->getRenderStats().frame <= 1){
+                if (Renderer::instance->getRenderStats().frame <= 1 && !compileSuccess){
                     std::cout << source << std::endl;
                 }
             }
@@ -993,7 +997,7 @@ namespace sre {
         GLint success = 0;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 
-        logCurrentCompileInfo(shader, type, errors, source_, resource.value);
+        logCurrentCompileInfo(shader, type, errors, source_, resource.value, success==1);
 
         return success == 1;
     }

@@ -5,9 +5,10 @@
  *  License: MIT
  */
 #include "sre/Inspector.hpp"
-#include "TextEditor.h"
+#include "sre/impl/TextEditor.h"
 #include <algorithm>
 #include <iostream>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/transform.hpp>
 

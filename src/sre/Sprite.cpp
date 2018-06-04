@@ -6,6 +6,7 @@
  */
 
 #include <iostream>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 #include <sre/Sprite.hpp>
 #include "sre/Sprite.hpp"

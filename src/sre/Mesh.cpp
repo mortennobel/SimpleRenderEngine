@@ -11,6 +11,7 @@
 #include "sre/impl/GL.hpp"
 #include <glm/gtc/constants.hpp>
 #include <iostream>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <iomanip>
 #include "sre/Renderer.hpp"
@@ -523,6 +524,144 @@ namespace sre {
         return *this;
     }
 
+    std::vector<glm::vec4> Mesh::MeshBuilder::computeTangents(const std::vector<glm::vec3>& normals){
+        if (attributesVec3.find("position") == attributesVec3.end()){
+            LOG_WARNING("Cannot find vertex attribute position (vec3) required for recomputeNormals()");
+            return {};
+        }
+        if (attributesVec4.find("uv") == attributesVec4.end()){
+            LOG_WARNING("Cannot find vertex attribute uv (vec4) required for recomputeNormals()");
+            return {};
+        }
+
+        std::vector<glm::vec3> vertexPositions = attributesVec3["position"];
+        std::vector<glm::vec4> uvs = attributesVec4["uv"];
+
+        std::vector<glm::vec3> tan1(vertexPositions.size(), glm::vec3(0.0f));
+        std::vector<glm::vec3> tan2(vertexPositions.size(), glm::vec3(0.0f));
+
+        auto computeTangent = [&](int i1, int i2, int i3) {
+            auto v1 = vertexPositions[i1];
+            auto v2 = vertexPositions[i2];
+            auto v3 = vertexPositions[i3];
+
+            auto w1 = glm::vec2(uvs[i1]);
+            auto w2 = glm::vec2(uvs[i2]);
+            auto w3 = glm::vec2(uvs[i3]);
+
+            float x1 = v2.x - v1.x;
+            float x2 = v3.x - v1.x;
+            float y1 = v2.y - v1.y;
+            float y2 = v3.y - v1.y;
+            float z1 = v2.z - v1.z;
+            float z2 = v3.z - v1.z;
+
+            float s1 = w2.x - w1.x;
+            float s2 = w3.x - w1.x;
+            float t1 = w2.y - w1.y;
+            float t2 = w3.y - w1.y;
+
+            float r = 1.0F / (s1 * t2 - s2 * t1);
+            glm::vec3 sdir((t2 * x1 - t1 * x2) * r, (t2 * y1 - t1 * y2) * r,
+                          (t2 * z1 - t1 * z2) * r);
+            glm::vec3 tdir((s1 * x2 - s2 * x1) * r, (s1 * y2 - s2 * y1) * r,
+                          (s1 * z2 - s2 * z1) * r);
+
+            tan1[i1] += sdir;
+            tan1[i2] += sdir;
+            tan1[i3] += sdir;
+
+            tan2[i1] += tdir;
+            tan2[i2] += tdir;
+            tan2[i3] += tdir;
+        };
+
+        if (indices.empty()){
+            if (meshTopology[0] != MeshTopology::Triangles){
+                LOG_WARNING("Cannot only triangles supported for recomputeTangents()");
+                return {};
+            }
+            for (int i=0;i<vertexPositions.size();i=i+3){
+                computeTangent(i, i+1, i+2);
+            }
+        } else {
+            for (int j=0;j<indices.size();j++){
+                if (meshTopology[j] != MeshTopology::Triangles){
+                    LOG_WARNING("Cannot only triangles supported for recomputeTangents()");
+                    return {};
+                }
+                auto & submeshIdx = indices[j];
+                for (int i=0;i<submeshIdx.size();i=i+3){
+                    computeTangent(submeshIdx[i], submeshIdx[i+1], submeshIdx[i+2]);
+                }
+            }
+        }
+
+        std::vector<glm::vec4> tangent(vertexPositions.size());
+        for (long a = 0; a < vertexPositions.size(); a++)
+        {
+            auto n = normals[a];
+            auto t = tan1[a];
+
+            tangent[a] = glm::vec4(
+                    // Gram-Schmidt orthogonalize
+                    glm::normalize(t - n * glm::dot(n, t)),
+                    // Calculate handedness
+                    (glm::dot(glm::cross(n, t), tan2[a]) < 0.0F) ? -1.0F : 1.0F);
+        }
+        return tangent;
+    }
+
+    std::vector<glm::vec3> Mesh::MeshBuilder::computeNormals(){
+        if (attributesVec3.find("position") == attributesVec3.end()){
+            LOG_WARNING("Cannot find vertex attribute position (vec3) for recomputeNormals()");
+            return {};
+        }
+
+        std::vector<glm::vec3> vertexPositions = attributesVec3["position"];
+        std::vector<glm::vec3> normals(vertexPositions.size(), glm::vec3(0));
+
+        auto computeNormal = [&](int i1, int i2, int i3){
+            auto v1 = vertexPositions[i1];
+            auto v2 = vertexPositions[i2];
+            auto v3 = vertexPositions[i3];
+            auto v1v2 = glm::normalize(v2 - v1);
+            auto v1v3 = glm::normalize(v3 - v1);
+            auto normal = glm::normalize(glm::cross(v1v2, v1v3));
+            float weight1 = acos(glm::max(-1.0f, glm::min(1.0f, glm::dot(v1v2, v1v3))));
+            auto v2v3Alias = glm::normalize(v3 - v2);
+            float weight2 = glm::pi<float>() - acos(glm::max(-1.0f, glm::min(1.0f, glm::dot(v1v2, v2v3Alias))));
+            normals[i1] += normal * weight1;
+            normals[i2] += normal * weight2;
+            normals[i3] += normal * (glm::pi<float>() - weight1 - weight2);
+        };
+
+        if (indices.empty()){
+            if (meshTopology[0] != MeshTopology::Triangles){
+                LOG_WARNING("Cannot only triangles supported for recomputeNormals()");
+                return {};
+            }
+            for (int i=0;i<vertexPositions.size();i=i+3){
+                computeNormal(i, i+1, i+2);
+            }
+        } else {
+            for (int j=0;j<indices.size();j++){
+                if (meshTopology[j] != MeshTopology::Triangles){
+                    LOG_WARNING("Cannot only triangles supported for recomputeNormals()");
+                    return {};
+                }
+                auto & submeshIdx = indices[j];
+                for (int i=0;i<submeshIdx.size();i=i+3){
+                    computeNormal(submeshIdx[i], submeshIdx[i+1], submeshIdx[i+2]);
+                }
+            }
+        }
+
+        for (auto & val : normals){
+            val = glm::normalize(val);
+        }
+        return normals;
+    }
 
     std::shared_ptr<Mesh> Mesh::MeshBuilder::build() {
         // update stats
@@ -532,6 +671,20 @@ namespace sre {
             name = "Unnamed Mesh";
         }
 
+        if (recomputeNormals){
+            auto newNormals = computeNormals();
+            if (!newNormals.empty()){
+                withNormals(newNormals);
+            }
+        }
+
+        if (recomputeTangents){
+            bool hasNormals = attributesVec3.find("normal") == attributesVec3.end();
+            auto newTangents = computeTangents(hasNormals ? attributesVec3["normal"] : computeNormals());
+            if (!newTangents.empty()){
+                withTangents(newTangents);
+            }
+        }
         if (updateMesh != nullptr){
             renderStats.meshBytes -= updateMesh->getDataSize();
             updateMesh->update(std::move(this->attributesFloat), std::move(this->attributesVec2), std::move(this->attributesVec3), std::move(this->attributesVec4), std::move(this->attributesIVec4), std::move(indices), meshTopology,name,renderStats);
@@ -935,6 +1088,16 @@ namespace sre {
 
     Mesh::MeshBuilder &Mesh::MeshBuilder::withName(const std::string& name) {
         this->name = name;
+        return *this;
+    }
+
+    Mesh::MeshBuilder& Mesh::MeshBuilder::withRecomputeNormals(bool enabled){
+        recomputeNormals = enabled;
+        return *this;
+    }
+
+    Mesh::MeshBuilder& Mesh::MeshBuilder::withRecomputeTangents(bool enabled){
+        recomputeTangents = enabled;
         return *this;
     }
 }

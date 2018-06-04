@@ -20,6 +20,7 @@
 #include <imgui_internal.h>
 #include <glm/gtc/type_precision.hpp>
 #include <glm/gtc/color_space.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/string_cast.hpp>
 

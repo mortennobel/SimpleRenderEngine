@@ -71,9 +71,13 @@ namespace sre {
 
             // other
             MeshBuilder& withName(const std::string& name);                                       // Defines the name of the mesh
+            MeshBuilder& withRecomputeNormals(bool enabled);                                      // Recomputes normals using angle weighted normals
+            MeshBuilder& withRecomputeTangents(bool enabled);                                     // Recomputes tangents using (Lengyel’s Method)
 
             std::shared_ptr<Mesh> build();
         private:
+            std::vector<glm::vec3> computeNormals();
+            std::vector<glm::vec4> computeTangents(const std::vector<glm::vec3>& normals);
             MeshBuilder() = default;
             MeshBuilder(const MeshBuilder&) = default;
             std::map<std::string,std::vector<float>> attributesFloat;
@@ -84,6 +88,8 @@ namespace sre {
             std::vector<MeshTopology> meshTopology = {MeshTopology::Triangles};
             std::vector<std::vector<uint32_t>> indices;
             Mesh *updateMesh = nullptr;
+            bool recomputeNormals = false;
+            bool recomputeTangents = false;
             std::string name;
             friend class Mesh;
         };
