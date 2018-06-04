@@ -72,7 +72,10 @@ set(SRE_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/include ${EXTRA_INCLUDE} ${SRE_INCLU
 include_directories(${SRE_INCLUDE})
 
 add_subdirectory(src)
-add_subdirectory(examples)
+option(USE_SRE_EXAMPLES "Enable examples for SRE" ON)
+if (USE_SRE_EXAMPLES)
+    add_subdirectory(examples)
+endif(USE_SRE_EXAMPLES)
 
 option(USE_SRE_TEST_AND_UTILS "Enable Tests and Utils for SRE" OFF)
 IF (USE_SRE_TEST_AND_UTILS)
