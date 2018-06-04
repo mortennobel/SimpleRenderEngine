@@ -19,37 +19,37 @@ set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake")
 
 
 find_package(SDL2 REQUIRED)
-include_directories(${SDL2_INCLUDE_DIR})
+set(SRE_INCLUDE_DIRS ${SDL2_INCLUDE_DIR})
 
 #########################################################
 # FIND OPENGL
 #########################################################
 IF(APPLE)
-    INCLUDE_DIRECTORIES ( /System/Library/Frameworks )
+    list(APPEND SRE_INCLUDE_DIRS /System/Library/Frameworks)
     FIND_LIBRARY(OpenGL_LIBRARY OpenGL )
     MARK_AS_ADVANCED (OpenGL_LIBRARY)
     SET(EXTRA_LIBS ${OpenGL_LIBRARY})
 ELSE (APPLE)
     find_package(OpenGL REQUIRED)
-    include_directories(${OPENGL_INCLUDE_DIR})
+    list(APPEND SRE_INCLUDE_DIRS ${OPENGL_INCLUDE_DIR})
     IF(UNIX)
         find_package(GLEW REQUIRED)
     ELSE(UNIX)
         find_package(glew REQUIRED)
     ENDIF(UNIX)
-    include_directories(${GLEW_INCLUDE_DIR})
+    list(APPEND SRE_INCLUDE_DIRS ${GLEW_INCLUDE_DIR})
     SET(EXTRA_LIBS ${OPENGL_LIBRARY} ${GLEW_LIBRARY})
 ENDIF (APPLE)
 
 find_package(SDL2_IMAGE REQUIRED)
-include_directories(${SDL2_IMAGE_INCLUDE_DIRS})
+list(APPEND SRE_INCLUDE_DIRS ${SDL2_IMAGE_INCLUDE_DIRS})
 
 option(USE_OPENVR "Enable OpenVR" OFF)
 
 set(OPENVR_LIB)
 IF (USE_OPENVR)
 	find_package(OpenVR REQUIRED)
-	include_directories(${OPENVR_INCLUDE_DIRS})
+    list(APPEND SRE_INCLUDE_DIRS ${OPENVR_INCLUDE_DIRS})
 	IF(UNIX)
 		add_definitions(-DSRE_OPENVR)
 	ELSE(UNIX)	
@@ -68,7 +68,7 @@ IF (USE_OPENVR)
 ENDIF(USE_OPENVR)
 
 add_subdirectory(submodules)
-set(SRE_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/include ${EXTRA_INCLUDE} CACHE PATH "" FORCE)
+set(SRE_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/include ${EXTRA_INCLUDE} ${SRE_INCLUDE_DIRS} CACHE PATH "" FORCE)
 include_directories(${SRE_INCLUDE})
 
 add_subdirectory(src)
