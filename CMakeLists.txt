@@ -70,7 +70,7 @@ ENDIF(USE_OPENVR)
 add_subdirectory(submodules)
 set(SRE_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/include ${EXTRA_INCLUDE} CACHE PATH "" FORCE)
 include_directories(${SRE_INCLUDE})
-message(${EXTRA_INCLUDE})
+
 add_subdirectory(src)
 add_subdirectory(examples)
 
