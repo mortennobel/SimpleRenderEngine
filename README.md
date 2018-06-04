@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/mortennobel/SimpleRenderEngine.svg?branch=master)](https://travis-ci.org/mortennobel/SimpleRenderEngine)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/86403818b8b54161a6fef03248c0b828)](https://www.codacy.com/app/mortennobel/SimpleRenderEngine?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mortennobel/SimpleRenderEngine&amp;utm_campaign=Badge_Grade)
 
-# Renderer
+# SimpleRenderEngine
 
 The goal of SimpleRenderEngine (sre) is to provide easy way to get started with graphics 
 programming in 2D or 3D without a deep knowledge about the low-level graphics APIs like 
@@ -34,9 +34,11 @@ To keep sre as simple and flexible as possible the following features are not a 
 
 ## Getting started
 
-First clone the library (git clone --recurse-submodules https://git`hub.com/mortennobel/SimpleRenderEngine.git`). You can use of the examples as starting point.
+First clone the library (`git clone --recurse-submodules https://github.com/mortennobel/SimpleRenderEngine.git`). You can use of the examples as starting point.
 
-Alternative, use the [SimpleRenderEngineProject](https://github.com/mortennobel/SimpleRenderEngineProject) as starting point, which bundles all/most dependencies for Windows and macOS.
+If you want to create new projects using SimpleRenderEngine you can use [SimpleRenderEngineTemplate](https://github.com/mortennobel/SimpleRenderEngineTemplate) as a simple project template. 
+
+Also look into [SimpleRenderEngineProject](https://github.com/mortennobel/SimpleRenderEngineProject) as starting point, which bundles all/most dependencies for Windows and macOS.
 
 ## Examples
  
