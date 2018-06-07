@@ -24,6 +24,7 @@
 #include "imgui_internal.h"
 #include <SDL_image.h>
 #include <glm/gtc/type_ptr.hpp>
+#include "sre/Resource.hpp"
 
 using Clock = std::chrono::high_resolution_clock;
 using Milliseconds = std::chrono::duration<float, std::chrono::milliseconds::period>;
@@ -846,7 +847,7 @@ namespace sre {
             shaderRef = shader;
             shaderCode.clear();
             for (auto source : shader->shaderSources){
-                auto source_ = Shader::getSource(source.second);
+                auto source_ = Resource::loadText(source.second);
                 shaderCode.emplace_back(source_);
             }
             selectedShader = 0;

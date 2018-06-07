@@ -7,14 +7,15 @@
 
 #include "sre/Shader.hpp"
 #include "sre/Material.hpp"
-#include "sre/impl/ShaderSource.inl"
+
 
 #include <fstream>
 #include <glm/gtc/type_ptr.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <regex>
-#include <sre/Log.hpp>
+#include "sre/Log.hpp"
+#include "sre/Resource.hpp"
 #include "sre/Renderer.hpp"
 
 
@@ -60,31 +61,6 @@ namespace sre {
             return elems;
         }
 
-        // from http://stackoverflow.com/questions/2602013/read-whole-ascii-file-into-c-stdstring
-        string getFileContents(string filename)
-        {
-            ifstream in{filename, ios::in | ios::binary};
-            if (in && in.is_open())
-            {
-                std::string contents;
-                in.seekg(0, std::ios::end);
-                auto size = in.tellg();
-                if (size>0){
-                    contents.resize((string::size_type)size);
-                    in.seekg(0, std::ios::beg);
-                    in.read(&contents[0], contents.size());
-                }
-                in.close();
-                return contents;
-            }
-            auto res = builtInShaderSource.find(filename);
-            if (res != builtInShaderSource.end()){
-                return res->second;
-            }
-            LOG_ERROR("Cannot find shader source %s", filename.c_str());
-            return "";
-        }
-
         std::string pragmaInclude(std::string source, std::vector<std::string>& errors, uint32_t shaderType){
             if (source.find("#pragma include")==-1) {
                 return source;
@@ -102,7 +78,7 @@ namespace sre {
                 std::smatch m;
                 if (std::regex_search (s,m,e)) {
                     std::string match = m[1];
-                    auto res = getFileContents(match);
+                    auto res = Resource::loadText(match);
                     if (res.empty()){
                         errors.push_back(std::string("0:")+std::to_string(lineNumber)+" cannot find include file "+match+"##"+std::to_string(shaderType));
                         sstream << s << "\n";
@@ -281,23 +257,26 @@ namespace sre {
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withOffset(float factor, float units) {
-        this->offset = {factor, units};
+        offset = {factor, units};
         return *this;
     }
 
-    Shader::ShaderBuilder & Shader::ShaderBuilder::withSourceString(const std::string &shaderSource, ShaderType shaderType) {
-        this->shaderSources[shaderType] = {
-            ResourceType::Memory,
-            shaderSource
-        };
+    Shader::ShaderBuilder & Shader::ShaderBuilder::withSourceString(const std::string &source, ShaderType shaderType) {
+        // leak - but member function is deprecated
+        static int id = 1;
+        string uniqueName = std::to_string(id++)+".obj";
+        Resource::set(uniqueName, source);
+        shaderSources[shaderType] = uniqueName;
         return *this;
     }
 
     Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceFile(const std::string &shaderFile, ShaderType shaderType) {
-        this->shaderSources[shaderType] = {
-            ResourceType::File,
-            shaderFile
-        };
+        shaderSources[shaderType] = Resource::loadText(shaderFile);
+        return *this;
+    }
+
+    Shader::ShaderBuilder &Shader::ShaderBuilder::withSourceResource(const std::string &shaderFile, ShaderType shaderType) {
+        shaderSources[shaderType] = shaderFile;
         return *this;
     }
 
@@ -712,8 +691,8 @@ namespace sre {
         }
 
         unlit = create()
-                .withSourceFile("unlit_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("unlit_frag.glsl", ShaderType::Fragment)
+                .withSourceResource("unlit_vert.glsl", ShaderType::Vertex)
+                .withSourceResource("unlit_frag.glsl", ShaderType::Fragment)
                 .withName("Unlit")
                 .build();
         return unlit;
@@ -727,8 +706,8 @@ namespace sre {
         }
 
         skybox = create()
-                .withSourceFile("skybox_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("skybox_frag.glsl", ShaderType::Fragment)
+                .withSourceResource("skybox_vert.glsl", ShaderType::Vertex)
+                .withSourceResource("skybox_frag.glsl", ShaderType::Fragment)
                 .withName("Skybox")
                 .withDepthWrite(false)
                 .build();
@@ -742,8 +721,8 @@ namespace sre {
         }
 
         skyboxProcedural = create()
-                .withSourceFile("skybox_proc_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("skybox_proc_frag.glsl", ShaderType::Fragment)
+                .withSourceResource("skybox_proc_vert.glsl", ShaderType::Vertex)
+                .withSourceResource("skybox_proc_frag.glsl", ShaderType::Fragment)
                 .withName("Skybox Procedural")
                 .withDepthWrite(false)
                 .build();
@@ -758,8 +737,8 @@ namespace sre {
         auto& renderInfo = sre::renderInfo();
         bool colorWrite = renderInfo.supportFBODepthAttachment == false;
         shadow = create()
-                .withSourceFile("shadow_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("shadow_frag.glsl", ShaderType::Fragment)
+                .withSourceResource("shadow_vert.glsl", ShaderType::Vertex)
+                .withSourceResource("shadow_frag.glsl", ShaderType::Fragment)
                 .withName("Shadow")
                 .withOffset(2.5f, 10)                                          // shadow bias
                 .withColorWrite({colorWrite,colorWrite,colorWrite,colorWrite})
@@ -773,8 +752,8 @@ namespace sre {
         }
 
         blit = create()
-                .withSourceFile("blit_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("blit_frag.glsl", ShaderType::Fragment)
+                .withSourceResource("blit_vert.glsl", ShaderType::Vertex)
+                .withSourceResource("blit_frag.glsl", ShaderType::Fragment)
                 .withName("Blit")
                 .build();
         return blit;
@@ -786,8 +765,8 @@ namespace sre {
         }
 
         unlitSprite =  create()
-                .withSourceFile("sprite_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("sprite_frag.glsl", ShaderType::Fragment)
+                .withSourceResource("sprite_vert.glsl", ShaderType::Vertex)
+                .withSourceResource("sprite_frag.glsl", ShaderType::Fragment)
                 .withBlend(BlendType::AlphaBlending)
                 .withDepthTest(false)
                 .withName("Unlit Sprite")
@@ -800,8 +779,8 @@ namespace sre {
             return standardPBR;
         }
         standardPBR = create()
-                .withSourceFile("standard_pbr_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("standard_pbr_frag.glsl", ShaderType::Fragment)
+                .withSourceResource("standard_pbr_vert.glsl", ShaderType::Vertex)
+                .withSourceResource("standard_pbr_frag.glsl", ShaderType::Fragment)
                 .withName("Standard")
                 .build();
         return standardPBR;
@@ -828,8 +807,8 @@ namespace sre {
         }
 
         standardParticles = create()
-                .withSourceFile("particles_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("particles_frag.glsl", ShaderType::Fragment)
+                .withSourceResource("particles_vert.glsl", ShaderType::Vertex)
+                .withSourceResource("particles_frag.glsl", ShaderType::Fragment)
                 .withBlend(BlendType::AdditiveBlending)
                 .withDepthWrite(false)
                 .withName("Standard Particles")
@@ -841,7 +820,7 @@ namespace sre {
         return Shader::ShaderBuilder();
     }
 
-    bool Shader::build(std::map<ShaderType,Resource> shaderSources, std::vector<std::string>& errors) {
+    bool Shader::build(std::map<ShaderType,std::string> shaderSources, std::vector<std::string>& errors) {
         unsigned int oldShaderProgramId = shaderProgramId;
         shaderProgramId = glCreateProgram();
         assert(shaderProgramId != 0);
@@ -978,16 +957,8 @@ namespace sre {
         return name;
     }
 
-    std::string Shader::getSource(Shader::Resource &resource) {
-        std::string source = resource.value;
-        if (resource.resourceType==ResourceType::File){
-            source = getFileContents(source);
-        }
-        return source;
-    }
-
-    bool Shader::compileShader(Resource& resource, GLenum type, GLuint& shader, std::vector<std::string>& errors){
-        auto source = getSource(resource);
+    bool Shader::compileShader(std::string& resource, GLenum type, GLuint& shader, std::vector<std::string>& errors){
+        auto source = Resource::loadText(resource);
         std::string source_ = precompile(source, errors, type);
         shader = glCreateShader(type);
         auto stringPtr = source_.c_str();
@@ -997,7 +968,7 @@ namespace sre {
         GLint success = 0;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
 
-        logCurrentCompileInfo(shader, type, errors, source_, resource.value, success==1);
+        logCurrentCompileInfo(shader, type, errors, source_, resource, success==1);
 
         return success == 1;
     }
@@ -1047,7 +1018,7 @@ namespace sre {
         static std::regex SPECIALIZATION_CONSTANT_PATTERN("(S_[A-Z_0-9]+)");
         std::set<string> res;
         for (auto& source : shaderSources){
-            string s = getSource(source.second);
+            string s = Resource::loadText(source.second);
             std::smatch m;
             while (std::regex_search(s, m, SPECIALIZATION_CONSTANT_PATTERN)) {
                 std::string match = m.str();
@@ -1063,8 +1034,8 @@ namespace sre {
             return standardBlinnPhong;
         }
         standardBlinnPhong = create()
-                .withSourceFile("standard_blinn_phong_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("standard_blinn_phong_frag.glsl", ShaderType::Fragment)
+                .withSourceResource("standard_blinn_phong_vert.glsl", ShaderType::Vertex)
+                .withSourceResource("standard_blinn_phong_frag.glsl", ShaderType::Fragment)
                 .withName("StandardBlinnPhong")
                 .build();
         return standardBlinnPhong;
@@ -1074,8 +1045,8 @@ namespace sre {
             return standardPhong;
         }
         standardPhong = create()
-                .withSourceFile("standard_phong_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("standard_phong_frag.glsl", ShaderType::Fragment)
+                .withSourceResource("standard_phong_vert.glsl", ShaderType::Vertex)
+                .withSourceResource("standard_phong_frag.glsl", ShaderType::Fragment)
                 .withName("StandardPhong")
                 .build();
         return standardPhong;

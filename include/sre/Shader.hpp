@@ -148,21 +148,14 @@ namespace sre {
      *   Specialization constants must start start with 'S_' and must consist of capital letters, digits and underscore.
      */
     class DllExport Shader : public std::enable_shared_from_this<Shader> {
-        enum class ResourceType{
-            File,
-            Memory
-        };
-
-        struct Resource{
-            ResourceType resourceType;
-            std::string value;
-        };
     public:
-
         class DllExport ShaderBuilder {
         public:
-            ShaderBuilder& withSourceString(const std::string& shaderSource, ShaderType shaderType);
+            DEPRECATED("Use withSource instead")
+            ShaderBuilder& withSourceString(const std::string& source, ShaderType shaderType);
+            DEPRECATED("Use withSource instead")
             ShaderBuilder& withSourceFile(const std::string& shaderFile, ShaderType shaderType);
+            ShaderBuilder& withSourceResource(const std::string& resourceName, ShaderType shaderType); // resourceName should exist as resource
             ShaderBuilder& withOffset(float factor,float units);  // set the scale and units used to calculate depth values (note for WebGL1.0/OpenGL ES 2.0 only affects polygon fill)
             ShaderBuilder& withDepthTest(bool enable);
             ShaderBuilder& withDepthWrite(bool enable);
@@ -177,7 +170,7 @@ namespace sre {
         private:
             explicit ShaderBuilder(Shader* shader);
             ShaderBuilder() = default;
-            std::map<ShaderType, Resource> shaderSources;
+            std::map<ShaderType, std::string> shaderSources;
             std::map<std::string,std::string> specializationConstants;
             bool depthTest = true;
             bool depthWrite = true;
@@ -338,9 +331,8 @@ namespace sre {
         std::shared_ptr<Shader> parent = nullptr;
         std::vector<std::weak_ptr<Shader>> specializations;
 
-        bool build(std::map<ShaderType,Resource> shaderSources, std::vector<std::string>& errors);
-        static std::string getSource(Resource& resource);
-        bool compileShader(Resource& resource, GLenum type, GLuint& shader, std::vector<std::string>& errors);
+        bool build(std::map<ShaderType,std::string> shaderSources, std::vector<std::string>& errors);
+        bool compileShader(std::string& resource, GLenum type, GLuint& shader, std::vector<std::string>& errors);
         void bind();
 
         unsigned int shaderProgramId = 0;
@@ -354,7 +346,7 @@ namespace sre {
         glm::vec2 offset = glm::vec2(0,0);
         Stencil stencil;
 
-        std::map<ShaderType, Resource> shaderSources;
+        std::map<ShaderType, std::string> shaderSources;
 
         std::vector<Uniform> uniforms;
 
