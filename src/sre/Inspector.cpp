@@ -226,7 +226,7 @@ namespace sre {
 
                         if (dataType == GL_INT){
                             for (int j=vertexOffset;j<std::min(vertexOffset+5,mesh->vertexCount); j++){
-                                std::string value = "";
+                                std::string value;
                                 for (int i=0;i<att.second.elementCount;i++){
                                     float* data = &interleavedData[att.second.offset/sizeof(float)+i + (j*mesh->totalBytesPerVertex)/sizeof(float)];
                                     int* dataInt = reinterpret_cast<int*>(data);
@@ -238,7 +238,7 @@ namespace sre {
                             }
                         } else {
                             for (int j=vertexOffset;j<std::min(vertexOffset+5,mesh->vertexCount); j++){
-                                std::string value = "";
+                                std::string value;
                                 for (int i=0;i<att.second.elementCount;i++){
                                     float data = interleavedData[att.second.offset/sizeof(float)+i + (j*mesh->totalBytesPerVertex)/sizeof(float)];
                                     value += std::to_string(data)+" ";
