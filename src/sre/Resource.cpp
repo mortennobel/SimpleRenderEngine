@@ -17,6 +17,10 @@ using namespace sre;
 map<string,string> Resource::memoryOnlyResources = {};
 
 std::string sre::Resource::loadText(std::string filename) {
+    auto res = memoryOnlyResources.find(filename);
+    if (res != memoryOnlyResources.end()){
+        return res->second;
+    }
     ifstream in{filename, ios::in | ios::binary};
     if (in && in.is_open())
     {
@@ -30,10 +34,6 @@ std::string sre::Resource::loadText(std::string filename) {
         }
         in.close();
         return contents;
-    }
-    auto res = memoryOnlyResources.find(filename);
-    if (res != memoryOnlyResources.end()){
-        return res->second;
     }
     res = builtInShaderSource.find(filename);
     if (res != builtInShaderSource.end()){
@@ -49,4 +49,15 @@ void sre::Resource::set(std::string name, std::string value) {
 
 void Resource::reset() {
     memoryOnlyResources.clear();
+}
+
+set<string> Resource::getKeys() {
+    std::set<string> res;
+    for (auto& keyValue : memoryOnlyResources){
+        res.insert(keyValue.first);
+    }
+    for (auto& keyValue : builtInShaderSource){
+        res.insert(keyValue.first);
+    }
+    return res;
 }
