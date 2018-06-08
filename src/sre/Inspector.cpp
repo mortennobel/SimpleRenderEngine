@@ -836,31 +836,24 @@ namespace sre {
         static Shader* shaderRef = nullptr;
         static std::vector<std::string> shaderCode;
         static std::vector<std::string> errors;
+        static std::vector<ShaderType > shaderTypes;
         static std::string errorsStr;
         static TextEditor textEditor;
         static int selectedShader = 0;
         static bool showPrecompiled = false;
         static std::vector<const char*> activeShaders;
-        static std::vector<ShaderType> shaderTypes;
+
 
         if (shaderRef != shader){
             shaderRef = shader;
+
             shaderCode.clear();
+            activeShaders.clear();
+            shaderTypes.clear();
+
             for (auto source : shader->shaderSources){
                 auto source_ = Resource::loadText(source.second);
                 shaderCode.emplace_back(source_);
-            }
-            selectedShader = 0;
-            textEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::GLSL());
-            textEditor.SetText(shaderCode[selectedShader]);
-            textEditor.SetPalette(TextEditor::GetDarkPalette());
-            showPrecompiled = false;
-            errors.clear();
-            errorsStr = "";
-            textEditor.SetErrorMarkers(TextEditor::ErrorMarkers());
-            activeShaders.clear();
-            shaderTypes.clear();
-            for (auto source : shader->shaderSources){
                 shaderTypes.push_back(source.first);
                 switch (source.first){
                     case ShaderType::Vertex:
@@ -886,6 +879,14 @@ namespace sre {
                         break;
                 }
             }
+            selectedShader = 0;
+            textEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::GLSL());
+            textEditor.SetText(shaderCode[selectedShader]);
+            textEditor.SetPalette(TextEditor::GetDarkPalette());
+            showPrecompiled = false;
+            errors.clear();
+            errorsStr = "";
+            textEditor.SetErrorMarkers(TextEditor::ErrorMarkers());
         }
         bool open = true;
         ImGui::PushID(shader);
@@ -926,7 +927,9 @@ namespace sre {
         if (compile){
             auto builder = shader->update();
             for (int i=0;i<shaderTypes.size();i++){
-                builder.withSourceString(shaderCode[i], shaderTypes[i]);
+                auto filename = shader->shaderSources[shaderTypes[i]];
+                Resource::set(filename, shaderCode[i]);
+                builder.withSourceResource(filename, shaderTypes[i]);
             }
             errors.clear();
             builder.build(errors);

@@ -262,11 +262,7 @@ namespace sre {
     }
 
     Shader::ShaderBuilder & Shader::ShaderBuilder::withSourceString(const std::string &source, ShaderType shaderType) {
-        // leak - but member function is deprecated
-        static int id = 1;
-        string uniqueName = std::to_string(id++)+".obj";
-        Resource::set(uniqueName, source);
-        shaderSources[shaderType] = uniqueName;
+        LOG_ERROR("Shader::ShaderBuilder::withSourceString() no longer supported");
         return *this;
     }
 

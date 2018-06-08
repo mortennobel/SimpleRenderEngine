@@ -16,34 +16,37 @@ using namespace sre;
 
 map<string,string> Resource::memoryOnlyResources = {};
 
-std::string sre::Resource::loadText(std::string filename) {
+std::string sre::Resource::loadText(std::string filename, ResourceType filter) {
     auto res = memoryOnlyResources.find(filename);
-    if (res != memoryOnlyResources.end()){
+    if ((filter & ResourceType::Memory) && res != memoryOnlyResources.end()){
         return res->second;
     }
-    ifstream in{filename, ios::in | ios::binary};
-    if (in && in.is_open())
-    {
-        std::string contents;
-        in.seekg(0, std::ios::end);
-        auto size = in.tellg();
-        if (size > 0){
-            contents.resize((string::size_type)size);
-            in.seekg(0, std::ios::beg);
-            in.read(&contents[0], contents.size());
+    if (filter & ResourceType::File){
+        ifstream in{filename, ios::in | ios::binary};
+        if (in && in.is_open())
+        {
+            std::string contents;
+            in.seekg(0, std::ios::end);
+            auto size = in.tellg();
+            if (size > 0){
+                contents.resize((string::size_type)size);
+                in.seekg(0, std::ios::beg);
+                in.read(&contents[0], contents.size());
+            }
+            in.close();
+            return contents;
         }
-        in.close();
-        return contents;
     }
-    res = builtInShaderSource.find(filename);
-    if (res != builtInShaderSource.end()){
-        return res->second;
+    if (filter & ResourceType::BuiltIn) {
+        res = builtInShaderSource.find(filename);
+        if (res != builtInShaderSource.end()) {
+            return res->second;
+        }
     }
-    LOG_ERROR("Cannot find shader source %s", filename.c_str());
     return "";
 }
 
-void sre::Resource::set(std::string name, std::string value) {
+void sre::Resource::set(const std::string& name, const std::string& value) {
     memoryOnlyResources[name] = value;
 }
 
@@ -51,13 +54,17 @@ void Resource::reset() {
     memoryOnlyResources.clear();
 }
 
-set<string> Resource::getKeys() {
+set<string> Resource::getKeys(ResourceType filter) {
     std::set<string> res;
-    for (auto& keyValue : memoryOnlyResources){
-        res.insert(keyValue.first);
+    if (filter & ResourceType::Memory){
+        for (auto& keyValue : memoryOnlyResources){
+            res.insert(keyValue.first);
+        }
     }
-    for (auto& keyValue : builtInShaderSource){
-        res.insert(keyValue.first);
+    if (filter & ResourceType::BuiltIn) {
+        for (auto &keyValue : builtInShaderSource) {
+            res.insert(keyValue.first);
+        }
     }
     return res;
 }
