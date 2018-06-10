@@ -25,6 +25,8 @@
 // For internal debugging of gl errors
 inline void checkGLError(const char* title = nullptr);
 
+inline bool getMaximumOpenGLSupport(int * major, int * minor);
+
 inline bool hasExtension(std::string extensionName);
 inline std::vector<std::string> listExtension();
 

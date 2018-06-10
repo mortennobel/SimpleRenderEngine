@@ -46,6 +46,16 @@ namespace sre {
 		instance = this;
 
         glcontext = SDL_GL_CreateContext(window);
+        if (!glcontext) {
+            int major, minor;
+            bool supported = getMaximumOpenGLSupport(&major, &minor);
+            if (supported){
+                std::cout << "OpenGL 3.3 required but only OpenGL "<<major<<"."<<minor<<" supported by your system"<<std::endl;
+            } else {
+                std::cout << "OpenGL 3.3 required but OpenGL not supported by your system"<<std::endl;
+            }
+            exit(1);
+        }
         renderInfo_.graphicsAPIVersion = (char*)glGetString(GL_VERSION);
 #ifdef EMSCRIPTEN
 
