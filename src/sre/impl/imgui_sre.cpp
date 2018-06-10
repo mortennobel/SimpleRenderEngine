@@ -43,6 +43,7 @@
 #include "sre/imgui_sre.hpp"
 #include <string>
 #include <iostream>
+#include <sstream>
 #include "sre/Shader.hpp"
 
 // SDL,GL3W

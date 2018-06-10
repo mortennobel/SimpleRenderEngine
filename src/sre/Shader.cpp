@@ -10,6 +10,7 @@
 
 
 #include <fstream>
+#include <sstream>
 #include <glm/gtc/type_ptr.hpp>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>

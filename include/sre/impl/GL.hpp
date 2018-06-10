@@ -23,13 +23,11 @@
 #include <vector>
 
 // For internal debugging of gl errors
-inline void checkGLError(const char* title = nullptr);
+void checkGLError(const char* title = nullptr);
 
-inline bool getMaximumOpenGLSupport(int * major, int * minor);
+bool getMaximumOpenGLSupport(int * major, int * minor);
 
-inline bool hasExtension(std::string extensionName);
-inline std::vector<std::string> listExtension();
+bool hasExtension(std::string extensionName);
+std::vector<std::string> listExtension();
 
-inline bool has_sRGB();
-
-#include "GL.inl"
+bool has_sRGB();

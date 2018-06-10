@@ -8,6 +8,7 @@
 #include "sre/impl/TextEditor.h"
 #include <algorithm>
 #include <iostream>
+#include <sstream>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/transform.hpp>

@@ -14,6 +14,7 @@
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/string_cast.hpp>
 #include <iomanip>
+#include <sstream>
 #include "sre/Renderer.hpp"
 #include "sre/Shader.hpp"
 #include "sre/Log.hpp"

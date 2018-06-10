@@ -4,6 +4,7 @@
  *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
+#include "sre/impl/GL.hpp"
 
 #include <iostream>
 #include <sstream>
@@ -13,14 +14,14 @@
 void  checkGLError(const char* title) {
     for(GLenum err; (err = glGetError()) != GL_NO_ERROR;)
     {
-		if (err != GL_NONE)
-		{
-			if (title) std::cerr << title << std::endl;
-		}
+        if (err != GL_NONE)
+        {
+            if (title) std::cerr << title << std::endl;
+        }
         //Process/log the error.
         switch (err){
             case GL_INVALID_ENUM:
-				
+
                 std::cerr << "GL_INVALID_ENUM"<<std::endl;
                 break;
             case GL_INVALID_VALUE:
