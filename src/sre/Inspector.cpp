@@ -17,6 +17,7 @@
 #include "sre/SDLRenderer.hpp"
 #include "sre/impl/GL.hpp"
 #include "sre/Texture.hpp"
+#include "sre/imgui_sre.hpp"
 #include "sre/Camera.hpp"
 #include "sre/SpriteAtlas.hpp"
 #include "sre/Framebuffer.hpp"
@@ -160,7 +161,7 @@ namespace sre {
             ImGui::LabelText("Wrap tex-coords",wrap);
             ImGui::LabelText("Data size","%f MB",tex->getDataSize()/(1000*1000.0f));
             if (!tex->isCubemap()){
-                ImGui::Image(reinterpret_cast<ImTextureID>(tex->textureId), ImVec2(previewSize, previewSize),{0,1},{1,0},{1,1,1,1},{0,0,0,1});
+                ImGui_RenderTexture(tex,glm::vec2(previewSize, previewSize),{0,1},{1,0});
             }
 
             ImGui::TreePop();
@@ -297,7 +298,7 @@ namespace sre {
                 }
                 renderToTexturePass.draw(sharedPtrMesh, glm::eulerAngleY(time*rotationSpeed)*glm::scale(glm::vec3{2.0f/maxS,2.0f/maxS,2.0f/maxS})*glm::translate(offset), mats);
                 renderToTexturePass.finish();
-                ImGui::Image(reinterpret_cast<ImTextureID>(offscreenTexture->textureId), ImVec2(previewSize, previewSize),{0,1},{1,0},{1,1,1,1},{0,0,0,1});
+                ImGui_RenderTexture(offscreenTexture.get(),glm::vec2(previewSize, previewSize),{0,1},{1,0});
             } else {
                 ImGui::LabelText("", "No preview - missing position attribute");
             }
@@ -440,8 +441,7 @@ namespace sre {
 
             renderToTexturePass.draw(mesh, glm::eulerAngleY(time*rotationSpeed), mat);
             renderToTexturePass.finish();
-
-            ImGui::Image(reinterpret_cast<ImTextureID>(offscreenTexture->textureId), ImVec2(previewSize, previewSize),{0,1},{1,0},{1,1,1,1},{0,0,0,1});
+            ImGui_RenderTexture(offscreenTexture.get(),glm::vec2(previewSize, previewSize),{0,1},{1,0});
             ImGui::TreePop();
         }
     }
@@ -1016,9 +1016,9 @@ namespace sre {
                 ImGui::LabelText("Sprite size","%ix%i",sprite.getSpriteSize().x,sprite.getSpriteSize().y);
                 ImGui::LabelText("Sprite pos","(%i,%i)",sprite.getSpritePos().x,sprite.getSpritePos().y);
                 auto tex = sprite.texture;
-                auto uv0 = ImVec2((sprite.getSpritePos().x)/(float)tex->getWidth(), (sprite.getSpritePos().y+sprite.getSpriteSize().y)/(float)tex->getHeight());
-                auto uv1 = ImVec2((sprite.getSpritePos().x+sprite.getSpriteSize().x)/(float)tex->getWidth(),(sprite.getSpritePos().y)/(float)tex->getHeight());
-                ImGui::Image(reinterpret_cast<ImTextureID>(tex->textureId), ImVec2(previewSize/sprite.getSpriteSize().y*(float)sprite.getSpriteSize().x, previewSize),uv0, uv1,{1,1,1,1},{0,0,0,1});
+                auto uv0 = glm::vec2((sprite.getSpritePos().x)/(float)tex->getWidth(), (sprite.getSpritePos().y+sprite.getSpriteSize().y)/(float)tex->getHeight());
+                auto uv1 = glm::vec2((sprite.getSpritePos().x+sprite.getSpriteSize().x)/(float)tex->getWidth(),(sprite.getSpritePos().y)/(float)tex->getHeight());
+                ImGui_RenderTexture(tex,glm::vec2(previewSize/sprite.getSpriteSize().y*(float)sprite.getSpriteSize().x, previewSize),uv0,uv1);
             }
 
             ImGui::TreePop();
