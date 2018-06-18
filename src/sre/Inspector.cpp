@@ -5,7 +5,7 @@
  *  License: MIT
  */
 #include "sre/Inspector.hpp"
-#include "sre/impl/TextEditor.h"
+#include "TextEditor.h"
 #include <algorithm>
 #include <iostream>
 #include <sstream>
