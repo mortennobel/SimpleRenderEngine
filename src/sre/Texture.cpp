@@ -719,4 +719,17 @@ namespace sre {
         return depthPrecision;
     }
 
+    std::vector<char> Texture::getRawImage() {
+	    assert(!isDepthTexture());
+	    assert(!isCubemap());
+        int bytesPerPixel = 4;
+        std::vector<char> data(static_cast<unsigned long>(getWidth() * getHeight() * bytesPerPixel), 0);
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, getWidth());
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        glGetTexImage( GL_TEXTURE_2D, 0,  GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+        return data;
+    }
+
 }

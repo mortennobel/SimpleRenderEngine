@@ -397,4 +397,16 @@ namespace sre{
         this->maxSceneLights = maxSceneLights;
         return *this;
     }
+
+    void SDLRenderer::setWindowIcon(std::shared_ptr<Texture> tex){
+        auto texRaw = tex->getRawImage();
+        auto surface = SDL_CreateRGBSurfaceFrom(texRaw.data(),tex->getWidth(),tex->getHeight(),32,tex->getWidth()*4,0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
+
+        // The icon is attached to the window pointer
+        SDL_SetWindowIcon(window, surface);
+
+        // ...and the surface containing the icon pixel data is no longer required.
+        SDL_FreeSurface(surface);
+
+    }
 }
