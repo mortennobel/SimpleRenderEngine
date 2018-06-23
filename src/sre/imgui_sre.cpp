@@ -561,7 +561,7 @@ void ImGui_SRE_NewFrame(SDL_Window *window)
     // Start the frame. This call will update the io.WantCaptureMouse, io.WantCaptureKeyboard flag that you can use to dispatch inputs (or not) to your application.
     ImGui::NewFrame();
 }
-IMGUI_API bool        ImGui_RenderTexture(Texture* texture,glm::vec2 size, const glm::vec2& uv0, const glm::vec2& uv1, const glm::vec4& tint_col, const glm::vec4& border_col){
+IMGUI_API void        ImGui_RenderTexture(Texture* texture,glm::vec2 size, const glm::vec2& uv0, const glm::vec2& uv1, const glm::vec4& tint_col, const glm::vec4& border_col){
     ImGui::Image(reinterpret_cast<ImTextureID>(texture->textureId), ImVec2(size.x, size.y),{uv0.x,uv0.y},{uv1.x,uv1.y},{tint_col.x,tint_col.y,tint_col.z,tint_col.w},{border_col.x,border_col.y,border_col.z,border_col.w});
 }
 }

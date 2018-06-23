@@ -31,7 +31,7 @@ IMGUI_API void        ImGui_SRE_Shutdown();                     // ImGui_SRE_Shu
 IMGUI_API void        ImGui_SRE_InvalidateDeviceObjects();      // Use if you want to reset your rendering device without losing ImGui state.
 IMGUI_API bool        ImGui_SRE_CreateDeviceObjects();
 
-IMGUI_API bool        ImGui_RenderTexture(Texture* texture, glm::vec2 size, const glm::vec2& uv0 = glm::vec2(0,0), const glm::vec2& uv1 = glm::vec2(1,1), const glm::vec4& tint_col = glm::vec4(1,1,1,1), const glm::vec4& border_col = glm::vec4(0,0,0,0));
+IMGUI_API void        ImGui_RenderTexture(Texture* texture, glm::vec2 size, const glm::vec2& uv0 = glm::vec2(0,0), const glm::vec2& uv1 = glm::vec2(1,1), const glm::vec4& tint_col = glm::vec4(1,1,1,1), const glm::vec4& border_col = glm::vec4(0,0,0,0));
 
 
 }

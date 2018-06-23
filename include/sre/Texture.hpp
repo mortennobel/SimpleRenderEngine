@@ -169,7 +169,7 @@ private:
     friend class Framebuffer;
     friend class RenderPass;
     friend class Inspector;
-    friend IMGUI_API bool ImGui_RenderTexture(Texture* ,glm::vec2 , const glm::vec2& , const glm::vec2& , const glm::vec4& , const glm::vec4& );
+    friend IMGUI_API void ImGui_RenderTexture(Texture* ,glm::vec2 , const glm::vec2& , const glm::vec2& , const glm::vec4& , const glm::vec4& );
     friend class VR;
     friend class Sprite;
     friend class UniformSet;
