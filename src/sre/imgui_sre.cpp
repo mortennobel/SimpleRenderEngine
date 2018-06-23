@@ -316,8 +316,8 @@ bool ImGui_SRE_CreateDeviceObjects()
     if (renderInfo().graphicsAPIVersionMajor >= 3) {
         glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &last_vertex_array);
     }
-    const GLchar *vertex_shader =
-            "#version 330\n"
+    std::stringstream ssv;
+    ssv <<    "#version 330\n"
                     "uniform mat4 ProjMtx;\n"
                     "in vec2 Position;\n"
                     "in vec2 UV;\n"
@@ -326,13 +326,18 @@ bool ImGui_SRE_CreateDeviceObjects()
                     "out vec4 Frag_Color;\n"
                     "void main()\n"
                     "{\n"
-                    "	Frag_UV = UV;\n"
-                    "	Frag_Color = Color;\n"
-                    "	gl_Position = ProjMtx * vec4(Position.xy,0.0,1.0);\n"
+                    "	Frag_UV = UV;\n";
+    if (renderInfo().useFramebufferSRGB){
+        ssv << "	Frag_Color = pow(Color, vec4(2.2));\n";  // move color into linear space
+    }  else {
+        ssv << "	Frag_Color = Color;\n";
+    }
+
+    ssv << "	gl_Position = ProjMtx * vec4(Position.xy,0.0,1.0);\n"
                     "}\n";
 
-    std::stringstream ss;
-    ss << "#version 330\n"
+    std::stringstream ssf;
+    ssf << "#version 330\n"
             "uniform sampler2D Texture;\n"
             "in vec2 Frag_UV;\n"
             "in vec4 Frag_Color;\n"
@@ -344,41 +349,36 @@ bool ImGui_SRE_CreateDeviceObjects()
             "        col.w\n"
             "    );\n"
             "}\n";
-    ss << "vec4 toOutput(vec4 colorLinear){\n"
+    ssf << "vec4 toOutput(vec4 colorLinear){\n"
             "    float gamma = 2.2;\n"
             "    return vec4(pow(colorLinear.xyz,vec3(1.0/gamma)), colorLinear.a); // gamma correction\n"
             "}\n";
-    ss << "void main()\n";
-    ss << "{\n";
+    ssf << "void main()\n";
+    ssf << "{\n";
     if (renderInfo().supportTextureSamplerSRGB){
-        ss << "	fragColor = Frag_Color * texture( Texture, Frag_UV.st);\n";
+        ssf << "	fragColor = Frag_Color * texture( Texture, Frag_UV.st);\n";
     } else {
-        ss << "	fragColor = Frag_Color * toLinear(texture( Texture, Frag_UV.st));\n";
+        ssf << "	fragColor = Frag_Color * toLinear(texture( Texture, Frag_UV.st));\n";
     }
     if (renderInfo().useFramebufferSRGB){
-        ss << "	fragColor = toOutput(fragColor);\n";
+        ssf << "	fragColor = toOutput(fragColor);\n";
     }
-    ss << "}\n";
-    std::string fragment_shader = ss.str();
-    auto fragment_shader_c = fragment_shader.c_str();
-
+    ssf << "}\n";
+    std::string vertex_shader = ssv.str();
+    std::string fragment_shader = ssf.str();
 
     g_ShaderHandle = glCreateProgram();
     g_VertHandle = glCreateShader(GL_VERTEX_SHADER);
     g_FragHandle = glCreateShader(GL_FRAGMENT_SHADER);
     if (renderInfo().graphicsAPIVersionES) {
-        std::string vs = vertex_shader;
-        std::string fs = fragment_shader;
-        vs = sre::Shader::translateToGLSLES(vs, true);
-        fs = sre::Shader::translateToGLSLES(fs, false);
-        auto vsp = vs.c_str();
-        auto fsp = fs.c_str();
-        glShaderSource(g_VertHandle, 1, &vsp, 0);
-        glShaderSource(g_FragHandle, 1, &fsp, 0);
-    } else {
-        glShaderSource(g_VertHandle, 1, &vertex_shader, 0);
-        glShaderSource(g_FragHandle, 1, &fragment_shader_c, 0);
+        vertex_shader = sre::Shader::translateToGLSLES(vertex_shader, true);
+        fragment_shader = sre::Shader::translateToGLSLES(fragment_shader, false);
     }
+    auto vsp = vertex_shader.c_str();
+    auto fsp = fragment_shader.c_str();
+    glShaderSource(g_VertHandle, 1, &vsp, 0);
+    glShaderSource(g_FragHandle, 1, &fsp, 0);
+
     glCompileShader(g_VertHandle);
     glCompileShader(g_FragHandle);
     glAttachShader(g_ShaderHandle, g_VertHandle);
@@ -460,7 +460,7 @@ bool ImGui_SRE_Init(SDL_Window *window)
 
     io.SetClipboardTextFn = ImGui_ImplSdlGL3_SetClipboardText;
     io.GetClipboardTextFn = ImGui_ImplSdlGL3_GetClipboardText;
-    io.ClipboardUserData = NULL;
+    io.ClipboardUserData = nullptr;
 
     g_MouseCursors[ImGuiMouseCursor_Arrow] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
     g_MouseCursors[ImGuiMouseCursor_TextInput] = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
