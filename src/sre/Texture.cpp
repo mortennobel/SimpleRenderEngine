@@ -720,8 +720,11 @@ namespace sre {
     }
 
     std::vector<char> Texture::getRawImage() {
-	    assert(!isDepthTexture());
-	    assert(!isCubemap());
+#ifdef GL_ES_VERSION_2_0
+        return {};
+#else
+        assert(!isDepthTexture());
+        assert(!isCubemap());
         int bytesPerPixel = 4;
         std::vector<char> data(static_cast<unsigned long>(getWidth() * getHeight() * bytesPerPixel), 0);
         glPixelStorei(GL_UNPACK_ROW_LENGTH, getWidth());
@@ -730,6 +733,7 @@ namespace sre {
         glGetTexImage( GL_TEXTURE_2D, 0,  GL_RGBA, GL_UNSIGNED_BYTE, data.data());
         glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
         return data;
+#endif
     }
 
 }
