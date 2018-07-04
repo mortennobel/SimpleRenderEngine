@@ -736,4 +736,8 @@ namespace sre {
 #endif
     }
 
+    void* Texture::getNativeTexturePtr(){
+	    return (void*)textureId;
+	}
+
 }
