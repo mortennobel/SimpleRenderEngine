@@ -471,8 +471,11 @@ namespace sre {
 	}
 
     Texture::TextureBuilder::TextureBuilder() {
+        if (! Renderer::instance ){
+            LOG_FATAL("Cannot instantiate sre::Texture before sre::Renderer is created.");
+        }
         glGenTextures(1, &textureId);
-        if (renderInfo().supportTextureSamplerSRGB == false) {
+        if (!renderInfo().supportTextureSamplerSRGB) {
             samplerColorspace = SamplerColorspace::Gamma;
         }
     }
