@@ -38,8 +38,8 @@ public:
         material->setSpecularity(Color(1,1,1,20.0f));
 
         material2 = Shader::create()
-                .withSourceFile("standard_blinn_phong_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("standard_blinn_phong_frag.glsl", ShaderType::Fragment)
+                .withSourceResource("standard_blinn_phong_vert.glsl", ShaderType::Vertex)
+                .withSourceResource("standard_blinn_phong_frag.glsl", ShaderType::Fragment)
                 .withName("StandardPhongOffset")
                 .withOffset(factor,offset).build()->createMaterial();
         material2->setColor({1.0f,0.0f,0.0f,1.0f});
@@ -74,8 +74,9 @@ public:
 
         bool changed = ImGui::SliderFloat2("Factor/Offset",&factor,0,3);
         if (changed){
-            material2 = Shader::create().withSourceFile("standard_blinn_phong_vert.glsl", ShaderType::Vertex)
-                    .withSourceFile("standard_blinn_phong_frag.glsl", ShaderType::Fragment)
+            material2 = Shader::create()
+                    .withSourceResource("standard_blinn_phong_vert.glsl", ShaderType::Vertex)
+                    .withSourceResource("standard_blinn_phong_frag.glsl", ShaderType::Fragment)
                     .withName("StandardPhongOffset")
                     .withOffset(factor,offset).build()->createMaterial();
             material2->setColor({1.0f,0.0f,0.0f,1.0f});

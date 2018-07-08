@@ -17,6 +17,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <sre/SDLRenderer.hpp>
+#include <sre/Resource.hpp>
 
 using namespace sre;
 
@@ -51,9 +52,12 @@ void main(void)
     fragColor = texture(tex, vNormal);
 }
 )";
+        Resource::set("cubemap-vert.glsl", vertexShaderStr);
+        Resource::set("cubemap-frag.glsl", vertexShaderStr);
+
         auto shader = Shader::create()
-                .withSourceString(vertexShaderStr, ShaderType::Vertex)
-                .withSourceString(fragmentShaderStr, ShaderType::Fragment)
+                .withSourceResource("cubemap-vert.glsl", ShaderType::Vertex)
+                .withSourceResource("cubemap-frag.glsl", ShaderType::Fragment)
                 .build();
         material = shader->createMaterial();
         tex = Texture::create()

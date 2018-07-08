@@ -7,6 +7,8 @@
 #include "sre/Material.hpp"
 #include "sre/SDLRenderer.hpp"
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-security"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/transform.hpp>
@@ -250,3 +252,5 @@ int main() {
     std::make_unique<ObjViewerExample>();
     return 0;
 }
+
+#pragma clang diagnostic pop

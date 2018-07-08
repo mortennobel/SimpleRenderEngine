@@ -12,6 +12,7 @@
 #include <sre/impl/GL.hpp>
 #include <sre/Inspector.hpp>
 #include <sre/ModelImporter.hpp>
+#include <sre/Resource.hpp>
 
 using namespace sre;
 
@@ -54,10 +55,13 @@ void main(void)
     fragColor = texture(tex,normal.xy * 0.5 + 0.5);
 }
 )";
-
+        
+        Resource::set("matcap_vert.glsl", vertexShaderSource);
+        Resource::set("matcap_frag.glsl", fragmentShaderSource);
+        
         mat1 = Shader::create()
-                .withSourceString(vertexShaderSource,ShaderType::Vertex)
-                .withSourceString(fragmentShaderSource, ShaderType::Fragment)
+                .withSourceResource("matcap_vert.glsl", ShaderType::Vertex)
+                .withSourceResource("matcap_frag.glsl", ShaderType::Fragment)
                 .build()->createMaterial();
         std::string info;
         if (!mat1->getShader()->validateMesh(mesh.get(), info)){

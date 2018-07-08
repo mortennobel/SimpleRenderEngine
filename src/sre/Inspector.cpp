@@ -9,6 +9,8 @@
 #include <algorithm>
 #include <iostream>
 #include <sstream>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-security"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/transform.hpp>
@@ -1133,3 +1135,4 @@ namespace sre {
         ImGui::Spacing();
     }
 }
+#pragma clang diagnostic pop

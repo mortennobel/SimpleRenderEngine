@@ -56,8 +56,8 @@ public:
 
 		mesh = Mesh::create().withCube().build();
 		material = Shader::create()
-				.withSourceFile("unlit_vert.glsl", ShaderType::Vertex)
-				.withSourceFile("unlit_frag.glsl", ShaderType::Fragment)
+				.withSourceResource("unlit_vert.glsl", ShaderType::Vertex)
+				.withSourceResource("unlit_frag.glsl", ShaderType::Fragment)
 				.withBlend(BlendType::AlphaBlending)
 				.build()->createMaterial();
 		

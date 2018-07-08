@@ -740,7 +740,12 @@ namespace sre {
     }
 
     void* Texture::getNativeTexturePtr(){
-	    return (void*)textureId;
+        //https://stackoverflow.com/a/30106751/420250
+	    #define INT2VOIDP(i) (void*)(uintptr_t)(i)
+	    
+	    return INT2VOIDP(textureId);
+
+        #undef INT2VOIDP
 	}
 
 }

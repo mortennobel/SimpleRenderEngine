@@ -155,7 +155,7 @@ namespace sre {
             ShaderBuilder& withSourceString(const std::string& source, ShaderType shaderType);
             DEPRECATED("Use withSource instead")
             ShaderBuilder& withSourceFile(const std::string& shaderFile, ShaderType shaderType);
-            ShaderBuilder& withSourceResource(const std::string& resourceName, ShaderType shaderType); // resourceName should exist as resource
+            ShaderBuilder& withSourceResource(const std::string& resourceName, ShaderType shaderType); // resourceName should exist as resource (either as a file or a memory resouce)
             ShaderBuilder& withOffset(float factor,float units);  // set the scale and units used to calculate depth values (note for WebGL1.0/OpenGL ES 2.0 only affects polygon fill)
             ShaderBuilder& withDepthTest(bool enable);
             ShaderBuilder& withDepthWrite(bool enable);
