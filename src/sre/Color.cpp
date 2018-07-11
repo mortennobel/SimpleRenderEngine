@@ -5,12 +5,19 @@
  *  License: MIT
  */
 
+#include <sre/Color.hpp>
+
 #include "sre/Color.hpp"
 #include "glm/gtc/color_space.hpp"
 
 namespace sre {
     Color::Color(float r, float g, float b, float a)
     :r(r), g(g), b(b), a(a)
+    {
+    }
+
+    Color::Color(glm::vec4 color)
+    :r(color.r), g(color.g), b(color.b), a(color.a)
     {
     }
 
