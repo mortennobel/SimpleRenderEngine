@@ -11,7 +11,7 @@
 
 namespace sre {
 
-    // The color class represent a sRGBA color, (this means that RGB is in gamma space, whereas alpha is in linear space)
+    // The color class represent a sRGBA color, (RGB is in gamma space, whereas alpha is in linear space)
     class Color {
     public:
         Color() = default;
