@@ -11,7 +11,7 @@
 
 namespace sre {
 
-    // The color class represent a sRGBA color, (RGB is in gamma space, whereas alpha is in linear space)
+    // The color class represents a sRGBA color, (RGB is in gamma space, alpha is linear)
     class Color {
     public:
         Color() = default;
@@ -20,8 +20,8 @@ namespace sre {
 
         float& operator[] (int index);
 
-        glm::vec4 toLinear();             // Return color values in linear space
-        void setFromLinear(glm::vec4 linear); // Set sRGBA values from linear space
+        glm::vec4 toLinear();                   // Return color values in linear space
+        void setFromLinear(glm::vec4 linear);   // Set sRGBA values from linear space
 
         float r = 0;
         float g = 0;
