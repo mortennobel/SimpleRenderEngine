@@ -16,9 +16,9 @@ namespace sre {
     {
     }
 
-    Color::Color(glm::vec4 color)
-    :r(color.r), g(color.g), b(color.b), a(color.a)
+    Color::Color(glm::vec4 linearColor)
     {
+        setFromLinear(linearColor);
     }
 
     float& Color::operator[] (int index){
@@ -37,7 +37,6 @@ namespace sre {
     glm::vec4 Color::toLinear(){
         glm::vec3 color{r,g,b};
         return glm::vec4(convertSRGBToLinear(color),a);
-
     }
 
     void Color::setFromLinear(glm::vec4 linear){
