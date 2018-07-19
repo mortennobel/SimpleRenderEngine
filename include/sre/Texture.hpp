@@ -147,7 +147,7 @@ public:
     DepthPrecision getDepthPrecision();
 
     std::vector<char> getRawImage();                                                        // Read RGBA texture data from texture (GPU to CPU). Not supported in OpenGL ES
-    void* getNativeTexturePtr();                                                            //
+    void* getNativeTexturePtr();                                                            // get texture id
 private:
     Texture(unsigned int textureId, int width, int height, uint32_t target, std::string string);
     void updateTextureSampler(bool filterSampling, Wrap wrapTextureCoordinates);

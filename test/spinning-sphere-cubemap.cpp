@@ -53,7 +53,7 @@ void main(void)
 }
 )";
         Resource::set("cubemap-vert.glsl", vertexShaderStr);
-        Resource::set("cubemap-frag.glsl", vertexShaderStr);
+        Resource::set("cubemap-frag.glsl", fragmentShaderStr);
 
         auto shader = Shader::create()
                 .withSourceResource("cubemap-vert.glsl", ShaderType::Vertex)
