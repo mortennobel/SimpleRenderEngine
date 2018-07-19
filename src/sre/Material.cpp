@@ -128,7 +128,6 @@ namespace sre {
                                         "'%s' Unsupported uniform type: %i. Only Vec4, Texture, TextureCube and Float is supported.",
                                         u.name.c_str(), (int) u.type);
                                 break;
-                                break;
                         }
                     }
                 }

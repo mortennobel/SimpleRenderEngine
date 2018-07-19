@@ -85,7 +85,7 @@ bool getMaximumOpenGLSupport(int * major_, int * minor_){
     return found;
 }
 
-bool hasExtension(std::string extensionName){
+bool hasExtension(const std::string& extensionName){
     std::string exts = (char*)glGetString(GL_EXTENSIONS);
     std::stringstream ss(exts);
     std::string item;

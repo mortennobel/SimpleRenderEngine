@@ -27,7 +27,7 @@ void checkGLError(const char* title = nullptr);
 
 bool getMaximumOpenGLSupport(int * major, int * minor);
 
-bool hasExtension(std::string extensionName);
+bool hasExtension(const std::string& extensionName);
 std::vector<std::string> listExtension();
 
 bool has_sRGB();
