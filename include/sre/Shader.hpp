@@ -348,7 +348,7 @@ namespace sre {
 
         std::map<ShaderType, std::string> shaderSources;
 
-        std::vector<Uniform> uniforms;
+        std::shared_ptr<std::vector<Uniform>> uniforms;
 
         struct ShaderAttribute {
             int32_t position;

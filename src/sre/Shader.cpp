@@ -364,7 +364,7 @@ namespace sre {
         uniformLocationLightPosType = -1;
         uniformLocationLightColorRange = -1;
         uniformLocationCameraPosition = -1;
-        uniforms.clear();
+        uniforms = std::make_shared<std::vector<Uniform>>();
 
         bool hasGlobalUniformBuffer = false;
         if (Renderer::instance->globalUniformBuffer) {
@@ -436,7 +436,7 @@ namespace sre {
                 u.id = location;
                 u.arraySize = size;
                 u.type = uniformType;
-                uniforms.push_back(u);
+                uniforms->push_back(u);
             } else {
                 if (Renderer::instance->globalUniformBuffer){
                     if (strncmp(name, "g_model_it",64)!=0 &&
@@ -784,7 +784,7 @@ namespace sre {
     }
 
     Uniform Shader::getUniform(const std::string &name) {
-		for (auto& uniform : uniforms) {
+		for (auto& uniform : *uniforms) {
 			if (uniform.name == name)
 				return uniform;
 		}
@@ -883,7 +883,7 @@ namespace sre {
 
     std::vector<std::string> Shader::getUniformNames() {
         std::vector<std::string> res;
-        for (auto& u : uniforms){
+        for (auto& u : *uniforms){
             res.push_back(u.name);
         }
         return res;
