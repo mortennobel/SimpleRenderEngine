@@ -3305,14 +3305,13 @@ using namespace sre;
 
 class GUIExample {
 public:
-    GUIExample()
-    {
+    GUIExample() {
         r.init()
                 .withSdlInitFlags(SDL_INIT_EVERYTHING)
                 .withSdlWindowFlags(SDL_WINDOW_OPENGL);
 
         // connect render callback
-        r.frameRender = [&](){
+        r.frameRender = [&]() {
             frameRender();
         };
         // start render loop
@@ -3320,8 +3319,7 @@ public:
     }
 
 
-    void frameRender(){
-
+    void frameRender() {
         RenderPass rp = RenderPass::create()
                 .withCamera(camera)
                 .build();
@@ -3332,8 +3330,6 @@ private:
     SDLRenderer r;
     Camera camera;
 };
-
-
 
 int main() {
     std::make_unique<GUIExample>();

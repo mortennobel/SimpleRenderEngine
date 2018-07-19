@@ -36,7 +36,6 @@ namespace sre {
 
         template<typename T>
         inline T get(int id);
-
     private:
         std::map<int,std::shared_ptr<sre::Texture>> textureValues;
         std::map<int,glm::vec4> vectorValues;
@@ -73,5 +72,15 @@ namespace sre {
     template<>
     inline float UniformSet::get(int id) {
         return floatValues[id];
+    }
+
+    template<>
+    inline std::shared_ptr<std::vector<glm::mat3>> UniformSet::get(int id) {
+        return mat3sValues[id];
+    }
+
+    template<>
+    inline std::shared_ptr<std::vector<glm::mat4>> UniformSet::get(int id) {
+        return mat4sValues[id];
     }
 }

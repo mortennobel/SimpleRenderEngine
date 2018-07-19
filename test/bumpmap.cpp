@@ -43,7 +43,7 @@ public:
             render();
         };
 
-        r.mouseEvent = [&](SDL_Event& event){
+        r.mouseEvent = [&](SDL_Event& event) {
             if (event.button.button == SDL_BUTTON_RIGHT){
                 showInspector = true;
             }

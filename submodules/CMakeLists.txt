@@ -1,6 +1,7 @@
-set(EXTRA_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/imgui ${CMAKE_CURRENT_SOURCE_DIR}/glm ${CMAKE_CURRENT_SOURCE_DIR}/picojson  CACHE PATH "" FORCE)
+set(EXTRA_INCLUDE ${CMAKE_CURRENT_SOURCE_DIR}/ImGuiColorTextEdit ${CMAKE_CURRENT_SOURCE_DIR}/imgui ${CMAKE_CURRENT_SOURCE_DIR}/glm ${CMAKE_CURRENT_SOURCE_DIR}/picojson  CACHE PATH "" FORCE)
 
 file(GLOB EXTRA_SOURCE_FILES_
+    "ImGuiColorTextEdit/TextEditor.cpp"
     "imgui/imgui.cpp"
     "imgui/imgui_draw.cpp"
 )

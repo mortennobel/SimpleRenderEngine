@@ -47,8 +47,8 @@ public:
 
         quad = Mesh::create().withName("Tex mesh") .withPositions({{0,0,0}}).withUVs({{0,0,0,0}}).build();
         material = Shader::create()
-                .withSourceFile("unlit_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("unlit_frag.glsl", ShaderType::Fragment)
+                .withSourceResource("unlit_vert.glsl", ShaderType::Vertex)
+                .withSourceResource("unlit_frag.glsl", ShaderType::Fragment)
                 .withBlend(BlendType::AlphaBlending)
                 .build()->createMaterial();
         material2 = Shader::getUnlit()->createMaterial();

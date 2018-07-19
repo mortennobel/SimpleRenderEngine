@@ -5,9 +5,12 @@
  *  License: MIT
  */
 #include "sre/Inspector.hpp"
-#include "sre/impl/TextEditor.h"
+#include "TextEditor.h"
 #include <algorithm>
 #include <iostream>
+#include <sstream>
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-security"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtx/transform.hpp>
@@ -16,6 +19,7 @@
 #include "sre/SDLRenderer.hpp"
 #include "sre/impl/GL.hpp"
 #include "sre/Texture.hpp"
+#include "sre/imgui_sre.hpp"
 #include "sre/Camera.hpp"
 #include "sre/SpriteAtlas.hpp"
 #include "sre/Framebuffer.hpp"
@@ -24,6 +28,7 @@
 #include "imgui_internal.h"
 #include <SDL_image.h>
 #include <glm/gtc/type_ptr.hpp>
+#include "sre/Resource.hpp"
 
 using Clock = std::chrono::high_resolution_clock;
 using Milliseconds = std::chrono::duration<float, std::chrono::milliseconds::period>;
@@ -158,7 +163,7 @@ namespace sre {
             ImGui::LabelText("Wrap tex-coords",wrap);
             ImGui::LabelText("Data size","%f MB",tex->getDataSize()/(1000*1000.0f));
             if (!tex->isCubemap()){
-                ImGui::Image(reinterpret_cast<ImTextureID>(tex->textureId), ImVec2(previewSize, previewSize),{0,1},{1,0},{1,1,1,1},{0,0,0,1});
+                ImGui_RenderTexture(tex,glm::vec2(previewSize, previewSize),{0,1},{1,0});
             }
 
             ImGui::TreePop();
@@ -225,7 +230,7 @@ namespace sre {
 
                         if (dataType == GL_INT){
                             for (int j=vertexOffset;j<std::min(vertexOffset+5,mesh->vertexCount); j++){
-                                std::string value = "";
+                                std::string value;
                                 for (int i=0;i<att.second.elementCount;i++){
                                     float* data = &interleavedData[att.second.offset/sizeof(float)+i + (j*mesh->totalBytesPerVertex)/sizeof(float)];
                                     int* dataInt = reinterpret_cast<int*>(data);
@@ -237,7 +242,7 @@ namespace sre {
                             }
                         } else {
                             for (int j=vertexOffset;j<std::min(vertexOffset+5,mesh->vertexCount); j++){
-                                std::string value = "";
+                                std::string value;
                                 for (int i=0;i<att.second.elementCount;i++){
                                     float data = interleavedData[att.second.offset/sizeof(float)+i + (j*mesh->totalBytesPerVertex)/sizeof(float)];
                                     value += std::to_string(data)+" ";
@@ -295,7 +300,7 @@ namespace sre {
                 }
                 renderToTexturePass.draw(sharedPtrMesh, glm::eulerAngleY(time*rotationSpeed)*glm::scale(glm::vec3{2.0f/maxS,2.0f/maxS,2.0f/maxS})*glm::translate(offset), mats);
                 renderToTexturePass.finish();
-                ImGui::Image(reinterpret_cast<ImTextureID>(offscreenTexture->textureId), ImVec2(previewSize, previewSize),{0,1},{1,0},{1,1,1,1},{0,0,0,1});
+                ImGui_RenderTexture(offscreenTexture.get(),glm::vec2(previewSize, previewSize),{0,1},{1,0});
             } else {
                 ImGui::LabelText("", "No preview - missing position attribute");
             }
@@ -438,8 +443,7 @@ namespace sre {
 
             renderToTexturePass.draw(mesh, glm::eulerAngleY(time*rotationSpeed), mat);
             renderToTexturePass.finish();
-
-            ImGui::Image(reinterpret_cast<ImTextureID>(offscreenTexture->textureId), ImVec2(previewSize, previewSize),{0,1},{1,0},{1,1,1,1},{0,0,0,1});
+            ImGui_RenderTexture(offscreenTexture.get(),glm::vec2(previewSize, previewSize),{0,1},{1,0});
             ImGui::TreePop();
         }
     }
@@ -835,31 +839,24 @@ namespace sre {
         static Shader* shaderRef = nullptr;
         static std::vector<std::string> shaderCode;
         static std::vector<std::string> errors;
+        static std::vector<ShaderType > shaderTypes;
         static std::string errorsStr;
         static TextEditor textEditor;
         static int selectedShader = 0;
         static bool showPrecompiled = false;
         static std::vector<const char*> activeShaders;
-        static std::vector<ShaderType> shaderTypes;
+
 
         if (shaderRef != shader){
             shaderRef = shader;
+
             shaderCode.clear();
-            for (auto source : shader->shaderSources){
-                auto source_ = Shader::getSource(source.second);
-                shaderCode.emplace_back(source_);
-            }
-            selectedShader = 0;
-            textEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::GLSL());
-            textEditor.SetText(shaderCode[selectedShader]);
-            textEditor.SetPalette(TextEditor::GetDarkPalette());
-            showPrecompiled = false;
-            errors.clear();
-            errorsStr = "";
-            textEditor.SetErrorMarkers(TextEditor::ErrorMarkers());
             activeShaders.clear();
             shaderTypes.clear();
+
             for (auto source : shader->shaderSources){
+                auto source_ = Resource::loadText(source.second);
+                shaderCode.emplace_back(source_);
                 shaderTypes.push_back(source.first);
                 switch (source.first){
                     case ShaderType::Vertex:
@@ -885,6 +882,14 @@ namespace sre {
                         break;
                 }
             }
+            selectedShader = 0;
+            textEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::GLSL());
+            textEditor.SetText(shaderCode[selectedShader]);
+            textEditor.SetPalette(TextEditor::GetDarkPalette());
+            showPrecompiled = false;
+            errors.clear();
+            errorsStr = "";
+            textEditor.SetErrorMarkers(TextEditor::ErrorMarkers());
         }
         bool open = true;
         ImGui::PushID(shader);
@@ -925,7 +930,9 @@ namespace sre {
         if (compile){
             auto builder = shader->update();
             for (int i=0;i<shaderTypes.size();i++){
-                builder.withSourceString(shaderCode[i], shaderTypes[i]);
+                auto filename = shader->shaderSources[shaderTypes[i]];
+                Resource::set(filename, shaderCode[i]);
+                builder.withSourceResource(filename, shaderTypes[i]);
             }
             errors.clear();
             builder.build(errors);
@@ -1011,9 +1018,9 @@ namespace sre {
                 ImGui::LabelText("Sprite size","%ix%i",sprite.getSpriteSize().x,sprite.getSpriteSize().y);
                 ImGui::LabelText("Sprite pos","(%i,%i)",sprite.getSpritePos().x,sprite.getSpritePos().y);
                 auto tex = sprite.texture;
-                auto uv0 = ImVec2((sprite.getSpritePos().x)/(float)tex->getWidth(), (sprite.getSpritePos().y+sprite.getSpriteSize().y)/(float)tex->getHeight());
-                auto uv1 = ImVec2((sprite.getSpritePos().x+sprite.getSpriteSize().x)/(float)tex->getWidth(),(sprite.getSpritePos().y)/(float)tex->getHeight());
-                ImGui::Image(reinterpret_cast<ImTextureID>(tex->textureId), ImVec2(previewSize/sprite.getSpriteSize().y*(float)sprite.getSpriteSize().x, previewSize),uv0, uv1,{1,1,1,1},{0,0,0,1});
+                auto uv0 = glm::vec2((sprite.getSpritePos().x)/(float)tex->getWidth(), (sprite.getSpritePos().y+sprite.getSpriteSize().y)/(float)tex->getHeight());
+                auto uv1 = glm::vec2((sprite.getSpritePos().x+sprite.getSpriteSize().x)/(float)tex->getWidth(),(sprite.getSpritePos().y)/(float)tex->getHeight());
+                ImGui_RenderTexture(tex,glm::vec2(previewSize/sprite.getSpriteSize().y*(float)sprite.getSpriteSize().x, previewSize),uv0,uv1);
             }
 
             ImGui::TreePop();
@@ -1128,3 +1135,4 @@ namespace sre {
         ImGui::Spacing();
     }
 }
+#pragma clang diagnostic pop

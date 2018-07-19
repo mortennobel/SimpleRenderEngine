@@ -5,6 +5,8 @@
  *  License: MIT
  */
 
+#include <sre/Color.hpp>
+
 #include "sre/Color.hpp"
 #include "glm/gtc/color_space.hpp"
 
@@ -12,6 +14,11 @@ namespace sre {
     Color::Color(float r, float g, float b, float a)
     :r(r), g(g), b(b), a(a)
     {
+    }
+
+    Color::Color(glm::vec4 linearColor)
+    {
+        setFromLinear(linearColor);
     }
 
     float& Color::operator[] (int index){
@@ -30,7 +37,6 @@ namespace sre {
     glm::vec4 Color::toLinear(){
         glm::vec3 color{r,g,b};
         return glm::vec4(convertSRGBToLinear(color),a);
-
     }
 
     void Color::setFromLinear(glm::vec4 linear){

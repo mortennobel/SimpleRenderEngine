@@ -26,6 +26,9 @@ namespace sre {
     }
 
     void Material::bind(){
+        if (shader->uniforms != uniforms){
+            setShader(shader);
+        }
         uniformMap.bind();
     }
 
@@ -36,9 +39,10 @@ namespace sre {
     void Material::setShader(std::shared_ptr<sre::Shader> shader) {
         Material::shader = shader;
 
+        UniformSet oldUniformMap = uniformMap;
         uniformMap.clear();
 
-        for (auto & u : shader->uniforms){
+        for (auto & u : *(shader->uniforms)){
             switch (u.type){
                 case UniformType::Vec4:
                 {
@@ -80,6 +84,56 @@ namespace sre {
                     break;
             }
         }
+        if (uniforms) {
+            // copy old uniform values
+            for (auto &oldUniform : *uniforms) {
+                for (auto &u : *(shader->uniforms)) {
+
+                    if (u.type == oldUniform.type &&
+                        u.arraySize == oldUniform.arraySize &&
+                        u.name == oldUniform.name) {
+                        switch (u.type) {
+                            case UniformType::Vec4: {
+                                uniformMap.set(u.id, oldUniformMap.get<glm::vec4>(oldUniform.id));
+                            }
+                                break;
+                            case UniformType::Texture:
+                            case UniformType::TextureCube: {
+                                uniformMap.set(u.id, oldUniformMap.get<std::shared_ptr<Texture>>(oldUniform.id));
+                            }
+                                break;
+                            case UniformType::Float: {
+                                uniformMap.set(u.id, oldUniformMap.get<float>(oldUniform.id));
+                            }
+                                break;
+                            case UniformType::Mat3Array: {
+                                std::shared_ptr<std::vector<glm::mat3>> val = oldUniformMap.get<std::shared_ptr<std::vector<glm::mat3>>>(
+                                        oldUniform.id);
+                                uniformMap.set(u.id, val);
+                            }
+                                break;
+                            case UniformType::Mat4:
+                            case UniformType::Mat4Array: {
+                                if (u.arraySize > 1) {
+                                    std::shared_ptr<std::vector<glm::mat4>> val = oldUniformMap.get<std::shared_ptr<std::vector<glm::mat4>>>(
+                                            oldUniform.id);
+                                    uniformMap.set(u.id, val);
+                                } else {
+                                    uniformMap.set(u.id, oldUniformMap.get<glm::mat4>(oldUniform.id));
+                                }
+                            }
+                                break;
+                            default:
+                                LOG_ERROR(
+                                        "'%s' Unsupported uniform type: %i. Only Vec4, Texture, TextureCube and Float is supported.",
+                                        u.name.c_str(), (int) u.type);
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+        uniforms = shader->uniforms;
     }
 
     Color Material::getColor()   {

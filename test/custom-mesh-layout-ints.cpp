@@ -9,6 +9,7 @@
 #include <glm/gtx/euler_angles.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <sre/SDLRenderer.hpp>
+#include <sre/Resource.hpp>
 #include <sre/impl/GL.hpp>
 
 using namespace sre;
@@ -61,10 +62,13 @@ void main(void)
     fragColor = vColor;
 }
 )";
+        Resource::set("custom-mesh-vert.glsl", vertexShaderSource);
+        Resource::set("custom-mesh-frag.glsl",fragmentShaderSource);
+
 
         mat1 = Shader::create()
-                .withSourceString(vertexShaderSource,ShaderType::Vertex)
-                .withSourceString(fragmentShaderSource, ShaderType::Fragment)
+                .withSourceResource("custom-mesh-vert.glsl",ShaderType::Vertex)
+                .withSourceResource("custom-mesh-frag.glsl", ShaderType::Fragment)
                 .build()->createMaterial();
 
         std::string info;

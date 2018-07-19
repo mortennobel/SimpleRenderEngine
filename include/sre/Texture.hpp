@@ -145,6 +145,9 @@ public:
     int getDataSize();                                                                      // get size of the texture in bytes on GPU
     bool isDepthTexture();
     DepthPrecision getDepthPrecision();
+
+    std::vector<char> getRawImage();                                                        // Read RGBA texture data from texture (GPU to CPU). Not supported in OpenGL ES
+    void* getNativeTexturePtr();                                                            // get texture id
 private:
     Texture(unsigned int textureId, int width, int height, uint32_t target, std::string string);
     void updateTextureSampler(bool filterSampling, Wrap wrapTextureCoordinates);
@@ -167,6 +170,7 @@ private:
     friend class Framebuffer;
     friend class RenderPass;
     friend class Inspector;
+    friend IMGUI_API void ImGui_RenderTexture(Texture* ,glm::vec2 , const glm::vec2& , const glm::vec2& , const glm::vec4& , const glm::vec4& );
     friend class VR;
     friend class Sprite;
     friend class UniformSet;

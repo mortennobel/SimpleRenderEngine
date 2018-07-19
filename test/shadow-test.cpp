@@ -83,8 +83,8 @@ public:
                 .build();
 
         shadowMapMat = Shader::create()
-                .withSourceFile("shadow_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("shadow_frag.glsl", ShaderType::Fragment)
+                .withSourceResource("shadow_vert.glsl", ShaderType::Vertex)
+                .withSourceResource("shadow_frag.glsl", ShaderType::Fragment)
                 .withName("Shadow")
                 .withOffset(biasOffset, biasFactor)                                          // shadow bias
                 .withColorWrite({false,false,false,false})

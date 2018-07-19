@@ -79,6 +79,7 @@ public:
                                                                 // The initialization happens on InitBuilder::build or InitBuilder::~InitBuilder()
 
     void setWindowTitle(std::string title);
+    void setWindowIcon(std::shared_ptr<Texture> tex);           // Set application icon
     void setWindowSize(glm::ivec2 size);
 
     void setFullscreen(bool enabled = true);                    // Toggle fullscreen mode (default mode is windowed). Not supported in Emscripten

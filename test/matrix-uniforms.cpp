@@ -10,6 +10,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/transform.hpp>
 #include <sre/SDLRenderer.hpp>
+#include <sre/Resource.hpp>
 #include <sre/impl/GL.hpp>
 
 using namespace sre;
@@ -61,10 +62,12 @@ void main(void)
     fragColor = vColor;
 }
 )";
+        Resource::set("mat4-vert.glsl", vertexShaderSource);
+        Resource::set("mat4-frag.glsl", fragmentShaderSource);
 
         mat1 = Shader::create()
-                .withSourceString(vertexShaderSource,ShaderType::Vertex)
-                .withSourceString(fragmentShaderSource, ShaderType::Fragment)
+                .withSourceResource("mat4-vert.glsl",ShaderType::Vertex)
+                .withSourceResource("mat4-frag.glsl", ShaderType::Fragment)
                 .build()->createMaterial();
 
         std::string info;

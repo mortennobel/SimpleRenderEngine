@@ -32,8 +32,8 @@ public:
         worldLights.addLight(Light::create().withPointLight({0.5,2,0.5}).build());
 
 		matStencilWrite = Shader::create()
-                .withSourceFile("unlit_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("unlit_frag.glsl", ShaderType::Fragment)
+                .withSourceResource("unlit_vert.glsl", ShaderType::Vertex)
+                .withSourceResource("unlit_frag.glsl", ShaderType::Fragment)
                 .withDepthWrite(false)
                 .withColorWrite({false,false,false,false})
                 .withStencil(Stencil{
@@ -47,8 +47,8 @@ public:
                 .withName("StencilWrite").build()->createMaterial();
 
         matStencilTest = Shader::create()
-                .withSourceFile("unlit_vert.glsl", ShaderType::Vertex)
-                .withSourceFile("unlit_frag.glsl", ShaderType::Fragment)
+                .withSourceResource("unlit_vert.glsl", ShaderType::Vertex)
+                .withSourceResource("unlit_frag.glsl", ShaderType::Fragment)
                 .withStencil(Stencil{
                         StencilFunc ::Equal,
                         1,

@@ -471,8 +471,11 @@ namespace sre {
 	}
 
     Texture::TextureBuilder::TextureBuilder() {
+        if (! Renderer::instance ){
+            LOG_FATAL("Cannot instantiate sre::Texture before sre::Renderer is created.");
+        }
         glGenTextures(1, &textureId);
-        if (renderInfo().supportTextureSamplerSRGB == false) {
+        if (!renderInfo().supportTextureSamplerSRGB) {
             samplerColorspace = SamplerColorspace::Gamma;
         }
     }
@@ -718,5 +721,31 @@ namespace sre {
     Texture::DepthPrecision Texture::getDepthPrecision() {
         return depthPrecision;
     }
+
+    std::vector<char> Texture::getRawImage() {
+#ifdef GL_ES_VERSION_2_0
+        return {};
+#else
+        assert(!isDepthTexture());
+        assert(!isCubemap());
+        int bytesPerPixel = 4;
+        std::vector<char> data(static_cast<unsigned long>(getWidth() * getHeight() * bytesPerPixel), 0);
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, getWidth());
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        glGetTexImage( GL_TEXTURE_2D, 0,  GL_RGBA, GL_UNSIGNED_BYTE, data.data());
+        glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
+        return data;
+#endif
+    }
+
+    void* Texture::getNativeTexturePtr(){
+        //https://stackoverflow.com/a/30106751/420250
+	    #define INT2VOIDP(i) (void*)(uintptr_t)(i)
+	    
+	    return INT2VOIDP(textureId);
+
+        #undef INT2VOIDP
+	}
 
 }

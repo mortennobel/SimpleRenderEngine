@@ -61,20 +61,20 @@ public:
                     break;
                 case 1:
                     material = Shader::create()
-                            .withSourceFile("debug_uv_vert.glsl", ShaderType::Vertex)
-                            .withSourceFile("debug_uv_frag.glsl", ShaderType::Fragment)
+                            .withSourceResource("debug_uv_vert.glsl", ShaderType::Vertex)
+                            .withSourceResource("debug_uv_frag.glsl", ShaderType::Fragment)
                             .build()->createMaterial();
                     break;
                 case 2:
                     material = Shader::create()
-                            .withSourceFile("debug_normal_vert.glsl", ShaderType::Vertex)
-                            .withSourceFile("debug_normal_frag.glsl", ShaderType::Fragment)
+                            .withSourceResource("debug_normal_vert.glsl", ShaderType::Vertex)
+                            .withSourceResource("debug_normal_frag.glsl", ShaderType::Fragment)
                             .build()->createMaterial();
                     break;
                 case 3:
                     material = Shader::create()
-                            .withSourceFile("debug_tangent_vert.glsl", ShaderType::Vertex)
-                            .withSourceFile("debug_tangent_frag.glsl", ShaderType::Fragment)
+                            .withSourceResource("debug_tangent_vert.glsl", ShaderType::Vertex)
+                            .withSourceResource("debug_tangent_frag.glsl", ShaderType::Fragment)
                             .build()->createMaterial();
                     break;
                 default:

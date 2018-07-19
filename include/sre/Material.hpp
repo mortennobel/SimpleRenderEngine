@@ -91,6 +91,7 @@ namespace sre {
         void bind();
 
         explicit Material(std::shared_ptr<sre::Shader> shader);
+        std::shared_ptr<std::vector<Uniform>> uniforms;
         std::string name;
         std::shared_ptr<sre::Shader> shader;
 
