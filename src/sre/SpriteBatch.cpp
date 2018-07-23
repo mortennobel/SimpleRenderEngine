@@ -25,8 +25,6 @@ namespace sre{
         std::sort(sprites.begin(), sprites.end(), [](const Sprite & a,const Sprite & b){
             return a.order.globalOrder < b.order.globalOrder;
         });
-        auto& s0 = sprites[0];
-        auto& s1 = sprites[1];
         std::vector<glm::vec3> vertices;
         std::vector<glm::vec4> colors;
         std::vector<glm::vec4> uvs;

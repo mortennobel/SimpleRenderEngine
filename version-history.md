@@ -1,5 +1,6 @@
 ## Version history
 
+ * 1.1.3 Fix sprite atlas bug (Windows).
  * 1.1.2 Maintain uniforms on shader recompile. Add ImGui_RenderTexture(). Add SDLRenderer::setWindowIcon(). More strict resource management for shader code.
  * 1.1.1 Libraries as submodules. Mesh::MeshBuilder::recomputeNormals(). Mesh::MeshBuilder::recomputeTangents(). 
  * 1.1.0 Shadowmap support. Mesh indices 32 bit option (now uses uint32_t for mesh indices instead of uint16_t). Fixed Camera::screenPointToRay for scaled/offset viewport.
