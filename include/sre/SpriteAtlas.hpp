@@ -21,7 +21,6 @@
 // Data Format: JSON (Array)
 // Layout - Size constraints: POT (Power of 2)
 // Allow rotation: false
-// Include pivot information (double click on a single sprite and check 'enable pivot points' 
 //
 // The json layout is as follows
 // {"frames": [                                             // sprites must be defined as an array with the name frames
@@ -32,7 +31,7 @@
 // "trimmed": false,                                        // trimmed must be true or false
 // "spriteSourceSize": {"x":0,"y":0,"w":100,"h":100},       // not used
 // "sourceSize": {"w":100,"h":100},                         // not used
-// "pivot": {"x":0.5,"y":0.5}                               // pivot point relative to frame. (Normalized values [0.0,1.0])
+// "pivot": {"x":0.5,"y":0.5}                               // pivot point relative to frame. (Normalized values [0.0,1.0]) (optional - default {0.5,0.5})
 // },
 // {                                                        // add as many sprites as needed
 // "filename": "berry.png",
