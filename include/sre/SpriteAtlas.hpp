@@ -21,6 +21,7 @@
 // Data Format: JSON (Array)
 // Layout - Size constraints: POT (Power of 2)
 // Allow rotation: false
+// Include pivot information (double click on a single sprite and check 'enable pivot points' 
 //
 // The json layout is as follows
 // {"frames": [                                             // sprites must be defined as an array with the name frames
