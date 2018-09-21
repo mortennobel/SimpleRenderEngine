@@ -4,6 +4,7 @@ file(GLOB EXTRA_SOURCE_FILES_
     "ImGuiColorTextEdit/TextEditor.cpp"
     "imgui/imgui.cpp"
     "imgui/imgui_draw.cpp"
+    "imgui/imgui_widgets.cpp"
 )
 
 if (NOT EXTRA_SOURCE_FILES_)
