@@ -8,7 +8,7 @@ file(GLOB EXTRA_SOURCE_FILES_
 )
 
 if (NOT EXTRA_SOURCE_FILES_)
-    message( FATAL_ERROR "Cannot find submodules used in SimpleRenderEngine. Run 'git submodule update --init' or checkout full project using 'git clone --recurse-submodules <url>'")
+    message( FATAL_ERROR "Cannot find submodules used in SimpleRenderEngine. Run 'git submodule update --init  --recursive' or checkout full project using 'git clone --recurse-submodules <url>'")
 endif()
 
 set(EXTRA_SOURCE_FILES ${EXTRA_SOURCE_FILES_} CACHE PATH "" FORCE)
