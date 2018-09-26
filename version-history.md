@@ -1,5 +1,6 @@
 ## Version history
 
+ * 1.1.4 ImGUI 1.65. Sprite atlas. Make pivot point optional in JSON. Fix Mojave black screen issue (OpenGL)
  * 1.1.3 Fix sprite atlas bug (Windows).
  * 1.1.2 Maintain uniforms on shader recompile. Add ImGui_RenderTexture(). Add SDLRenderer::setWindowIcon(). More strict resource management for shader code.
  * 1.1.1 Libraries as submodules. Mesh::MeshBuilder::recomputeNormals(). Mesh::MeshBuilder::recomputeTangents(). 

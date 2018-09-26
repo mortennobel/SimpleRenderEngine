@@ -24,6 +24,7 @@ set(SRE_INCLUDE_DIRS ${SDL2_INCLUDE_DIR})
 # FIND OPENGL
 #########################################################
 IF(APPLE)
+    add_definitions(-DGL_SILENCE_DEPRECATION)
     list(APPEND SRE_INCLUDE_DIRS /System/Library/Frameworks)
     FIND_LIBRARY(OpenGL_LIBRARY OpenGL )
     MARK_AS_ADVANCED (OpenGL_LIBRARY)

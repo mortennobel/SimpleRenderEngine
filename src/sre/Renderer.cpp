@@ -14,6 +14,7 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
 #endif
 
+#include <SDL_events.h>
 #include "sre/Log.hpp"
 #include "sre/VR.hpp"
 
@@ -46,6 +47,11 @@ namespace sre {
 		instance = this;
 
         glcontext = SDL_GL_CreateContext(window);
+#if __APPLE__
+        SDL_PumpEvents();
+        auto winSize = getWindowSize();
+        SDL_SetWindowSize(window, winSize.x, winSize.y);
+#endif
         if (!glcontext) {
             int major, minor;
             bool supported = getMaximumOpenGLSupport(&major, &minor);
