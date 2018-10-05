@@ -41,6 +41,14 @@ namespace sre
 
 	}
 
+	VR::~VR() {
+		if (vrType == VRType::OculusSDK) {
+#ifdef SRE_OCULUS
+			ovr_Shutdown();
+#endif
+		}
+	}
+
 	void VR::render()
 	{
 		if (vrType == VRType::OpenVR){
@@ -183,6 +191,13 @@ namespace sre
 	std::shared_ptr<VR> VR::create(VRType vrType) {
 		auto res = std::shared_ptr<VR>(new VR(vrType));
 
+		if (vrType == VRType::OculusSDK) {
+#ifdef SRE_OCULUS
+			ovrInitParams initParams = { ovrInit_RequestVersion | ovrInit_FocusAware, OVR_MINOR_VERSION, NULL, 0, 0 };
+			ovrResult result = ovr_Initialize(&initParams);
+			assert(OVR_SUCCESS(result) && "Failed to initialize libOVR.");
+#endif
+		}
 		if (vrType == VRType::OpenVR){
 #ifdef SRE_OPENVR
 			vr::HmdError peError = vr::VRInitError_None;

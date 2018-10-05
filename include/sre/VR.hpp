@@ -11,6 +11,9 @@
 #include "glm/glm.hpp"
 #include <functional>
 
+#ifdef SRE_OCULUS
+#include "OVR_CAPI_GL.h"
+#endif
 #ifdef SRE_OPENVR
 #include <openvr.h>
 
@@ -23,12 +26,14 @@ namespace vr {
 namespace sre {
 
 	enum class VRType {
-		OpenVR
+		OpenVR,
+		OculusSDK
 	};
 
 	class VR
 	{
 	public:
+		~VR();
 		static std::shared_ptr<VR> create(VRType vrType);		// Initiate VR integration. If unsuccessful
 		void render();											// Update HMD cameras (position and rotation)
 															 	// and invoke renderVR to render frame
@@ -48,6 +53,7 @@ namespace sre {
 	private:
 		VRType vrType;
 		VR(VRType vrType);
+		
 		void updateHMDMatrixPose();
 		glm::mat4 baseViewTransform = glm::mat4(1);
 		float nearPlane = 0.1;

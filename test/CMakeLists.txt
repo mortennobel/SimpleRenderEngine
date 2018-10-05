@@ -4,7 +4,7 @@ SET(scr_files update_shader set-icon shadow-test deallocation bumpmap stencil_te
 # Create custom build targets
 FOREACH(scr_file ${scr_files})
     add_executable(SRE-Test-${scr_file} ${scr_file}.cpp)
-    target_link_libraries(SRE-Test-${scr_file} SRE ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2_IMAGE_LIBRARIES} ${OPENVR_LIB})
+    target_link_libraries(SRE-Test-${scr_file} ${SRE_LIBRARIES})
 ENDFOREACH()
 
 file(COPY ../test_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
