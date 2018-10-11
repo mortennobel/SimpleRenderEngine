@@ -4,7 +4,6 @@
  *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
-
 #include "sre/RenderPass.hpp"
 #include "sre/Framebuffer.hpp"
 #include "sre/Camera.hpp"
@@ -82,6 +81,10 @@ namespace sre {
 		glm::mat4 m_mat4HMDPose;
 		std::string m_strPoseClasses;                            // what classes we saw poses for this frame
 		char m_rDevClassChar[vr::k_unMaxTrackedDeviceCount];   // for each device, a character representing its class
+#endif
+#ifdef SRE_OCULUS
+		ovrSession session;
+		ovrGraphicsLuid luid;
 #endif
 	};
 }
