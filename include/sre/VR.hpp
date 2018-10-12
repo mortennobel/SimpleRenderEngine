@@ -4,23 +4,12 @@
  *  Created by Morten Nobel-Jørgensen ( http://www.nobel-joergensen.com/ )
  *  License: MIT
  */
+#pragma once
 #include "sre/RenderPass.hpp"
 #include "sre/Framebuffer.hpp"
 #include "sre/Camera.hpp"
 #include "glm/glm.hpp"
 #include <functional>
-
-#ifdef SRE_OCULUS
-#include "OVR_CAPI_GL.h"
-#endif
-#ifdef SRE_OPENVR
-#include <openvr.h>
-
-namespace vr {
-	class IVRSystem;
-}
-#endif
-
 
 namespace sre {
 
@@ -32,9 +21,9 @@ namespace sre {
 	class VR
 	{
 	public:
-		~VR();
+		virtual ~VR() = default;
 		static std::shared_ptr<VR> create(VRType vrType);		// Initiate VR integration. If unsuccessful
-		void render();											// Update HMD cameras (position and rotation)
+		virtual void render() = 0;								// Update HMD cameras (position and rotation)
 															 	// and invoke renderVR to render frame
 		std::function<void(std::shared_ptr<sre::Framebuffer> fb, sre::Camera cam, bool leftEye)> renderVR;
 																// Callback from render function to render a single eye
@@ -48,15 +37,14 @@ namespace sre {
 																 // This is commonly set using lookAt
 
 		void setNearFarPlanes(float nearPlane, float farPlane);
-		void debugGUI();
-	private:
-		VRType vrType;
-		VR(VRType vrType);
+		virtual void debugGUI() = 0;
+	protected:
+		VR();
 		
-		void updateHMDMatrixPose();
+		
 		glm::mat4 baseViewTransform = glm::mat4(1);
-		float nearPlane = 0.1;
-		float farPlane = 100;
+		float nearPlane = 0.1f;
+		float farPlane = 100.0f;
 
 		Camera left;
 		Camera right;
@@ -66,25 +54,8 @@ namespace sre {
 		std::shared_ptr<Texture> rightTex;
 		uint32_t targetSizeW;
 		uint32_t targetSizeH;
-		void setupCameras();
-#ifdef SRE_OPENVR
-		glm::mat4 mat4eyePosLeft;
-		glm::mat4 mat4eyePosRight;
-		glm::mat4 getHMDMatrixPoseEye(vr::Hmd_Eye nEye);
-		glm::mat4 getHMDMatrixProjectionEye(vr::Hmd_Eye nEye);
-		vr::IVRSystem* vrSystem;
-		vr::TrackedDevicePose_t m_rTrackedDevicePose[vr::k_unMaxTrackedDeviceCount];
-		glm::mat4 m_rmat4DevicePose[vr::k_unMaxTrackedDeviceCount];
-		bool m_rbShowTrackedDevice[vr::k_unMaxTrackedDeviceCount];
-		int m_iValidPoseCount;
-		int m_iValidPoseCount_Last;
-		glm::mat4 m_mat4HMDPose;
-		std::string m_strPoseClasses;                            // what classes we saw poses for this frame
-		char m_rDevClassChar[vr::k_unMaxTrackedDeviceCount];   // for each device, a character representing its class
-#endif
-#ifdef SRE_OCULUS
-		ovrSession session;
-		ovrGraphicsLuid luid;
-#endif
+
+		virtual void updateHMDMatrixPose() = 0;
+		virtual void setupCameras() = 0;
 	};
 }
