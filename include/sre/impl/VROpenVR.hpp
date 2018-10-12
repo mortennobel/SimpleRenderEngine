@@ -15,7 +15,7 @@
 namespace vr {
 	class IVRSystem;
 }
-#endif
+
 
 namespace sre {
 	class VROpenVR : public VR {
@@ -44,3 +44,4 @@ namespace sre {
 		friend class VR;
 	};
 }
+#endif

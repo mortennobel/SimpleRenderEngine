@@ -44,12 +44,8 @@ namespace sre
 		setupCameras();
 	}
 	
-	
-
 
 	std::shared_ptr<VR> VR::create(VRType vrType) {
-		
-
 		if (vrType == VRType::OculusSDK) {
 #ifdef SRE_OCULUS
 			return std::shared_ptr<VR>(new VROculus());
