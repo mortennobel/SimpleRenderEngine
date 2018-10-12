@@ -37,7 +37,7 @@ namespace {
 		ImGui::InputFloat4("", glm::value_ptr(m[3]));
 	}
 }
-#endif
+
 
 namespace sre {
 
@@ -79,7 +79,7 @@ namespace sre {
 	}
 
 	void VROpenVR::render(){
-#ifdef SRE_OPENVR
+
 	updateHMDMatrixPose();
 	renderVR(leftFB, left, true);
 	vr::Texture_t leftEyeTexture = { (void*)(uintptr_t)leftTex->textureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
@@ -87,12 +87,12 @@ namespace sre {
 	renderVR(rightFB, right, false);
 	vr::Texture_t rightEyeTexture = { (void*)(uintptr_t)rightTex->textureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
 	vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
-#endif
+
 	}
 
 	void VROpenVR::updateHMDMatrixPose()
 	{
-#ifdef SRE_OPENVR
+
 		vr::VRCompositor()->WaitGetPoses(m_rTrackedDevicePose, vr::k_unMaxTrackedDeviceCount, nullptr, 0);
 
 		m_iValidPoseCount = 0;
@@ -127,21 +127,21 @@ namespace sre {
 			left.setViewTransform(glm::inverse(m_mat4HMDPose*mat4eyePosLeft)*baseViewTransform);
 			right.setViewTransform(glm::inverse(m_mat4HMDPose*mat4eyePosRight)*baseViewTransform);
 		}
-#endif
+
 	}
 
 	void VROpenVR::setupCameras()
 	{
-#ifdef SRE_OPENVR
+
 		const auto mat4ProjectionLeft = getHMDMatrixProjectionEye(vr::Eye_Left);
 		const auto mat4ProjectionRight = getHMDMatrixProjectionEye(vr::Eye_Right);
 		left.setProjectionTransform(mat4ProjectionLeft);
 		right.setProjectionTransform(mat4ProjectionRight);
-#endif
+
 	}
 
 
-#ifdef SRE_OPENVR
+
 	glm::mat4 VROpenVR::getHMDMatrixProjectionEye(vr::Hmd_Eye nEye)
 	{
 		vr::HmdMatrix44_t mat = vrSystem->GetProjectionMatrix(nEye, nearPlane, farPlane);
@@ -166,16 +166,15 @@ namespace sre {
 
 		return  matrixObj;
 	}
-#endif
+
 
 	void VROpenVR::debugGUI()
 	{
-#ifdef SRE_OPENVR
 			LabelMat4("PoseEyeL", getHMDMatrixPoseEye(vr::Hmd_Eye::Eye_Left));
 			LabelMat4("PoseEyeR", getHMDMatrixPoseEye(vr::Hmd_Eye::Eye_Right));
 			LabelMat4("ProjEyeL", getHMDMatrixProjectionEye(vr::Hmd_Eye::Eye_Left));
 			LabelMat4("ProjEyeR", getHMDMatrixProjectionEye(vr::Hmd_Eye::Eye_Right));
 			LabelMat4("HDMPose ", m_mat4HMDPose);
-#endif		
 	}
 }
+#endif
