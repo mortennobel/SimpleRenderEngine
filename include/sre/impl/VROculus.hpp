@@ -11,7 +11,6 @@
 
 #ifdef SRE_OCULUS
 #include "OVR_CAPI_GL.h"
-#endif
 
 
 namespace sre {
@@ -30,3 +29,4 @@ namespace sre {
 		friend class VR;
 	};
 }
+#endif

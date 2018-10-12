@@ -39,7 +39,7 @@ namespace sre {
 		int m_iValidPoseCount;
 		int m_iValidPoseCount_Last;
 		glm::mat4 m_mat4HMDPose;
-		std::string m_strPoseClasses;                            // what classes we saw poses for this frame
+		std::string m_strPoseClasses;                          // what classes we saw poses for this frame
 		char m_rDevClassChar[vr::k_unMaxTrackedDeviceCount];   // for each device, a character representing its class
 		friend class VR;
 	};

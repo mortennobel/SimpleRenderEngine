@@ -9,7 +9,6 @@
 
 #ifdef SRE_OCULUS
 
-#ifdef SRE_OCULUS
  // Include the Oculus SDK
 #include "OVR_CAPI_GL.h"
 #include "Extras/OVR_Math.h"
@@ -197,7 +196,6 @@ namespace sre {
 		return luid;
 	}
 
-#endif
 
 	VROculus::VROculus() {
 		ovrInitParams initParams = { ovrInit_RequestVersion | ovrInit_FocusAware, OVR_MINOR_VERSION, NULL, 0, 0 };

@@ -60,7 +60,7 @@ namespace sre
 			return std::shared_ptr<VR>(new VROpenVR());
 #endif
 		}
-		LOG_INFO("SRE not compiled with OpenVR support");
+		LOG_INFO("SRE not compiled with VR support");
 		auto res = std::shared_ptr<VR>(nullptr);
 	}
 }
