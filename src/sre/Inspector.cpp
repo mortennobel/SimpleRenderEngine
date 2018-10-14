@@ -255,7 +255,6 @@ namespace sre {
 
                         ImGui::TreePop();
                     }
-                    ;
                     auto attributeType = att.second.attributeType;
 
                 }

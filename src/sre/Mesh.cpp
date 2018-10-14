@@ -988,6 +988,45 @@ namespace sre {
         return *this;
     }
 
+    Mesh::MeshBuilder &Mesh::MeshBuilder::withWireCube(float length) {
+        using namespace glm;
+        using namespace std;
+
+        if (name.length() == 0){
+            std::stringstream ss;
+            ss <<"SRE WireCube "<<std::setprecision( 2 ) <<length;
+            name = ss.str();
+        }
+
+        vector<vec3> positions( {
+                vec3{length, length, length},
+                vec3{-length, length, length},
+                vec3{-length, -length, length},
+                vec3{length, -length, length},
+
+                vec3{length, length, -length},
+                vec3{-length, length, -length},
+                vec3{-length, -length, -length},
+                vec3{length, -length, -length}
+        });
+        vector<uint32_t> indices;
+
+        for (int i=0;i<positions.size();i++){
+            for (int j=0;j<i;j++){
+                if (glm::length(positions[i]-positions[j]) <= length*2.1f){
+                    indices.push_back(i);
+                    indices.push_back(j);
+                }
+            }
+        }
+
+        withPositions(positions);
+        withIndices(indices);
+        withMeshTopology(MeshTopology::Lines);
+
+        return *this;
+    }
+
     Mesh::MeshBuilder &Mesh::MeshBuilder::withQuad(float size) {
         if (name.length() == 0){
             std::stringstream ss;
