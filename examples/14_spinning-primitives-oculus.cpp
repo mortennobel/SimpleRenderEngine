@@ -11,13 +11,17 @@
 #include <glm/gtx/transform.hpp>
 #include <glm/gtx/euler_angles.hpp>
 #include <sre/SDLRenderer.hpp>
-
+#include <memory>
 using namespace sre;
 
 class SpinningPrimitivesOculusExample {
 public:
     SpinningPrimitivesOculusExample(){
-        r.init();
+		r.init()
+			.withDepthSize(16)
+			.withStencilSize(0);
+		
+		SDL_ShowCursor(SDL_DISABLE);
 
 		auto tex = Texture::create()
 			.withFileCubemap("examples_data/cube-posx.png", Texture::CubemapSide::PositiveX)

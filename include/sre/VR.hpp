@@ -55,7 +55,6 @@ namespace sre {
 		uint32_t targetSizeW;
 		uint32_t targetSizeH;
 
-		virtual void updateHMDMatrixPose() = 0;
 		virtual void setupCameras() = 0;
 	};
 }

@@ -21,11 +21,16 @@ namespace sre {
 		void debugGUI() override;
 	protected:
 		VROculus();
-		void updateHMDMatrixPose() override;
+		void updateHMDMatrixPose();
 		void setupCameras() override;
 
 		ovrSession session;
 		ovrGraphicsLuid luid;
+		ovrHmdDesc hmdDesc;
+		double sensorSampleTime;  
+		ovrEyeRenderDesc eyeRenderDesc[2];
+		ovrPosef EyeRenderPose[2];
+		ovrPosef HmdToEyePose[2];
 		friend class VR;
 	};
 }

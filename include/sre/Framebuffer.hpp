@@ -67,6 +67,7 @@ namespace sre {
         glm::uvec2 size;
         friend class RenderPass;
         friend class Inspector;
+		friend class VROculus;
     };
 }
 
