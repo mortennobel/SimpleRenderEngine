@@ -403,7 +403,6 @@ namespace sre {
     }
 
     void RenderPass::finishGPUCommandBuffer() {
-        glFinish();
     }
 
     void RenderPass::draw(std::shared_ptr<SpriteBatch>& spriteBatch, glm::mat4 modelTransform) {
