@@ -116,6 +116,7 @@ namespace sre {
                                           unsigned int width = 1,       // This function must be called after finish has been explicit called on the renderPass
                                           unsigned int height = 1);
 
+		DEPRECATED("No longer supported")
         void finishGPUCommandBuffer();                                  // GPU command buffer (must be called when
                                                                         // profiling GPU time - should not be called
                                                                         // when not profiling)
