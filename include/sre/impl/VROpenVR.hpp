@@ -25,7 +25,7 @@ namespace sre {
 		void debugGUI() override;
 	protected:
 		VROpenVR();
-		void updateHMDMatrixPose() override;
+		void updateHMDMatrixPose();
 		void setupCameras() override;
 
 		glm::mat4 mat4eyePosLeft;

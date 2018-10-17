@@ -188,10 +188,7 @@ namespace sre {
 			int pixelsPerDisplayUnits = 1;
 			ovrSizei idealTextureSize = ovr_GetFovTextureSize(session, ovrEyeType(eye), hmdDesc.DefaultEyeFov[eye], pixelsPerDisplayUnits);
 			eyeRenderTexture[eye] = new OculusTextureBuffer(session, idealTextureSize, 1);
-
-			glDeleteFramebuffers(1, &(fbs[eye]->frameBufferObjectId));
-			fbs[eye]->dirty = false;
-			fbs[eye]->frameBufferObjectId = eyeRenderTexture[eye]->fboId;
+			fbs[eye]->size = { idealTextureSize.w, idealTextureSize.h };
 		}
 	}
 
@@ -217,19 +214,15 @@ namespace sre {
 			eyeRenderTexture[eye]->SetAndClearRenderSurface();
 			// Get view and projection matrices
 
-			float Yaw = 0;
-			static OVR::Vector3f Pos2(0.0f, 0.0f, -5.0f);
-			OVR::Matrix4f rollPitchYaw = OVR::Matrix4f::RotationY(Yaw);
 			OVR::Matrix4f finalRollPitchYaw = OVR::Matrix4f(EyeRenderPose[eye].Orientation);
 			OVR::Vector3f finalUp = finalRollPitchYaw.Transform(OVR::Vector3f(0, 1, 0));
 			OVR::Vector3f finalForward = finalRollPitchYaw.Transform(OVR::Vector3f(0, 0, -1));
-			OVR::Vector3f shiftedEyePos = Pos2 + rollPitchYaw.Transform(EyeRenderPose[eye].Position);
+			OVR::Vector3f shiftedEyePos = EyeRenderPose[eye].Position;
 
 			OVR::Matrix4f view = OVR::Matrix4f::LookAtRH(shiftedEyePos, shiftedEyePos + finalForward, finalUp);
 			OVR::Matrix4f proj = ovrMatrix4f_Projection(hmdDesc.DefaultEyeFov[eye], nearPlane, farPlane, ovrProjection_None);
 			glm::mat4 viewG = glm::transpose(glm::make_mat4(view.M[0]));
 			glm::mat4 projG = glm::transpose(glm::make_mat4(proj.M[0]));
-			glm::mat4 test = glm::perspective<float>(.3f,1.0f,.1f,100.0);
 			cameras[eye]->setViewTransform(viewG * baseViewTransform);
 			cameras[eye]->setProjectionTransform(projG);
 
@@ -284,6 +277,10 @@ namespace sre {
 		// Get eye poses, feeding in correct IPD offset
 		HmdToEyePose[0] = eyeRenderDesc[0].HmdToEyePose;
 		HmdToEyePose[1] = eyeRenderDesc[1].HmdToEyePose;
+
+		// this data is fetched only for the debug display, no need to do this to just get the rendering work
+		auto m_frameTiming = ovr_GetPredictedDisplayTime(session, frameIndex);
+		auto m_trackingState = ovr_GetTrackingState(session, m_frameTiming, ovrTrue);
 
 		// sensorSampleTime is fed into the layer later
 		ovr_GetEyePoses(session, frameIndex, ovrTrue, HmdToEyePose, EyeRenderPose, &sensorSampleTime);
