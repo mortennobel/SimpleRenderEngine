@@ -20,7 +20,7 @@ namespace vr {
 namespace sre {
 	class VROpenVR : public VR {
 	public:
-		~VROpenVR() = default;
+		~VROpenVR();
 		void render() override;
 		void debugGUI() override;
 	protected:

@@ -78,16 +78,18 @@ namespace sre {
 		mat4eyePosRight = getHMDMatrixPoseEye(vr::Eye_Right);
 	}
 
+	VROpenVR::~VROpenVR() {
+		vr::VR_Shutdown();
+	}
+
 	void VROpenVR::render(){
-
-	updateHMDMatrixPose();
-	renderVR(leftFB, left, true);
-	vr::Texture_t leftEyeTexture = { (void*)(uintptr_t)leftTex->textureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
-	vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
-	renderVR(rightFB, right, false);
-	vr::Texture_t rightEyeTexture = { (void*)(uintptr_t)rightTex->textureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
-	vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
-
+		updateHMDMatrixPose();
+		renderVR(leftFB, left, true);
+		vr::Texture_t leftEyeTexture = { (void*)(uintptr_t)leftTex->textureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+		vr::VRCompositor()->Submit(vr::Eye_Left, &leftEyeTexture);
+		renderVR(rightFB, right, false);
+		vr::Texture_t rightEyeTexture = { (void*)(uintptr_t)rightTex->textureId, vr::TextureType_OpenGL, vr::ColorSpace_Gamma };
+		vr::VRCompositor()->Submit(vr::Eye_Right, &rightEyeTexture);
 	}
 
 	void VROpenVR::updateHMDMatrixPose()
