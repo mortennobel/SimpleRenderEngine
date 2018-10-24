@@ -45,6 +45,8 @@ public:
         InitBuilder& withVSync(bool vsync);
         InitBuilder& withGLVersion(int majorVersion, int minorVersion);
         InitBuilder& withMaxSceneLights(int maxSceneLights);            // Set max amount of concurrent lights
+		InitBuilder& withDepthSize(int depthBits);                      // Set number of bits in depth buffer (typical 16, 24 or 32)
+		InitBuilder& withStencilSize(int stencilBits);                  // Set number of bits in stencil buffer (typical 0 or 8)
         void build();
     private:
         explicit InitBuilder(SDLRenderer* sdlRenderer);
@@ -55,6 +57,8 @@ public:
         int glMajorVersion = 3;
         int glMinorVersion = 3;
         int maxSceneLights = 4;
+		int depthBits = 24;
+		int stencilBits = 8;
         friend class SDLRenderer;
     };
 

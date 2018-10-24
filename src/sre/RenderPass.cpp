@@ -274,9 +274,10 @@ namespace sre {
         }
         viewportOffset = static_cast<glm::uvec2>(builder.camera.viewportOffset * windowSize);
         viewportSize = static_cast<glm::uvec2>(windowSize * builder.camera.viewportSize);
-        glEnable(GL_SCISSOR_TEST);
-        glScissor(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
-        glViewport(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
+
+		glEnable(GL_SCISSOR_TEST);
+		glScissor(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
+		glViewport(viewportOffset.x, viewportOffset.y, viewportSize.x,viewportSize.y);
 
         GLbitfield clear = 0;
         if (builder.clearColor) {
@@ -403,7 +404,6 @@ namespace sre {
     }
 
     void RenderPass::finishGPUCommandBuffer() {
-        glFinish();
     }
 
     void RenderPass::draw(std::shared_ptr<SpriteBatch>& spriteBatch, glm::mat4 modelTransform) {

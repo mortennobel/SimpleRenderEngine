@@ -61,12 +61,13 @@ namespace sre {
         explicit Framebuffer(std::string name);
         std::vector<std::shared_ptr<Texture>> textures;
         std::shared_ptr<Texture> depthTexture;
-        unsigned int frameBufferObjectId;
+        unsigned int frameBufferObjectId = 0;
         uint32_t renderbuffer = 0;
         std::string name;
         glm::uvec2 size;
         friend class RenderPass;
         friend class Inspector;
+		friend class VROculus;
     };
 }
 
