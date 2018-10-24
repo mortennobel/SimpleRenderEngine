@@ -1,5 +1,6 @@
 ## Version history
 
+ * 1.1.6
  * 1.1.5 Add support for Oculus VR SDK (1.3.0). WireCube primitive. GLM 0.9.9.2.
  * 1.1.4 ImGUI 1.65. Sprite atlas. Make pivot point optional in JSON. Fix Mojave black screen issue (OpenGL)
  * 1.1.3 Fix sprite atlas bug (Windows).
