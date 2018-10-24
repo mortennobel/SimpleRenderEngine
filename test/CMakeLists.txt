@@ -8,6 +8,8 @@ FOREACH(scr_file ${scr_files})
 ENDFOREACH()
 
 file(COPY ../test_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+file(COPY ../test_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Debug)
+file(COPY ../test_data DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/Release)
 
 IF (WIN32)
     SET(SDL2_dll "" CACHE STRING "Where the SDL2.dll can be found")
