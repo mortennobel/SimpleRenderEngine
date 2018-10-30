@@ -65,6 +65,7 @@ public:
 					}
 				}
 			}
+			
 		};
         r.frameRender = [&](){
             render();
@@ -80,6 +81,7 @@ public:
 					.withFramebuffer(fb)
 					.withCamera(cam)
 					.withSkybox(skybox)
+					.withGUI(false)
 					.build();
 			render(renderPass);
 		};

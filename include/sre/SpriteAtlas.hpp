@@ -31,7 +31,7 @@
 // "trimmed": false,                                        // trimmed must be true or false
 // "spriteSourceSize": {"x":0,"y":0,"w":100,"h":100},       // not used
 // "sourceSize": {"w":100,"h":100},                         // not used
-// "pivot": {"x":0.5,"y":0.5}                               // pivot point relative to frame. (Normalized values [0.0,1.0])
+// "pivot": {"x":0.5,"y":0.5}                               // pivot point relative to frame. (Normalized values [0.0,1.0]) (optional - default {0.5,0.5})
 // },
 // {                                                        // add as many sprites as needed
 // "filename": "berry.png",
