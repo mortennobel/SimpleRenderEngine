@@ -15,6 +15,7 @@ __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 #endif
 
 #include <SDL_events.h>
+#include <SDL_version.h>
 #include "sre/Log.hpp"
 #include "sre/VR.hpp"
 
@@ -48,11 +49,15 @@ namespace sre {
 
         glcontext = SDL_GL_CreateContext(window);
 #if __APPLE__
-        // Workaround:
-        // https://discourse.libsdl.org/t/macos-10-14-mojave-issues/25060/2
-        SDL_PumpEvents();
-        auto winSize = getWindowSize();
-        SDL_SetWindowSize(window, winSize.x, winSize.y);
+        SDL_version linked;
+        SDL_GetVersion(&linked);
+        if (linked.major==2 && linked.minor== 0 && linked.patch <= 8){
+            // Workaround:
+            // https://discourse.libsdl.org/t/macos-10-14-mojave-issues/25060/2
+            SDL_PumpEvents();
+            auto winSize = getWindowSize();
+            SDL_SetWindowSize(window, winSize.x, winSize.y);
+        }
 #endif
         if (!glcontext) {
             int major, minor;
