@@ -132,7 +132,7 @@ namespace sre{
         //Handle events on queue
         while( SDL_PollEvent( &e ) != 0 )
         {
-            ImGui_SRE_ProcessEvent(&e);
+            ImGui_ImplSDL2_ProcessEvent(&e);
             switch (e.type) {
                 case SDL_QUIT:
                     running = false;

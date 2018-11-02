@@ -140,14 +140,15 @@ namespace sre {
 
         // initialize ImGUI
         imGuiContext = ImGui::CreateContext();
-        ImGui_SRE_Init(window);
+        ImGui_ImplSDL2_Init(window);
 
         // reset render stats
         renderStatsLast = renderStats;
     }
 
     Renderer::~Renderer() {
-        ImGui_SRE_Shutdown();
+        ImGui_SRE_GL_Shutdown();
+        ImGui_ImplSDL2_Shutdown();
         ImGui::DestroyContext(imGuiContext);
         glDeleteBuffers(1,&globalUniformBuffer);
         SDL_GL_DeleteContext(glcontext);

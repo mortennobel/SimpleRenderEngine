@@ -103,7 +103,8 @@ namespace sre {
         :builder(builder)
     {
         if (builder.gui) {
-            ImGui_SRE_NewFrame(Renderer::instance->window);
+            ImGui_SRE_GL_NewFrame();
+            ImGui_ImplSDL2_NewFrame(Renderer::instance->window);
         }
         if (builder.skybox){
             renderQueue.push_back({}); // reserve empty obj
@@ -317,7 +318,7 @@ namespace sre {
 
         if (builder.gui) {
             ImGui::Render();
-            ImGui_SRE_RenderDrawData(ImGui::GetDrawData());
+            ImGui_SRE_GL_RenderDrawData(ImGui::GetDrawData());
         }
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
         if (builder.framebuffer != nullptr){
