@@ -105,6 +105,7 @@ namespace sre {
         if (builder.gui) {
             ImGui_SRE_GL_NewFrame();
             ImGui_ImplSDL2_NewFrame(Renderer::instance->window);
+            ImGui::NewFrame();
         }
         if (builder.skybox){
             renderQueue.push_back({}); // reserve empty obj
