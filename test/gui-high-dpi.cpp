@@ -15,41 +15,24 @@
 
 using namespace sre;
 
-class GUIExample {
+class GUIHighDPI {
 public:
-    GUIExample()
-            :r{},inspector{300}
+    GUIHighDPI(bool highDPI)
+            :r{}
     {
-        r.init();
+        r.init()
+            .withSdlWindowFlags( (highDPI ? SDL_WINDOW_ALLOW_HIGHDPI: 0) | SDL_WINDOW_OPENGL | SDL_WINDOW_RESIZABLE);
 
-        camera.lookAt({0,0,3},{0,0,0},{0,1,0});
-        camera.setPerspectiveProjection(60,0.1,100);
-
-        mesh = Mesh::create()
-                .withCube()
-                .build();
-        worldLights.addLight(Light::create()
-                                     .withPointLight({0, 0,10})
-                                     .withColor({1,0,0})
-                                     .withRange(50)
-                                     .build());
-
-        material = Shader::getStandardBlinnPhong()->createMaterial();
-        material->setSpecularity(Color(1,1,1,20));
+        r.setWindowTitle(highDPI ? "High DPI": "Normal DPI");
 
         // connect render callback
         r.frameRender = [&](){
             frameRender();
         };
-        r.mouseEvent = [&](SDL_Event& e){
-            if (e.type == SDL_MOUSEMOTION){
-                rotation.x += glm::radians((float)e.motion.xrel);
-                rotation.y += glm::radians((float)e.motion.yrel);
-            }
-            if (e.type == SDL_MOUSEBUTTONUP){
-                if (e.button.button==SDL_BUTTON_RIGHT){
-                    showInspector = true;
-                }
+        r.mouseEvent = [&](SDL_Event& e) {
+            if (e.type == SDL_MOUSEMOTION) {
+                mousePos.x = e.motion.x;
+                mousePos.y = e.motion.y;
             }
         };
         // start render loop
@@ -58,98 +41,66 @@ public:
 
 
     void frameRender(){
-        bool showMouseCursor = r.isMouseCursorVisible();
         RenderPass rp = RenderPass::create()
-                .withCamera(camera)
-                .withWorldLights(&worldLights)
-                .withClearColor(true,{clear_color.x,clear_color.y,clear_color.z,1.0f})
-                .withGUI(showMouseCursor)
                 .build();
-        rp.draw(mesh, glm::eulerAngleY(rotation.x) * glm::eulerAngleX(rotation.y), material);
+        ImGuiCond cond = ImGuiCond_Always;
+        ImVec2 pos{100,100};
+        ImGui::SetNextWindowPos(pos, cond);
+        ImGui::Begin("Window");
+        ImGui::Text("Mouse position %i %i",mousePos.x, mousePos.y);
 
-        if (!showMouseCursor){
-            return;
+
+        int index = SDL_GetWindowDisplayIndex(r.getSDLWindow());
+        ImGui::Text("Current Display %i",index);
+
+        auto& io = ImGui::GetIO();
+
+        ImGui::Text("ImGui mousePos %.1f %.1f", io.MousePos.x, io.MousePos.y);
+
+        glm::ivec2 winSize;
+        SDL_GetWindowSize(r.getSDLWindow(),
+                          &winSize.x,
+                          &winSize.y);
+        ImGui::Text("Windows size %i %i",winSize.x,winSize.y);
+
+        SDL_GL_GetDrawableSize(r.getSDLWindow(),
+                          &winSize.x,
+                          &winSize.y);
+        ImGui::Text("Drawable size %i %i",winSize.x,winSize.y);
+
+
+        int displays = SDL_GetNumVideoDisplays();
+
+        for (int i=0;i<displays;i++){
+            ImGui::Text("Display %i",i);
+            float ddpi;
+            float hdpi;
+            float vdpi;
+            int res = SDL_GetDisplayDPI(i,
+                    &ddpi,
+                    &hdpi,
+                    &vdpi);
+            if (res == 0){
+                ImGui::Text("DPI ddpi %f hdpi %f vdpi %f", ddpi, hdpi, vdpi);
+            } else {
+                ImGui::Text("SDL_GetDisplayDPI not supported");
+            }
         }
-
-        bool open = true;
-
-        // Show Label (with invisible window)
-        ImGui::SetNextWindowPos(ImVec2(100,000));
-        ImGui::SetNextWindowSize(ImVec2(500,100));
-        ImGui::Begin("#TestLabel",&open,ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoInputs);
-        ImGui::Text("Hello, world!");
         ImGui::End();
-
-        // Show Button (with invisible window)
-        // Note window may disappear behind other windows
-        ImGui::SetNextWindowPos(ImVec2(200,100));
-        ImGui::SetNextWindowSize(ImVec2(100,25));
-        ImGui::Begin("#Button",&open,ImGuiWindowFlags_NoTitleBar|ImGuiWindowFlags_NoResize|ImGuiWindowFlags_NoMove|ImGuiWindowFlags_NoScrollbar);
-        if (ImGui::Button("Click me")){
-            std::cout << "Clicked"<<std::endl;
-        }
+        ImGui::Begin("Widgets");
+        ImGui::Button("Press me");
+        static bool checked = false;
+        ImGui::Checkbox("Click on me", &checked );
         ImGui::End();
-#ifndef EMSCRIPTEN
-        bool fullscreen = r.isFullscreen();
-        if (ImGui::Checkbox("Fullscreen",&fullscreen)){
-            r.setFullscreen(fullscreen);
-        }
-        if (ImGui::Checkbox("Mouse cursor",&showMouseCursor)){
-            r.setMouseCursorVisible(showMouseCursor);
-        }
-        bool showMouseLocked = r.isMouseCursorLocked();
-        if (ImGui::Checkbox("Mouse locked",&showMouseLocked)){
-            r.setMouseCursorLocked(showMouseLocked);
-        }
-
-#endif
-
-        // 1. Show a simple window
-        // Tip: if we don't call ImGui::Begin()/ImGui::End() the widgets appears in a window automatically called "Debug"
-        {
-
-            ImGui::Text("Hello, world!");
-            ImGui::ColorEdit3("clearScreen color", (float*)&clear_color);
-
-            ImGui::Checkbox("Another Window", &show_another_window);
-
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-
-
-        }
-
-        ImGui::ShowMetricsWindow();
-
-        // 2. Show another simple window, this time using an explicit Begin/End pair
-        if(show_another_window)
-        {
-            ImGui::SetNextWindowSize(ImVec2(200,100), ImGuiCond_FirstUseEver);
-            ImGui::Begin("Another Window", &show_another_window);
-            ImGui::Text("Hello");
-
-
-            ImGui::End();
-        }
-        inspector.update();
-        if (showInspector){
-            inspector.gui();
-        }
     }
 private:
     SDLRenderer r;
-    glm::vec2 rotation;
-    Inspector inspector;
-    bool show_another_window = false;
-    ImVec4 clear_color = ImColor(114, 144, 154);
-    std::shared_ptr<Mesh> mesh;
-    std::shared_ptr<Material> material;
-    Camera camera;
-    WorldLights worldLights;
-    bool showInspector = false;
+    glm::ivec2 mousePos;
 };
 
 int main() {
-    std::make_unique<GUIExample>();
+    std::make_unique<GUIHighDPI>(true);
+    std::make_unique<GUIHighDPI>(false);
     return 0;
 }
 
